@@ -1,0 +1,42 @@
+{
+  "name": "s-bin",
+  "version": "1.0.0",
+  "description": "Smart Bin is an intelligent waste management system with sensors and cloud analytics that monitors fill levels, sorts waste, and alerts when bins need emptying. It reduces collection trips, cuts fuel use, prevents overflow hazards, and provides a scalable, data-driven solution for cleaner cities.",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Atshmuel/s-bin.git"
+  },
+  "keywords": [
+    "s-bin",
+    "smart",
+    "bin"
+  ],
+  "author": "Shmuel Atar, Adva Ohana",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Atshmuel/s-bin/issues"
+  },
+  "homepage": "https://github.com/Atshmuel/s-bin#readme",
+  "dependencies": {
+    "@turf/turf": "^7.2.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.17.2",
+    "mqtt": "^5.14.0",
+    "nodemailer": "^7.0.5",
+    "nodemon": "^3.1.10",
+    "path": "^0.12.7",
+    "socket.io": "^4.8.1"
+  },
+  "type": "module"
+}
