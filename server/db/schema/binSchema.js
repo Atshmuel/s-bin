@@ -1,17 +1,23 @@
 import mongoose from "mongoose";
 
 export const binSchema = new mongoose.Schema({
-    binId: {
+    binCode: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        immutable: true,
     },
     location: {
         lat: { type: Number, required: true },
         lng: { type: Number, required: true }
     },
     status: {
-        level: { type: Number, required: true },
+        health: {
+            type: String,
+            enum: ["good", "warning", "critical"],
+            default: "good"
+        },
+        level: { type: Number, default: 0, required: true },
         updatedAt: { type: Date, default: Date.now }
     },
     history: [
@@ -19,7 +25,7 @@ export const binSchema = new mongoose.Schema({
             level: Number,
             weight: Number,
             timestamp: { type: Date, default: Date.now }
-        }
+        },
     ]
-});
+}, { timestamps: true });
 

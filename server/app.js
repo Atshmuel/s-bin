@@ -9,6 +9,8 @@ import cookieParser from "cookie-parser";
 
 import { userRouter } from './routers/userRouter.js'
 import { binRouter } from './routers/binRouter.js'
+import { authRouter } from './routers/authRouter.js'
+import { logRouter } from './routers/logRouter.js'
 
 const { SERVER_PORT, DB_URL } = process.env
 
@@ -27,7 +29,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.set("trust proxy", false);
 app.use("/api/bins", binRouter);
+app.use("/api/logs", logRouter);
 app.use("/api/users", userRouter);
+app.use("/api/auth", authRouter);
 
 const main = async () => {
     try {
