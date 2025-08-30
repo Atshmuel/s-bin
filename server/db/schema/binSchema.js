@@ -20,6 +20,11 @@ export const binSchema = new mongoose.Schema({
         level: { type: Number, default: 0, required: true },
         updatedAt: { type: Date, default: Date.now }
     },
+    ownerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
     history: [
         {
             level: Number,
@@ -29,3 +34,4 @@ export const binSchema = new mongoose.Schema({
     ]
 }, { timestamps: true });
 
+binSchema.index({ ownerId: 1 });

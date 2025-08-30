@@ -1,6 +1,6 @@
 
 import { Router } from "express";
-import { authRole } from "../middlewares/auth.js";
+import { authRole } from "../middlewares/authMiddleware.js";
 
 export const logRouter = Router();
 

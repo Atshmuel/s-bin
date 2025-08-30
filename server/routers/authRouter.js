@@ -1,9 +1,11 @@
 import { Router } from "express";
-import { authCookie } from "../middlewares/auth.js";
+import { authToken } from "../middlewares/authMiddleware.js";
 
 export const authRouter = Router();
 
-authRouter.get('/role', authCookie, async (req, res) => {
+authRouter.get('/me', authToken, async (req, res) => {
     return res.status(200).json({ user: req.user })
 })
+
+
 

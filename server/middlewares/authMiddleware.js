@@ -1,22 +1,24 @@
-import jwt from "jsonwebtoken"
+import { validateToken } from "../utils/helpers.js";
 
-export function authCookie(req, res, next) {
-    const token = req.cookies?.token
-    if (!token) {
+export function authToken(req, res, next) {
+    const accessToken = req.cookies?.accessToken
+    if (!accessToken) {
         return res.status(401).json({ message: 'Unauthenticated user' })
     }
-
     try {
-        req.user = jwt.verify(token, process.env.JWT_HASHED_TOKEN);
+        const data = validateToken(accessToken)
+        if (!data) return res.status(401).json({ message: 'Invalid or expired token' });
+
+        req.user = data
         next();
     } catch (error) {
         return res.status(403).json({ message: "Invalid or expired token" });
     }
 }
 
-
 export function authRole(allowedRole = []) {
     return (req, res, next) => {
+
         if (!req?.user) {
             return res.status(401).json({ message: 'Unauthenticated user' })
         }
@@ -24,12 +26,9 @@ export function authRole(allowedRole = []) {
         if (!role) {
             return res.status(403).json({ message: "Missing role in token" });
         }
-
         if (!allowedRole.includes(role)) {
-            return res.status(403).json({ message: "Access denieds" });
+            return res.status(403).json({ message: "Access denied" });
         }
-
         next();
     }
-
 }
