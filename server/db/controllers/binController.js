@@ -25,26 +25,7 @@ export async function getAllUserBins(req, res) {
         res.status(500).json({ message: error?.message || error })
     }
 }
-export async function getOwnerBin(req, res) {
-    const { id } = req.params;
 
-    try {
-        const binData = await binModel.findById(id)
-        if (!binData) return res.status(404).json({ message: "Bin not found." });
-        res.status(200).json({ binData })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-}
-//owner usage
-export async function getOwnerAllBins(req, res) {
-    try {
-        const binsData = await binModel.find({})
-        res.status(200).json({ binsData: binsData || [] })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-}
 
 export async function createBin(req, res) {
     const { id: ownerId } = req.user
@@ -67,6 +48,10 @@ export async function createBinsBatch(req, res) {
 
     if (!binsBatch.every(bin => bin.binCode && bin.location)) {
         return res.status(400).json({ message: 'All bins must have binCode and location!' });
+    }
+
+    if (binsBatch.every(bin => bin.history && bin.status)) {
+        return res.status(400).json({ message: "Bins can't have history or status!" });
     }
 
     const binsWithOwnerId = binsBatch.map(bin => ({ ...bin, ownerId }));
@@ -131,7 +116,6 @@ export async function updateBin(req, res) {
 
 }
 
-
 export async function deleteBin(req, res) {
     const { id } = req.params;
     const { id: ownerId, role } = req.user
@@ -151,4 +135,26 @@ export async function deleteBin(req, res) {
         res.status(500).json({ message: error?.message || error })
     }
 
+}
+
+
+//owner methods only
+export async function getOwnerBin(req, res) {
+    const { id } = req.params;
+
+    try {
+        const binData = await binModel.findById(id)
+        if (!binData) return res.status(404).json({ message: "Bin not found." });
+        res.status(200).json({ binData })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
+}
+export async function getOwnerAllBins(req, res) {
+    try {
+        const binsData = await binModel.find({})
+        res.status(200).json({ binsData: binsData || [] })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
 }
