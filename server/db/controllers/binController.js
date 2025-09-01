@@ -4,9 +4,15 @@ import { binModel } from '../models/models.js'
 export async function getBin(req, res) {
     const { id } = req.params;
     const { id: ownerId } = req.user
+    const { level } = req.query
 
     try {
-        const binData = await binModel.findOne({ _id: id, ownerId })
+        let binData = null
+        if (level === 'true') {
+            binData = await binModel.findOne({ _id: id, ownerId }).populate('levelLogs')
+        } else {
+            binData = await binModel.findOne({ _id: id, ownerId })
+        }
         if (!binData) return res.status(404).json({ message: "Bin not found." });
 
         res.status(200).json({ binData })
@@ -17,9 +23,15 @@ export async function getBin(req, res) {
 
 export async function getAllUserBins(req, res) {
     const { id: ownerId } = req.user
+    const { level } = req.query
 
     try {
-        const binsData = await binModel.find({ ownerId })
+        let binsData = null
+        if (level === 'true') {
+            binsData = await binModel.find({ ownerId }).populate('levelLogs')
+        } else {
+            binsData = await binModel.find({ ownerId })
+        }
         res.status(200).json({ binsData: binsData || [] })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
@@ -50,8 +62,8 @@ export async function createBinsBatch(req, res) {
         return res.status(400).json({ message: 'All bins must have binCode and location!' });
     }
 
-    if (binsBatch.every(bin => bin.history && bin.status)) {
-        return res.status(400).json({ message: "Bins can't have history or status!" });
+    if (binsBatch.every(bin => bin.level && bin.status)) {
+        return res.status(400).json({ message: "Cant create Bins with level or status!" });
     }
 
     const binsWithOwnerId = binsBatch.map(bin => ({ ...bin, ownerId }));
@@ -86,9 +98,8 @@ export async function updateBin(req, res) {
     }
 
     if (updateData.status) {
-        const { health, level } = updateData.status
+        const { level } = updateData.status
         fieldsToUpdate.status = {};
-        if (health !== undefined) fieldsToUpdate.status.health = health;
         if (level !== undefined) fieldsToUpdate.status.level = level;
         fieldsToUpdate.status.updatedAt = new Date();
     }
@@ -137,13 +148,18 @@ export async function deleteBin(req, res) {
 
 }
 
-
 //owner methods only
 export async function getOwnerBin(req, res) {
     const { id } = req.params;
+    const { level } = req.query
 
     try {
-        const binData = await binModel.findById(id)
+        let binData = null
+        if (level === 'true') {
+            binData = await binModel.findById(id).populate('levelLogs')
+        } else {
+            binData = await binModel.findById(id)
+        }
         if (!binData) return res.status(404).json({ message: "Bin not found." });
         res.status(200).json({ binData })
     } catch (error) {
@@ -151,8 +167,14 @@ export async function getOwnerBin(req, res) {
     }
 }
 export async function getOwnerAllBins(req, res) {
+    const { level } = req.query
     try {
-        const binsData = await binModel.find({})
+        let binsData = null
+        if (level === 'true') {
+            binsData = await binModel.find({}).populate('levelLogs')
+        } else {
+            binsData = await binModel.find({})
+        }
         res.status(200).json({ binsData: binsData || [] })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })

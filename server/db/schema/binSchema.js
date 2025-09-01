@@ -25,12 +25,11 @@ export const binSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    history: [
+    levelLogs: [
         {
-            level: Number,
-            weight: Number,
-            timestamp: { type: Date, default: Date.now }
-        },
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "BinLog"
+        }
     ]
 }, { timestamps: true });
 

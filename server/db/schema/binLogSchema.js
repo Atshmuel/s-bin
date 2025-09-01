@@ -8,5 +8,4 @@ export const binLogSchema = new mongoose.Schema({
         immutable: true,
     },
     level: { type: Number, required: true },
-    weight: { type: Number },
 }, { timestamps: true });
