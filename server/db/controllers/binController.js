@@ -39,6 +39,43 @@ export async function getAllUserBins(req, res) {
 }
 
 
+export async function getBinsInUserRadius(req, res) {
+    const { id: ownerId, role } = req.user
+    const { coordinates, radius, health } = req.body
+    if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[number,number]})' })
+
+    if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
+
+    const query = {};
+
+    if (role !== process.env.ROLE_OWNER) query.ownerId = new mongoose.Types.ObjectId(ownerId)
+
+    if (health && health !== "all") {
+        query["status.health"] = health
+    }
+
+    try {
+        let binsData = await binModel.aggregate(
+            [
+                {
+                    $geoNear: {
+                        near: { type: "Point", coordinates },
+                        distanceField: "distance",
+                        spherical: true,
+                        maxDistance: radius,
+                        query,
+                    }
+                },
+            ]
+        )
+
+        res.status(200).json({ binsData: binsData || [] })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
+}
+
+
 export async function createBin(req, res) {
     const { id: ownerId } = req.user
     const { binCode, location } = req.body

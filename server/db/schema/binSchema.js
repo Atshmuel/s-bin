@@ -8,8 +8,19 @@ export const binSchema = new mongoose.Schema({
         immutable: true,
     },
     location: {
-        lat: { type: Number, required: true },
-        lng: { type: Number, required: true }
+        type: {
+            type: String,
+            enum: ["Point"],
+            default: "Point"
+        },
+        coordinates: {
+            type: [Number],
+            required: true,
+            validate: {
+                validator: arr => arr.length === 2,
+                message: "Coordinates must be [lng, lat]"
+            }
+        },
     },
     status: {
         health: {
@@ -34,3 +45,4 @@ export const binSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 binSchema.index({ ownerId: 1 });
+binSchema.index({ location: "2dsphere" });
