@@ -7,7 +7,7 @@ export async function createLog(req, res) {
         return res.status(400).json({ message: 'Level is mandatory !' })
     try {
         const newLog = await binLogModel.create({ binId, level })
-        await pushLogToBin(binId, newLog._id)
+        await pushLogToBin(binId, newLog._id, level)
         res.status(201).json({ log: newLog })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
