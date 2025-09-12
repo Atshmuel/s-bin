@@ -1,24 +1,23 @@
 import mongoose from 'mongoose'
 import { binModel } from '../models/models.js'
+import { appendFilter } from '../../utils/helpers.js'
 
 export async function getBin(req, res) {
     const { id } = req.params;
     const { id: ownerId, role } = req.user
     const { level } = req.query
 
-    const query = { _id: id }
-
-    if (role !== process.env.ROLE_OWNER) {
-        query.ownerId = ownerId
-    }
+    let query = {}
+    query = appendFilter(query, true, '_id', id)
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     try {
-        let binData = null
+        let binQuery = binModel.findOne(query);
         if (level === 'true') {
-            binData = await binModel.findOne(query).populate('levelLogs')
-        } else {
-            binData = await binModel.findOne(query)
+            binQuery = binQuery.populate('levelLogs');
         }
+        const binData = await binQuery;
+
         if (!binData) return res.status(404).json({ message: "Bin not found." });
 
         res.status(200).json({ binData })
@@ -30,20 +29,16 @@ export async function getBin(req, res) {
 export async function getAllUserBins(req, res) {
     const { id: ownerId, role } = req.user
     const { level } = req.query
-    const query = {}
 
-    if (role !== process.env.ROLE_OWNER) {
-        query.ownerId = ownerId
-    }
-
+    let query = {}
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     try {
-        let binsData = null
+        let binsQuery = binModel.find(query);
         if (level === 'true') {
-            binsData = await binModel.find(query).populate('levelLogs')
-        } else {
-            binsData = await binModel.find(query)
+            binsQuery = binsQuery.populate('levelLogs');
         }
+        const binsData = await binsQuery;
         res.status(200).json({ binsData: binsData || [] })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
@@ -53,18 +48,11 @@ export async function getAllUserBins(req, res) {
 export async function getBinsByStatus(req, res) {
     const { id: ownerId, role } = req.user
     const { level, health } = req.body
-    const query = {}
 
-    if (role !== process.env.ROLE_OWNER) {
-        query.ownerId = ownerId
-    }
-
-    if (level && typeof level === 'number') {
-        query['status.level'] = { $gt: level }
-    }
-    if (health && Array.isArray(health)) {
-        query['status.health'] = { $in: health }
-    }
+    let query = {}
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    query = appendFilter(query, level && typeof level === 'number', 'status.level', { $gt: level })
+    query = appendFilter(query, health && Array.isArray(health), 'status.health', { $in: health })
 
     try {
         const binsData = await binModel.find(query)
@@ -81,13 +69,9 @@ export async function getBinsInUserRadius(req, res) {
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
 
-    const query = {};
-
-    if (role !== process.env.ROLE_OWNER) query.ownerId = new mongoose.Types.ObjectId(ownerId)
-
-    if (health && health !== "all") {
-        query["status.health"] = health
-    }
+    let query = {};
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = appendFilter(query, health && health !== "all", 'status.health', health)
 
     try {
         let binsData = await binModel.aggregate(
@@ -158,11 +142,9 @@ export async function updateBinLocation(req, res) {
     const { id: ownerId, role } = req.user
     const { location } = req.body
 
-    const filter = { _id: id }
-
-    if (role !== process.env.ROLE_OWNER) {
-        filter.ownerId = ownerId
-    }
+    let filter = {}
+    filter = appendFilter(filter, true, '_id', id)
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     if (!location || !Array.isArray(location) || location.length !== 2 || !location.every(n => typeof n === "number")) {
         return res.status(400).json({
@@ -181,16 +163,15 @@ export async function updateBinLocation(req, res) {
     }
 
 }
+
 export async function updateBinHealth(req, res) {
     const { id } = req.params
     const { id: ownerId, role } = req.user
     const { health } = req.body
 
-    const filter = { _id: id }
-
-    if (role !== process.env.ROLE_OWNER) {
-        filter.ownerId = ownerId
-    }
+    let filter = {}
+    filter = appendFilter(filter, true, '_id', id)
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     if (!health || typeof health !== 'string' || !["good", "warning", "critical"].includes(health.toLowerCase())) {
         return res.status(400).json({
@@ -213,14 +194,12 @@ export async function deleteBin(req, res) {
     const { id } = req.params;
     const { id: ownerId, role } = req.user
 
-    const query = { _id: id }
-    if (role !== process.env.ROLE_OWNER) {
-        query.ownerId = ownerId
-    }
+    let query = {}
+    query = appendFilter(query, true, '_id', id)
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     try {
         const deleted = await binModel.findOneAndDelete(query)
-
         if (!deleted) {
             return res.status(404).json({ message: "Bin not found or not owned by you." });
         }
@@ -230,16 +209,14 @@ export async function deleteBin(req, res) {
     }
 
 }
+
 export async function deleteBinsBatch(req, res) {
     const { id: ownerId, role } = req.user
     const binIds = req.binIds
 
-    const query = {}
-    if (role !== process.env.ROLE_OWNER) {
-        query.ownerId = ownerId
-    }
-
-    query._id = { $in: binIds }
+    let query = {}
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    query = appendFilter(query, true, '_id', { $in: binIds })
 
     try {
         const results = await binModel.deleteMany(query)

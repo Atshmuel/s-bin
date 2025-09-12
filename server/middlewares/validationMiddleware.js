@@ -13,7 +13,7 @@ export function validateObjectId(paramName = "id") {
 }
 
 
-export function validateRequestBodyIds(req, res, next) {
+export function validateRequestBodyBinIds(req, res, next) {
     const { binIds } = req.body
     if (!binIds || !Array.isArray(binIds)) {
         return res.status(400).json({ message: `binIds are mandatory and must be an array!` })

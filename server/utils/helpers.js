@@ -1,5 +1,17 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+
+export async function generateOTP(expiryMinutes = 5, length = 6) {
+    let otp = '';
+    const digits = '0123456789';
+    for (let i = 0; i < length; i++) {
+        otp += digits[Math.floor(Math.random() * digits.length)];
+    }
+    const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
+
+    return { otp, expiresAt, expiryMinutes };
+}
+
 export async function hashPassword(password) {
     if (!password || !password.length) return null
     try {
@@ -38,4 +50,8 @@ export function validateToken(token) {
         console.error('Token validation failed:', error.message);
         return null
     }
+}
+
+export function appendFilter(baseQuery, condition, field, value) {
+    return condition ? { ...baseQuery, [field]: value } : baseQuery
 }

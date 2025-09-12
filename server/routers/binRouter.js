@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authToken, authRole } from "../middlewares/authMiddleware.js";
-import { validateObjectId, validateRequestBodyIds } from "../middlewares/validationMiddleware.js";
+import { validateObjectId, validateRequestBodyBinIds } from "../middlewares/validationMiddleware.js";
 import { createBin, createBinsBatch, deleteBin, getAllUserBins, getBin, updateBinLocation, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinHealth } from "../db/controllers/binController.js";
 
 export const binRouter = Router();
@@ -28,7 +28,7 @@ binRouter.patch('/health/:id', (req, res, next) => {
 //deletes
 binRouter.delete('/', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
-}, validateRequestBodyIds, deleteBinsBatch) //delete bins batch by id
+}, validateRequestBodyBinIds, deleteBinsBatch) //delete bins batch by id
 binRouter.delete('/:id', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, validateObjectId(), deleteBin) //delete bin by id

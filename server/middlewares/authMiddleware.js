@@ -16,9 +16,23 @@ export function authToken(req, res, next) {
     }
 }
 
+export function resetToken(req, res, next) {
+    const resetToken = req.cookies?.resetToken
+    if (!resetToken) {
+        return res.status(403).json({ message: 'You are not allowed to do this action' })
+    }
+    try {
+        const data = validateToken(resetToken)
+        if (!data) return res.status(401).json({ message: 'Invalid or expired token' });
+        req.reset = data
+        next();
+    } catch (error) {
+        return res.status(403).json({ message: "Invalid or expired token" });
+    }
+}
+
 export function authRole(allowedRole = []) {
     return (req, res, next) => {
-
         if (!req?.user) {
             return res.status(401).json({ message: 'Unauthenticated user' })
         }
@@ -32,3 +46,4 @@ export function authRole(allowedRole = []) {
         next();
     }
 }
+

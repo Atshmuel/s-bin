@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
+
 import { userRouter } from './routers/userRouter.js'
 import { binRouter } from './routers/binRouter.js'
 import { authRouter } from './routers/authRouter.js'
@@ -33,9 +34,11 @@ app.use("/api/logs", logRouter);
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 
+
 const main = async () => {
     try {
         await mongoose.connect(`${DB_URL}`);
+        await import("./db/cron/cleanupOTP.js");
         app.listen(SERVER_PORT, () => {
             console.log(mongoose.connection.readyState === 1 && `Connected to DB.`);
             console.log(`Listening on port ${SERVER_PORT}`);

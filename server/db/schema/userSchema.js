@@ -8,6 +8,16 @@ export const userSchema = new mongoose.Schema({
         enum: ["owner", "admin", "operator"],
         default: "operator"
     },
-    passwordHash: { type: String, required: true }
+    passwordHash: { type: String, required: true },
+    recoveryCode: {
+        type: {
+            otp: String,
+            expiresAt: Date,
+            resetToken: String,
+            tokenExpiresAt: Date
+        },
+        required: false,
+        default: undefined
+    }
 });
 
