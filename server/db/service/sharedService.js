@@ -9,8 +9,7 @@ export async function pushLogToBin(binId, logId, level) {
         if (!log) throw new Error('log not found')
         const updateBin = await binModel.findByIdAndUpdate(
             binId,
-            { $push: { levelLogs: logId }, status: { level } },
-
+            { $push: { levelLogs: logId }, $set: { 'status.level': level } },
             { new: true }
         );
         if (!updateBin) throw new Error('bin not found')
