@@ -6,18 +6,15 @@ function Sidenav() {
             <span className="self-center">Logo</span>
             <nav >
                 <ul className="flex flex-col gap-5">
-                    <NavLink to={'dashboard'}> <li>Dashboard</li></NavLink>
-                    <NavLink to={'account'}> <li>Account</li></NavLink>
-                    <NavLink to={'users'}> <li>Manage Users</li></NavLink>
-                    <NavLink to={'settings'}> <li>Settings</li></NavLink>
-                    {/* will be in the dashboard */}
-                    <NavLink to={'map'}> <li>Map</li></NavLink>
-
-
-                    {/* will be in the in outside layout */}
-                    <NavLink to={'login'}> <li>Login</li></NavLink>
-                    <NavLink to={'signup'}> <li>Signup</li></NavLink>
-                    <NavLink to={'error'}> <li>Error</li></NavLink>
+                    <li><NavLink to="dashboard">Dashboard</NavLink></li>
+                    <li><NavLink to="account">Account</NavLink></li>
+                    <li><NavLink to="users">Manage Users</NavLink></li>
+                    <li><NavLink to="settings">Settings</NavLink></li>
+                    <li><NavLink to="map">Map</NavLink></li>
+                    <li><NavLink to="login">Login</NavLink></li>
+                    <li><NavLink to="signup">Signup</NavLink></li>
+                    <li><NavLink to="error">Error</NavLink></li>
+                    <li><NavLink to="logout">Logout</NavLink></li>
                 </ul>
             </nav >
         </aside >
