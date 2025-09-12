@@ -7,7 +7,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import { Toaster } from "react-hot-toast";
-
+import { ViewProvider } from './contexts/toggleDarkMood';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -17,25 +17,26 @@ function App() {
 
   return <QueryClientProvider client={queryClient}>
     <ReactQueryDevtools initialIsOpen={false} />
-    <BrowserRouter>
-      <Routes>
-        <Route
-          element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Navigate replace to="dashboard" />} />
-          <Route path="dashboard" element={<div>dashboard</div>} />
-          <Route path="account" element={<div>account</div>} />
-        </Route>
-        <Route path="login" element={<div>login</div>} />
-        <Route path="signup" element={<div>signup</div>} />
-        <Route path="*" element={<div>error</div>} />
-      </Routes>
-    </BrowserRouter>
-
+    <ViewProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate replace to="dashboard" />} />
+            <Route path="dashboard" element={<div>dashboard</div>} />
+            <Route path="account" element={<div>account</div>} />
+          </Route>
+          <Route path="login" element={<div>login</div>} />
+          <Route path="signup" element={<div>signup</div>} />
+          <Route path="*" element={<div>error</div>} />
+        </Routes>
+      </BrowserRouter>
+    </ViewProvider>
     <Toaster
       position="top-center"
       gutter={12}
