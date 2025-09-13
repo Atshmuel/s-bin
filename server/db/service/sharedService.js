@@ -1,4 +1,5 @@
-import { binModel } from '../models/models.js'
+import mongoose from 'mongoose'
+import { binModel, templateModel, userModel } from '../models/models.js'
 import { binLogModel } from '../models/models.js'
 
 
@@ -28,5 +29,44 @@ export async function verifyBinOwner(binId, ownerId) {
     } catch (error) {
         console.error(error)
         return false
+    }
+}
+
+export async function deleteUserBins(userId) {
+    const session = await mongoose.startSession();
+    try {
+        session.startTransaction();
+        const user = await userModel.findByIdAndDelete(userId, { session });
+        if (!user) throw new Error("User not found");
+
+        const bins = await binModel.find({ ownerId: userId }, '_id', { session })
+        const binIds = bins.map(b => b._id)
+
+        await binModel.deleteMany({ ownerId: userId }, { session });
+
+        await binLogModel.deleteMany({ binId: { $in: binIds } }, { session })
+
+        await session.commitTransaction();
+        return user;
+
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    }
+    finally {
+        session.endSession();
+    }
+}
+
+
+export async function innerGetTemplateByTemplateId(templateId) {
+    try {
+        if (!templateId || typeof templateId !== 'string')
+            throw new Error('templateId must be string')
+        const template = await templateModel.findOne({ templateId })
+        return template
+    } catch (error) {
+        console.log(error);
+        return null
     }
 }

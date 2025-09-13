@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 
-export function validateObjectId(paramName = "id") {
+export function validateParamExist(paramName = "id", verifyObjectId = true) {
     return (req, res, next) => {
         const id = req.params[paramName];
         if (!id) return res.status(400).json({ message: `${paramName} is mandatory!` })
-
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: `Invalid ${paramName}: '${id}'` });
+        if (verifyObjectId) {
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                return res.status(400).json({ message: `Invalid ${paramName}: '${id}'` });
+            }
         }
         next();
     };
@@ -32,4 +33,38 @@ export function validateRequestBodyBinIds(req, res, next) {
     req.binIds = cleanedIds
 
     next();
+}
+
+export function validateBodyFields(requiredFields = [], optionalFields = []) {
+    const allowedFields = [...requiredFields, ...optionalFields];
+
+    return (req, res, next) => {
+        if (!req.body || typeof req.body !== 'object') {
+            return res.status(400).json({ message: 'Invalid body request' });
+        }
+
+        const keys = Object.keys(req.body);
+
+        if (keys.length === 0) {
+            return res.status(400).json({ message: 'Request body cannot be empty' });
+        }
+
+        // בדיקה עבור שדות לא חוקיים
+        const invalidFields = keys.filter(key => !allowedFields.includes(key));
+        if (invalidFields.length > 0) {
+            return res.status(400).json({
+                message: `Invalid fields in request: ${invalidFields.join(', ')}`
+            });
+        }
+
+        // בדיקה עבור שדות מחייבים
+        const missingFields = requiredFields.filter(field => !keys.includes(field));
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                message: `Missing required fields: ${missingFields.join(', ')}`
+            });
+        }
+
+        next();
+    }
 }

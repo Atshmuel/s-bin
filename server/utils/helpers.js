@@ -12,6 +12,11 @@ export async function generateOTP(expiryMinutes = 5, length = 6) {
     return { otp, expiresAt, expiryMinutes };
 }
 
+export function generateVerificationLink(token) {
+    if (!token) return null
+    return `${process.env.CLIENT_BASE_URL}/user/verify?token=${token}`
+}
+
 export async function hashPassword(password) {
     if (!password || !password.length) return null
     try {

@@ -9,6 +9,7 @@ export function authToken(req, res, next) {
         const data = validateToken(accessToken)
         if (!data) return res.status(401).json({ message: 'Invalid or expired token' });
 
+        if (data.status !== 'active') return res.status(401).json({ message: 'User pending activation or user is restricted, please contect our support' });
         req.user = data
         next();
     } catch (error) {

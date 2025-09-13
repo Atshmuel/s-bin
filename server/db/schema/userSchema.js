@@ -18,6 +18,19 @@ export const userSchema = new mongoose.Schema({
         },
         required: false,
         default: undefined
+    },
+    accountVerification: {
+        type: {
+            token: String,
+            expiresAt: Date,
+        },
+        required: false,
+        default: undefined
+    },
+    status: {
+        type: String,
+        enum: ["pending", "active", "inactive", "suspended"],
+        default: "pending"
     }
 });
 
