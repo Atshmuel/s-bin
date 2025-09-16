@@ -8,6 +8,8 @@ import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import { Toaster } from "react-hot-toast";
 import { ViewProvider } from './contexts/toggleDarkMood';
+import { Button } from './components/ui/button';
+import { InputOTP, InputOTPSlot } from './components/ui/input-otp';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -28,7 +30,7 @@ function App() {
             }
           >
             <Route index element={<Navigate replace to="dashboard" />} />
-            <Route path="dashboard" element={<div>dashboard</div>} />
+            <Route path="dashboard" element={<Button>Press</Button>} />
             <Route path="account" element={<div>account</div>} />
           </Route>
           <Route path="login" element={<div>login</div>} />

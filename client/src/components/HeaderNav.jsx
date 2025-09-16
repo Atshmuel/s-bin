@@ -1,7 +1,7 @@
 import { IoSettingsOutline } from "react-icons/io5";
 import { CgMenuGridO } from "react-icons/cg";
 import { FiSun, FiMoon } from "react-icons/fi";
-import Button from "./Button";
+import Button from "./ButtonAdva";
 import { useView } from "../contexts/toggleDarkMood";
 import { Menu, MenuItem, Divider } from "@mui/material";
 
