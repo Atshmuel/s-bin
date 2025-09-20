@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 
 const ViewContext = createContext();
@@ -7,9 +8,23 @@ function ViewProvider({ children }) {
 
     const [isDark, setIsDark] = useState(isLocalView)
 
+    useEffect(() => {
+        isDark ? document.body.classList.add('dark') : document.body.classList.remove('dark');
+    }, [isDark]);
+
     function toggleView() {
-        setIsDark(isDark => !isDark)
-        JSON.stringify(localStorage.setItem('view', !isDark));
+        setIsDark(prev => {
+            const newValue = !prev;
+            localStorage.setItem('view', JSON.stringify(newValue));
+
+            if (newValue) {
+                document.body.classList.add('dark');
+            } else {
+                document.body.classList.remove('dark');
+            }
+
+            return newValue;
+        });
     }
     return <ViewContext.Provider value={{ isDark, toggleView }}>{children}</ViewContext.Provider>
 }

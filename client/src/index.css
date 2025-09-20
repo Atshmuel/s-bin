@@ -120,3 +120,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+.glossy-tooltip {
+  @apply rounded-lg border shadow-lg px-3 py-2 text-sm;
+  backdrop-filter: blur(10px); 
+  
+  background-color: rgba(var(--color-popover), 0.2);
+  border-color: rgba(var(--color-popover-foreground), 0.3);
+    color: var(primary);
+  
+  @media (prefers-color-scheme: dark) {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(primary);
+  }
+}

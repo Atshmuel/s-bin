@@ -6,10 +6,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
-import { Toaster } from "react-hot-toast";
 import { ViewProvider } from './contexts/toggleDarkMood';
-import { Button } from './components/ui/button';
-import { InputOTP, InputOTPSlot } from './components/ui/input-otp';
+import { Toaster } from './components/ui/sonner';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -30,7 +28,7 @@ function App() {
             }
           >
             <Route index element={<Navigate replace to="dashboard" />} />
-            <Route path="dashboard" element={<Button>Press</Button>} />
+            <Route path="dashboard" element={<div>dash</div>} />
             <Route path="account" element={<div>account</div>} />
           </Route>
           <Route path="login" element={<div>login</div>} />
@@ -39,23 +37,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </ViewProvider>
-    <Toaster
-      position="top-center"
-      gutter={12}
-      containerStyle={{ margin: "8px" }}
-      toastOptions={{
-        success: { duration: 3000 },
-        error: { duration: 5000 },
-
-        style: {
-          fontSize: "16px",
-          maxWidth: "500px",
-          padding: "16px 24px",
-          backgroundColor: "var(--color-grey-0)",
-          color: "var(--color-grey-700)",
-        },
-      }}
-    />
+    <Toaster richColors duration={3000} position="bottom-center" />
   </QueryClientProvider >
 
 }
