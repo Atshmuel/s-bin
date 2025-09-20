@@ -1,16 +1,30 @@
+import { userModel } from "../db/models/models.js";
 import { validateToken } from "../utils/helpers.js";
 
-export function authToken(req, res, next) {
+export async function authToken(req, res, next) {
     const accessToken = req.cookies?.accessToken
-    if (!accessToken) {
+    if (!accessToken)
         return res.status(401).json({ message: 'Unauthenticated user' })
-    }
+
     try {
         const data = validateToken(accessToken)
         if (!data) return res.status(401).json({ message: 'Invalid or expired token' });
 
-        if (data.status !== 'active') return res.status(401).json({ message: 'User pending activation or user is restricted, please contect our support' });
-        req.user = data
+        const user = await userModel.findById(data.id);
+        if (!user) return res.status(401).json({ message: 'User not found' });
+
+        if (data.tokenVersion !== user.tokenVersion)
+            return res.status(401).json({ message: "Unauthorized" });
+
+        if (user.status !== 'active')
+            return res.status(401).json({ message: 'User pending activation or user is restricted, please contect our support' });
+
+        req.user = {
+            id: user._id,
+            role: user.role,
+            name: user.name,
+            status: user.status,
+        }
         next();
     } catch (error) {
         return res.status(403).json({ message: "Invalid or expired token" });

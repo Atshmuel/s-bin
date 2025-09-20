@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { binModel, templateModel, userModel } from '../models/models.js'
+import { binModel, templateModel, userModel, userSettingModel } from '../models/models.js'
 import { binLogModel } from '../models/models.js'
 
 
@@ -32,12 +32,15 @@ export async function verifyBinOwner(binId, ownerId) {
     }
 }
 
-export async function deleteUserBins(userId) {
+export async function deleteUserRefs(userId) {
     const session = await mongoose.startSession();
     try {
         session.startTransaction();
         const user = await userModel.findByIdAndDelete(userId, { session });
         if (!user) throw new Error("User not found");
+
+        const userSetting = await userSettingModel.findOneAndDelete({ userId }, { session });
+        if (!userSetting) throw new Error("User settings not found");
 
         const bins = await binModel.find({ ownerId: userId }, '_id', { session })
         const binIds = bins.map(b => b._id)
@@ -66,7 +69,7 @@ export async function innerGetTemplateByTemplateId(templateId) {
         const template = await templateModel.findOne({ templateId })
         return template
     } catch (error) {
-        console.log(error);
+        console.error('Error in innerGetTemplateByTemplateId: ', error);
         return null
     }
 }

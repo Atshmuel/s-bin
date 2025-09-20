@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { authRole, authToken, resetToken } from '../middlewares/authMiddleware.js'
-import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, forgotPassword, VerifyRecoveryCode, updateUserForgotenPassword, verifyNewUser, updateUserNameOrEmail, updateUserPassword, updateUserRole, updateUserStatus, deleteAccount } from "../db/controllers/userController.js";
+import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, forgotPassword, verifyRecoveryCode, updateUserForgotenPassword, verifyNewUser, updateUserNameOrEmail, updateUserPassword, updateUserRole, updateUserStatus, deleteAccount } from "../db/controllers/userController.js";
 import { validateBodyFields, validateParamExist } from "../middlewares/validationMiddleware.js";
-
+import { getSettingsByUserId, updateUserSettings } from "../db/controllers/userSettingsController.js";
 export const userRouter = Router();
+export const userSettingsRouter = Router({ mergeParams: true });
+userRouter.use('/:userId/settings', authToken, validateParamExist('userId'), userSettingsRouter);
+
 
 //REGISTER
 userRouter.post('/register', validateBodyFields(['email', 'password', 'name']), createUser)
@@ -15,7 +18,7 @@ userRouter.post('/logout', logoutUser)
 
 //FORGET
 userRouter.post('/forgot', validateBodyFields(['email']), forgotPassword)
-userRouter.post('/verify-recovery-code', validateBodyFields(['code', 'email']), VerifyRecoveryCode)
+userRouter.post('/verify-recovery-code', validateBodyFields(['code', 'email']), verifyRecoveryCode)
 userRouter.post('/reset', resetToken, validateBodyFields(['password']), updateUserForgotenPassword)
 
 
@@ -48,3 +51,7 @@ userRouter.delete('/user/:id', authToken, (req, res, next) => {
 }, validateParamExist(), deleteUser)
 
 userRouter.delete('/account', authToken, deleteAccount)
+
+//user settings
+userSettingsRouter.get('/', getSettingsByUserId)
+userSettingsRouter.patch('/', validateBodyFields([], ['theme', 'notifications', 'alertLevel', 'timezone', 'appLanguage']), updateUserSettings)

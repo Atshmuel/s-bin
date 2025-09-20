@@ -1,8 +1,8 @@
-import { userModel } from '../models/models.js'
+import { userModel, userSettingModel } from '../models/models.js'
 import { hashPassword, comparePasswords, generateToken, appendFilter, generateOTP, generateVerificationLink } from '../../utils/helpers.js'
 import { sendEmail } from '../../utils/mailService.js'
 import { emailSchema, passwordSchema } from '../../utils/inputValidations.js'
-import { deleteUserBins, innerGetTemplateByTemplateId } from '../service/sharedService.js'
+import { deleteUserRefs, innerGetTemplateByTemplateId } from '../service/sharedService.js'
 import { v4 as uuidv4 } from 'uuid'
 import mongoose from 'mongoose'
 
@@ -11,6 +11,7 @@ export async function createUser(req, res) {
     const { email, password, name } = req.body
     const session = await mongoose.startSession();
     let newUser;
+    let settings;
 
     try {
         const { error: emailError } = emailSchema.validate(email ?? '')
@@ -31,8 +32,11 @@ export async function createUser(req, res) {
                     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                 }
             });
-
             await newUser.save({ session });
+
+            settings = new userSettingModel({ userId: newUser._id });
+            await settings.save({ session });
+
 
             const url = generateVerificationLink(newUser.accountVerification.token);
             if (!url) throw new Error('Failed to generate verifiction link')
@@ -87,20 +91,27 @@ export async function loginUser(req, res) {
     if (error) return res.status(400).json({ message: error.message });
 
     try {
-        const user = await userModel.findOne({ email });
+        const user = await userModel.findOne({ email }).populate({ path: 'settings', select: 'theme' });
         if (!user) return res.status(401).json({ message: 'Unauthorized' })
 
-        const { role, _id, name, status, passwordHash: dbPassword } = user
+        const { role, _id, name, status, passwordHash: dbPassword, settings, tokenVersion } = user
         const isSamePassword = await comparePasswords(password, dbPassword)
         if (!isSamePassword) return res.status(401).json({ message: 'Unauthorized' })
 
-        const accessToken = generateToken({ id: _id, role, name, status }, '3d');
+        const accessToken = generateToken({ id: _id, role, tokenVersion }, '3d');
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 3 * 24 * 60 * 60 * 1000,
             sameSite: 'strict',
         })
+
+        res.cookie('theme', settings?.theme || 'light', {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3 * 24 * 60 * 60 * 1000,
+            sameSite: 'strict'
+        });
 
         res.status(200).json({ message: "Login successful" })
     } catch (error) {
@@ -109,13 +120,27 @@ export async function loginUser(req, res) {
 }
 
 export async function logoutUser(req, res) {
-    res.cookie('accessToken', '', {
-        httpOnly: true,
-        maxAge: 0,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-    })
-    res.status(200).json({ message: "Logged out successful" })
+    const { id } = req.params
+    try {
+        await userModel.findByIdAndUpdate(id, { $inc: { tokenVersion: 1 } });
+
+        res.cookie('accessToken', '', {
+            httpOnly: true,
+            maxAge: 0,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        })
+        res.cookie('theme', '', {
+            httpOnly: false,
+            maxAge: 0,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        });
+        res.status(200).json({ message: "Logged out successful" })
+    } catch (err) {
+        console.error('Failed to logout:', err);
+        res.status(500).json({ message: 'Logout failed' });
+    }
 
 }
 
@@ -150,7 +175,7 @@ export async function forgotPassword(req, res) {
     }
 }
 
-export async function VerifyRecoveryCode(req, res) {
+export async function verifyRecoveryCode(req, res) {
     const { code, email } = req.body
     try {
         if (!code) return res.status(400).json({ message: 'Code is mandatory' })
@@ -189,6 +214,7 @@ export async function updateUserForgotenPassword(req, res) {
 
         const update = {
             $set: { passwordHash },
+            $inc: { tokenVersion: 1 },
             $unset: { recoveryCode: "" }
         }
         const updated = await userModel.findOneAndUpdate({ email }, update)
@@ -257,8 +283,20 @@ export async function updateUserPassword(req, res) {
         const passwordHash = await hashPassword(newPassword)
         if (!passwordHash) return res.status(500).json({ message: "Failed to hash the password, therefore could not update the password" })
 
-        const updatedUser = await userModel.findByIdAndUpdate(user._id, { $set: { passwordHash } }, { new: true, select: 'email name' })
+        const updatedUser = await userModel.findByIdAndUpdate(user._id, {
+            $set: { passwordHash },
+            $inc: { tokenVersion: 1 },
+        }, { new: true, select: 'email name' })
         if (!updatedUser) return res.status(401).json({ message: 'Failed to update the password' })
+
+        const accessToken = generateToken({ id: updatedUser._id, role: user.role, tokenVersion: updatedUser.tokenVersion }, '3d');
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3 * 24 * 60 * 60 * 1000,
+            sameSite: 'strict',
+        });
+
         return res.status(200).json({ updatedUser });
     } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -268,16 +306,16 @@ export async function updateUserRole(req, res) {
     const { id } = req.params //id of the user that we want to update
     const { role } = req.body
 
-    if (!["owner", "admin", "operator"].includes(role))
+    if (![process.env.ROLE_OPERATOR, process.env.ROLE_ADMIN].includes(role))
         return res.status(400).json({ message: 'This status is not allow' })
 
 
     try {
         const updatedUser = await userModel.findOneAndUpdate({
             $and: [
-                { _id: id }, { role: { $ne: 'owner' } }
+                { _id: id }, { role: { $ne: process.env.ROLE_OWNER } }
             ]
-        }, { $set: { role } }, { new: true }).select('-passwordHash -__v -accountVerification')
+        }, { $set: { role }, $inc: { tokenVersion: 1 } }, { new: true }).select('-passwordHash -__v -accountVerification')
         if (!updatedUser)
             return res.status(403).json({ message: "Not allowed to update this user" });
 
@@ -289,9 +327,9 @@ export async function updateUserRole(req, res) {
 export async function updateUserStatus(req, res) {
     const { id } = req.params //id of the user that we want to update
     const { status } = req.body
-    const { id: userId } = req.user
+    const { id: userId, role } = req.user
 
-    if (id === userId)
+    if (id === userId && role !== process.env.ROLE_OWNER)
         return res.status(400).json({ message: 'User not allow to update his status' })
 
     if (!["active", "inactive", "suspended"].includes(status))
@@ -300,7 +338,7 @@ export async function updateUserStatus(req, res) {
     try {
         const updatedUser = await userModel.findOneAndUpdate({
             $and: [
-                { _id: id }, { role: { $ne: 'owner' } }
+                { _id: id }, { role: { $ne: process.env.ROLE_OWNER } }
             ]
         }, { $set: { status } }, { new: true }).select('-passwordHash -__v -accountVerification')
         if (!updatedUser)
@@ -330,7 +368,6 @@ export async function getUser(req, res) {
         res.status(500).json({ message: error?.message || error })
     }
 }
-
 export async function getAllUsers(req, res) {
     const { role } = req.user
     let query = {}
@@ -356,7 +393,7 @@ export async function deleteUser(req, res) {
         if (!userToDelete || userToDelete.role === process.env.ROLE_OWNER) {
             return res.status(403).json({ message: "User not found or cannot delete an owner" });
         }
-        await deleteUserBins(id);
+        await deleteUserRefs(id);
 
         res.status(200).json({ message: "User and their content deleted successfully" });
     } catch (error) {
@@ -367,7 +404,7 @@ export async function deleteUser(req, res) {
 export async function deleteAccount(req, res, next) {
     const { id } = req.user
     try {
-        const user = await deleteUserBins(id)
+        const user = await deleteUserRefs(id)
         if (!user) throw new Error('Failed to delete the user')
 
         res.cookie('accessToken', '', {
