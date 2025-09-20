@@ -12,7 +12,8 @@ export async function getSettingsByUserId(req, res) {
         return res.status(200).json({ settings })
     } catch (error) {
         console.error(`Error getting settings for userId ${userId}:`, error);
-        return res.status(500).json({ message: 'something went wrong trying to get user settings' })
+
+        return res.status(500).json({ message: error?.errors || 'something went wrong trying to get user settings' })
     }
 }
 
@@ -27,8 +28,18 @@ export async function updateUserSettings(req, res) {
         }
         return res.status(200).json({ settings })
     } catch (error) {
+        if (error.name === 'ValidationError') {
+            const errors = Object.keys(error.errors).map(field => ({
+                field,
+                message: error.errors[field].message
+            }));
+            return res.status(400).json({
+                message: 'Validation failed',
+                errors
+            });
+        }
         console.error(`Error updating settings for userId ${userId}:`, error);
-        return res.status(500).json({ message: 'something went wrong trying to update user settings' })
+        return res.status(500).json({ message: error?.errors || 'something went wrong trying to update user settings' })
     }
 }
 

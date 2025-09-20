@@ -20,7 +20,7 @@ export async function authToken(req, res, next) {
             return res.status(401).json({ message: 'User pending activation or user is restricted, please contect our support' });
 
         req.user = {
-            id: user._id,
+            id: user._id.toString(),
             role: user.role,
             name: user.name,
             status: user.status,

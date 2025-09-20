@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { binModel } from '../models/models.js'
 import { appendFilter } from '../../utils/helpers.js'
+import { deleteLogsForBins } from '../service/sharedService.js'
 
 export async function getBin(req, res) {
     const { id } = req.params;
@@ -190,24 +191,41 @@ export async function updateBinHealth(req, res) {
     }
 }
 
+
 export async function deleteBin(req, res) {
     const { id } = req.params;
     const { id: ownerId, role } = req.user
 
     let query = {}
-    query = appendFilter(query, true, '_id', id)
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    query = appendFilter(query, true, '_id', id)
 
+    const session = await mongoose.startSession();
     try {
-        const deleted = await binModel.findOneAndDelete(query)
-        if (!deleted) {
-            return res.status(404).json({ message: "Bin not found or not owned by you." });
-        }
-        res.status(200).send();
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
+        session.startTransaction();
 
+        const deleteBinResult = await binModel.findOneAndDelete(query, { session });
+        if (!deleteBinResult) {
+            await session.abortTransaction();
+            return res.status(404).json({ message: "Bin not found or access denied" });
+        }
+        const deleteLogsResult = await deleteLogsForBins([id], session)
+
+        await session.commitTransaction();
+
+        return res.status(200).json({
+            message: 'Bins and logs deleted successfully',
+            deletedLogs: deleteLogsResult
+        });
+
+    } catch (error) {
+        await session.abortTransaction();
+        console.error("Failed to delete bin:", error);
+        return res.status(500).json({ message: "Failed to delete bin", error: error.message });
+    }
+    finally {
+        session.endSession();
+    }
 }
 
 export async function deleteBinsBatch(req, res) {
@@ -218,15 +236,35 @@ export async function deleteBinsBatch(req, res) {
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
     query = appendFilter(query, true, '_id', { $in: binIds })
 
+    const session = await mongoose.startSession();
     try {
-        const results = await binModel.deleteMany(query)
-        if (results.deletedCount === 0) return res.status(404).json({ message: "No bins found or not owned by you." });
+        session.startTransaction();
+        const binsToDelete = await binModel.find(query, "_id", { session });
+        const binsToDeleteIds = binsToDelete.map(b => b._id);
 
-        res.status(200).json({ deletedCount: results.deletedCount });
+        if (binsToDeleteIds.length === 0) {
+            await session.abortTransaction();
+            return res.status(404).json({ message: "No bins found to delete or access denied" });
+        }
+
+        const deleteBinsResult = await binModel.deleteMany({ _id: { $in: binsToDeleteIds } }, { session });
+
+        const deleteLogsResult = await deleteLogsForBins(binsToDeleteIds, session)
+
+        await session.commitTransaction();
+
+        return res.status(200).json({
+            message: 'Bins and logs deleted successfully',
+            deletedBins: deleteBinsResult.deletedCount,
+            deletedLogs: deleteLogsResult
+        });
+
     } catch (error) {
-        res.status(500).json({ message: error?.message || error })
+        await session.abortTransaction();
+        console.error("Failed to delete bins batch:", error);
+        return res.status(500).json({ message: "Failed to delete bins batch", error: error.message });
     }
-
+    finally {
+        session.endSession();
+    }
 }
-
-

@@ -14,7 +14,7 @@ userRouter.get('/register/verify/:token', validateParamExist('token', false), ve
 
 //LOGIN AND LOGOUT
 userRouter.post('/login', validateBodyFields(['email', 'password']), loginUser)
-userRouter.post('/logout', logoutUser)
+userRouter.post('/logout', authToken, logoutUser)
 
 //FORGET
 userRouter.post('/forgot', validateBodyFields(['email']), forgotPassword)

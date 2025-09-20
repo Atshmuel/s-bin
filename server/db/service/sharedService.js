@@ -44,10 +44,9 @@ export async function deleteUserRefs(userId) {
 
         const bins = await binModel.find({ ownerId: userId }, '_id', { session })
         const binIds = bins.map(b => b._id)
-
         await binModel.deleteMany({ ownerId: userId }, { session });
 
-        await binLogModel.deleteMany({ binId: { $in: binIds } }, { session })
+        await deleteLogsForBins(binIds, session)
 
         await session.commitTransaction();
         return user;
@@ -60,6 +59,15 @@ export async function deleteUserRefs(userId) {
         session.endSession();
     }
 }
+
+
+export async function deleteLogsForBins(binIds, session) {
+    if (!Array.isArray(binIds) || binIds.length === 0) return 0
+    const deleteResult = await binLogModel.deleteMany({ binId: { $in: binIds } }, { session })
+    return deleteResult.deletedCount;
+}
+
+
 
 
 export async function innerGetTemplateByTemplateId(templateId) {
