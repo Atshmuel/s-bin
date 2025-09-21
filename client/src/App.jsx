@@ -8,6 +8,7 @@ import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import { ViewProvider } from './contexts/toggleDarkMood';
 import { Toaster } from './components/ui/sonner';
+import Login from '../src/pages/auth/Login'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -31,7 +32,7 @@ function App() {
             <Route path="dashboard" element={<div>dash</div>} />
             <Route path="account" element={<div>account</div>} />
           </Route>
-          <Route path="login" element={<div>login</div>} />
+          <Route path="login" element={<Login />} />
           <Route path="signup" element={<div>signup</div>} />
           <Route path="*" element={<div>error</div>} />
         </Routes>
