@@ -1,4 +1,4 @@
-function Register() {
+function ErrorPage() {
     return (
         <div>
 
@@ -6,4 +6,4 @@ function Register() {
     )
 }
 
-export default Register
+export default ErrorPage

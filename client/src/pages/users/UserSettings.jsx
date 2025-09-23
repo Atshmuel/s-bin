@@ -1,8 +1,6 @@
 function UserSettings() {
     return (
-        <div>
-
-        </div>
+        <div>settings of the account mostly email notifications</div>
     )
 }
 

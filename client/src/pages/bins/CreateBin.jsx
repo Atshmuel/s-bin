@@ -1,7 +1,7 @@
 function CreateBin() {
     return (
         <div>
-
+            Create bin or bins batch
         </div>
     )
 }

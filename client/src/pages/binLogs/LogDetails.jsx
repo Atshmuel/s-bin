@@ -1,4 +1,4 @@
-function CreateBatch() {
+function LogDetails() {
     return (
         <div>
 
@@ -6,4 +6,4 @@ function CreateBatch() {
     )
 }
 
-export default CreateBatch
+export default LogDetails

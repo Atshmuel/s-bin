@@ -1,4 +1,4 @@
-function UsersList() {
+function CreateUser() {
     return (
         <div>
 
@@ -6,4 +6,4 @@ function UsersList() {
     )
 }
 
-export default UsersList
+export default CreateUser
