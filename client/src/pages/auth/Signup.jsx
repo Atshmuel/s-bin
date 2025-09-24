@@ -5,15 +5,10 @@ import { Eye, EyeClosed } from "lucide-react";
 import InputLabel from "@/components/InputLabel";
 import { FormProvider, useForm } from "react-hook-form";
 import {
-    Form,
-    FormControl,
-    FormDescription,
     FormField,
     FormItem,
-    FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { NavLink } from "react-router-dom";
@@ -26,6 +21,7 @@ function Signup() {
             name: "",
             email: "",
             password: "",
+            confirmPassword: "",
             terms: false
         }
     });
@@ -44,14 +40,23 @@ function Signup() {
 
                 <FormProvider {...form}>
 
-                    <form onSubmit={form.handleSubmit(data => console.log(data))} className="space-y-6">
+                    <form onSubmit={form.handleSubmit(data => console.log(data))} className="space-y-4">
                         <FormField
                             name="name"
                             control={form.control}
-                            rules={{ required: "Name is required" }}
+                            rules={{
+                                required: "Name is required", validate: {
+                                    notEmpty: (value) =>
+                                        value.trim().length > 0 || "Name cannot be empty or only spaces",
+                                    fullName: (value) => {
+                                        const parts = value.trim().split(/\s+/); // מפרק לפי רווחים
+                                        return parts.length >= 2 || "Please enter first and last name";
+                                    },
+                                }
+                            }}
                             render={({ field }) => (
                                 <FormItem>
-                                    <InputLabel {...field} placeholder=" " type="email">
+                                    <InputLabel {...field} placeholder=" " type="text">
                                         Full name
                                     </InputLabel>
                                     <FormMessage />
@@ -61,7 +66,17 @@ function Signup() {
                         <FormField
                             name="email"
                             control={form.control}
-                            rules={{ required: "Email is required" }}
+                            rules={{
+                                required: "Email is required",
+                                pattern: {
+                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // Regex בסיסי לכתובת אימייל
+                                    message: "Invalid email address",
+                                },
+                                validate: {
+                                    notEmpty: (value) =>
+                                        value.trim().length > 0 || "Email cannot be empty or only spaces",
+                                },
+                            }}
                             render={({ field }) => (
                                 <FormItem>
                                     <InputLabel {...field} placeholder=" " type="email">
@@ -71,12 +86,34 @@ function Signup() {
                                 </FormItem>
                             )}
                         />
+
                         <FormField
                             name="password"
                             control={form.control}
                             rules={{
                                 required: "Password is required",
-                                minLength: { value: 6, message: "Password must be at least 6 characters" }
+                                minLength: {
+                                    value: 8,
+                                    message: "Password must be at least 8 characters long",
+                                },
+                                maxLength: {
+                                    value: 30,
+                                    message: "Password must not exceed 30 characters",
+                                },
+                                validate: {
+                                    hasLowercase: (value) =>
+                                        /[a-z]/.test(value) ||
+                                        "Password must include at least one lowercase letter",
+                                    hasUppercase: (value) =>
+                                        /[A-Z]/.test(value) ||
+                                        "Password must include at least one uppercase letter",
+                                    hasNumber: (value) =>
+                                        /[0-9]/.test(value) ||
+                                        "Password must include at least one number",
+                                    hasSpecial: (value) =>
+                                        /[!@#$%^&*]/.test(value) ||
+                                        "Password must include at least one special character (!@#$%^&*)",
+                                },
                             }}
                             render={({ field }) => (
                                 <FormItem>
@@ -90,24 +127,50 @@ function Signup() {
                         />
 
                         <FormField
+                            name="confirmPassword"
+                            control={form.control}
+                            rules={{
+                                required: "Please confirm your password",
+                                validate: (value) =>
+                                    value === form.getValues("password") || "Passwords do not match",
+                            }}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <InputLabel
+                                        {...field}
+                                        placeholder=" "
+                                        type={showPassword ? "text" : "password"}
+                                    >
+                                        Confirm Password
+                                    </InputLabel>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+
+                        <FormField
                             name="terms"
                             control={form.control}
                             rules={{
                                 required: "Accept terms is required",
                             }}
                             render={({ field }) => (
-                                <FormItem className="flex items-center gap-2">
-                                    <Checkbox
-                                        id="terms"
-                                        checked={field.value}
-                                        className="m-0"
-                                        onCheckedChange={field.onChange}
-                                    />
-                                    <Label htmlFor="terms" className="text-sm text-muted-foreground">
-                                        <Button className={"m-0 p-0"} variant={'link'}>
-                                            <NavLink to={'/terms'}>Accept terms and conditions</NavLink>
-                                        </Button>
-                                    </Label>
+                                <FormItem >
+                                    <div className="flex items-center gap-2">
+
+                                        <Checkbox
+                                            id="terms"
+                                            checked={field.value}
+                                            className="m-0"
+                                            onCheckedChange={field.onChange}
+                                        />
+                                        <Label htmlFor="terms" className="text-sm text-muted-foreground">
+                                            <Button className={"m-0 p-0"} variant={'link'}>
+                                                <NavLink to={'/terms'}>Accept terms and conditions</NavLink>
+                                            </Button>
+                                        </Label>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -129,10 +192,8 @@ function Signup() {
 
                 <p className="w-full text-center text-sm text-muted-foreground p-0 m-0">
                     Already have account?
-                    <Button variant='link' className={'m-0 px-1'}
-                        onClick={() => alert("שכחתי סיסמה נלחץ")}
-                    >
-                        Sign in
+                    <Button variant='link' className={'m-0 px-1'}>
+                        <NavLink to={'/login'}>Sign-in</NavLink>
                     </Button>
                 </p>
 

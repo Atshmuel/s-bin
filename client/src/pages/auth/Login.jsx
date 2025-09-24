@@ -5,15 +5,11 @@ import { Eye, EyeClosed } from "lucide-react";
 import InputLabel from "@/components/InputLabel";
 import { FormProvider, useForm } from "react-hook-form";
 import {
-    Form,
-    FormControl,
-    FormDescription,
     FormField,
     FormItem,
-    FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input";
+import { NavLink } from "react-router-dom";
 
 
 function Login() {
@@ -24,6 +20,9 @@ function Login() {
             password: ""
         }
     });
+
+    const emailValue = form.watch("email");
+
     return (<div className="flex items-center justify-center min-h-screen bg-background px-4">
         <Card className="w-full max-w-md shadow-lg">
             <CardHeader>
@@ -43,7 +42,17 @@ function Login() {
                         <FormField
                             name="email"
                             control={form.control}
-                            rules={{ required: "Email is required" }}
+                            rules={{
+                                required: "Email is required",
+                                pattern: {
+                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // Regex בסיסי לכתובת אימייל
+                                    message: "Invalid email address",
+                                },
+                                validate: {
+                                    notEmpty: (value) =>
+                                        value.trim().length > 0 || "Email cannot be empty or only spaces",
+                                },
+                            }}
                             render={({ field }) => (
                                 <FormItem>
                                     <InputLabel {...field} placeholder=" " type="email">
@@ -87,17 +96,15 @@ function Login() {
 
                 <div className="sm:flex text-center justify-between w-full">
 
-                    <Button variant='link' className={'m-0 p-0'}
-                        onClick={() => alert("שכחתי סיסמה נלחץ")}
-                    >
-                        Forgot your password?
+                    <Button variant='link' className={'m-0 p-0'}>
+
+                        <NavLink to={`/forgot-password${emailValue ? '?email=' + emailValue : ""}`}>Forgot your password?</NavLink>
+
                     </Button>
                     <p className="text-center text-sm text-muted-foreground p-0 m-0">
                         Don't have an account?
-                        <Button variant='link' className={'m-0 px-1'}
-                            onClick={() => alert("שכחתי סיסמה נלחץ")}
-                        >
-                            Sign-up
+                        <Button variant='link' className={'m-0 px-1'}>
+                            <NavLink to={'/signup'}>Sign-up</NavLink>
                         </Button>
                     </p>
                 </div>
