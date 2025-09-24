@@ -12,6 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { NavLink } from "react-router-dom";
+import Terms from "@/components/Terms";
 
 
 function Signup() {
@@ -69,7 +70,7 @@ function Signup() {
                             rules={{
                                 required: "Email is required",
                                 pattern: {
-                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // Regex בסיסי לכתובת אימייל
+                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                                     message: "Invalid email address",
                                 },
                                 validate: {
@@ -166,9 +167,7 @@ function Signup() {
                                             onCheckedChange={field.onChange}
                                         />
                                         <Label htmlFor="terms" className="text-sm text-muted-foreground">
-                                            <Button className={"m-0 p-0"} variant={'link'}>
-                                                <NavLink to={'/terms'}>Accept terms and conditions</NavLink>
-                                            </Button>
+                                            <Terms title={'Accept terms and conditions'} />
                                         </Label>
                                     </div>
                                     <FormMessage />

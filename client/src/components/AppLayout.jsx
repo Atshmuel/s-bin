@@ -26,7 +26,7 @@ function AppLayout() {
                         onCheckedChange={toggleView} id={'Toggle Theme'} toolTip={true} label={'Toggle Theme'} toolTipClassName={'glossy-tooltip'} switchClassName={'scale-90'} /> */}
                     {isDark ? <SunMedium onClick={toggleView} /> : <MoonStar onClick={toggleView} />}
                 </header>
-                <div className="flex flex-1 flex-col gap-4 p-3">
+                <div className="flex flex-1 flex-col gap-4 p-8">
                     <Outlet />
                 </div>
             </SidebarInset>

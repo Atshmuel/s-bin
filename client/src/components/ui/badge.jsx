@@ -16,9 +16,17 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
         outline: "text-foreground",
         owner:
-          "uppercase tracking-tighter bg-bagde-primary text-stone-100",
+          "uppercase tracking-tighter bg-owner text-stone-50 w-fit",
         admin:
-          "uppercase tracking-tighter bg-bagde-secondary text-stone-100",
+          "uppercase tracking-tighter bg-admin text-stone-50 w-fit",
+        active:
+          "uppercase tracking-tighter bg-active text-stone-50 w-fit",
+        pending:
+          "uppercase tracking-tighter bg-pending text-stone-50 w-fit",
+        inactive:
+          "uppercase tracking-tighter bg-inactive text-stone-50 w-fit",
+        suspended:
+          "uppercase tracking-tighter bg-suspended text-stone-50 w-fit",
       },
     },
     defaultVariants: {

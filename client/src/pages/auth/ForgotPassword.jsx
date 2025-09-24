@@ -64,7 +64,7 @@ function ForgotPassword() {
                                             rules={{
                                                 required: "Email is required",
                                                 pattern: {
-                                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // Regex בסיסי לכתובת אימייל
+                                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                                                     message: "Invalid email address",
                                                 },
                                                 validate: {
