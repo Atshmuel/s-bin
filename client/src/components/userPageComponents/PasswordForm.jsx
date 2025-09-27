@@ -20,7 +20,7 @@ function PasswordForm() {
     const { isValid } = passwordForm.formState;
 
     return (
-        <Card className="min-w-[350px] max-w-[450px] min-h-[425px] h-fit">
+        <Card className="min-w-[350px] max-w-[400px]  h-fit">
             <CardHeader className='text-center relative'>
                 <CardTitle>Update Your Password</CardTitle>
                 <CardDescription>Keep your account safe by updating your password</CardDescription>
@@ -96,15 +96,16 @@ function PasswordForm() {
                     </form>
                 </FormProvider>
             </CardContent>
+            <Separator className="mb-4" />
             <CardFooter>
                 <div className="text-sm text-muted-foreground">
                     <p className="font-medium mb-1">Password requirements:</p>
                     <ul className="list-disc list-inside space-y-1">
                         <li>At least 8 characters</li>
                         <li>No more than 30 characters</li>
-                        <li>At least one lowercase letter (a–z)</li>
-                        <li>At least one uppercase letter (A–Z)</li>
-                        <li>At least one number (0–9)</li>
+                        <li>At least one lowercase letter (a&ndash;z)</li>
+                        <li>At least one uppercase letter (A&ndash;Z)</li>
+                        <li>At least one number (0&ndash;9)</li>
                         <li>At least one special character (!@#$%^&*)</li>
                     </ul>
                 </div>

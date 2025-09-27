@@ -31,7 +31,7 @@ function ProfileForm() {
     }
 
     return (
-        <Card className="min-w-[350px] max-w-[450px] min-h-[425px] h-fit">
+        <Card className="min-w-[350px] max-w-[400px]  h-fit">
             <CardHeader className='text-center flex flex-row justify-between relative'>
                 {profileForm.getValues('role').length ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('role').toLocaleLowerCase()}>{profileForm.getValues('role')}</Badge> : null}
                 <div>
