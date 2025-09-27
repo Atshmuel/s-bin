@@ -13,7 +13,7 @@ function AppLayout() {
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <header className="bg-background sticky top-0 flex h-12 shrink-0 items-center justify-between gap-2 border-b px-4  transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-10">
+                <header className="bg-background sticky top-0 flex h-12 shrink-0 items-center justify-between gap-2 border-b px-4  transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-10 z-[99]">
                     <div className="flex items-center gap-2 px-4">
                         <SidebarTrigger className="-ml-5 mr-2" />
                         <Separator

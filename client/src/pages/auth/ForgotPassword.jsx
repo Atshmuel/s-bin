@@ -243,7 +243,7 @@ function ForgotPassword() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <div className="relative">
-                                                        <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >New Confirm Password</InputLabel>
+                                                        <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >Confirm New Password</InputLabel>
                                                         {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeClosed onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
                                                     </div>
                                                     <FormMessage />

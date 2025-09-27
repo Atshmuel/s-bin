@@ -3,7 +3,6 @@ import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { FormProvider, useForm } from "react-hook-form";
 import { FormField, FormItem, FormMessage } from "../ui/form";
-import InputLabel from "../InputLabel";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
@@ -19,6 +18,8 @@ function ProfileForm() {
         }
     });
 
+    const { isDirty, isValid } = profileForm.formState;
+
     const nameValue = profileForm.watch('name') || "";
     const parts = nameValue.trim().split(/\s+/);
 
@@ -30,16 +31,18 @@ function ProfileForm() {
     }
 
     return (
-        <Card className="max-w-[400px]">
-            <CardHeader className='text-center relative'>
-                <Avatar className="mx-auto mb-5 h-20 w-20 text-2xl rounded-full">
-                    <AvatarImage src={profileForm.getValues('avatar')} alt={profileForm.watch('name')} />
-                    <AvatarFallback>{fallbackName}</AvatarFallback>
-                </Avatar>
-                <CardTitle>My Profile</CardTitle>
-                <CardDescription>Update your personal information</CardDescription>
-                {profileForm.getValues('role').length ? <Badge className="absolute top-4 right-4" variant={profileForm.getValues('role').toLocaleLowerCase()}>{profileForm.getValues('role')}</Badge> : null}
-                {profileForm.getValues('status') ? <Badge className="absolute top-4 left-4" variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
+        <Card className="min-w-[350px] max-w-[450px] min-h-[425px] h-fit">
+            <CardHeader className='text-center flex flex-row justify-between relative'>
+                {profileForm.getValues('role').length ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('role').toLocaleLowerCase()}>{profileForm.getValues('role')}</Badge> : null}
+                <div>
+                    <Avatar className="mx-auto mb-5 h-20 w-20 text-2xl rounded-full">
+                        <AvatarImage src={profileForm.getValues('avatar')} alt={profileForm.watch('name')} />
+                        <AvatarFallback>{fallbackName}</AvatarFallback>
+                    </Avatar>
+                    <CardTitle className="mb-1">My Profile</CardTitle>
+                    <CardDescription>Update your personal information</CardDescription>
+                </div>
+                {profileForm.getValues('status') ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
             </CardHeader>
             <Separator className="mb-5" />
             <CardContent className="overflow-scroll max-h-[63vh]">
@@ -61,7 +64,7 @@ function ProfileForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <Label>Full Name</Label>
-                                    <Input {...field} placeholder="Full Name" type="text" />
+                                    <Input className="pb-2" {...field} placeholder="Full Name" type="text" />
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -83,15 +86,16 @@ function ProfileForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <Label>Email Address</Label>
-                                    <Input {...field} placeholder="Full Name" type="text" />
+                                    <Input className="pb-2" {...field} placeholder="Full Name" type="text" />
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
 
                         <Button
+                            disabled={(!isDirty || !isValid)}
                             type="submit"
-                            className="w-full cursor-pointer"
+                            className="cursor-pointer w-full px-3 py-1"
                         >
                             Update
                         </Button>
