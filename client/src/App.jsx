@@ -20,7 +20,6 @@ import AllLogs from './pages/binLogs/AllLogs';
 import BinLogs from './pages/binLogs/BinLogs';
 import LogDetails from './pages/binLogs/LogDetails';
 import UserProfile from './pages/users/UserProfile';
-import UserSettings from './pages/users/UserSettings';
 import UsersList from './pages/users/owner/UsersList';
 import UserManagement from './pages/users/owner/UserManagement';
 import CreateBin from './pages/bins/CreateBin';
@@ -67,7 +66,6 @@ function App() {
             </Route>
             <Route path="account">
               <Route path="" element={<UserProfile />} />
-              <Route path="settings" element={<UserSettings />} />
             </Route>
 
             <Route path="owner">

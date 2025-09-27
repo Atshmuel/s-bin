@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { FormProvider, useForm } from "react-hook-form";
 import { FormControl, FormField, FormItem } from "../ui/form";
@@ -28,7 +28,7 @@ function UserSettingForm() {
     const { isDirty } = userSettings.formState;
 
     return (
-        <Card className="min-w-[350px] max-w-[400px]  h-fit">
+        <Card className="min-w-[350px] max-w-[450px]  h-fit">
             <CardHeader className='text-center'>
                 <CardTitle className="mb-1">Preferences & Settings</CardTitle>
                 <CardDescription>Customize your experience by updating your settings</CardDescription>

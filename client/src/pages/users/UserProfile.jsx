@@ -6,7 +6,7 @@ import UserSettingForm from "@/components/userPageComponents/UserSettingForm"
 
 function UserProfile() {
     return (
-        <div className="h-full flex gap-6 ">
+        <div className="h-full flex flex-wrap gap-6">
             <div className="space-y-6">
                 <ProfileForm />
                 <DangerZone userName={'Shmuel Dev'} />

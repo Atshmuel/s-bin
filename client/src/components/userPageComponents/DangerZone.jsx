@@ -10,7 +10,7 @@ function DangerZone({ userName }) {
     const [deleteInput, setDeleteInput] = useState("");
 
     return (
-        <Card className="min-w-[350px] max-w-[400px] h-fit">
+        <Card className="min-w-[350px] max-w-[450px] h-fit">
             <CardHeader className='text-center relative'>
                 <CardTitle className='text-destructive font-extrabold'>Danger Zone</CardTitle>
                 <CardDescription>This section contains actions that will affect all your belongings; Please act carefully.</CardDescription>
@@ -21,7 +21,7 @@ function DangerZone({ userName }) {
                     <Label>Delete Your Bins</Label>
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant='destructive' size='sm'>Delete</Button>
+                            <Button className="cursor-pointer" variant='destructive' size='sm'>Delete</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -34,9 +34,9 @@ function DangerZone({ userName }) {
                                 onChange={(e) => setDeleteInput(e.target.value)}>Type: 'Delete All' to enable deletion</InputLabel>
                             <DialogFooter>
                                 <DialogClose asChild>
-                                    <Button variant='outline'>Cancel</Button>
+                                    <Button className="cursor-pointer" variant='outline'>Cancel</Button>
                                 </DialogClose>
-                                <Button disabled={deleteInput.toLowerCase() !== 'delete all'} variant='destructive'>Delete</Button>
+                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== 'delete all'} variant='destructive'>Delete</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -45,7 +45,7 @@ function DangerZone({ userName }) {
                     <Label>Delete Your Account</Label>
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant='destructive' size='sm'>Delete</Button>
+                            <Button className="cursor-pointer" variant='destructive' size='sm'>Delete</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -58,9 +58,9 @@ function DangerZone({ userName }) {
                                 onChange={(e) => setDeleteInput(e.target.value)}>Type: '{userName}' to enable deletion</InputLabel>
                             <DialogFooter>
                                 <DialogClose asChild>
-                                    <Button variant='outline'>Cancel</Button>
+                                    <Button className="cursor-pointer" variant='outline'>Cancel</Button>
                                 </DialogClose>
-                                <Button disabled={deleteInput.toLowerCase() !== userName.toLowerCase()} variant='destructive'>Delete</Button>
+                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== userName.toLowerCase()} variant='destructive'>Delete</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
