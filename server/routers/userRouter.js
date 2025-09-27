@@ -54,4 +54,4 @@ userRouter.delete('/account', authToken, deleteAccount)
 
 //user settings
 userSettingsRouter.get('/', getSettingsByUserId)
-userSettingsRouter.patch('/', validateBodyFields([], ['theme', 'notifications', 'alertLevel', 'timezone', 'appLanguage']), updateUserSettings)
+userSettingsRouter.patch('/', validateBodyFields([], ['isDark', 'notifications', 'alertLevel', 'timezone', 'appLanguage']), updateUserSettings)

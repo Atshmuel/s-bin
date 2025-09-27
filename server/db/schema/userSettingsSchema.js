@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export const userSettingsSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    theme: { type: String, enum: ["light", "dark"], default: "light" },
+    isDark: { type: Boolean, default: false },
     notifications: {
         email: { type: Boolean, default: true },
         // whatsApp: { type: Boolean, default: false },
