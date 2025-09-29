@@ -45,9 +45,9 @@ function ProfileForm() {
                 {profileForm.getValues('status') ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
             </CardHeader>
             <Separator className="mb-5" />
-            <CardContent className="overflow-auto max-h-[63vh]">
-                <FormProvider {...profileForm}>
-                    <form onSubmit={profileForm.handleSubmit(data => console.log(data))} className="space-y-4">
+            <FormProvider {...profileForm}>
+                <form onSubmit={profileForm.handleSubmit(data => console.log(data))} >
+                    <CardContent className="overflow-auto max-h-[60vh] space-y-4">
                         <FormField
                             name="name"
                             control={profileForm.control}
@@ -86,12 +86,14 @@ function ProfileForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <Label>Email Address</Label>
-                                    <Input className="pb-2" {...field} placeholder="Full Name" type="text" />
+                                    <Input className="pb-2" {...field} placeholder="Email Address" type="text" />
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-
+                        <Separator />
+                    </CardContent>
+                    <CardFooter>
                         <Button
                             disabled={(!isDirty || !isValid)}
                             type="submit"
@@ -99,9 +101,9 @@ function ProfileForm() {
                         >
                             Update
                         </Button>
-                    </form>
-                </FormProvider>
-            </CardContent>
+                    </CardFooter>
+                </form>
+            </FormProvider>
         </Card>
     )
 }

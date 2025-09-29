@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeClosed } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import InputLabel from "@/components/InputLabel";
 import { FormProvider, useForm } from "react-hook-form";
 import {
@@ -73,7 +73,7 @@ function Login() {
                                 <FormItem>
                                     <div className="relative">
                                         <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >Password</InputLabel>
-                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeClosed onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
                                     </div>
                                     <FormMessage />
                                 </FormItem>

@@ -6,7 +6,6 @@ import {
   ChartSplineIcon,
   Code2,
   HelpCircleIcon,
-  LayoutDashboard,
   LayoutDashboardIcon,
   Settings2,
   Trash2Icon,
@@ -23,7 +22,10 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar"
+import { Button } from "./ui/button"
+import NewEntitySheet from "./newEntityComponents/NewEntitySheet"
 
 const data = {
   account: { //should come from user context
@@ -146,6 +148,9 @@ const data = {
 export function AppSidebar({
   ...props
 }) {
+  const { state } = useSidebar()
+  const isExpanded = state === 'expanded'
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -156,6 +161,7 @@ export function AppSidebar({
         <NavGeneral general={data.general} />
       </SidebarContent>
       <SidebarFooter>
+        <NewEntitySheet isExpanded={isExpanded} />
         <NavAccount account={data.account} />
       </SidebarFooter>
       <SidebarRail />
