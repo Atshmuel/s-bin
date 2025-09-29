@@ -28,13 +28,13 @@ function UserSettingForm() {
     const { isDirty } = userSettings.formState;
 
     return (
-        <Card className="min-w-[350px] max-w-[450px]  h-fit">
+        <Card className="min-w-[350px] max-w-[400px]  h-fit">
             <CardHeader className='text-center'>
                 <CardTitle className="mb-1">Preferences & Settings</CardTitle>
                 <CardDescription>Customize your experience by updating your settings</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
-            <CardContent className="overflow-scroll max-h-[63vh]">
+            <CardContent className="overflow-auto max-h-[63vh]">
                 <FormProvider {...userSettings}>
                     <form onSubmit={userSettings.handleSubmit(data => console.log(data))} className="space-y-4">
                         <div>

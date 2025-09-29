@@ -10,13 +10,13 @@ function DangerZone({ userName }) {
     const [deleteInput, setDeleteInput] = useState("");
 
     return (
-        <Card className="min-w-[350px] max-w-[450px] h-fit">
+        <Card className="min-w-[350px] max-w-[400px] h-fit">
             <CardHeader className='text-center relative'>
                 <CardTitle className='text-destructive font-extrabold'>Danger Zone</CardTitle>
                 <CardDescription>This section contains actions that will affect all your belongings; Please act carefully.</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
-            <CardContent className="overflow-scroll max-h-[63vh] space-y-4">
+            <CardContent className="overflow-auto max-h-[63vh] space-y-4">
                 <div className="flex justify-between">
                     <Label>Delete Your Bins</Label>
                     <Dialog>

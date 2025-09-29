@@ -25,7 +25,7 @@ function Terms({ title }) {
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="overflow-scroll max-h-[40vh] text-sm sm:text-base sm:max-h-[60vh] space-y-6">
+                <div className="overflow-auto max-h-[40vh] text-sm sm:text-base sm:max-h-[60vh] space-y-6">
                     <section>
                         <h3>1. Introduction</h3>
                         <p>

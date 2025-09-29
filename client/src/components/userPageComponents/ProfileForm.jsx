@@ -31,7 +31,7 @@ function ProfileForm() {
     }
 
     return (
-        <Card className="min-w-[350px] max-w-[450px] h-fit">
+        <Card className="min-w-[350px] max-w-[400px] h-fit">
             <CardHeader className='text-center flex flex-row justify-between relative'>
                 {profileForm.getValues('role').length ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('role').toLocaleLowerCase()}>{profileForm.getValues('role')}</Badge> : null}
                 <div>
@@ -45,7 +45,7 @@ function ProfileForm() {
                 {profileForm.getValues('status') ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
             </CardHeader>
             <Separator className="mb-5" />
-            <CardContent className="overflow-scroll max-h-[63vh]">
+            <CardContent className="overflow-auto max-h-[63vh]">
                 <FormProvider {...profileForm}>
                     <form onSubmit={profileForm.handleSubmit(data => console.log(data))} className="space-y-4">
                         <FormField

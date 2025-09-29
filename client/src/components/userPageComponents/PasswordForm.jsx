@@ -20,13 +20,13 @@ function PasswordForm() {
     const { isValid } = passwordForm.formState;
 
     return (
-        <Card className="min-w-[350px] max-w-[450px]  h-fit">
+        <Card className="min-w-[350px] max-w-[400px]  h-fit">
             <CardHeader className='text-center relative'>
                 <CardTitle>Update Your Password</CardTitle>
                 <CardDescription>Keep your account safe by updating your password</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
-            <CardContent className="overflow-scroll max-h-[63vh]">
+            <CardContent className="overflow-auto max-h-[63vh]">
                 <FormProvider {...passwordForm}>
                     <form onSubmit={passwordForm.handleSubmit(data => console.log(data))} className="space-y-4">
                         <FormField
