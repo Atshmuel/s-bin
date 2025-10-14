@@ -66,7 +66,7 @@ export function NavAccount({
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <div className="flex items-center justify-between">
                     <span className="truncate font-semibold">{account.name}</span>
-                    <Badge variant="owner">Owner</Badge>
+                    <Badge variant={account.role}>{account.role}</Badge>
                   </div>
                   <span className="truncate text-xs">{account.email}</span>
                 </div>

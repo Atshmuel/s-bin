@@ -13,7 +13,7 @@ import { useState } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
-import { Eye, EyeClosed } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 
 function ForgotPassword() {
@@ -225,7 +225,7 @@ function ForgotPassword() {
                                                 <FormItem>
                                                     <div className="relative">
                                                         <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >New Password</InputLabel>
-                                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeClosed onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
                                                     </div>
                                                     <FormMessage />
                                                 </FormItem>
@@ -244,7 +244,7 @@ function ForgotPassword() {
                                                 <FormItem>
                                                     <div className="relative">
                                                         <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >Confirm New Password</InputLabel>
-                                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeClosed onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
                                                     </div>
                                                     <FormMessage />
                                                 </FormItem>

@@ -7,9 +7,10 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 function ProfileForm() {
-    const profileForm = useForm({
+    const profileForm = useForm({ //default values comes from user context or api call
         defaultValues: {
             name: "Shmuel Dev",
             email: "email@gmail.com",
@@ -31,7 +32,7 @@ function ProfileForm() {
     }
 
     return (
-        <Card className="min-w-[350px] max-w-[450px] h-fit">
+        <Card className="min-w-[350px] max-w-[400px] h-fit">
             <CardHeader className='text-center flex flex-row justify-between relative'>
                 {profileForm.getValues('role').length ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('role').toLocaleLowerCase()}>{profileForm.getValues('role')}</Badge> : null}
                 <div>
@@ -42,12 +43,19 @@ function ProfileForm() {
                     <CardTitle className="mb-1">My Profile</CardTitle>
                     <CardDescription>Update your personal information</CardDescription>
                 </div>
-                {profileForm.getValues('status') ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
+                <Tooltip>
+                    <TooltipTrigger className="h-fit sticky top-14 m-0">
+                        {profileForm.getValues('status') ? <Badge variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
+                    </TooltipTrigger>
+                    <TooltipContent side='bottom' >
+                        <p>This tag shows the user’s status — whether they’re active, suspended, or waiting to be activated.</p>
+                    </TooltipContent>
+                </Tooltip>
             </CardHeader>
             <Separator className="mb-5" />
-            <CardContent className="overflow-scroll max-h-[63vh]">
-                <FormProvider {...profileForm}>
-                    <form onSubmit={profileForm.handleSubmit(data => console.log(data))} className="space-y-4">
+            <FormProvider {...profileForm}>
+                <form onSubmit={profileForm.handleSubmit(data => console.log(data))} >
+                    <CardContent className="overflow-auto max-h-[60vh] space-y-4">
                         <FormField
                             name="name"
                             control={profileForm.control}
@@ -86,12 +94,14 @@ function ProfileForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <Label>Email Address</Label>
-                                    <Input className="pb-2" {...field} placeholder="Full Name" type="text" />
+                                    <Input className="pb-2" {...field} placeholder="Email Address" type="text" />
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-
+                        <Separator />
+                    </CardContent>
+                    <CardFooter>
                         <Button
                             disabled={(!isDirty || !isValid)}
                             type="submit"
@@ -99,9 +109,9 @@ function ProfileForm() {
                         >
                             Update
                         </Button>
-                    </form>
-                </FormProvider>
-            </CardContent>
+                    </CardFooter>
+                </form>
+            </FormProvider>
         </Card>
     )
 }

@@ -2,6 +2,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
+import 'leaflet/dist/leaflet.css';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from './components/AppLayout'
@@ -13,21 +14,19 @@ import Dashboard from './pages/dashboard/Dashboard';
 import Statistics from './pages/reports/Statistics';
 import Analytics from './pages/reports/Analytics';
 import AppSettings from './pages/settings/AppSettings';
-import BinsList from './pages/bins/BinList';
+import BinsList from './pages/bins/BinsList';
 import BinMap from './pages/bins/BinMap';
 import BinDetails from './pages/bins/BinDetails';
 import AllLogs from './pages/binLogs/AllLogs';
 import BinLogs from './pages/binLogs/BinLogs';
 import LogDetails from './pages/binLogs/LogDetails';
 import UserProfile from './pages/users/UserProfile';
-import UsersList from './pages/users/owner/UsersList';
-import UserManagement from './pages/users/owner/UserManagement';
-import CreateBin from './pages/bins/CreateBin';
-import CreateUser from './pages/users/owner/CreateUser';
+import UsersList from './pages/users/UsersList';
 import Signup from './pages/auth/Signup';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import SupportPage from './pages/generals/SupportPage';
 import ErrorPage from './pages/generals/ErrorPage';
+import { MapProvider } from './contexts/mapContext';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -43,7 +42,10 @@ function App() {
           <Route
             element={
               <ProtectedRoute>
-                <AppLayout />
+                <MapProvider>
+
+                  <AppLayout />
+                </MapProvider>
               </ProtectedRoute>
             }
           >
@@ -67,17 +69,13 @@ function App() {
             <Route path="account">
               <Route path="" element={<UserProfile />} />
             </Route>
-
-            <Route path="owner">
-              <Route path="new">
-                <Route path="bin" element={<CreateBin />} />
-                <Route path="user" element={<CreateUser />} />
-              </Route>
-              <Route path="users">
-                <Route path="" element={<UsersList />} />
-                <Route path=":id" element={<UserManagement />} />
-              </Route>
+            {/* protected routes */}
+            <Route path="management">
+              <Route path="bins" element={<BinsList />} />
+              <Route path="users" element={<UsersList />} />
             </Route>
+            {/* end of protected routes */}
+
 
           </Route>
           <Route path="login" element={<Login />} />

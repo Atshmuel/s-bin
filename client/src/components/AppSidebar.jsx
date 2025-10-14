@@ -6,7 +6,6 @@ import {
   ChartSplineIcon,
   Code2,
   HelpCircleIcon,
-  LayoutDashboard,
   LayoutDashboardIcon,
   Settings2,
   Trash2Icon,
@@ -23,13 +22,17 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar"
+import { Button } from "./ui/button"
+import NewEntitySheet from "./newEntityComponents/NewEntitySheet"
 
 const data = {
   account: { //should come from user context
     name: "shadcn",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
+    role: "owner",
   },
   listItems: [
     {
@@ -90,24 +93,12 @@ const data = {
           url: "account",
         },
         {
-          title: "Account Settings",
-          url: "account/settings",
-        },
-        {
-          title: "Owner - Create Bin",
-          url: "owner/new/bin",
-        },
-        {
-          title: "Owner - Create User",
-          url: "owner/new/user",
-        },
-        {
           title: "Owner - Users List",
-          url: "owner/users",
+          url: "management/users",
         },
         {
-          title: "Owner - User Management",
-          url: "owner/users/1",
+          title: "Owner - Bins List",
+          url: "management/bins",
         },
         { title: "Bin Logs", url: "bins/logs/bin/:id" },
         { title: "Specific Bin Log", url: "bins/logs/:id" }
@@ -146,6 +137,9 @@ const data = {
 export function AppSidebar({
   ...props
 }) {
+  const { state } = useSidebar()
+  const isExpanded = state === 'expanded'
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -156,6 +150,7 @@ export function AppSidebar({
         <NavGeneral general={data.general} />
       </SidebarContent>
       <SidebarFooter>
+        <NewEntitySheet isExpanded={isExpanded} />
         <NavAccount account={data.account} />
       </SidebarFooter>
       <SidebarRail />

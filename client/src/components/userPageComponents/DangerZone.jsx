@@ -6,22 +6,22 @@ import { Label } from "../ui/label";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useState } from "react";
 
-function DangerZone({ userName }) {
+function DangerZone({ className, userName }) {
     const [deleteInput, setDeleteInput] = useState("");
 
     return (
-        <Card className="min-w-[350px] max-w-[450px] h-fit">
+        <Card className={`${className} min-w-[350px] max-w-[400px] h-fit`}>
             <CardHeader className='text-center relative'>
                 <CardTitle className='text-destructive font-extrabold'>Danger Zone</CardTitle>
                 <CardDescription>This section contains actions that will affect all your belongings; Please act carefully.</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
-            <CardContent className="overflow-scroll max-h-[63vh] space-y-4">
+            <CardContent className="overflow-auto max-h-[60vh] space-y-4 pb-4">
                 <div className="flex justify-between">
                     <Label>Delete Your Bins</Label>
-                    <Dialog>
+                    <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
                         <DialogTrigger asChild>
-                            <Button className="cursor-pointer" variant='destructive' size='sm'>Delete</Button>
+                            <Button className="cursor-pointer" variant='outline_destructive' size='sm'>Delete</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -43,9 +43,9 @@ function DangerZone({ userName }) {
                 </div>
                 <div className="flex justify-between">
                     <Label>Delete Your Account</Label>
-                    <Dialog>
+                    <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
                         <DialogTrigger asChild>
-                            <Button className="cursor-pointer" variant='destructive' size='sm'>Delete</Button>
+                            <Button className="cursor-pointer" variant='outline_destructive' size='sm'>Delete</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -65,8 +65,8 @@ function DangerZone({ userName }) {
                         </DialogContent>
                     </Dialog>
                 </div>
+                <Separator className="mt-6" />
             </CardContent>
-            <Separator className="mb-4" />
             <CardFooter>
                 <div className="text-sm text-muted-foreground">
                     <p className="font-medium mb-1 text-destructive">Note</p>

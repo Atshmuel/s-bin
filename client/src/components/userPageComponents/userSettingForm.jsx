@@ -1,7 +1,7 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { FormProvider, useForm } from "react-hook-form";
-import { FormControl, FormField, FormItem } from "../ui/form";
+import { FormControl, FormDescription, FormField, FormItem } from "../ui/form";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
@@ -19,7 +19,7 @@ function UserSettingForm() {
             },
             alertLevel: {
                 health: "warning",
-                level: 50 //note the value that will be sent to the server is an array, therefore make the convertion in client side before fetching the the server (server will not allow array as level)
+                level: [50] //note the value that will be sent to the server is an array, therefore make the convertion in client side before fetching the the server (server will not allow array as level) and when fetcing to get the settings make sure to convert from number to array of number
             },
             language: "en"
         }
@@ -28,15 +28,15 @@ function UserSettingForm() {
     const { isDirty } = userSettings.formState;
 
     return (
-        <Card className="min-w-[350px] max-w-[450px]  h-fit">
+        <Card className="min-w-[350px] max-w-[400px] h-fit">
             <CardHeader className='text-center'>
                 <CardTitle className="mb-1">Preferences & Settings</CardTitle>
                 <CardDescription>Customize your experience by updating your settings</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
-            <CardContent className="overflow-scroll max-h-[63vh]">
-                <FormProvider {...userSettings}>
-                    <form onSubmit={userSettings.handleSubmit(data => console.log(data))} className="space-y-4">
+            <FormProvider {...userSettings}>
+                <form onSubmit={userSettings.handleSubmit(data => console.log(data))} >
+                    <CardContent className="overflow-auto max-h-[60vh] space-y-4">
                         <div>
                             <h2 className='mb-6'>Interface Settings</h2>
                             <div className="space-y-4">
@@ -44,11 +44,16 @@ function UserSettingForm() {
                                     name="isDark"
                                     control={userSettings.control}
                                     render={({ field }) => (
-                                        <FormItem className="flex items-center gap-4 leading-4">
-                                            <FormControl>
-                                                <Switch className="m-0" checked={field.value} onCheckedChange={field.onChange} />
-                                            </FormControl>
-                                            <Label>Enable Dark Theme</Label>
+                                        <FormItem>
+                                            <div className="flex items-center gap-4 leading-4">
+                                                <FormControl>
+                                                    <Switch className="m-0" checked={field.value} onCheckedChange={field.onChange} />
+                                                </FormControl>
+                                                <Label>Enable Dark Theme</Label>
+                                            </div>
+                                            <FormDescription>
+                                                This will change the default theme for your interface between light and dark mode.
+                                            </FormDescription>
                                         </FormItem>
                                     )}
                                 />
@@ -105,6 +110,9 @@ function UserSettingForm() {
                                                     <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">Critical</ToggleGroupItem>
                                                 </ToggleGroup>
                                             </FormControl>
+                                            <FormDescription>
+                                                Health level of the bin that you want to get notified from.
+                                            </FormDescription>
                                         </FormItem>
                                     )}
                                 />
@@ -112,21 +120,25 @@ function UserSettingForm() {
                                     name="alertLevel.level"
                                     control={userSettings.control}
                                     render={({ field }) => (
-                                        <FormItem className="flex items-center gap-4">
-                                            <FormControl>
-                                                <Slider className='w-[55%] m-0' max={100} step={1} value={[field.value]} onValueChange={(value) => field.onChange(value)} />
-                                            </FormControl>
-                                            <Label>Bins Alert Level</Label>
+                                        <FormItem >
+                                            <div className="flex items-center gap-4">
+
+                                                <FormControl>
+                                                    <Slider className='w-[55%] m-0' min={10} max={100} step={5} value={[field.value]} onValueChange={(value) => field.onChange(value)} />
+                                                </FormControl>
+                                                <Label>Bins Alert Level: <span>{field.value}</span></Label>
+                                            </div>
+                                            <FormDescription>
+                                                The fill percentage of the bin at which you want to receive notifications.
+                                            </FormDescription>
                                         </FormItem>
                                     )}
                                 />
                             </div>
-
                         </div>
-
-
                         <Separator />
-
+                    </CardContent>
+                    <CardFooter>
                         <Button
                             disabled={!isDirty}
                             type="submit"
@@ -134,9 +146,9 @@ function UserSettingForm() {
                         >
                             Update
                         </Button>
-                    </form>
-                </FormProvider>
-            </CardContent>
+                    </CardFooter>
+                </form>
+            </FormProvider>
         </Card>
     )
 }

@@ -5,7 +5,7 @@ import { FormField, FormItem, FormMessage } from "../ui/form";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import InputLabel from "../InputLabel";
-import { Eye, EyeClosed } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 function PasswordForm() {
     const [showPassword, setShowPassword] = useState(false);
@@ -20,15 +20,15 @@ function PasswordForm() {
     const { isValid } = passwordForm.formState;
 
     return (
-        <Card className="min-w-[350px] max-w-[450px]  h-fit">
-            <CardHeader className='text-center relative'>
+        <Card className="flex-[1_1_400px] min-w-[350px] max-w-[400px] h-fit">
+            <CardHeader className='text-center'>
                 <CardTitle>Update Your Password</CardTitle>
                 <CardDescription>Keep your account safe by updating your password</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
-            <CardContent className="overflow-scroll max-h-[63vh]">
-                <FormProvider {...passwordForm}>
-                    <form onSubmit={passwordForm.handleSubmit(data => console.log(data))} className="space-y-4">
+            <FormProvider {...passwordForm}>
+                <form onSubmit={passwordForm.handleSubmit(data => console.log(data))} >
+                    <CardContent className="overflow-auto max-h-[60vh] space-y-4">
                         <FormField
                             name="password"
                             control={passwordForm.control}
@@ -61,7 +61,7 @@ function PasswordForm() {
                                 <FormItem>
                                     <div className="relative">
                                         <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >New Password</InputLabel>
-                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeClosed onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -80,12 +80,29 @@ function PasswordForm() {
                                 <FormItem>
                                     <div className="relative">
                                         <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >Confirm New Password</InputLabel>
-                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeClosed onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
+
+                        <Separator className="mt-6" />
+                        <div className="text-sm text-muted-foreground">
+                            <p className="font-medium mb-1">Password requirements:</p>
+                            <ul className="list-disc list-inside space-y-1">
+                                <li>At least 8 characters</li>
+                                <li>No more than 30 characters</li>
+                                <li>At least one lowercase letter (a&ndash;z)</li>
+                                <li>At least one uppercase letter (A&ndash;Z)</li>
+                                <li>At least one number (0&ndash;9)</li>
+                                <li>At least one special character (!@#$%^&*)</li>
+                            </ul>
+                        </div>
+                        <Separator />
+
+                    </CardContent>
+                    <CardFooter>
                         <Button
                             disabled={!isValid}
                             type="submit"
@@ -93,24 +110,10 @@ function PasswordForm() {
                         >
                             Update Password
                         </Button>
-                    </form>
-                </FormProvider>
-            </CardContent>
-            <Separator className="mb-4" />
-            <CardFooter>
-                <div className="text-sm text-muted-foreground">
-                    <p className="font-medium mb-1">Password requirements:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                        <li>At least 8 characters</li>
-                        <li>No more than 30 characters</li>
-                        <li>At least one lowercase letter (a&ndash;z)</li>
-                        <li>At least one uppercase letter (A&ndash;Z)</li>
-                        <li>At least one number (0&ndash;9)</li>
-                        <li>At least one special character (!@#$%^&*)</li>
-                    </ul>
-                </div>
-            </CardFooter>
-        </Card>
+                    </CardFooter>
+                </form>
+            </FormProvider>
+        </Card >
     )
 }
 
