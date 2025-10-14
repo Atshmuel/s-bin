@@ -32,6 +32,7 @@ const data = {
     name: "shadcn",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
+    role: "owner",
   },
   listItems: [
     {
@@ -92,24 +93,12 @@ const data = {
           url: "account",
         },
         {
-          title: "Account Settings",
-          url: "account/settings",
-        },
-        {
-          title: "Owner - Create Bin",
-          url: "owner/new/bin",
-        },
-        {
-          title: "Owner - Create User",
-          url: "owner/new/user",
-        },
-        {
           title: "Owner - Users List",
-          url: "owner/users",
+          url: "management/users",
         },
         {
-          title: "Owner - User Management",
-          url: "owner/users/1",
+          title: "Owner - Bins List",
+          url: "management/bins",
         },
         { title: "Bin Logs", url: "bins/logs/bin/:id" },
         { title: "Specific Bin Log", url: "bins/logs/:id" }

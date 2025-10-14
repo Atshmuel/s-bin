@@ -4,9 +4,8 @@ import { AppSidebar } from "./AppSidebar";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 
 import { useView } from "@/contexts/toggleDarkMode";
-import SwitchItem from "./SwitchItem";
 import { Breakcrumbs } from "./Breadcrumbs";
-import { MoonStar, SunMedium } from "lucide-react";
+import { Moon, SunMedium } from "lucide-react";
 function AppLayout() {
     const { isDark, toggleView } = useView()
     return (
@@ -22,9 +21,7 @@ function AppLayout() {
                         />
                         <Breakcrumbs />
                     </div>
-                    {/* <SwitchItem checked={isDark}
-                        onCheckedChange={toggleView} id={'Toggle Theme'} toolTip={true} label={'Toggle Theme'} toolTipClassName={'glossy-tooltip'} switchClassName={'scale-90'} /> */}
-                    {isDark ? <SunMedium onClick={toggleView} /> : <MoonStar onClick={toggleView} />}
+                    {isDark ? <SunMedium onClick={toggleView} /> : <Moon onClick={toggleView} />}
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4">
                     <Outlet />

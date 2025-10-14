@@ -7,9 +7,10 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 function ProfileForm() {
-    const profileForm = useForm({
+    const profileForm = useForm({ //default values comes from user context or api call
         defaultValues: {
             name: "Shmuel Dev",
             email: "email@gmail.com",
@@ -42,7 +43,14 @@ function ProfileForm() {
                     <CardTitle className="mb-1">My Profile</CardTitle>
                     <CardDescription>Update your personal information</CardDescription>
                 </div>
-                {profileForm.getValues('status') ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
+                <Tooltip>
+                    <TooltipTrigger className="h-fit sticky top-14 m-0">
+                        {profileForm.getValues('status') ? <Badge variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
+                    </TooltipTrigger>
+                    <TooltipContent side='bottom' >
+                        <p>This tag shows the user’s status — whether they’re active, suspended, or waiting to be activated.</p>
+                    </TooltipContent>
+                </Tooltip>
             </CardHeader>
             <Separator className="mb-5" />
             <FormProvider {...profileForm}>
