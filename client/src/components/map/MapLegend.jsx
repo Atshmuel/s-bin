@@ -3,7 +3,7 @@ import { FormControl, FormField, FormItem } from "../ui/form"
 import { Label } from "../ui/label"
 import { Slider } from "../ui/slider"
 import { Button } from "../ui/button"
-import { MapPin, Search } from "lucide-react"
+import { MapPin, MenuSquare, Search, X } from "lucide-react"
 import { useState } from "react"
 import { Marker, Popup, useMapEvent } from "react-leaflet"
 import { Switch } from "../ui/switch"
@@ -12,7 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useMapSettings } from "@/contexts/mapContext"
 
 function MapLegend() {
-    const { flyEnabled, setFlyEnabled, tile, setTile } = useMapSettings()
+    const { flyEnabled, setFlyEnabled, tile, setTile, isOpen, setIsOpen } = useMapSettings()
     const mapp = useMapEvent({
         move: () => { setLocation(mapp.getCenter().lat.toFixed(3) + ", " + mapp.getCenter().lng.toFixed(3)) },
         zoom: () => setZoom(mapp.getZoom())
@@ -67,56 +67,60 @@ function MapLegend() {
 
 
     return (
-        <div className={`flex flex-col space-y-4 z-400 absolute bottom-3 md:bottom-auto md:top-3 right-3 bg-accent rounded-md w-56 px-3 py-4`}>
-            <FormProvider {...mapConfig}>
-                <form className="flex gap-2 justify-between items-center" onSubmit={mapConfig.handleSubmit(data => console.log(data))}>
-                    <FormField
-                        name="radius"
-                        control={mapConfig.control}
-                        render={({ field }) => (
-                            <FormItem >
-                                <div className="flex-col w-40">
-                                    <Label>Bins search range: <span>{field.value}</span></Label>
-                                    <FormControl>
-                                        <Slider className='w-full mt-4' min={1} max={1000} step={5} value={[field.value]} onValueChange={(value) => field.onChange(value)} onPointerDown={() => mapp.dragging.disable()}
-                                            onPointerUp={() => mapp.dragging.enable()} />
-                                    </FormControl>
-                                </div>
-                            </FormItem>
-                        )}
-                    />
-                    <Button className='rounded-full size-7 cursor-pointer' type="submit" size='icon'><Search /></Button>
 
-                </form>
-            </FormProvider>
-            <div className="flex flex-row items-center justify-between">
-                <div className="space-y-2">
-                    <div className="flex items-center justify-start space-x-1.5">
-                        <Switch checked={tile === 'satellite'}
-                            onCheckedChange={toggleTile} id='tile' />
-                        <Label htmlFor="tile">Toggle Map Tile</Label>
+        <div className={`absolute flex flex-col justify-center items-center bottom-1.5 right-1.5 z-400 h-10 w-10 bg-accent rounded-md px-2 py-2 transition-all duration-500 ease-in-out  ${isOpen ? 'w-fit h-fit space-y-2' : ''}`}>
+            <div className="self-end" onClick={() => setIsOpen(open => !open)}>{isOpen ? <X /> : <MenuSquare />}</div>
+            <div className={`flex flex-col space-y-4 overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'opacity-0 max-h-0'}`}>
+                <FormProvider {...mapConfig}>
+                    <form className="flex gap-2 justify-between items-center" onSubmit={mapConfig.handleSubmit(data => console.log(data))}>
+                        <FormField
+                            name="radius"
+                            control={mapConfig.control}
+                            render={({ field }) => (
+                                <FormItem >
+                                    <div className="flex-col w-40">
+                                        <Label>Bins search range: <span>{field.value}</span></Label>
+                                        <FormControl>
+                                            <Slider className='w-full mt-4' min={1} max={1000} step={5} value={[field.value]} onValueChange={(value) => field.onChange(value)} onPointerDown={() => mapp.dragging.disable()}
+                                                onPointerUp={() => mapp.dragging.enable()} />
+                                        </FormControl>
+                                    </div>
+                                </FormItem>
+                            )}
+                        />
+                        <Button className='rounded-full size-5 sm:size-7 cursor-pointer' type="submit" size='icon'><Search /></Button>
+
+                    </form>
+                </FormProvider>
+                <div className="flex flex-row items-center justify-between">
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-start space-x-1.5">
+                            <Switch checked={tile === 'satellite'}
+                                onCheckedChange={toggleTile} id='tile' />
+                            <Label className={'text-xs md:text-sm'} htmlFor="tile">Toggle Map Tile</Label>
+                        </div>
+                        <div className="flex items-center justify-start space-x-1.5">
+                            <Switch checked={flyEnabled}
+                                onCheckedChange={() => setFlyEnabled(f => !f)} id='fly-to' />
+                            <Label className={'text-xs md:text-sm'} htmlFor="fly-to">Fly to marker</Label>
+                        </div>
                     </div>
-                    <div className="flex items-center justify-start space-x-1.5">
-                        <Switch checked={flyEnabled}
-                            onCheckedChange={() => setFlyEnabled(f => !f)} id='fly-to' />
-                        <Label htmlFor="fly-to">Fly to marker</Label>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button size='icon' className="rounded-full size-5 sm:size-7 cursor-pointer" onClick={locateMe}><MapPin /></Button>
+                        </TooltipTrigger>
+                        <TooltipContent side={isMobile ? "top" : "bottom"} className='z-400'>
+                            <p>Locate Me</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
+                <div>
+                    <div className="flex flex-row gap-1 text-xs sm:text-sm">Location:
+                        <span>{location}</span>
                     </div>
-                </div>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button size='icon' className="rounded-full size-7" onClick={locateMe}><MapPin /></Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={isMobile ? "top" : "bottom"} className='z-400'>
-                        <p>Locate Me</p>
-                    </TooltipContent>
-                </Tooltip>
-            </div>
-            <div>
-                <div className="flex flex-row gap-1 text-sm">Location:
-                    <span>{location}</span>
-                </div>
-                <div className="flex flex-row gap-1 text-sm">Zoom:
-                    <span>{zoom}</span>
+                    <div className="flex flex-row gap-1 text-xs sm:text-sm">Zoom:
+                        <span>{zoom}</span>
+                    </div>
                 </div>
             </div>
 
