@@ -1,5 +1,36 @@
-import { userModel } from "../db/models/models.js";
+import { binModel, userModel } from "../db/models/models.js";
 import { validateToken } from "../utils/helpers.js";
+
+
+export function authBinWithRoleFallback(allowedRoles = []) {
+    return async (req, res, next) => {
+        const authBearer = req.headers.authorization
+        if (authBearer?.startsWith('Bearer ')) {
+            const deviceKey = authBearer.split(" ")[1];
+            try {
+                const bin = await binModel.findOne({ deviceKey })
+                if (!bin) {
+                    return res.status(401).json({ message: "Unauthorized device" });
+                }
+                req.bin = bin
+                return next();
+            } catch (error) {
+                console.error('Failed to authorize the device');
+                return res.status(500).json({ message: "Failed to authorize the device" });
+            }
+        }
+
+        try {
+            await authTokenPromise(req, res)
+            authRole(allowedRoles)(req, res, next)
+        }
+        catch (error) {
+            console.error(error);
+        }
+    }
+
+}
+
 
 export async function authToken(req, res, next) {
     const accessToken = req.cookies?.accessToken
@@ -31,6 +62,36 @@ export async function authToken(req, res, next) {
     }
 }
 
+export async function authTokenPromise(req, res) {
+    const accessToken = req.cookies?.accessToken
+    if (!accessToken)
+        return res.status(401).json({ message: 'Unauthenticated user' })
+
+    try {
+        const data = validateToken(accessToken)
+        if (!data) return res.status(401).json({ message: 'Invalid or expired token' });
+
+        const user = await userModel.findById(data.id);
+        if (!user) return res.status(401).json({ message: 'User not found' });
+
+        if (data.tokenVersion !== user.tokenVersion)
+            return res.status(401).json({ message: "Unauthorized" });
+
+        if (user.status !== 'active')
+            return res.status(401).json({ message: 'User pending activation or user is restricted, please contect our support' });
+
+        req.user = {
+            id: user._id.toString(),
+            role: user.role,
+            name: user.name,
+            status: user.status,
+        }
+        return true
+    } catch (error) {
+        return res.status(403).json({ message: "Invalid or expired token" });
+    }
+}
+
 export function resetToken(req, res, next) {
     const resetToken = req.cookies?.resetToken
     if (!resetToken) {
@@ -46,7 +107,7 @@ export function resetToken(req, res, next) {
     }
 }
 
-export function authRole(allowedRole = []) {
+export function authRole(allowedRoles = []) {
     return (req, res, next) => {
         if (!req?.user) {
             return res.status(401).json({ message: 'Unauthenticated user' })
@@ -55,7 +116,7 @@ export function authRole(allowedRole = []) {
         if (!role) {
             return res.status(403).json({ message: "Missing role in token" });
         }
-        if (!allowedRole.includes(role)) {
+        if (!allowedRoles.includes(role)) {
             return res.status(403).json({ message: "Access denied" });
         }
         next();

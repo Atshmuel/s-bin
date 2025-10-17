@@ -1,11 +1,16 @@
 import mongoose from "mongoose";
-
+import { add } from 'date-fns'
 export const binSchema = new mongoose.Schema({
-    binCode: {
+    binName: {
         type: String,
         required: true,
         unique: true,
         immutable: true,
+    },
+    deviceKey: {
+        type: String,
+        required: true,
+        unique: true,
     },
     location: {
         type: {
@@ -36,13 +41,24 @@ export const binSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    levelLogs: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "BinLog"
-        }
-    ]
+    maintenance: {
+        lastServiceAt: { type: Date, default: Date.now },
+        nextServiceAt: { type: Date, default: () => add(new Date(), { days: 30 }) },
+
+        notes: String,
+        technicianId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    },
 }, { timestamps: true });
+
+
+binSchema.methods.recordService = function (notes, technicianId) {
+    const now = new Date();
+    this.maintenance.lastServiceAt = now;
+    this.maintenance.nextServiceAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    if (notes) this.maintenance.notes = notes;
+    if (technicianId) this.maintenance.technicianId = technicianId;
+    return this.save();
+}
 
 binSchema.index({ ownerId: 1 });
 binSchema.index({ location: "2dsphere" });

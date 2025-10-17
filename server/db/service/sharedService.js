@@ -3,23 +3,18 @@ import { binModel, templateModel, userModel, userSettingModel } from '../models/
 import { binLogModel } from '../models/models.js'
 
 
-export async function pushLogToBin(binId, logId, level) {
+//Bins
+export async function getBinShared(binId) {
     try {
-        if (!binId || !logId) throw new Error('missing parameters')
-        const log = await binLogModel.findById(logId)
-        if (!log) throw new Error('log not found')
-        const updateBin = await binModel.findByIdAndUpdate(
-            binId,
-            { $push: { levelLogs: logId }, $set: { 'status.level': level } },
-            { new: true }
-        );
-        if (!updateBin) throw new Error('bin not found')
+        if (!binId)
+            throw new Error('binId is mandatory')
+        const bin = await binModel.findById(binId)
+        return bin
     } catch (error) {
-        throw error
+        console.error(error)
+        return false
     }
 }
-
-
 export async function verifyBinOwner(binId, ownerId) {
     try {
         if (!binId || !ownerId)
@@ -32,6 +27,48 @@ export async function verifyBinOwner(binId, ownerId) {
     }
 }
 
+//Bin updates
+export async function updateBinLocationShared(id, location, customFilters = {}) {
+    const filters = { _id: id, ...customFilters }
+    try {
+        let updatedBin = binModel.findOneAndUpdate(filters, { $set: { "location.coordinates": location } }, { new: true, runValidators: true })
+
+        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
+
+        res.status(200).json({ updatedBin })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
+
+}
+export async function updateBinHealthShared(id, health, customFilters = {}) {
+    const filters = { _id: id, ...customFilters }
+
+    try {
+        const updatedBin = await binModel.findOneAndUpdate(filters, { $set: { "status.health": health } }, { new: true, runValidators: true })
+
+        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
+
+        res.status(200).json({ updatedBin })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
+}
+export async function updateBinLevelShared(id, level, customFilters = {}) {
+    const filters = { _id: id, ...customFilters }
+
+    try {
+        const updatedBin = await binModel.findOneAndUpdate(filters, { $set: { "status.level": level } }, { new: true, runValidators: true })
+
+        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
+
+        res.status(200).json({ updatedBin })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
+}
+
+//Refs deletion
 export async function deleteUserRefs(userId) {
     const session = await mongoose.startSession();
     try {
@@ -60,16 +97,12 @@ export async function deleteUserRefs(userId) {
     }
 }
 
-
 export async function deleteLogsForBins(binIds, session) {
     if (!Array.isArray(binIds) || binIds.length === 0) return 0
     const deleteResult = await binLogModel.deleteMany({ binId: { $in: binIds } }, { session })
     return deleteResult.deletedCount;
 }
-
-
-
-
+//Emails
 export async function innerGetTemplateByTemplateId(templateId) {
     try {
         if (!templateId || typeof templateId !== 'string')

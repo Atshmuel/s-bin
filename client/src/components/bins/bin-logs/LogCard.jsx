@@ -19,7 +19,7 @@ function LogCard({ log, ...props }) {
                     <span className="font-medium flex items-center gap-2">
                         <Trash2 size={16} /> Bin Code:
                     </span>
-                    <span>{log.binCode}</span>
+                    <span>{log.binName}</span>
                 </div>
 
                 <div className="flex justify-between">

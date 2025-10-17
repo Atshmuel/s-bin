@@ -5,8 +5,8 @@ export const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     role: {
         type: String,
-        enum: ["owner", "admin", "operator"],
-        default: "operator"
+        enum: ["owner", "admin", "user", "technician"],
+        default: "user"
     },
     passwordHash: { type: String, required: true },
     recoveryCode: {

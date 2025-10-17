@@ -11,7 +11,7 @@ import { Link } from "react-router-dom"
 function BinLogs() {
     const bin = {
         _id: "670b1a1a1a1a1a1a1a1a1a1a",
-        binCode: "BIN-001",
+        binName: "BIN-001",
         location: {
             type: "Point",
             coordinates: [32.9050, 35.4950],
@@ -31,7 +31,7 @@ function BinLogs() {
 
     const log = {
         id: "002d002-sdad-d2d-d2d",
-        binCode: "BIN-001",
+        binName: "BIN-001",
         timestamp: "2025-10-14T11:25:00.000Z",
         type: "Fill Level Update",
         case: 'info', //info | error
@@ -53,7 +53,7 @@ function BinLogs() {
                     <CustomMarker key={bin._id} position={bin.location.coordinates} color={getBinColor(bin.status.level)} popup={
                         <div className="space-y-2 text-sm p-2 relative">
                             <Badge className='absolute top-3.5 right-0' variant={getVariant(bin.status.health)}>{bin.status.health}</Badge>
-                            <h3 className="font-bold text-lg">Bin Name: {bin.binCode}</h3>
+                            <h3 className="font-bold text-lg">Bin Name: {bin.binName}</h3>
                             <div >
                                 <p className="!my-1">Fill Level: <span className={`font-semibold`}>{bin.status.level}%</span></p>
                                 <p className="!my-1">Last Updated: {new Date(bin.status.updatedAt).toLocaleString()}</p>

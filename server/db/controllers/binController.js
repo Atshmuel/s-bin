@@ -1,24 +1,19 @@
 import mongoose from 'mongoose'
 import { binModel } from '../models/models.js'
-import { appendFilter } from '../../utils/helpers.js'
-import { deleteLogsForBins } from '../service/sharedService.js'
+import { appendFilter, generateRandomToken } from '../../utils/helpers.js'
+import { deleteLogsForBins, updateBinHealthShared, updateBinLevelShared, updateBinLocationShared } from '../service/sharedService.js'
+
 
 export async function getBin(req, res) {
     const { id } = req.params;
     const { id: ownerId, role } = req.user
-    const { level } = req.query
-
     let query = {}
     query = appendFilter(query, true, '_id', id)
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     try {
         let binQuery = binModel.findOne(query);
-        if (level === 'true') {
-            binQuery = binQuery.populate('levelLogs');
-        }
         const binData = await binQuery;
-
         if (!binData) return res.status(404).json({ message: "Bin not found." });
 
         res.status(200).json({ binData })
@@ -29,16 +24,12 @@ export async function getBin(req, res) {
 
 export async function getAllUserBins(req, res) {
     const { id: ownerId, role } = req.user
-    const { level } = req.query
 
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     try {
         let binsQuery = binModel.find(query);
-        if (level === 'true') {
-            binsQuery = binsQuery.populate('levelLogs');
-        }
         const binsData = await binsQuery;
         res.status(200).json({ binsData: binsData || [] })
     } catch (error) {
@@ -97,11 +88,12 @@ export async function getBinsInUserRadius(req, res) {
 
 export async function createBin(req, res) {
     const { id: ownerId } = req.user
-    const { binCode, location } = req.body
-    if (!binCode || !location)
-        return res.status(400).json({ message: 'binCode(name), Location are mandatory !' })
+    const { binName, location } = req.body
+    if (!binName || !location)
+        return res.status(400).json({ message: 'binName, Location are mandatory !' })
     try {
-        const newData = await binModel.create({ binCode, location, ownerId })
+        const deviceKey = generateRandomToken()
+        const newData = await binModel.create({ binName, location, ownerId, deviceKey })
         res.status(201).json({ bin: newData })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
@@ -112,17 +104,21 @@ export async function createBinsBatch(req, res) {
     const { id: ownerId } = req.user
 
     const binsBatch = req.body //array of bins
-    if (!binsBatch.length) return res.status(400).json({ message: 'Array of binCode(name), Location are mandatory !' })
+    if (!binsBatch.length) return res.status(400).json({ message: 'Array of binName(name), Location are mandatory !' })
 
-    if (!binsBatch.every(bin => bin.binCode && bin.location)) {
-        return res.status(400).json({ message: 'All bins must have binCode and location!' });
+    if (!binsBatch.every(bin => bin.binName && bin.location)) {
+        return res.status(400).json({ message: 'All bins must have binName and location!' });
     }
 
     if (binsBatch.every(bin => bin.level && bin.status)) {
         return res.status(400).json({ message: "Cant create Bins with level or status!" });
     }
 
-    const binsWithOwnerId = binsBatch.map(bin => ({ ...bin, ownerId }));
+    const binsWithOwnerId = binsBatch.map((bin) => {
+        const deviceKey = generateRandomToken()
+        return { ...bin, ownerId, deviceKey }
+    });
+
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -144,7 +140,6 @@ export async function updateBinLocation(req, res) {
     const { location } = req.body
 
     let filter = {}
-    filter = appendFilter(filter, true, '_id', id)
     filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     if (!location || !Array.isArray(location) || location.length !== 2 || !location.every(n => typeof n === "number")) {
@@ -153,25 +148,15 @@ export async function updateBinLocation(req, res) {
         });
     }
 
-    try {
-        const updatedBin = await binModel.findOneAndUpdate(filter, { $set: { "location.coordinates": location } }, { new: true, runValidators: true })
-
-        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
-
-        res.status(200).json({ updatedBin })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
+    await updateBinLocationShared(id, location, filter)
 
 }
-
 export async function updateBinHealth(req, res) {
     const { id } = req.params
     const { id: ownerId, role } = req.user
     const { health } = req.body
 
     let filter = {}
-    filter = appendFilter(filter, true, '_id', id)
     filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     if (!health || typeof health !== 'string' || !["good", "warning", "critical"].includes(health.toLowerCase())) {
@@ -180,17 +165,57 @@ export async function updateBinHealth(req, res) {
         });
     }
 
+    await updateBinHealthShared(id, health, filter)
+}
+export async function updateBinLevel(req, res) {
+    const { id } = req.params
+    const { id: ownerId, role } = req.user
+    const { level } = req.body
+
+    let filter = {}
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+
+    if ((!level || typeof level !== 'number') && (level >= 0 && level <= 100)) {
+        return res.status(400).json({
+            message: "level is mandatory and must be between 0-100"
+        });
+    }
+
+    await updateBinLevelShared(id, level, filter)
+}
+export async function updateBinMaintenance(req, res) {
+    const { id } = req.params
+    const { notes, technicianId } = req.body
     try {
-        const updatedBin = await binModel.findOneAndUpdate(filter, { $set: { "status.health": health } }, { new: true, runValidators: true })
+        const bin = await binModel.findById(id)
+        if (!bin) return res.status(404).json({ message: 'Bin not found' });
 
-        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
+        await bin.recordService(notes, technicianId);
+        return res.json({ message: 'Service recorded', maintenance: bin.maintenance });
 
-        res.status(200).json({ updatedBin })
+    } catch (error) {
+        console.error(err);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+export async function updateBinDeviceKey(req, res) {
+    const { id } = req.params
+    const { id: ownerId, role } = req.user
+
+    let filter = {}
+    filter = appendFilter(filter, true, '_id', id)
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+
+    try {
+        const newKey = await binModel.findOneAndUpdate(filter, { $set: { deviceKey: generateRandomToken() } }, { new: true, runValidators: true }).select('deviceKey')
+
+        if (!newKey) return res.status(404).json({ message: "Bin not found or not owned by you." });
+
+        res.status(200).json({ newKey })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
     }
 }
-
 
 export async function deleteBin(req, res) {
     const { id } = req.params;

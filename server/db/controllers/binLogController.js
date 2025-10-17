@@ -1,6 +1,6 @@
 import { appendFilter } from '../../utils/helpers.js';
 import { binLogModel } from '../models/models.js'
-import { pushLogToBin, verifyBinOwner } from '../service/sharedService.js';
+import { getBinShared, verifyBinOwner } from '../service/sharedService.js';
 
 
 export async function getBinLog(req, res) {
@@ -58,13 +58,20 @@ export async function getAllLogs(req, res) {
 
 export async function createLog(req, res) {
     const { binId } = req.params;
-    const { level } = req.body
-    if (level === undefined || level === null)
-        return res.status(400).json({ message: 'Level is mandatory !' })
+    const query = req.body
     try {
-        const newLog = await binLogModel.create({ binId, level })
-        await pushLogToBin(binId, newLog._id, level)
-        res.status(201).json({ log: newLog })
+        let bin = req.bin ?? await getBinShared(binId);
+        if (!bin) throw new Error('Could not find this Bin');
+
+        appendFilter(query, req.bin, 'oldLevel', req.bin.status.level)
+
+        bin.status.level = query.level
+        bin.status.health = query.health
+        bin.status.updatedAt = new Date();
+        await bin.save()
+
+        const log = await binLogModel.create({ binId, ...query })
+        res.status(201).json({ log })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
     }

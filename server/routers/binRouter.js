@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authToken, authRole } from "../middlewares/authMiddleware.js";
 import { validateBodyFields, validateParamExist, validateRequestBodyBinIds } from "../middlewares/validationMiddleware.js";
-import { createBin, createBinsBatch, deleteBin, getAllUserBins, getBin, updateBinLocation, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinHealth } from "../db/controllers/binController.js";
+import { createBin, createBinsBatch, deleteBin, getAllUserBins, getBin, updateBinLocation, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinHealth, updateBinLevel, updateBinMaintenance, updateBinDeviceKey } from "../db/controllers/binController.js";
 
 export const binRouter = Router();
 binRouter.use(authToken) //demends jwt for all requests
@@ -14,16 +14,29 @@ binRouter.post('/radius/:id', validateParamExist(), validateBodyFields(['coordin
 
 
 //posts
-binRouter.post('/', validateBodyFields(['binCode', 'location']), createBin) //post new bin
+binRouter.post('/', validateBodyFields(['binName', 'location']), createBin) //post new bin
 binRouter.post('/batch', createBinsBatch) //post array of bins
 
 //updates
 binRouter.patch('/location/:id', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, validateParamExist(), validateBodyFields(['location']), updateBinLocation) //update bin location by id
+
 binRouter.patch('/health/:id', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, validateParamExist(), validateBodyFields(['health']), updateBinHealth) //update bin health by id
+
+binRouter.patch('/level/:id', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+}, validateParamExist(), validateBodyFields(['level']), updateBinLevel) //update bin level by id
+
+binRouter.patch('/key/:id', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER])(req, res, next)
+}, validateParamExist(), updateBinDeviceKey) //update bin secret key (deviceKey) by id
+
+binRouter.patch('/maintenance/:id', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN, ROLE_TECHNICIAN])(req, res, next) //update bin maintenance by id
+}, validateParamExist(), validateBodyFields(['notes', 'technicianId']), updateBinMaintenance)
 
 //deletes
 binRouter.delete('/', (req, res, next) => {

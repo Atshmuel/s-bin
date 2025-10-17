@@ -310,7 +310,7 @@ export async function updateUserRole(req, res) {
     const { role } = req.body
     const { id: userId, role: currentUserRole } = req.user
 
-    if (![process.env.ROLE_OPERATOR, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
+    if (![process.env.ROLE_OPERATOR, process.env.ROLE_TECHNICIAN, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
         return res.status(400).json({ message: 'This role is not allow' })
     if (id === userId) return res.status(400).json({ message: 'User not allow to update his role' })
     if (currentUserRole === role) return res.status(400).json({ message: 'User not allow to assign a role equal to his' })

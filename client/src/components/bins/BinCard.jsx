@@ -9,7 +9,7 @@ function BinCard({ bin, actions = true, ...props }) {
         <Card {...props}>
             <CardHeader>
                 <CardTitle className="flex justify-between items-center">
-                    <h3 className="flex items-center gap-2"><Trash2 size={20} /> <span>{bin.binCode}</span></h3>
+                    <h3 className="flex items-center gap-2"><Trash2 size={20} /> <span>{bin.binName}</span></h3>
                     <Badge variant={getVariant(bin.status.health)}>
                         {bin.status.health.toUpperCase()}
                     </Badge>

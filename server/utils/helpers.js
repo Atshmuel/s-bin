@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 
 export async function generateOTP(expiryMinutes = 5, length = 6) {
     let otp = '';
@@ -17,10 +18,10 @@ export function generateVerificationLink(token) {
     return `${process.env.CLIENT_BASE_URL}/user/verify?token=${token}`
 }
 
-export async function hashPassword(password) {
+export async function hashPassword(password, rounds = 10) {
     if (!password || !password.length) return null
     try {
-        const hashed = await bcrypt.hash(password, 10)
+        const hashed = await bcrypt.hash(password, rounds)
         return hashed
     } catch (error) {
         console.error('Failed to hash the password');
@@ -55,6 +56,10 @@ export function validateToken(token) {
         console.error('Token validation failed:', error.message);
         return null
     }
+}
+
+export function generateRandomToken(bytes = 32) {
+    return crypto.randomBytes(bytes).toString('hex');
 }
 
 export function appendFilter(baseQuery, condition, field, value) {

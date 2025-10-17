@@ -8,7 +8,7 @@ function BinMap({ zoom, center, legend = true }) {
     const bins = [
         {
             _id: "670b1a1a1a1a1a1a1a1a1a1a",
-            binCode: "BIN-001",
+            binName: "BIN-001",
             location: {
                 type: "Point",
                 coordinates: [32.9050, 35.4950],
@@ -27,7 +27,7 @@ function BinMap({ zoom, center, legend = true }) {
         },
         {
             _id: "670b2b2b2b2b2b2b2b2b2b2b",
-            binCode: "BIN-002",
+            binName: "BIN-002",
             location: {
                 type: "Point",
                 coordinates: [32.9100, 35.51],
@@ -45,7 +45,7 @@ function BinMap({ zoom, center, legend = true }) {
         },
         {
             _id: "670b3c3c3c3c3c3c3c3c3c3c",
-            binCode: "BIN-003",
+            binName: "BIN-003",
             location: {
                 type: "Point",
                 coordinates: [32.8938, 35.5018],
@@ -66,7 +66,7 @@ function BinMap({ zoom, center, legend = true }) {
         },
         {
             _id: "670b3c3c3c3c3c3c333c3c3c",
-            binCode: "BIN-003",
+            binName: "BIN-003",
             location: {
                 type: "Point",
                 coordinates: [32.8975, 35.5140],
@@ -97,7 +97,7 @@ function BinMap({ zoom, center, legend = true }) {
                     <CustomMarker key={bin._id} position={bin.location.coordinates} color={getBinColor(bin.status.level)} popup={
                         <div className="space-y-2 text-sm p-2 relative">
                             <Badge className='absolute top-3.5 right-0' variant={getVariant(bin.status.health)}>{bin.status.health}</Badge>
-                            <h3 className="font-bold text-lg">Bin Name: {bin.binCode}</h3>
+                            <h3 className="font-bold text-lg">Bin Name: {bin.binName}</h3>
                             <div >
                                 <p className="!my-1">Fill Level: <span className={`font-semibold`}>{bin.status.level}%</span></p>
                                 <p className="!my-1">Last Updated: {new Date(bin.status.updatedAt).toLocaleString()}</p>

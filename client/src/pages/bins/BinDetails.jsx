@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 function BinDetails() {
     const bin = {
         _id: "670b1a1a1a1a1a1a1a1a1a1a",
-        binCode: "BIN-001",
+        binName: "BIN-001",
         location: {
             type: "Point",
             coordinates: [32.9050, 35.4950],
