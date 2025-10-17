@@ -16,7 +16,7 @@ function BinDetails() {
             updatedAt: "2025-10-13T10:30:00.000Z",
         },
         ownerId: "652f1b1b1b1b1b1b1b1b1b1b",
-        levelLogs: [],
+        logs: [],
         createdAt: "2025-10-13T10:30:00.000Z",
         updatedAt: "2025-10-13T10:30:00.000Z",
         __v: 0,

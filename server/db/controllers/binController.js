@@ -7,13 +7,29 @@ import { deleteLogsForBins, updateBinHealthShared, updateBinLevelShared, updateB
 export async function getBin(req, res) {
     const { id } = req.params;
     const { id: ownerId, role } = req.user
+    const { withLogs } = req.query
+
     let query = {}
-    query = appendFilter(query, true, '_id', id)
+    query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(id))
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
+    const pipeline = [
+        { $match: query }
+    ]
+    if (withLogs) {
+        pipeline.push({
+            $lookup: {
+                from: 'binlogs',
+                localField: '_id',
+                foreignField: 'binId',
+                as: 'logs'
+            }
+        })
+    }
+
     try {
-        let binQuery = binModel.findOne(query);
-        const binData = await binQuery;
+        const binData = await binModel.aggregate(pipeline);
+
         if (!binData) return res.status(404).json({ message: "Bin not found." });
 
         res.status(200).json({ binData })
@@ -24,13 +40,27 @@ export async function getBin(req, res) {
 
 export async function getAllUserBins(req, res) {
     const { id: ownerId, role } = req.user
+    const { withLogs } = req.query
 
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
+    const pipeline = [
+        { $match: query }
+    ]
+    if (withLogs) {
+        pipeline.push({
+            $lookup: {
+                from: 'binlogs',
+                localField: '_id',
+                foreignField: 'binId',
+                as: 'logs'
+            }
+        })
+    }
+
     try {
-        let binsQuery = binModel.find(query);
-        const binsData = await binsQuery;
+        const binsData = await binModel.aggregate(pipeline);
         res.status(200).json({ binsData: binsData || [] })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
