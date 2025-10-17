@@ -58,14 +58,14 @@ export async function getAllLogs(req, res) {
 
 export async function createLog(req, res) {
     const { binId } = req.params;
-    const query = req.body
+    let query = req.body
     try {
         let bin = req.bin ?? await getBinShared(binId);
         if (!bin) throw new Error('Could not find this Bin');
 
-        appendFilter(query, true, 'oldLevel', bin.status.newLevel)
+        query = appendFilter(query, true, 'oldLevel', bin.status.level)
 
-        bin.status.newLevel = query.newLevel
+        bin.status.level = query.newLevel
         bin.status.health = query.health
         bin.status.updatedAt = new Date();
         await bin.save()
