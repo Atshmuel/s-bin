@@ -10,7 +10,7 @@ binRouter.use(authToken) //demends jwt for all requests
 binRouter.get('/all', getAllUserBins) //all user bins in db
 binRouter.post('/status', validateBodyFields(['level', 'health']), getBinsByStatus) //get bin
 binRouter.get('/:id', validateParamExist(), getBin) //get bin
-binRouter.post('/radius/:id', validateParamExist(), validateBodyFields(['coordinates', 'radius'], ['health']), getBinsInUserRadius) //get bin
+binRouter.post('/radius/:id', validateParamExist(), validateBodyFields(['coordinates', 'radius'], ['health', 'minLevel', 'maxLevel']), getBinsInUserRadius) //get bin
 
 
 //posts
@@ -35,8 +35,8 @@ binRouter.patch('/key/:id', (req, res, next) => {
 }, validateParamExist(), updateBinDeviceKey) //update bin secret key (deviceKey) by id
 
 binRouter.patch('/maintenance/:id', (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN, ROLE_TECHNICIAN])(req, res, next) //update bin maintenance by id
-}, validateParamExist(), validateBodyFields(['notes', 'technicianId']), updateBinMaintenance)
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN, process.env.ROLE_TECHNICIAN])(req, res, next) //update bin maintenance by id
+}, validateParamExist(), validateBodyFields(['notes']), updateBinMaintenance)
 
 //deletes
 binRouter.delete('/', (req, res, next) => {

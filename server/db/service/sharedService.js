@@ -27,47 +27,6 @@ export async function verifyBinOwner(binId, ownerId) {
     }
 }
 
-//Bin updates
-export async function updateBinLocationShared(id, location, customFilters = {}) {
-    const filters = { _id: id, ...customFilters }
-    try {
-        let updatedBin = binModel.findOneAndUpdate(filters, { $set: { "location.coordinates": location } }, { new: true, runValidators: true })
-
-        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
-
-        res.status(200).json({ updatedBin })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-
-}
-export async function updateBinHealthShared(id, health, customFilters = {}) {
-    const filters = { _id: id, ...customFilters }
-
-    try {
-        const updatedBin = await binModel.findOneAndUpdate(filters, { $set: { "status.health": health } }, { new: true, runValidators: true })
-
-        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
-
-        res.status(200).json({ updatedBin })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-}
-export async function updateBinLevelShared(id, level, customFilters = {}) {
-    const filters = { _id: id, ...customFilters }
-
-    try {
-        const updatedBin = await binModel.findOneAndUpdate(filters, { $set: { "status.level": level } }, { new: true, runValidators: true })
-
-        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
-
-        res.status(200).json({ updatedBin })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-}
-
 //Refs deletion
 export async function deleteUserRefs(userId) {
     const session = await mongoose.startSession();

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { binModel } from '../models/models.js'
 import { appendFilter, generateRandomToken } from '../../utils/helpers.js'
-import { deleteLogsForBins, updateBinHealthShared, updateBinLevelShared, updateBinLocationShared } from '../service/sharedService.js'
+import { deleteLogsForBins } from '../service/sharedService.js'
 
 
 export async function getBin(req, res) {
@@ -86,7 +86,7 @@ export async function getBinsByStatus(req, res) {
 
 export async function getBinsInUserRadius(req, res) {
     const { id: ownerId, role } = req.user
-    const { coordinates, radius, health } = req.body
+    const { coordinates, radius, health, minLevel, maxLevel } = req.body
     if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
@@ -94,6 +94,12 @@ export async function getBinsInUserRadius(req, res) {
     let query = {};
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, health && health !== "all", 'status.health', health)
+    if (minLevel !== undefined || maxLevel !== undefined) {
+        query['status.level'] = {
+            $gte: minLevel !== undefined ? Number(minLevel) : 0,
+            $lte: maxLevel !== undefined ? Number(maxLevel) : 100
+        };
+    }
 
     try {
         let binsData = await binModel.aggregate(
@@ -169,8 +175,8 @@ export async function updateBinLocation(req, res) {
     const { id: ownerId, role } = req.user
     const { location } = req.body
 
-    let filter = {}
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    let filters = { _id: id }
+    filters = appendFilter(filters, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     if (!location || !Array.isArray(location) || location.length !== 2 || !location.every(n => typeof n === "number")) {
         return res.status(400).json({
@@ -178,16 +184,24 @@ export async function updateBinLocation(req, res) {
         });
     }
 
-    await updateBinLocationShared(id, location, filter)
 
+    try {
+        let updatedBin = await binModel.findOneAndUpdate(filters, { $set: { "location.coordinates": location } }, { new: true, runValidators: true })
+
+        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
+
+        res.status(200).json({ updatedBin })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
 }
 export async function updateBinHealth(req, res) {
     const { id } = req.params
     const { id: ownerId, role } = req.user
     const { health } = req.body
 
-    let filter = {}
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    let filters = { _id: id }
+    filters = appendFilter(filters, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     if (!health || typeof health !== 'string' || !["good", "warning", "critical"].includes(health.toLowerCase())) {
         return res.status(400).json({
@@ -195,15 +209,23 @@ export async function updateBinHealth(req, res) {
         });
     }
 
-    await updateBinHealthShared(id, health, filter)
+    try {
+        const updatedBin = await binModel.findOneAndUpdate(filters, { $set: { "status.health": health } }, { new: true, runValidators: true })
+
+        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
+
+        res.status(200).json({ updatedBin })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
 }
 export async function updateBinLevel(req, res) {
     const { id } = req.params
     const { id: ownerId, role } = req.user
     const { level } = req.body
 
-    let filter = {}
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    let filters = { _id: id }
+    filters = appendFilter(filters, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     if ((!level || typeof level !== 'number') && (level >= 0 && level <= 100)) {
         return res.status(400).json({
@@ -211,11 +233,21 @@ export async function updateBinLevel(req, res) {
         });
     }
 
-    await updateBinLevelShared(id, level, filter)
+
+    try {
+        const updatedBin = await binModel.findOneAndUpdate(filters, { $set: { "status.level": level } }, { new: true, runValidators: true })
+
+        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
+
+        res.status(200).json({ updatedBin })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
 }
 export async function updateBinMaintenance(req, res) {
     const { id } = req.params
-    const { notes, technicianId } = req.body
+    const { id: technicianId } = req.user
+    const { notes } = req.body
     try {
         const bin = await binModel.findById(id)
         if (!bin) return res.status(404).json({ message: 'Bin not found' });
@@ -237,11 +269,11 @@ export async function updateBinDeviceKey(req, res) {
     filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     try {
-        const newKey = await binModel.findOneAndUpdate(filter, { $set: { deviceKey: generateRandomToken() } }, { new: true, runValidators: true }).select('deviceKey')
+        const { deviceKey } = await binModel.findOneAndUpdate(filter, { $set: { deviceKey: generateRandomToken() } }, { new: true, runValidators: true }).select('deviceKey -_id')
 
-        if (!newKey) return res.status(404).json({ message: "Bin not found or not owned by you." });
+        if (!deviceKey) return res.status(404).json({ message: "Bin not found or not owned by you." });
 
-        res.status(200).json({ newKey })
+        res.status(200).json({ deviceKey })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
     }
