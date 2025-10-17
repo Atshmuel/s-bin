@@ -3,8 +3,6 @@ import MapComponent from "@/components/map/MapComponent"
 import { Badge } from "@/components/ui/badge";
 import { getBinColor, getVariant } from "@/utils/binHelpers";
 
-import { Trash2 } from "lucide-react"
-
 function BinMap({ zoom, center, legend = true }) {
     //should get the bins from context or reactQuery and display them on the map
     const bins = [
@@ -96,7 +94,7 @@ function BinMap({ zoom, center, legend = true }) {
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
             <MapComponent center={center ? center : bins && bins.length ? bins[0].location.coordinates : [32.0853, 34.7818]} zoom={zoom ?? 11} legend={legend} >
                 {bins.map((bin) => (
-                    <CustomMarker key={bin._id} position={bin.location.coordinates} icon={Trash2} color={getBinColor(bin.status.level)} popup={
+                    <CustomMarker key={bin._id} position={bin.location.coordinates} color={getBinColor(bin.status.level)} popup={
                         <div className="space-y-2 text-sm p-2 relative">
                             <Badge className='absolute top-3.5 right-0' variant={getVariant(bin.status.health)}>{bin.status.health}</Badge>
                             <h3 className="font-bold text-lg">Bin Name: {bin.binCode}</h3>
