@@ -19,7 +19,6 @@ import BinMap from './pages/bins/BinMap';
 import BinDetails from './pages/bins/BinDetails';
 import AllLogs from './pages/binLogs/AllLogs';
 import BinLogs from './pages/binLogs/BinLogs';
-import LogDetails from './pages/binLogs/LogDetails';
 import UserProfile from './pages/users/UserProfile';
 import UsersList from './pages/users/UsersList';
 import Signup from './pages/auth/Signup';
@@ -61,8 +60,7 @@ function App() {
               <Route path=":id" element={<BinDetails />} />
               <Route path='logs'>
                 <Route path="" element={<AllLogs />} />
-                <Route path=":id" element={<LogDetails />} />
-                <Route path="bin/:id" element={<BinLogs />} />
+                <Route path=":id" element={<BinLogs />} />
               </Route>
 
             </Route>

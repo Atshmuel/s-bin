@@ -100,8 +100,10 @@ const data = {
           title: "Owner - Bins List",
           url: "management/bins",
         },
-        { title: "Bin Logs", url: "bins/logs/bin/:id" },
-        { title: "Specific Bin Log", url: "bins/logs/:id" }
+        {
+          title: "Specific Bin Log",
+          url: "bins/logs/:id"
+        }
       ],
     },
   ],
