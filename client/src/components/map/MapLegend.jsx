@@ -10,6 +10,7 @@ import { Switch } from "../ui/switch"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useMapSettings } from "@/contexts/mapContext"
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group"
 
 function MapLegend() {
     const { flyEnabled, setFlyEnabled, tile, setTile, isOpen, setIsOpen } = useMapSettings()
@@ -25,7 +26,9 @@ function MapLegend() {
 
     const mapConfig = useForm({
         defaultValues: {
-            radius: 50,
+            radius: [50],
+            level: [0, 100],
+            health: 'all'
         }
     })
     //once again note that the radius an array on submittion because slider returns an array and the server expects a number, also note that the server expects a center point which we are not sending now
@@ -72,23 +75,66 @@ function MapLegend() {
             <div className="self-end" onClick={() => setIsOpen(open => !open)}>{isOpen ? <X /> : <MenuSquare />}</div>
             <div className={`flex flex-col space-y-4 overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'opacity-0 max-h-0'}`}>
                 <FormProvider {...mapConfig}>
-                    <form className="flex gap-2 justify-between items-center" onSubmit={mapConfig.handleSubmit(data => console.log(data))}>
-                        <FormField
-                            name="radius"
-                            control={mapConfig.control}
-                            render={({ field }) => (
-                                <FormItem >
-                                    <div className="flex-col w-40">
-                                        <Label>Bins search range: <span>{field.value}</span></Label>
+                    <form className="flex flex-col space-y-4 mb-4 justify-between items-center" onSubmit={mapConfig.handleSubmit(data => console.log(data))}>
+                        <div className="flex flex-col gap-2">
+                            <FormField
+                                name="radius"
+                                control={mapConfig.control}
+                                render={({ field }) => (
+                                    <FormItem >
+                                        <div>
+                                            <Label>Bins search range: <span>{field.value}</span></Label>
+                                            <FormControl>
+                                                <Slider className='w-full mt-4' min={1} max={1000} step={5} value={[field.value]} onValueChange={(value) => field.onChange(value)} onPointerDown={() => mapp.dragging.disable()}
+                                                    onPointerUp={() => mapp.dragging.enable()} />
+                                            </FormControl>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                name="level"
+                                control={mapConfig.control}
+                                render={({ field }) => (
+                                    <FormItem >
+                                        <div className="">
+                                            <Label>Level between: <span>{field.value[0]} - {field.value[1]}</span></Label>
+                                            <FormControl>
+                                                <Slider
+                                                    className="w-full mt-4"
+                                                    min={0}
+                                                    max={100}
+                                                    step={1}
+                                                    value={field.value}
+                                                    onValueChange={(value) => field.onChange(value)}
+                                                    onPointerDown={() => mapp.dragging.disable()}
+                                                    onPointerUp={() => mapp.dragging.enable()}
+                                                />
+                                            </FormControl>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                name="health"
+                                control={mapConfig.control}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <Label>Bin Health Alert</Label>
                                         <FormControl>
-                                            <Slider className='w-full mt-4' min={1} max={1000} step={5} value={[field.value]} onValueChange={(value) => field.onChange(value)} onPointerDown={() => mapp.dragging.disable()}
-                                                onPointerUp={() => mapp.dragging.enable()} />
+                                            <ToggleGroup className="mt-3 border-[0.2px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-br-none rounded-tr-none' value="good">Good</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-none' value="warning">Warning</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-none' value="critical">Critical</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-bl-none rounded-tl-none' value="all">All</ToggleGroupItem>
+                                            </ToggleGroup>
                                         </FormControl>
-                                    </div>
-                                </FormItem>
-                            )}
-                        />
-                        <Button className='rounded-full size-5 sm:size-7 cursor-pointer' type="submit" size='icon'><Search /></Button>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <Button className='cursor-pointer w-full' type="submit"><Search /> Search</Button>
 
                     </form>
                 </FormProvider>

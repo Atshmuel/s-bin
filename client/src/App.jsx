@@ -34,7 +34,7 @@ const queryClient = new QueryClient({
 function App() {
 
   return <QueryClientProvider client={queryClient}>
-    <ReactQueryDevtools initialIsOpen={false} />
+    <ReactQueryDevtools buttonPosition='bottom-left' initialIsOpen={false} />
     <ViewProvider>
       <BrowserRouter>
         <Routes>
