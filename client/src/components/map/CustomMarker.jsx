@@ -1,11 +1,12 @@
 import { useMapSettings } from '@/contexts/mapContext';
 import L from 'leaflet'
+import { Trash2 } from 'lucide-react';
 import React, { useMemo } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Marker, Popup, useMap } from 'react-leaflet';
 
 
-function CustomMarker({ icon, position, popup, offsetX = 0, offsetY = -18, strokeWidth = 2.5, size = 24, color = 'black' }) {
+function CustomMarker({ icon = Trash2, position, popup, offsetX = 0, offsetY = -18, strokeWidth = 2.5, size = 24, color = 'black' }) {
     const { flyEnabled } = useMapSettings()
     const map = useMap();
     const customIcon = useMemo(() => {
