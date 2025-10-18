@@ -43,7 +43,7 @@ export const binSchema = new mongoose.Schema({
     },
     maintenance: {
         lastServiceAt: { type: Date, default: Date.now },
-        nextServiceAt: { type: Date, default: () => add(new Date(), { days: 30 }) },
+        nextServiceAt: { type: Date, default: () => add(new Date(), { days: 90 }) },
 
         notes: String,
         technicianId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

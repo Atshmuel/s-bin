@@ -18,8 +18,9 @@ import BinsList from './pages/bins/BinsList';
 import BinMap from './pages/bins/BinMap';
 import BinDetails from './pages/bins/BinDetails';
 import AllLogs from './pages/binLogs/AllLogs';
-import BinLogs from './pages/binLogs/BinLogs';
+import BinLog from './pages/binLogs/BinLog';
 import UserProfile from './pages/users/UserProfile';
+import AccountProfile from './pages/users/AccountProfile';
 import UsersList from './pages/users/UsersList';
 import Signup from './pages/auth/Signup';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -42,7 +43,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <MapProvider>
-
                   <AppLayout />
                 </MapProvider>
               </ProtectedRoute>
@@ -60,19 +60,23 @@ function App() {
               <Route path=":id" element={<BinDetails />} />
               <Route path='logs'>
                 <Route path="" element={<AllLogs />} />
-                <Route path=":id" element={<BinLogs />} />
+                <Route path=":id" element={<BinLog />} />
               </Route>
+            </Route>
 
+            <Route path='users'>
+              <Route path='' element={<UsersList />} />
+              <Route path=':id' element={<UserProfile />} />
             </Route>
             <Route path="account">
-              <Route path="" element={<UserProfile />} />
+              <Route path="" element={<AccountProfile />} />
             </Route>
-            {/* protected routes */}
+            {/* Role protected routes */}
             <Route path="management">
               <Route path="bins" element={<BinsList />} />
               <Route path="users" element={<UsersList />} />
             </Route>
-            {/* end of protected routes */}
+            {/* end of role protected routes */}
 
 
           </Route>
@@ -85,7 +89,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </ViewProvider>
-    <Toaster richColors duration={3000} position="bottom-center" />
+    <Toaster richColors duration={3000} position="top-right" />
   </QueryClientProvider >
 
 }

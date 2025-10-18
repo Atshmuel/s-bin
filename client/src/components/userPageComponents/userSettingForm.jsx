@@ -11,6 +11,9 @@ import { ToggleGroupItem } from "../ui/toggle-group";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "../ui/select";
 
 function UserSettingForm() {
+    //TODO - add a field for notification - days before maintenance (min 7 | max 30) step size 1
+    //TODO - add a field for log severity (info,warning,critical) - days before maintenance
+    //Note -this changes will demend change of the setting in the backend scheme, make sure to do so and to verfiy them before the create PR to review the changes this change should be in the alertLevel section
     const userSettings = useForm({
         defaultValues: {
             isDark: true,
@@ -19,7 +22,7 @@ function UserSettingForm() {
             },
             alertLevel: {
                 health: "warning",
-                level: [50] //note the value that will be sent to the server is an array, therefore make the convertion in client side before fetching the the server (server will not allow array as level) and when fetcing to get the settings make sure to convert from number to array of number
+                level: [50] //TODO - the value that will be sent to the server is an array, therefore make the convertion in client side before fetching the the server (server will not allow array as level) and when fetcing to get the settings make sure to convert from number to array of number
             },
             language: "en"
         }
@@ -28,7 +31,7 @@ function UserSettingForm() {
     const { isDirty } = userSettings.formState;
 
     return (
-        <Card className="min-w-[350px] max-w-[400px] h-fit">
+        <Card className="min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center'>
                 <CardTitle className="mb-1">Preferences & Settings</CardTitle>
                 <CardDescription>Customize your experience by updating your settings</CardDescription>

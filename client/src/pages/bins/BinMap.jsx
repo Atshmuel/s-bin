@@ -3,7 +3,7 @@ import MapComponent from "@/components/map/MapComponent"
 import { Badge } from "@/components/ui/badge";
 import { getBinColor, getVariant } from "@/utils/binHelpers";
 
-function BinMap({ zoom, center, legend = true }) {
+function BinMap({ zoom, center, legend = true, legendForm = true }) {
     //should get the bins from context or reactQuery and display them on the map
     const bins = [
         {
@@ -92,7 +92,7 @@ function BinMap({ zoom, center, legend = true }) {
 
     return (
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
-            <MapComponent center={center ? center : bins && bins.length ? bins[0].location.coordinates : [32.0853, 34.7818]} zoom={zoom ?? 11} legend={legend} >
+            <MapComponent center={center ? center : bins && bins.length ? bins[0].location.coordinates : [32.0853, 34.7818]} zoom={zoom ?? 11} legend={legend} legendForm={legendForm} >
                 {bins.map((bin) => (
                     <CustomMarker key={bin._id} position={bin.location.coordinates} color={getBinColor(bin.status.level)} popup={
                         <div className="space-y-2 text-sm p-2 relative">

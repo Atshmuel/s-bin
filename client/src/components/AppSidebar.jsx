@@ -62,7 +62,7 @@ const data = {
       items: [
         {
           title: "List",
-          url: "list",
+          url: "",
         },
       ],
     },
@@ -103,6 +103,10 @@ const data = {
         {
           title: "Specific Bin Log",
           url: "bins/logs/:id"
+        },
+        {
+          title: "User profile view",
+          url: "users/:id"
         }
       ],
     },
@@ -122,11 +126,6 @@ const data = {
       name: "Statistics",
       url: "/statistics",
       icon: BarChart3,
-    },
-    {
-      name: "App Settings",
-      url: "/settings",
-      icon: Settings2,
     },
     {
       name: "Support",

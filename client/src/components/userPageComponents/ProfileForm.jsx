@@ -32,7 +32,7 @@ function ProfileForm() {
     }
 
     return (
-        <Card className="min-w-[350px] max-w-[400px] h-fit">
+        <Card className="min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center flex flex-row justify-between relative'>
                 {profileForm.getValues('role').length ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('role').toLocaleLowerCase()}>{profileForm.getValues('role')}</Badge> : null}
                 <div>
@@ -44,7 +44,7 @@ function ProfileForm() {
                     <CardDescription>Update your personal information</CardDescription>
                 </div>
                 <Tooltip>
-                    <TooltipTrigger className="h-fit sticky top-14 m-0">
+                    <TooltipTrigger className="h-fit sticky top-14 m-0" asChild>
                         {profileForm.getValues('status') ? <Badge variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
                     </TooltipTrigger>
                     <TooltipContent side='bottom' >

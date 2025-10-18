@@ -20,7 +20,7 @@ function PasswordForm() {
     const { isValid } = passwordForm.formState;
 
     return (
-        <Card className="flex-[1_1_400px] min-w-[350px] max-w-[400px] h-fit">
+        <Card className="flex-[1_1_400px] min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center'>
                 <CardTitle>Update Your Password</CardTitle>
                 <CardDescription>Keep your account safe by updating your password</CardDescription>

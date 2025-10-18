@@ -11,8 +11,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useMapSettings } from "@/contexts/mapContext"
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group"
+import { toast } from "sonner"
 
-function MapLegend() {
+function MapLegend({ legendForm = false }) {
     const { flyEnabled, setFlyEnabled, tile, setTile, isOpen, setIsOpen } = useMapSettings()
     const mapp = useMapEvent({
         move: () => { setLocation(mapp.getCenter().lat.toFixed(3) + ", " + mapp.getCenter().lng.toFixed(3)) },
@@ -48,13 +49,13 @@ function MapLegend() {
         }, (err) => {
             // Handle permission denied or other errors
             if (err.code === err.PERMISSION_DENIED) {
-                alert("Location access is denied. Please enable it in your browser settings.");
+                toast.error("Location access is denied. Please enable it in your browser settings.")
             } else if (err.code === err.POSITION_UNAVAILABLE) {
-                alert("Location information is unavailable.");
+                toast.error("Location information is unavailable.")
             } else if (err.code === err.TIMEOUT) {
-                alert("Location request timed out. Try again.");
+                toast.error("Location request timed out. Try again.")
             } else {
-                alert("An unknown error occurred while retrieving location.");
+                toast.error("An unknown error occurred while retrieving location.")
             }
         }
         )
@@ -74,9 +75,9 @@ function MapLegend() {
         <div className={`absolute flex flex-col justify-center items-center bottom-1.5 right-1.5 z-400 h-10 w-10 bg-accent rounded-md px-2 py-2 transition-all duration-500 ease-in-out  ${isOpen ? 'w-fit h-fit space-y-2' : ''}`}>
             <div className="self-end" onClick={() => setIsOpen(open => !open)}>{isOpen ? <X /> : <MenuSquare />}</div>
             <div className={`flex flex-col space-y-4 overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'opacity-0 max-h-0'}`}>
-                <FormProvider {...mapConfig}>
+                {legendForm ? <FormProvider {...mapConfig}>
                     <form className="flex flex-col space-y-4 mb-4 justify-between items-center" onSubmit={mapConfig.handleSubmit(data => console.log(data))}>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-4">
                             <FormField
                                 name="radius"
                                 control={mapConfig.control}
@@ -137,8 +138,8 @@ function MapLegend() {
                         <Button className='cursor-pointer w-full' type="submit"><Search /> Search</Button>
 
                     </form>
-                </FormProvider>
-                <div className="flex flex-row items-center justify-between">
+                </FormProvider> : null}
+                <div className="flex flex-row items-center justify-between gap-3">
                     <div className="space-y-2">
                         <div className="flex items-center justify-start space-x-1.5">
                             <Switch checked={tile === 'satellite'}
@@ -165,7 +166,7 @@ function MapLegend() {
                         <span>{location}</span>
                     </div>
                     <div className="flex flex-row gap-1 text-xs sm:text-sm">Zoom:
-                        <span>{zoom}</span>
+                        <span>{zoom.toFixed(2)}</span>
                     </div>
                 </div>
             </div>

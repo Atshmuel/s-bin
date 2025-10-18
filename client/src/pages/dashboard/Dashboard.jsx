@@ -68,7 +68,7 @@ function Dashboard() {
                         ))}
                     </div>
                     <div className="h-[250px] lg:h-auto lg:w-1/2">
-                        <BinMap zoom={13} legend={true} />
+                        <BinMap zoom={13} legend={true} legendForm={false} />
                     </div>
                 </div>
 

@@ -31,6 +31,7 @@ import { NavLink } from "react-router-dom"
 export function NavAccount({
   account
 }) {
+  //TODO - Notifications should open a dialog with notifications and to allow the user edit his pref, also this this should be fetched to the server when he submit the form
   const { isMobile } = useSidebar()
 
   return (
@@ -80,12 +81,11 @@ export function NavAccount({
                   Account
                 </DropdownMenuItem>
               </NavLink>
-              <NavLink to="/account/notifications">
-                <DropdownMenuItem>
-                  <Bell />
-                  Notifications
-                </DropdownMenuItem>
-              </NavLink>
+
+              <DropdownMenuItem>
+                <Bell />
+                Notifications
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

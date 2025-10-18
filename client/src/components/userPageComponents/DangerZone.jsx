@@ -10,7 +10,7 @@ function DangerZone({ className, userName }) {
     const [deleteInput, setDeleteInput] = useState("");
 
     return (
-        <Card className={`${className} min-w-[350px] max-w-[400px] h-fit`}>
+        <Card className={`${className} min-w-[330px] max-w-[400px] h-fit`}>
             <CardHeader className='text-center relative'>
                 <CardTitle className='text-destructive font-extrabold'>Danger Zone</CardTitle>
                 <CardDescription>This section contains actions that will affect all your belongings; Please act carefully.</CardDescription>
