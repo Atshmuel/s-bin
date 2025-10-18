@@ -11,9 +11,6 @@ import { ToggleGroupItem } from "../ui/toggle-group";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "../ui/select";
 
 function UserSettingForm() {
-    //TODO - add a field for notification - days before maintenance (min 7 | max 30) step size 1
-    //TODO - add a field for log severity (info,warning,critical) - days before maintenance
-    //Note -this changes will demend change of the setting in the backend scheme, make sure to do so and to verfiy them before the create PR to review the changes this change should be in the alertLevel section
     const userSettings = useForm({
         defaultValues: {
             isDark: true,
@@ -22,7 +19,10 @@ function UserSettingForm() {
             },
             alertLevel: {
                 health: "warning",
-                level: [50] //TODO - the value that will be sent to the server is an array, therefore make the convertion in client side before fetching the the server (server will not allow array as level) and when fetcing to get the settings make sure to convert from number to array of number
+                severity: "warning",
+                daysBeforeMaintenance: [60],
+                level: [50]
+                //TODO - level and daysBeforeMaintenance value that will be sent to the server is an arrays (each), therefore make the convertion in client side before fetching the the server (server will not allow array as level) and when fetcing to get the settings make sure to convert from number to array of number 
             },
             language: "en"
         }
@@ -83,7 +83,6 @@ function UserSettingForm() {
                                 />
                             </div>
                         </div>
-
                         <Separator />
                         <div>
                             <h2 className='mb-6'>Notifications</h2>
@@ -107,7 +106,7 @@ function UserSettingForm() {
                                         <FormItem>
                                             <Label>Bin Health Alert</Label>
                                             <FormControl>
-                                                <ToggleGroup className="mt-3 border-[0.1px] rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                                <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
                                                     <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="good">Good</ToggleGroupItem>
                                                     <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">Warning</ToggleGroupItem>
                                                     <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">Critical</ToggleGroupItem>
@@ -119,20 +118,57 @@ function UserSettingForm() {
                                         </FormItem>
                                     )}
                                 />
+
                                 <FormField
                                     name="alertLevel.level"
                                     control={userSettings.control}
                                     render={({ field }) => (
                                         <FormItem >
-                                            <div className="flex items-center gap-4">
-
+                                            <div className="flex flex-col items-start gap-4">
+                                                <Label>Bins Alert Level: <span>{field.value}</span></Label>
                                                 <FormControl>
                                                     <Slider className='w-[55%] m-0' min={10} max={100} step={5} value={[field.value]} onValueChange={(value) => field.onChange(value)} />
                                                 </FormControl>
-                                                <Label>Bins Alert Level: <span>{field.value}</span></Label>
                                             </div>
                                             <FormDescription>
                                                 The fill percentage of the bin at which you want to receive notifications.
+                                            </FormDescription>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    name="alertLevel.severity"
+                                    control={userSettings.control}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <Label>Log Severity Alert</Label>
+                                            <FormControl>
+                                                <ToggleGroup className="mt-3 border-[0.1px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                                    <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="info">Info</ToggleGroupItem>
+                                                    <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">Warning</ToggleGroupItem>
+                                                    <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">Critical</ToggleGroupItem>
+                                                </ToggleGroup>
+                                            </FormControl>
+                                            <FormDescription>
+                                                Bin log severity that you want to get notified from.
+                                            </FormDescription>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    name="alertLevel.daysBeforeMaintenance"
+                                    control={userSettings.control}
+                                    render={({ field }) => (
+                                        <FormItem >
+                                            <div className="flex flex-col items-start gap-4">
+                                                <Label>Maintenance Notification (days): <span>{field.value}</span></Label>
+                                                <FormControl>
+                                                    <Slider className='w-[55%] m-0' min={7} max={60} step={1} value={[field.value]} onValueChange={(value) => field.onChange(value)} />
+                                                </FormControl>
+
+                                            </div>
+                                            <FormDescription>
+                                                Days in advance to receive a maintenance alert.
                                             </FormDescription>
                                         </FormItem>
                                     )}

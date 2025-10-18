@@ -9,7 +9,9 @@ export const userSettingsSchema = new mongoose.Schema({
     },
     alertLevel: {
         health: { type: String, enum: ["good", "warning", "critical"], default: "warning" },
-        level: { type: Number, min: 0, max: 100, default: 50 }
+        severity: { type: String, enum: ["info", "warning", "critical"], default: "warning" },
+        level: { type: Number, min: 0, max: 100, default: 50 },
+        daysBeforeMaintenance: { type: Number, min: 7, max: 60, default: 60 }
     },
     timezone: { type: String, default: 'Asia/Jerusalem' },
     appLanguage: { type: String, enum: ["en", "he"], default: "en" }
