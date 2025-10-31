@@ -48,6 +48,13 @@ export const binSchema = new mongoose.Schema({
         notes: String,
         technicianId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     },
+    macAddress: {
+        type: String,
+        unique: true,
+        sparse: true,
+        default: null,
+        match: /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/
+    },
 }, { timestamps: true });
 
 

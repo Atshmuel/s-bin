@@ -123,3 +123,34 @@ export function authRole(allowedRoles = []) {
     }
 }
 
+export async function authDevice(req, res, next) {
+    const authBearer = req.headers.authorization
+    const mac = req.headers["x-device-mac"];
+    if (!authBearer?.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Unauthorized device" });
+    }
+    const token = authBearer.split(" ")[1];
+    if (!token || !mac) {
+        return res.status(401).json({ message: "Unauthorized device" });
+    }
+
+    const macRegex = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
+    if (!macRegex.test(mac)) {
+        return res.status(400).json({ message: "Invalid MAC address format" });
+    }
+    try {
+
+        const device = await binModel.findOne({ deviceKey: token, macAddress: mac });
+        if (!exist) {
+            return res.status(401).json({ message: "Unauthorized device" });
+        }
+        req.device = device
+        next();
+    } catch (error) {
+        console.error('Failed to authorize the device');
+        return res.status(500).json({ message: "Failed to authorize the device" });
+    }
+
+}
+
+

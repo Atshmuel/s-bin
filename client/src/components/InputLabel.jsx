@@ -17,6 +17,7 @@ function InputLabel({ children, variant = 'float', ...props }) {
                     onChange={props.onChange}
                     name={props.name}
                     type={props.type}
+                    disabled={props.disabled}
                 />
                 <Label
                     htmlFor={id}

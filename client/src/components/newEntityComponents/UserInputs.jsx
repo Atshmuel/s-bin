@@ -23,8 +23,12 @@ function UserInputs({ form }) {
                                 const parts = value.trim().split(/\s+/); // מפרק לפי רווחים
                                 return parts.length >= 2 || "Please enter first and last name";
                             },
+                            noWhitespace: (value) => {
+                                return value.trim() === value || "Name cannot start or end with whitespace";
+                            }
                         }
-                    }}
+                    }
+                    }
                     render={({ field }) => (
                         <FormItem>
                             <Label>Full Name</Label>
@@ -45,6 +49,9 @@ function UserInputs({ form }) {
                         validate: {
                             notEmpty: (value) =>
                                 value.trim().length > 0 || "Email cannot be empty or only spaces",
+                            noWhitespace: (value) => {
+                                return value.trim() === value || "Email cannot start or end with whitespace";
+                            }
                         },
                     }}
                     render={({ field }) => (

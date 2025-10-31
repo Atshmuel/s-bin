@@ -27,6 +27,7 @@ import ForgotPassword from './pages/auth/ForgotPassword';
 import SupportPage from './pages/generals/SupportPage';
 import ErrorPage from './pages/generals/ErrorPage';
 import { MapProvider } from './contexts/mapContext';
+import AddBin from './pages/bins/AddBin';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -57,6 +58,7 @@ function App() {
             <Route path='bins'>
               <Route path="" element={<BinsList />} />
               <Route path="map" element={<BinMap />} />
+              <Route path="add" element={<AddBin />} />
               <Route path=":id" element={<BinDetails />} />
               <Route path='logs'>
                 <Route path="" element={<AllLogs />} />

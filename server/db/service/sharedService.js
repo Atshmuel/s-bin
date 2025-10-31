@@ -61,6 +61,21 @@ export async function deleteLogsForBins(binIds, session) {
     const deleteResult = await binLogModel.deleteMany({ binId: { $in: binIds } }, { session })
     return deleteResult.deletedCount;
 }
+
+//Users
+export async function getUserShared(userId) {
+    try {
+        if (!userId)
+            throw new Error('userId is mandatory')
+        const user = await userModel.exist(userId)
+        if (!user) throw new Error('User not found')
+        return true
+    } catch (error) {
+        console.error(error)
+        return false;
+    }
+}
+
 //Emails
 export async function innerGetTemplateByTemplateId(templateId) {
     try {

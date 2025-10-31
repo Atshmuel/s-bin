@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { binModel } from '../models/models.js'
 import { appendFilter, generateRandomToken } from '../../utils/helpers.js'
-import { deleteLogsForBins } from '../service/sharedService.js'
+import { deleteLogsForBins, getUserShared } from '../service/sharedService.js'
 
 
 export async function getBin(req, res) {
@@ -123,59 +123,31 @@ export async function getBinsInUserRadius(req, res) {
 }
 
 export async function createBin(req, res) {
-    const { id: ownerId } = req.user
-    const { binName, location } = req.body
-    if (!binName || !location)
-        return res.status(400).json({ message: 'binName, Location are mandatory !' })
+    const { mac, userId } = req.body
     try {
+        const existingUser = await getUserShared(userId)
+        if (!existingUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+        const existingBin = await binModel.findOne({ macAddress: mac })
+        if (existingBin) {
+            return res.status(409).json({ message: "A bin with the provided MAC address already exists." });
+        }
+
         const deviceKey = generateRandomToken()
-        const newData = await binModel.create({ binName, location, ownerId, deviceKey })
+        const binName = `Bin-${mac.slice(-4)}`
+        const newData = await binModel.create({ binName, macAddress: mac, ownerId: userId, deviceKey })
         res.status(201).json({ bin: newData })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
     }
 }
 
-export async function createBinsBatch(req, res) {
-    const { id: ownerId } = req.user
-
-    const binsBatch = req.body //array of bins
-    if (!binsBatch.length) return res.status(400).json({ message: 'Array of binName(name), Location are mandatory !' })
-
-    if (!binsBatch.every(bin => bin.binName && bin.location)) {
-        return res.status(400).json({ message: 'All bins must have binName and location!' });
-    }
-
-    if (binsBatch.every(bin => bin.level && bin.status)) {
-        return res.status(400).json({ message: "Cant create Bins with level or status!" });
-    }
-
-    const binsWithOwnerId = binsBatch.map((bin) => {
-        const deviceKey = generateRandomToken()
-        return { ...bin, ownerId, deviceKey }
-    });
-
-
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    try {
-        const newBinsBatch = await binModel.insertMany(binsWithOwnerId, { session })
-        await session.commitTransaction();
-        session.endSession();
-        res.status(201).json({ bins: newBinsBatch })
-    } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
-        res.status(500).json({ message: error?.message || error })
-    }
-}
-
 export async function updateBinLocation(req, res) {
-    const { id } = req.params
-    const { id: ownerId, role } = req.user
+    const { deviceKey, macAddress } = req.device
     const { location } = req.body
 
-    let filters = { _id: id }
+    let filters = { deviceKey, macAddress }
     filters = appendFilter(filters, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     if (!location || !Array.isArray(location) || location.length !== 2 || !location.every(n => typeof n === "number")) {
@@ -183,7 +155,6 @@ export async function updateBinLocation(req, res) {
             message: "Location is mandatory and must be an array of 2 numbers [lng, lat]."
         });
     }
-
 
     try {
         let updatedBin = await binModel.findOneAndUpdate(filters, { $set: { "location.coordinates": location } }, { new: true, runValidators: true })
@@ -196,12 +167,10 @@ export async function updateBinLocation(req, res) {
     }
 }
 export async function updateBinHealth(req, res) {
-    const { id } = req.params
-    const { id: ownerId, role } = req.user
+    const { deviceKey, macAddress } = req.device
     const { health } = req.body
 
-    let filters = { _id: id }
-    filters = appendFilter(filters, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    let filters = { deviceKey, macAddress }
 
     if (!health || typeof health !== 'string' || !["good", "warning", "critical"].includes(health.toLowerCase())) {
         return res.status(400).json({
@@ -220,19 +189,16 @@ export async function updateBinHealth(req, res) {
     }
 }
 export async function updateBinLevel(req, res) {
-    const { id } = req.params
-    const { id: ownerId, role } = req.user
+    const { deviceKey, macAddress } = req.device
     const { level } = req.body
 
-    let filters = { _id: id }
-    filters = appendFilter(filters, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    let filters = { deviceKey, macAddress }
 
     if ((!level || typeof level !== 'number') && (level >= 0 && level <= 100)) {
         return res.status(400).json({
             message: "level is mandatory and must be between 0-100"
         });
     }
-
 
     try {
         const updatedBin = await binModel.findOneAndUpdate(filters, { $set: { "status.level": level } }, { new: true, runValidators: true })
@@ -260,7 +226,14 @@ export async function updateBinMaintenance(req, res) {
         return res.status(500).json({ message: 'Server error' });
     }
 }
+
+/* unimplemented functions
+export async function updateBinName(req,res){
+// if we want to allow updating device name we can implement this function in the future but need to keep in mind to send the new name to the device for it to update its config
+}
+
 export async function updateBinDeviceKey(req, res) {
+    // if will be used in the future we need to send the new key to the device for it to update its config
     const { id } = req.params
     const { id: ownerId, role } = req.user
 
@@ -278,6 +251,8 @@ export async function updateBinDeviceKey(req, res) {
         res.status(500).json({ message: error?.message || error })
     }
 }
+
+*/
 
 export async function deleteBin(req, res) {
     const { id } = req.params;

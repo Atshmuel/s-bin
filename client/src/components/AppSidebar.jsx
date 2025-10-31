@@ -42,6 +42,10 @@ const data = {
       // isActive: true,
       items: [
         {
+          title: "Add Bin",
+          url: "add",
+        },
+        {
           title: "List",
           url: "",
         },
