@@ -255,6 +255,7 @@ export async function updateBinDeviceKey(req, res) {
 */
 
 export async function deleteBin(req, res) {
+    //should notify the device to erase its config
     const { id } = req.params;
     const { id: ownerId, role } = req.user
 
@@ -291,6 +292,8 @@ export async function deleteBin(req, res) {
 }
 
 export async function deleteBinsBatch(req, res) {
+    //should notify the device to erase its config
+
     const { id: ownerId, role } = req.user
     const binIds = req.binIds
 
