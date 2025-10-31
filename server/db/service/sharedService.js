@@ -67,7 +67,7 @@ export async function getUserShared(userId) {
     try {
         if (!userId)
             throw new Error('userId is mandatory')
-        const user = await userModel.exist(userId)
+        const user = await userModel.exists({ _id: userId })
         if (!user) throw new Error('User not found')
         return true
     } catch (error) {

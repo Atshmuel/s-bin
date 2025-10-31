@@ -1,11 +1,13 @@
 import { getUserShared } from "../db/service/sharedService.js";
 import { generateRandomToken } from '../utils/helpers.js'
 import { mqttClient } from './mqttClient.js'
-import binModel from "../models/binModel.js";
 import { BIN_REGISTER_TOPIC, BIN_ACK_TOPIC } from "./mqttTopics.js";
+import { binModel } from "../db/models/models.js";
 
 export async function handleMqttMessage(topic, payload) {
     if (topic === BIN_REGISTER_TOPIC) {
+        console.log(payload);
+
         await handleRegistration(payload);
         return;
     }
@@ -34,7 +36,7 @@ export async function handleMqttMessage(topic, payload) {
     }
 }
 
-async function handleRegistration({ mac, userId }) {
+async function handleRegistration({ mac, userId, location, }) {
     try {
 
         const existingUser = await getUserShared(userId);
@@ -54,13 +56,18 @@ async function handleRegistration({ mac, userId }) {
         }
 
         const deviceKey = generateRandomToken();
-        const binName = `Bin-${mac.slice(-4)}`;
+        const binName = `Bin-${mac.slice(-4)}-${Date.now().toString().slice(-4)}`;
 
         const newBin = await binModel.create({
             binName,
             macAddress: mac,
             ownerId: userId,
             deviceKey,
+            location: {
+                type: "Point",
+                coordinates: location || [0, 0],
+            }
+
         });
         console.log("Registered new bin via MQTT:", newBin);
         mqttClient.publish(
@@ -75,7 +82,7 @@ async function handleRegistration({ mac, userId }) {
 async function handleLocation(mac, { deviceKey, location }) {
     if (!Array.isArray(location) || location.length !== 2) return;
 
-    await binModel.findOneAndUpdate(
+    await binLogModel.findOneAndUpdate(
         { macAddress: mac, deviceKey },
         { $set: { "location.coordinates": location } },
         { new: true }
