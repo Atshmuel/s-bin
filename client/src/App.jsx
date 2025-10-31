@@ -7,7 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
-import { ViewProvider } from './contexts/toggleDarkMode';
+import { DarkModeProvider } from './contexts/darkModelContext';
 import { Toaster } from './components/ui/sonner';
 import Login from '../src/pages/auth/Login'
 import Dashboard from './pages/dashboard/Dashboard';
@@ -38,7 +38,7 @@ function App() {
 
   return <QueryClientProvider client={queryClient}>
     <ReactQueryDevtools buttonPosition='bottom-left' initialIsOpen={false} />
-    <ViewProvider>
+    <DarkModeProvider>
       <BrowserRouter>
         <BreadcrumbProvider>
           <Routes>
@@ -93,7 +93,7 @@ function App() {
           </Routes>
         </BreadcrumbProvider>
       </BrowserRouter>
-    </ViewProvider>
+    </DarkModeProvider>
     <Toaster richColors duration={3000} position="top-right" />
   </QueryClientProvider >
 

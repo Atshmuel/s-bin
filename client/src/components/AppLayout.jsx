@@ -3,11 +3,11 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 
-import { useView } from "@/contexts/toggleDarkMode";
+import { useDarkMode } from "@/contexts/darkModelContext";
 import { Breakcrumbs } from "./Breadcrumbs";
 import { Moon, SunMedium } from "lucide-react";
 function AppLayout() {
-    const { isDark, toggleView } = useView()
+    const { isDark, toggleView } = useDarkMode()
     return (
         <SidebarProvider>
             <AppSidebar />
