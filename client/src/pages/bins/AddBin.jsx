@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
+import { useBreadcrumbs } from "@/contexts/breadcrumbsContext"
 import { CircleCheck, Eye, EyeOff, Info } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"

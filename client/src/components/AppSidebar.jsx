@@ -42,7 +42,7 @@ const data = {
       // isActive: true,
       items: [
         {
-          title: "Add Bin",
+          title: "Add",
           url: "add",
         },
         {

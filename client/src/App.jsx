@@ -28,6 +28,7 @@ import SupportPage from './pages/generals/SupportPage';
 import ErrorPage from './pages/generals/ErrorPage';
 import { MapProvider } from './contexts/mapContext';
 import AddBin from './pages/bins/AddBin';
+import { BreadcrumbProvider } from './contexts/breadcrumbsContext';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -39,56 +40,58 @@ function App() {
     <ReactQueryDevtools buttonPosition='bottom-left' initialIsOpen={false} />
     <ViewProvider>
       <BrowserRouter>
-        <Routes>
-          <Route
-            element={
-              <ProtectedRoute>
-                <MapProvider>
-                  <AppLayout />
-                </MapProvider>
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Navigate replace to="dashboard" />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="statistics" element={<Statistics />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="settings" element={<AppSettings />} />
+        <BreadcrumbProvider>
+          <Routes>
+            <Route
+              element={
+                <ProtectedRoute>
+                  <MapProvider>
+                    <AppLayout />
+                  </MapProvider>
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate replace to="dashboard" />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="statistics" element={<Statistics />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="settings" element={<AppSettings />} />
 
-            <Route path='bins'>
-              <Route path="" element={<BinsList />} />
-              <Route path="map" element={<BinMap />} />
-              <Route path="add" element={<AddBin />} />
-              <Route path=":id" element={<BinDetails />} />
-              <Route path='logs'>
-                <Route path="" element={<AllLogs />} />
-                <Route path=":id" element={<BinLog />} />
+              <Route path='bins'>
+                <Route path="" element={<BinsList />} />
+                <Route path="map" element={<BinMap />} />
+                <Route path="add" element={<AddBin />} />
+                <Route path=":id" element={<BinDetails />} />
+                <Route path='logs'>
+                  <Route path="" element={<AllLogs />} />
+                  <Route path=":id" element={<BinLog />} />
+                </Route>
               </Route>
-            </Route>
 
-            <Route path='users'>
-              <Route path='' element={<UsersList />} />
-              <Route path=':id' element={<UserProfile />} />
-            </Route>
-            <Route path="account">
-              <Route path="" element={<AccountProfile />} />
-            </Route>
-            {/* Role protected routes */}
-            <Route path="management">
-              <Route path="bins" element={<BinsList />} />
-              <Route path="users" element={<UsersList />} />
-            </Route>
-            {/* end of role protected routes */}
+              <Route path='users'>
+                <Route path='' element={<UsersList />} />
+                <Route path=':id' element={<UserProfile />} />
+              </Route>
+              <Route path="account">
+                <Route path="" element={<AccountProfile />} />
+              </Route>
+              {/* Role protected routes */}
+              <Route path="management">
+                <Route path="bins" element={<BinsList />} />
+                <Route path="users" element={<UsersList />} />
+              </Route>
+              {/* end of role protected routes */}
 
 
-          </Route>
-          <Route path="login" element={<Login />} />
-          <Route path="signup" element={<Signup />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="support" element={<SupportPage />} />
+            </Route>
+            <Route path="login" element={<Login />} />
+            <Route path="signup" element={<Signup />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="support" element={<SupportPage />} />
 
-          <Route path="*" element={<ErrorPage />} />
-        </Routes>
+            <Route path="*" element={<ErrorPage />} />
+          </Routes>
+        </BreadcrumbProvider>
       </BrowserRouter>
     </ViewProvider>
     <Toaster richColors duration={3000} position="top-right" />
