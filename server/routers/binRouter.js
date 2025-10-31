@@ -1,25 +1,9 @@
 import { Router } from "express";
-import { authToken, authRole, authDevice } from "../middlewares/authMiddleware.js";
+import { authToken, authRole } from "../middlewares/authMiddleware.js";
 import { validateBodyFields, validateParamExist, validateRequestBodyBinIds } from "../middlewares/validationMiddleware.js";
-import { createBin, deleteBin, getAllUserBins, getBin, updateBinLocation, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinHealth, updateBinLevel, updateBinMaintenance } from "../db/controllers/binController.js";
+import { createBin, deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinMaintenance } from "../db/controllers/binController.js";
 
 export const binRouter = Router();
-
-//posts
-binRouter.post('/', validateBodyFields(['mac', 'userId']), createBin) //post new bin no auth needed
-
-//*** protected routes for device requests ***
-//updates
-binRouter.patch('/location/:id', authDevice, validateBodyFields(['location']), updateBinLocation) //update bin location by id
-
-binRouter.patch('/health/:id', authDevice, validateBodyFields(['health']), updateBinHealth) //update bin health by id
-
-binRouter.patch('/level/:id', authDevice, validateBodyFields(['level']), updateBinLevel) //update bin level by id
-
-// binRouter.patch('/key/:id', (req, res, next) => {
-//     authRole([process.env.ROLE_OWNER])(req, res, next)
-// }, validateParamExist(), updateBinDeviceKey) //update bin secret key (deviceKey) by id
-
 
 //protected routes for admin panel requests 
 binRouter.use(authToken) //demends jwt for all requests

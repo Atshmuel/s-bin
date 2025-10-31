@@ -14,6 +14,7 @@ import { authRouter } from './routers/authRouter.js'
 import { logRouter } from './routers/logRouter.js'
 import { templateRouter } from './routers/templateRouter.js';
 import { setEmailServiceCredentials } from './utils/mailService.js';
+import { initMqtt } from './mqtt/mqttClient.js';
 
 const { SERVER_PORT, DB_URL } = process.env
 
@@ -46,6 +47,7 @@ const main = async () => {
         app.listen(SERVER_PORT, () => {
             console.log(mongoose.connection.readyState === 1 && `Connected to DB.`);
             console.log(`Listening on port ${SERVER_PORT}`);
+            initMqtt();
             setEmailServiceCredentials()
         });
     } catch (error) {
