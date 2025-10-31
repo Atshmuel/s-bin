@@ -2,17 +2,17 @@ import mqtt from "mqtt";
 import { handleMqttMessage } from "./mqttHandlers.js";
 import { BIN_REGISTER_TOPIC, BIN_UPDATE_TOPIC } from "./mqttTopics.js";
 
-// export const mqttClient = mqtt.connect("wss://broker.hivemq.com:8884/mqtt", {
-//     clientId: "server_" + Math.random().toString(16).slice(2),
-//     connectTimeout: 5000,
-//     reconnectPeriod: 1000,
-// });
-export const mqttClient = mqtt.connect("mqtt://broker.hivemq.com:1883", {
+export const mqttClient = mqtt.connect("wss://broker.hivemq.com:8884/mqtt", {
     clientId: "sbin_server_" + Math.random().toString(16).slice(2),
-    protocolVersion: 4,
     connectTimeout: 5000,
     reconnectPeriod: 1000,
+    protocolVersion: 4,
+
 });
+
+//test with mosquitto to create bin registration message
+//  mosquitto_pub -h broker.hivemq.com -p 1883 -t "bins/register" -m '{"mac":"EC:FA:11:9F:42:A2","userId":"68c5841c822b68f8c6fc4224","location":[32.123,34.232]}' -V mqttv311
+
 
 
 export function initMqtt() {
