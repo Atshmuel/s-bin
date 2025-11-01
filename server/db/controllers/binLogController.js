@@ -55,24 +55,3 @@ export async function getAllLogs(req, res) {
         res.status(500).json({ message: error?.message || error })
     }
 }
-
-export async function createLog(req, res) {
-    const { binId } = req.params;
-    let query = req.body
-    try {
-        let bin = req.bin ?? await getBinShared(binId);
-        if (!bin) throw new Error('Could not find this Bin');
-
-        query = appendFilter(query, true, 'oldLevel', bin.status.level)
-
-        bin.status.level = query.newLevel
-        bin.status.health = query.health
-        bin.status.updatedAt = new Date();
-        await bin.save()
-
-        const log = await binLogModel.create({ binId, ...query })
-        res.status(201).json({ log })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-}

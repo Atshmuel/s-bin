@@ -34,6 +34,7 @@ export const binSchema = new mongoose.Schema({
             default: "good"
         },
         level: { type: Number, default: 0, required: true },
+        battery: { type: Number, default: 0, required: true },
         updatedAt: { type: Date, default: Date.now }
     },
     ownerId: {
@@ -68,4 +69,5 @@ binSchema.methods.recordService = function (notes, technicianId) {
 }
 
 binSchema.index({ ownerId: 1 });
+binSchema.index({ macAddress: 1, deviceKey: 1 });
 binSchema.index({ location: "2dsphere" });

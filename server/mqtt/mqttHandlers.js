@@ -1,13 +1,11 @@
-import { getUserShared } from "../db/service/sharedService.js";
-import { generateRandomToken } from '../utils/helpers.js'
+import { getBinByMacAndKeyShared, getUserShared } from "../db/service/sharedService.js";
+import { appendFilter, checkPayloadFields, generateRandomToken } from '../utils/helpers.js'
 import { mqttClient } from './mqttClient.js'
-import { BIN_REGISTER_TOPIC, BIN_ACK_TOPIC } from "./mqttTopics.js";
-import { binModel } from "../db/models/models.js";
+import { BIN_REGISTER_TOPIC, BIN_ACK_TOPIC, BIN_ACK_COMMAND } from "./mqttTopics.js";
+import { binLogModel, binModel } from "../db/models/models.js";
 
 export async function handleMqttMessage(topic, payload) {
     if (topic === BIN_REGISTER_TOPIC) {
-        console.log(payload);
-
         await handleRegistration(payload);
         return;
     }
@@ -22,21 +20,21 @@ export async function handleMqttMessage(topic, payload) {
     const field = parts[3];
 
     switch (field) {
-        case "location":
-            await handleLocation(mac, payload);
+        case "log":
+            await handleDeviceLog(mac, payload);
             break;
-        case "health":
-            await handleHealth(mac, payload);
+        case "error":
+            await handleDeviceError(mac, payload);
             break;
-        case "level":
-            await handleLevel(mac, payload);
+        case "maintenance":
+            await handleDeviceMaintenance(mac, payload);
             break;
         default:
             console.log("Unknown topic:", field);
     }
 }
 
-async function handleRegistration({ mac, userId, location, }) {
+async function handleRegistration({ mac, userId, location, battery }) {
     try {
 
         const existingUser = await getUserShared(userId);
@@ -48,10 +46,11 @@ async function handleRegistration({ mac, userId, location, }) {
         const existingBin = await binModel.findOne({ macAddress: mac });
         if (existingBin) {
             console.log("Bin already exists");
-            mqttClient.publish(
-                `${BIN_ACK_TOPIC}/${mac}`,
-                JSON.stringify({ status: "already_registered", deviceKey: existingBin.deviceKey })
-            ); //notify device of existing registration
+            return;
+        }
+
+        if (!Array.isArray(location) || location.length !== 2 || typeof battery !== 'number' || battery < 0 || battery > 100) {
+            console.log("Invalid location or battery data");
             return;
         }
 
@@ -66,56 +65,74 @@ async function handleRegistration({ mac, userId, location, }) {
             location: {
                 type: "Point",
                 coordinates: location || [0, 0],
+            },
+            status: {
+                battery: battery
             }
 
         });
         console.log("Registered new bin via MQTT:", newBin);
         mqttClient.publish(
             `${BIN_ACK_TOPIC}/${mac}`,
-            JSON.stringify({ status: "registered", deviceKey })
+            JSON.stringify({ status: "registered", deviceKey }) // send deviceKey back to device for future authentication
         );
     } catch (error) {
         console.error("Error registering bin via MQTT:", error);
     }
 }
 
-async function handleLocation(mac, { deviceKey, location }) {
-    if (!Array.isArray(location) || location.length !== 2) return;
+async function handleDeviceLog(mac, { deviceKey, location, health, level, battery }) {
+    if (!checkPayloadFields({ location, health, level, battery })) return;
 
-    await binLogModel.findOneAndUpdate(
-        { macAddress: mac, deviceKey },
-        { $set: { "location.coordinates": location } },
-        { new: true }
+    const bin = await getBinByMacAndKeyShared(mac, deviceKey);
+    if (!bin) return;
+
+    let severity = 'info';
+    let message = null;
+    if (health === 'warning' || (level <= 60 && level > 80) || (battery <= 50 && battery > 30)) {
+        severity = 'warning';
+        message = 'Check soon and schedule maintenance.';
+    }
+    if (health === 'critical' || level >= 80 || battery <= 30) {
+        severity = 'critical';
+        message = 'Immediate attention required, notify maintenance team.';
+    };
+
+    let query = { binId: bin._id, location, health, oldLevel: bin.status.level, newLevel: level, battery, severity, type: 'log', source: 'sensor' }
+    query = appendFilter(query, message, 'message', message);
+
+    await binLogModel.create(query);
+
+    bin.status.updatedAt = new Date();
+    bin.status.health = health;
+    bin.status.level = level;
+    bin.status.battery = battery;
+    bin.location.coordinates = location;
+    await bin.save();
+
+    console.log("Updated log for", mac);
+    mqttClient.publish(
+        `${BIN_ACK_TOPIC}/${mac}`,
+        JSON.stringify({ status: "Log updated for ", mac })
     );
-    console.log("Updated location for", mac);
 }
 
-async function handleHealth(mac, { deviceKey, health }) {
-    const valid = ["good", "warning", "critical"];
-    if (!valid.includes(health)) return;
 
-    await binModel.findOneAndUpdate(
-        { macAddress: mac, deviceKey },
-        { $set: { "status.health": health } },
-        { new: true }
-    );
-    console.log("Updated health for", mac);
+//TODO: implement these handlers
+async function handleDeviceError(mac, { deviceKey, location, health, level, battery, message }) {
+    if (!checkPayloadFields({ location, health, level, battery })) return;
+
+}
+async function handleDeviceMaintenance(mac, { deviceKey, location, health, level, battery }) {
+    if (!checkPayloadFields({ location, health, level, battery })) return;
+
 }
 
-async function handleLevel(mac, { deviceKey, level }) {
-    if (typeof level !== "number" || level < 0 || level > 100) return;
-
-    await binModel.findOneAndUpdate(
-        { macAddress: mac, deviceKey },
-        { $set: { "status.level": level } },
-        { new: true }
-    );
-    console.log("Updated level for", mac, level);
-}
 
 export function removeBinConfig(mac) {
-    mqttClient.publish(`bins/${mac}/command`, JSON.stringify({
+    mqttClient.publish(`${BIN_ACK_COMMAND}/${mac}`, JSON.stringify({
         command: "reset",
         reason: "removed_by_user"
     }));
 }
+

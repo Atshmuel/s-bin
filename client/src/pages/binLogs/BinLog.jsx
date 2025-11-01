@@ -5,7 +5,7 @@ import MapComponent from "@/components/map/MapComponent"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useMapSettings } from "@/contexts/mapContext"
-import { getBinColor, getVariant } from "@/utils/binHelpers"
+import { getColor, getVariant } from "@/utils/binHelpers"
 import { ArrowLeft } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -26,6 +26,7 @@ function BinLog() {
         status: {
             health: "warning",
             level: 91,
+            battery: 75,
             updatedAt: "2025-10-17T16:41:41.577Z",
         },
         ownerId: "68c5841c822b68f8c6fc4224",
@@ -46,6 +47,7 @@ function BinLog() {
         severity: "info",
         newLevel: 10,
         oldLevel: 0,
+        battery: 80,
         health: "good",
         source: "manual",
         createdAt: "2025-10-17T16:23:44.389Z",
@@ -66,7 +68,7 @@ function BinLog() {
             </div>
             <div ref={mapContainerRef} className="rounded-2xl overflow-hidden h-[450px]">
                 <MapComponent zoom={14} center={bin.location.coordinates} legend={true} >
-                    <CustomMarker key={bin._id} position={bin.location.coordinates} color={getBinColor(bin.status.level)} popup={
+                    <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status.level)} popup={
                         <div className="space-y-2 text-sm p-2 relative">
                             <Badge className='absolute top-2.5 right-0' variant={getVariant(bin.status.health)}>{bin.status.health}</Badge>
                             <h3 className="font-bold lg:text-md">Name: {bin.binName}</h3>

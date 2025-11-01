@@ -65,3 +65,13 @@ export function generateRandomToken(bytes = 32) {
 export function appendFilter(baseQuery, condition, field, value) {
     return condition ? { ...baseQuery, [field]: value } : baseQuery
 }
+
+export function checkPayloadFields({ location, health, level, battery }) {
+    const valid = ["good", "warning", "critical"];
+    if (!Array.isArray(location) || location.length !== 2) return false;
+    if (!valid.includes(health)) return false
+    if (typeof level !== "number" || level < 0 || level > 100) return false
+    if (typeof battery !== "number" || battery < 0 || battery > 100) return false
+
+    return true;
+}

@@ -9,8 +9,8 @@ export const binLogSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["Fill Level Update", "Maintenance", "Error", "System"],
-        default: "Fill Level Update",
+        enum: ["maintenance", "error", "log"],
+        default: "log",
     },
     severity: {
         type: String,
@@ -19,6 +19,7 @@ export const binLogSchema = new mongoose.Schema({
     },
     oldLevel: Number,
     newLevel: { type: Number, required: true },
+    battery: { type: Number, required: true },
     health: {
         type: String,
         enum: ["good", "warning", "critical"],

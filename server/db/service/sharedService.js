@@ -15,6 +15,19 @@ export async function getBinShared(binId) {
         return false
     }
 }
+
+export async function getBinByMacAndKeyShared(macAddress, deviceKey) {
+    try {
+        if (!macAddress || !deviceKey)
+            throw new Error('macAddress and deviceKey are mandatory')
+        const bin = await binModel.findOne({ deviceKey, macAddress })
+        return bin
+    } catch (error) {
+        console.error(error)
+        return null;
+    }
+}
+
 export async function verifyBinOwner(binId, ownerId) {
     try {
         if (!binId || !ownerId)
@@ -88,3 +101,4 @@ export async function innerGetTemplateByTemplateId(templateId) {
         return null
     }
 }
+

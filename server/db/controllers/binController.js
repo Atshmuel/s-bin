@@ -15,7 +15,9 @@ export async function getBin(req, res) {
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     const pipeline = [
-        { $match: query }
+        { $match: query },
+        { $project: { macAddress: 0 } }
+
     ]
     if (withLogs) {
         pipeline.push({
@@ -24,7 +26,7 @@ export async function getBin(req, res) {
                 localField: '_id',
                 foreignField: 'binId',
                 as: 'logs'
-            }
+            },
         })
     }
 
@@ -47,7 +49,9 @@ export async function getAllUserBins(req, res) {
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
 
     const pipeline = [
-        { $match: query }
+        { $match: query },
+        { $project: { macAddress: 0 } }
+
     ]
     if (withLogs) {
         pipeline.push({
@@ -56,7 +60,7 @@ export async function getAllUserBins(req, res) {
                 localField: '_id',
                 foreignField: 'binId',
                 as: 'logs'
-            }
+            },
         })
     }
 
@@ -78,7 +82,7 @@ export async function getBinsByStatus(req, res) {
     query = appendFilter(query, health && Array.isArray(health), 'status.health', { $in: health })
 
     try {
-        const binsData = await binModel.find(query)
+        const binsData = await binModel.find(query).select('-macAddress')
         res.status(200).json({ binsData: binsData })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
@@ -112,8 +116,9 @@ export async function getBinsInUserRadius(req, res) {
                         spherical: true,
                         maxDistance: radius,
                         query,
-                    }
+                    },
                 },
+                { $project: { macAddress: 0 } }
             ]
         )
 
