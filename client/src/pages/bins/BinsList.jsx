@@ -1,7 +1,8 @@
 import { format } from "date-fns";
 import DataTable from "../../components/DataTable"
 import { Link } from "react-router-dom";
-
+import { Badge } from "@/components/ui/badge";
+import Battery from "../../components/bins/Battary";
 const binsList = [
     {
         _id: "68f25bd2d04737ecca9de1b1",
@@ -41,8 +42,8 @@ function BinsList() {
             accessorKey: 'binName',
             enableSorting: true,
             cell: ({ row }) => {
-                const id = row.original._id;          // raw row data
-                const name = row.getValue("binName");   // cell value
+                const id = row.original._id;
+                const name = row.getValue("binName");
                 return (
                     <Link
                         to={`/bins/${id}`}
@@ -62,12 +63,25 @@ function BinsList() {
         },
 
         {
-            header: 'health status',
+            header: 'health',
             accessorKey: 'status.health',
+            cell: ({ row }) => {
+                const health = row.original.status.health;
+                const variant = health === 'warning' ? 'pending' : health === 'critical' ? 'suspended' : 'default';
+                return (
+                    <Badge variant={variant}
+                    >
+                        {health}
+                    </Badge>
+                );
+            },
         },
         {
-            header: 'battery level',
+            header: 'battery',
             accessorKey: 'status.battery',
+            cell: ({ row }) => {
+                return <Battery level={row.original.status.battery} />
+            }
         },
         {
             header: 'maintenance',

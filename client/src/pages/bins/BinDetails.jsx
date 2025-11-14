@@ -1,8 +1,11 @@
 import BinCard from "@/components/bins/BinCard"
+import DataTable from "@/components/DataTable"
+import Battery from "../../components/bins/Battary"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { format } from "date-fns"
 
 function BinDetails() {
-    //TODO - Create a table of logs
     const bin = {
         _id: "68f25bd2d04737ecca9de1b1",
         binName: "BIN-10000001",
@@ -57,6 +60,67 @@ function BinDetails() {
         ],
     }
 
+    const logsColumns = [
+        {
+            header: 'severity',
+            accessorKey: 'severity',
+            cell: ({ row }) => {
+                const severity = row.original.severity;
+                const variant = severity === 'warning' ? 'pending' : severity === 'critical' ? 'suspended' : 'default';
+                return (
+                    <Badge variant={variant}
+                    >
+                        {severity}
+                    </Badge>
+                );
+            }
+        },
+        {
+            header: 'reporter',
+            accessorKey: 'type',
+        },
+
+        {
+            header: 'new level',
+            accessorKey: 'newLevel',
+        },
+        {
+            header: 'health',
+            accessorKey: 'health',
+            cell: ({ row }) => {
+                const health = row.original.health;
+                const variant = health === 'warning' ? 'pending' : health === 'critical' ? 'suspended' : 'default';
+                return (
+                    <Badge variant={variant}
+                    >
+                        {health}
+                    </Badge>
+                );
+            },
+        },
+
+        {
+            header: 'battery',
+            accessorKey: 'battery',
+            cell: ({ row }) => {
+                console.log(row);
+
+                return <Battery level={row.original.battery} />
+            }
+        },
+        {
+            header: 'source',
+            accessorKey: 'source',
+        },
+        {
+            header: 'created at',
+            accessorKey: 'createdAt',
+            cell: ({ row }) => {
+                return format(new Date(row.original.createdAt), 'yyyy-MM-dd HH:mm')
+            },
+        },
+    ]
+
     return (
         <div className="flex flex-wrap gap-4">
             <BinCard className='flex-1 min-w-xs flex-col justify-between' bin={bin} />
@@ -69,7 +133,7 @@ function BinDetails() {
                     <CardDescription>Review detailed records of all bin activities, including fill levels, timestamps, and event types.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div>Table</div>
+                    <DataTable columns={logsColumns} data={bin.logs} />
                 </CardContent>
             </Card>
         </div>

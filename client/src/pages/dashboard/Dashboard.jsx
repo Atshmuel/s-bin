@@ -68,7 +68,7 @@ function Dashboard() {
             header: 'Bin name',
             accessorKey: 'binName',
             cell: ({ row }) => {
-                const id = row.original._id;          // raw row data
+                const id = row.original._id;
                 return (
                     <Link className="flex gap-2 items-center "
                         to={`/bins/${id}`}
@@ -176,12 +176,22 @@ function Dashboard() {
         {
             header: 'severity',
             accessorKey: 'severity',
+            cell: ({ row }) => {
+                const severity = row.original.severity;
+                const variant = severity === 'warning' ? 'pending' : severity === 'critical' ? 'suspended' : 'default';
+                return (
+                    <Badge variant={variant}
+                    >
+                        {severity}
+                    </Badge>
+                );
+            }
         },
         {
             header: 'View log',
             accessorKey: '_id',
             cell: ({ row }) => {
-                const id = row.original._id;          // raw row data
+                const id = row.original._id;
                 return (
                     <Link className="flex gap-2 items-center "
                         to={`/bins/logs/${id}`}
@@ -196,7 +206,7 @@ function Dashboard() {
             header: 'View bin',
             accessorKey: 'binId',
             cell: ({ row }) => {
-                const id = row.original.binId;          // raw row data
+                const id = row.original.binId;
                 return (
                     <Link className="flex gap-2 items-center "
                         to={`/bins/${id}`}
