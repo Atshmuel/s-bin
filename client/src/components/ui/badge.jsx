@@ -20,6 +20,10 @@ const badgeVariants = cva(
           "uppercase tracking-tighter bg-owner text-stone-50 w-fit h-fit",
         admin:
           "uppercase tracking-tighter bg-admin text-stone-50 w-fit  h-fit",
+        user:
+          "uppercase tracking-tighter bg-primary text-stone-50 w-fit h-fit",
+        technician:
+          "uppercase tracking-tighter bg-pending text-stone-50 w-fit  h-fit",
         active:
           "uppercase tracking-tighter bg-active text-stone-50 w-fit  h-fit",
         pending:
