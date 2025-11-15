@@ -24,16 +24,11 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { Button } from "./ui/button"
 import NewEntitySheet from "./newEntityComponents/NewEntitySheet"
+import { useMe } from "@/hooks/users/auth/useMe"
 
 const data = {
-  account: { //should come from user context
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-    role: "owner",
-  },
+
   listItems: [
     {
       title: "Bins",
@@ -143,6 +138,8 @@ export function AppSidebar({
   ...props
 }) {
   const { state } = useSidebar()
+  const { me } = useMe()
+
   const isExpanded = state === 'expanded'
 
   return (
@@ -156,7 +153,7 @@ export function AppSidebar({
       </SidebarContent>
       <SidebarFooter>
         <NewEntitySheet isExpanded={isExpanded} />
-        <NavAccount account={data.account} />
+        <NavAccount account={{ ...me, avater: '/avatars/shadcn.jpg' }} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

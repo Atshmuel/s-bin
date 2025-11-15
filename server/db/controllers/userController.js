@@ -125,10 +125,7 @@ export async function loginUser(req, res) {
 export async function logoutUser(req, res) {
     const { id } = req.user
     try {
-        console.log("logout");
-
-        const a = await userModel.findByIdAndUpdate(id, { $inc: { tokenVersion: 1 } });
-        console.log(a);
+        await userModel.findByIdAndUpdate(id, { $inc: { tokenVersion: 1 } });
 
         res.cookie('accessToken', '', {
             httpOnly: true,
@@ -136,12 +133,6 @@ export async function logoutUser(req, res) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
         })
-        res.cookie('theme', '', {
-            httpOnly: false,
-            maxAge: 0,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-        });
         res.status(200).json({ message: "Logged out successful" })
     } catch (err) {
         console.error('Failed to logout:', err);

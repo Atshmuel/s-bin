@@ -27,7 +27,7 @@ export async function loginUser({ email, password }) {
 
 export async function logoutUser() {
     const res = await fetch(`${SERVER_URL}/${USERS_EP}/logout`, {
-        method: "GET",
+        method: "POST",
         credentials: "include",
     });
     const data = await res.json();
