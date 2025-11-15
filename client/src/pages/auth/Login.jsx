@@ -10,18 +10,28 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { NavLink } from "react-router-dom";
+import { useLogin } from "@/hooks/users/auth/useLogin";
+import { Spinner } from "@/components/ui/spinner";
 
 
 function Login() {
+
+    const { login, isLoggingIn } = useLogin()
     const [showPassword, setShowPassword] = useState(false);
+
+
     const form = useForm({
         defaultValues: {
-            email: "",
-            password: ""
+            email: "Nopro10@gmail.com",
+            password: "12345678!Qq"
         }
     });
 
+    function handleLogin(formData) {
+        login(formData)
+    }
     const emailValue = form.watch("email");
+
 
     return (<div className="flex items-center justify-center min-h-screen bg-background px-4">
         <Card className="w-full max-w-md shadow-lg">
@@ -38,7 +48,7 @@ function Login() {
 
                 <FormProvider {...form}>
 
-                    <form onSubmit={form.handleSubmit(data => console.log(data))} className="space-y-6">
+                    <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6">
                         <FormField
                             name="email"
                             control={form.control}
@@ -83,9 +93,10 @@ function Login() {
 
                         <Button
                             type="submit"
+                            disabled={isLoggingIn}
                             className="w-full cursor-pointer"
                         >
-                            Login
+                            {isLoggingIn ? <Spinner /> : "Login"}
                         </Button>
                     </form>
 

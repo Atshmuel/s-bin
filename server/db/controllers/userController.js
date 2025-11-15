@@ -85,13 +85,17 @@ export async function verifyNewUser(req, res) {
 
 export async function loginUser(req, res) {
     const { email, password } = req.body
+    console.log(email, password);
+
     const { error: emailError } = emailSchema.validate(email ?? '')
     if (emailError) throw new Error(emailError.message);
     const { error } = passwordSchema.validate(password ?? '')
     if (error) return res.status(400).json({ message: error.message });
 
+    const lowerCaseEmail = email.toLowerCase()
     try {
-        const user = await userModel.findOne({ email }).populate({ path: 'settings', select: 'theme' });
+        const user = await userModel.findOne({ email: lowerCaseEmail }).populate({ path: 'settings', select: 'isDark' });
+
         if (!user) return res.status(401).json({ message: 'Unauthorized' })
 
         const { role, _id, passwordHash: dbPassword, settings, tokenVersion } = user
@@ -106,7 +110,7 @@ export async function loginUser(req, res) {
             sameSite: 'strict',
         })
 
-        res.cookie('theme', settings?.theme || 'light', {
+        res.cookie('isDark', settings?.isDark || 'light', {
             httpOnly: false,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 3 * 24 * 60 * 60 * 1000,

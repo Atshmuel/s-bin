@@ -10,7 +10,12 @@ const oAuth2Client = new google.auth.OAuth2(
 
 
 export function setEmailServiceCredentials() {
-    oAuth2Client.setCredentials({ refresh_token: process.env.GOOGLE_MAIL_REFRESH_TOKEN });
+    try {
+        oAuth2Client.setCredentials({ refresh_token: process.env.GOOGLE_MAIL_REFRESH_TOKEN });
+        console.log("Email service set");
+    } catch (error) {
+        console.log('failed to set email service');
+    }
 }
 
 export async function sendEmail(from, to, subject, text, html) {
