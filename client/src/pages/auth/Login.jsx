@@ -9,12 +9,14 @@ import {
     FormItem,
     FormMessage,
 } from "@/components/ui/form"
-import { NavLink } from "react-router-dom";
+import { NavLink, useSearchParams } from "react-router-dom";
 import { useLogin } from "@/hooks/users/auth/useLogin";
 import { Spinner } from "@/components/ui/spinner";
 
 
 function Login() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const emailParam = searchParams.get('email');
 
     const { login, isLoggingIn } = useLogin()
     const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +24,7 @@ function Login() {
 
     const form = useForm({
         defaultValues: {
-            email: "Nopro10@gmail.com",
+            email: emailParam || "",
             password: "12345678!Qq"
         }
     });

@@ -19,9 +19,7 @@ export function setEmailServiceCredentials() {
 }
 
 export async function sendEmail(from, to, subject, text, html) {
-
     try {
-
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {

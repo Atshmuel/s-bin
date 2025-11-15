@@ -85,7 +85,6 @@ export async function verifyNewUser(req, res) {
 
 export async function loginUser(req, res) {
     const { email, password } = req.body
-    console.log(email, password);
 
     const { error: emailError } = emailSchema.validate(email ?? '')
     if (emailError) throw new Error(emailError.message);
@@ -96,7 +95,7 @@ export async function loginUser(req, res) {
     try {
         const user = await userModel.findOne({ email: lowerCaseEmail }).populate({ path: 'settings', select: 'isDark' });
 
-        if (!user) return res.status(401).json({ message: 'Unauthorized' })
+        if (!user) return res.status(401).json({ message: 'Please verify your email or password' })
 
         const { role, _id, passwordHash: dbPassword, settings, tokenVersion } = user
         const isSamePassword = await comparePasswords(password, dbPassword)
@@ -166,9 +165,8 @@ export async function forgotPassword(req, res) {
                 }
             }
         };
-
-
-        const user = await userModel.findOneAndUpdate({ email: userEmail }, update, { new: true });
+        const lowerCaseEmail = userEmail.toLowerCase()
+        const user = await userModel.findOneAndUpdate({ email: lowerCaseEmail }, update, { new: true });
         if (!user) throw new Error(`Could not find email ${userEmail}, Please verify you email`);
 
         const { textTemplate, htmlTemplate, email: senderEmail, subject } = await innerGetTemplateByTemplateId('forgotPassword')
@@ -178,7 +176,7 @@ export async function forgotPassword(req, res) {
         await sendEmail(senderEmail, userEmail, subject, localText, localHtml)
         res.status(200).json({ message: 'Email sent successfully' })
     } catch (error) {
-        res.status(500).json({ message: 'Failed to send the email.' })
+        res.status(500).json({ message: error?.message || 'Failed to send the email.' })
     }
 }
 
@@ -189,10 +187,12 @@ export async function verifyRecoveryCode(req, res) {
         const { error } = emailSchema.validate(email ?? '')
         if (error) throw new Error(error.message);
 
-        const user = await userModel.findOne({ email })
+        const lowerCaseEmail = email.toLowerCase()
+        const user = await userModel.findOne({ email: lowerCaseEmail })
+
         if (!user) return res.status(400).json({ message: `Could not find email ${email}, Please verify you email` })
 
-        if (user.recoveryCode?.otp !== code) return res.status(400).json({ message: 'Wrong OTP was provided' })
+        if (user.recoveryCode?.otp !== code) return res.status(400).json({ message: 'Wrong OTP code provided' })
 
         const resetPasswordToken = generateToken({ email, reset: true }, '5m')
         res.cookie('resetToken', resetPasswordToken, {

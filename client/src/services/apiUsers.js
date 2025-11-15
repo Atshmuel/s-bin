@@ -64,6 +64,7 @@ export async function forgotUserPassword({ email }) {
     const res = await fetch(`${SERVER_URL}/${USERS_EP}/forgot`, {
         method: "POST",
         mode: "cors",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
     });
@@ -75,6 +76,7 @@ export async function verifyUserForgetCode({ email, code }) {
     const res = await fetch(`${SERVER_URL}/${USERS_EP}/verify-recovery-code`, {
         method: "POST",
         mode: "cors",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code }),
     });

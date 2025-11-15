@@ -14,9 +14,16 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { Eye, EyeOff } from "lucide-react";
+import { useForgot, useOtp, useUpdatePasswordByToken } from "@/hooks/users/auth/useForgot";
+import { Spinner } from "@/components/ui/spinner";
 
 
 function ForgotPassword() {
+    const { forgot, isFetchingForgot } = useForgot()
+    const { otp, isVerifingOtp } = useOtp()
+    const { updatePassword, isUpdatingPassword } = useUpdatePasswordByToken()
+
+
     const [searchParams, setSearchParams] = useSearchParams();
     const emailParam = searchParams.get('email');
 
@@ -30,7 +37,7 @@ function ForgotPassword() {
     });
     const stepTwoForm = useForm({
         defaultValues: {
-            otp: '',
+            code: '',
         }
     });
     const stepThreeForm = useForm({
@@ -39,6 +46,26 @@ function ForgotPassword() {
             confirmPassword: "",
         }
     });
+    function handleStep(formData, stepNum) {
+        const action = () => api.scrollNext()
+        let email = null
+        switch (stepNum) {
+            case 1:
+                forgot({ ...formData, action })
+                break;
+            case 2:
+                email = stepOneForm.getValues().email
+                otp({ ...formData, email, action })
+                break;
+            case 3:
+                email = stepOneForm.getValues().email
+                updatePassword({ ...formData, email })
+                break;
+
+            default:
+                break
+        }
+    }
 
 
     return (
@@ -57,7 +84,7 @@ function ForgotPassword() {
                             </CardHeader>
                             <CardContent>
                                 <FormProvider {...stepOneForm}>
-                                    <form onSubmit={stepOneForm.handleSubmit(data => { console.log(data); api.scrollNext() })} className="space-y-6">
+                                    <form onSubmit={stepOneForm.handleSubmit(formData => handleStep(formData, 1))} className="space-y-6">
                                         <FormField
                                             name="email"
                                             control={stepOneForm.control}
@@ -85,8 +112,9 @@ function ForgotPassword() {
                                         <Button
                                             type="submit"
                                             className="w-full cursor-pointer"
+                                            disabled={isFetchingForgot}
                                         >
-                                            Send Reset Code
+                                            {isFetchingForgot ? <Spinner /> : "Send Reset Code"}
                                         </Button>
                                     </form>
 
@@ -121,9 +149,9 @@ function ForgotPassword() {
                             </CardHeader>
                             <CardContent className="pb-2">
                                 <FormProvider {...stepTwoForm}>
-                                    <form onSubmit={stepTwoForm.handleSubmit(data => { console.log(data); api.scrollNext() })} className="space-y-6">
+                                    <form onSubmit={stepTwoForm.handleSubmit(formData => handleStep(formData, 2))} className="space-y-6">
                                         <FormField
-                                            name="otp"
+                                            name="code"
                                             control={stepTwoForm.control}
                                             rules={{
                                                 required: "One-Time password is required",
@@ -155,14 +183,18 @@ function ForgotPassword() {
                                                 type="button"
                                                 variant='secondary'
                                                 className="cursor-pointer px-3"
-                                                onClick={() => api.scrollPrev()}>
+                                                onClick={() => api.scrollPrev()}
+                                                disabled={isVerifingOtp}
+                                            >
+
                                                 Back
                                             </Button>
                                             <Button
                                                 type="submit"
                                                 className="cursor-pointer px-3"
+                                                disabled={isVerifingOtp}
                                             >
-                                                Submit
+                                                {isVerifingOtp ? <Spinner /> : "Submit"}
                                             </Button>
                                         </div>
                                     </form>
@@ -192,7 +224,7 @@ function ForgotPassword() {
                             </CardHeader>
                             <CardContent className="p-6">
                                 <FormProvider {...stepThreeForm}>
-                                    <form onSubmit={stepThreeForm.handleSubmit(data => console.log(data))} className="space-y-4">
+                                    <form onSubmit={stepThreeForm.handleSubmit(formData => handleStep(formData, 3))} className="space-y-4">
                                         <FormField
                                             name="password"
                                             control={stepThreeForm.control}
@@ -253,8 +285,10 @@ function ForgotPassword() {
                                         <Button
                                             type="submit"
                                             className="cursor-pointer w-full px-3 py-1"
+                                            disabled={isUpdatingPassword}
+
                                         >
-                                            Reset Password
+                                            {isUpdatingPassword ? <Spinner /> : " Reset Password"}
                                         </Button>
                                     </form>
                                 </FormProvider>
