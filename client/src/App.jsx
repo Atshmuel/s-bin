@@ -29,6 +29,7 @@ import ErrorPage from './pages/generals/ErrorPage';
 import { MapProvider } from './contexts/mapContext';
 import AddBin from './pages/bins/AddBin';
 import { BreadcrumbProvider } from './contexts/breadcrumbsContext';
+import AccountVerify from './pages/auth/AccountVerify';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -87,6 +88,9 @@ function App() {
             <Route path="login" element={<Login />} />
             <Route path="signup" element={<Signup />} />
             <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="/user">
+              <Route path="verify" element={<AccountVerify />} />
+            </Route>
             <Route path="support" element={<SupportPage />} />
 
             <Route path="*" element={<ErrorPage />} />

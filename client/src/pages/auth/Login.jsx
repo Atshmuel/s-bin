@@ -15,7 +15,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 
 function Login() {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const emailParam = searchParams.get('email');
 
     const { login, isLoggingIn } = useLogin()
@@ -25,7 +25,7 @@ function Login() {
     const form = useForm({
         defaultValues: {
             email: emailParam || "",
-            password: "12345678!Qq"
+            password: ""
         }
     });
 

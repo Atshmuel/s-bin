@@ -28,7 +28,6 @@ import NewEntitySheet from "./newEntityComponents/NewEntitySheet"
 import { useMe } from "@/hooks/users/auth/useMe"
 
 const data = {
-
   listItems: [
     {
       title: "Bins",

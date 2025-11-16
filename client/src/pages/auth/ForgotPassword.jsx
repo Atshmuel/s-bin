@@ -24,7 +24,7 @@ function ForgotPassword() {
     const { updatePassword, isUpdatingPassword } = useUpdatePasswordByToken()
 
 
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const emailParam = searchParams.get('email');
 
     const [showPassword, setShowPassword] = useState(false);
