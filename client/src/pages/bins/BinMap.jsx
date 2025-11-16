@@ -8,6 +8,7 @@ import { BatteryFull, BatteryLow, BatteryMedium } from "lucide-react";
 
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
     const { allBins } = useBins()
+
     if (!binsToUse) {
         binsToUse = allBins
     }

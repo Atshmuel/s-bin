@@ -39,7 +39,7 @@ function UserSettingForm() {
             <Separator className="mb-5" />
             <FormProvider {...userSettings}>
                 <form onSubmit={userSettings.handleSubmit(data => console.log(data))} >
-                    <CardContent className="overflow-auto max-h-[60vh] space-y-4">
+                    <CardContent className="overflow-auto max-h-[calc(100dvh-270px)] space-y-4">
                         <div>
                             <h2 className='mb-6'>Interface Settings</h2>
                             <div className="space-y-4">

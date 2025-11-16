@@ -8,6 +8,7 @@ export function useBins() {
         queryFn: getAllUserBins,
         refetchInterval: 60000,
     })
+
     const allBins = data?.binsData
     return { allBins, isLoadingBins, binsError }
 }

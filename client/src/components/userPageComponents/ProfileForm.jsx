@@ -8,14 +8,17 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { useMe } from "@/hooks/users/auth/useMe";
 
 function ProfileForm() {
-    const profileForm = useForm({ //default values comes from user context or api call
+    const { me } = useMe()
+    const { name, email, role, status } = me
+    const profileForm = useForm({
         defaultValues: {
-            name: "Shmuel Dev",
-            email: "email@gmail.com",
-            status: "active",
-            role: "owner"
+            name,
+            email,
+            status,
+            role,
         }
     });
 
