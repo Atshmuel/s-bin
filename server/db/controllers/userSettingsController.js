@@ -7,7 +7,7 @@ export async function getSettingsByUserId(req, res) {
     const { id: userId, role } = req.user
 
     const filter = {
-        _id: role === process.env.ROLE_OWNER ? id : userId
+        userId: role === process.env.ROLE_OWNER ? id : userId
     };
 
     try {

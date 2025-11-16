@@ -117,8 +117,8 @@ export async function getUser({ id }) {
     if (!res.ok) throw new Error(data?.message);
     return data;
 }
-export async function getUserSettings({ userId }) {
-    const res = await fetch(`${SERVER_URL}/${USERS_EP}/${userId}/settings`, {
+export async function getUserSettings({ id }) {
+    const res = await fetch(`${SERVER_URL}/${USERS_EP}/${id}/settings`, {
         method: "GET",
         credentials: "include",
     });
