@@ -5,39 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import Battery from "../../components/bins/Battary";
 import { MapPin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
+import { useBins } from "@/hooks/bins/useBins";
 
-const binsList = [
-    {
-        _id: "68f25bd2d04737ecca9de1b1",
-        binName: "BIN-10000001",
-        deviceKey: "336bd87d07914084dafc89c1940d2d436bb84149baf09823d4144e976f2cadfa",
-        location: {
-            type: "Point",
-            coordinates: [32.084, 34.782],
-        },
-        status: {
-            health: "warning",
-            level: 91,
-            battery: 75,
-            updatedAt: "2025-10-17T16:41:41.577Z",
-        },
-        ownerId: "68c5841c822b68f8c6fc4224",
-        maintenance: {
-            lastServiceAt: "2025-10-17T17:02:50.791Z",
-            nextServiceAt: "2025-11-16T17:02:50.791Z",
-            notes: "Fixed the sensor!",
-            technicianId: "68c5841c822b68f8c6fc4224",
-        },
-        __v: 0,
-        createdAt: "2025-10-17T15:08:02.627Z",
-        updatedAt: "2025-10-17T17:04:28.218Z",
-    },
-]
 
 
 function BinsList() {
-    //should allow to get by status, location and or level
-    //page can be either table or cards (toggle)
+    const { allBins } = useBins()
+
 
     const columns = [
         {
@@ -116,7 +90,7 @@ function BinsList() {
         },
     ]
     return (
-        <DataTable columns={columns} data={binsList} title='bins list' />
+        <DataTable columns={columns} data={allBins} title='bins list' />
     )
 }
 
