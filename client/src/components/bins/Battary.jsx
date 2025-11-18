@@ -15,7 +15,7 @@ function Battary({ level }) {
                     }
                 </span>
             </TooltipTrigger>
-            <TooltipContent>{level}%</TooltipContent>
+            <TooltipContent className={'z-999'}>{level}%</TooltipContent>
         </Tooltip>
     )
 }

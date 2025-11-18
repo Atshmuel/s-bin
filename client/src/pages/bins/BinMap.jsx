@@ -3,7 +3,7 @@ import MapComponent from "@/components/map/MapComponent"
 import { Badge } from "@/components/ui/badge";
 import { useBins } from "@/hooks/bins/useBins";
 import { getColor, getVariant } from "@/utils/binHelpers";
-import { Battery } from "../../components/bins/Battary"
+import Battery from "../../components/bins/Battary"
 import { useSearchParams } from "react-router-dom";
 
 
