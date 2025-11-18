@@ -3,6 +3,9 @@ import DataTable from "../../components/DataTable"
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import Battery from "../../components/bins/Battary";
+import { MapPin } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
+
 const binsList = [
     {
         _id: "68f25bd2d04737ecca9de1b1",
@@ -32,10 +35,10 @@ const binsList = [
 ]
 
 
-
 function BinsList() {
     //should allow to get by status, location and or level
     //page can be either table or cards (toggle)
+
     const columns = [
         {
             header: 'bin name',
@@ -56,6 +59,27 @@ function BinsList() {
         {
             header: 'location',
             accessorKey: 'location.coordinates',
+            cell: ({ row }) => {
+                const coords = row.original.location.coordinates;
+                const id = row.original._id;
+                return (
+                    <Link
+                        to={`/bins/map?binId=${id}&zoom=18`}
+                    >
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex flex-row gap-2 text-primary">
+                                    <MapPin size={18} />
+                                    <span>{coords.join(", ")}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                Locate the bin on the map
+                            </TooltipContent>
+                        </Tooltip>
+                    </Link>
+                )
+            }
         },
         {
             header: 'fill level',

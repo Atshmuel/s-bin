@@ -4,9 +4,19 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getColor, getVariant } from "@/utils/binHelpers";
 import { BatteryFull, BatteryLow, BatteryMedium } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+
+
 
 function BinMap({ zoom, center, legend = true, legendForm = true }) {
     //should get the bins from context or reactQuery and display them on the map
+    const [searchParams] = useSearchParams();
+
+    const zoomFromUrl = Number(searchParams.get("zoom"))
+    const binId = searchParams.get("binId")
+
+
+
     const bins = [
         {
             _id: "670b1a1a1a1a1a1a1a1a1a1a",
@@ -92,9 +102,6 @@ function BinMap({ zoom, center, legend = true, legendForm = true }) {
             __v: 0,
         },
     ];
-
-
-
 
     return (
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
