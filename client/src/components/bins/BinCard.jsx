@@ -1,12 +1,13 @@
-import { getColor, getVariant } from "@/utils/binHelpers"
+import { getVariant } from "@/utils/binHelpers"
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "../ui/card"
 import { Button } from "../ui/button"
-import { BatteryFull, BatteryLow, BatteryMedium, Copy, MapPin, Trash2, Wrench } from "lucide-react"
+import { Copy, MapPin, Trash2, Wrench } from "lucide-react"
 import { Badge } from "../ui/badge"
 import { Link } from "react-router-dom"
 import { Separator } from "../ui/separator"
 import { toast } from "sonner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import Battery from "./Battary"
 
 function BinCard({ bin, actions = true, handleLocationClick, ...props }) {
 
@@ -15,7 +16,6 @@ function BinCard({ bin, actions = true, handleLocationClick, ...props }) {
         toast.success('Copied device key to your clipboard!')
     }
 
-    const color = getColor(bin.status.battery, "battery")
 
     return (
         <Card {...props}>
@@ -27,17 +27,7 @@ function BinCard({ bin, actions = true, handleLocationClick, ...props }) {
                             <span>{bin.binName}</span>
                         </h3>
 
-                        <Tooltip >
-                            <TooltipTrigger asChild>
-                                <span >
-                                    {
-                                        bin.status.battery > 75 ? <BatteryFull color={color} /> :
-                                            bin.status.battery > 50 ? <BatteryMedium color={color} /> : <BatteryLow color={color} />
-                                    }
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent>{bin.status.battery}%</TooltipContent>
-                        </Tooltip>
+                        <Battery level={bin.status.battery} />
                     </div>
 
                     <Badge variant={getVariant(bin.status.health)}>

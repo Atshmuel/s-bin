@@ -1,7 +1,11 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { CircleAlert, GaugeCircle, InfoIcon, Trash2 } from "lucide-react"
+import { CircleAlert, GaugeCircle, InfoIcon, LinkIcon, Trash2 } from "lucide-react"
 import BinMap from "../bins/BinMap"
+import DataTable from "@/components/DataTable"
+import { Link } from "react-router-dom"
+import { format } from "date-fns"
+import Battery from '../../components/bins/Battary'
 
 function Dashboard() {
     //come from the server
@@ -32,6 +36,188 @@ function Dashboard() {
         icon: GaugeCircle
     }]
 
+    const binsNeedingAttention = [
+        {
+            _id: "68f25bd2d04737ecca9de1b1",
+            binName: "BIN-10000001",
+            deviceKey: "336bd87d07914084dafc89c1940d2d436bb84149baf09823d4144e976f2cadfa",
+            location: {
+                type: "Point",
+                coordinates: [32.084, 34.782],
+            },
+            status: {
+                health: "warning",
+                level: 91,
+                battery: 75,
+                updatedAt: "2025-10-17T16:41:41.577Z",
+            },
+            ownerId: "68c5841c822b68f8c6fc4224",
+            maintenance: {
+                lastServiceAt: "2025-10-17T17:02:50.791Z",
+                nextServiceAt: "2025-11-16T17:02:50.791Z",
+                notes: "Fixed the sensor!",
+                technicianId: "68c5841c822b68f8c6fc4224",
+            },
+            __v: 0,
+            createdAt: "2025-10-17T15:08:02.627Z",
+            updatedAt: "2025-10-17T17:04:28.218Z",
+        }
+    ];
+    const attentionBinsColums = [
+        {
+            header: 'Bin name',
+            accessorKey: 'binName',
+            cell: ({ row }) => {
+                const id = row.original._id;
+                return (
+                    <Link className="flex gap-2 items-center "
+                        to={`/bins/${id}`}
+                    >
+                        {row.original.binName}
+                    </Link>
+                );
+            },
+            enableSorting: true,
+        },
+        {
+            header: 'fill level',
+            accessorKey: 'status.level',
+        },
+        {
+            header: 'Health',
+            accessorKey: 'status.health',
+            cell: ({ row }) => {
+                const health = row.original.status.health;
+                const variant = health === 'warning' ? 'pending' : health === 'critical' ? 'suspended' : 'default';
+                return (
+                    <Badge variant={variant}
+                    >
+                        {health}
+                    </Badge>
+                );
+            },
+
+        },
+
+        {
+            header: 'battery',
+            accessorKey: 'status.battery',
+            cell: ({ row }) => {
+                return <Battery level={row.original.status.battery} />
+            }
+        },
+        {
+            header: 'Last Updated',
+            accessorKey: 'updatedAt',
+            cell: ({ row }) => {
+                return format(new Date(row.original.updatedAt), 'yyyy-MM-dd HH:mm')
+            },
+        },
+    ]
+
+
+    const recentBinLogs = [
+        {
+            _id: "68f26d903dac2e78b0a3dfff",
+            binId: "68f25bd2d04737ecca9de1b1",
+            type: "System",
+            severity: "info",
+            newLevel: 10,
+            oldLevel: 0,
+            battery: 80,
+            health: "good",
+            source: "manual",
+            createdAt: "2025-10-17T16:23:44.389Z",
+            updatedAt: "2025-10-17T16:23:44.389Z",
+            __v: 0,
+        }, {
+            _id: "68f26d903dac2e78b0a3dfff",
+            binId: "68f25bd2d04737ecca9de1b1",
+            type: "System",
+            severity: "info",
+            newLevel: 10,
+            oldLevel: 0,
+            battery: 80,
+            health: "good",
+            source: "manual",
+            createdAt: "2025-10-17T16:23:44.389Z",
+            updatedAt: "2025-10-17T16:23:44.389Z",
+            __v: 0,
+        }, {
+            _id: "68f26d903dac2e78b0a3dfff",
+            binId: "68f25bd2d04737ecca9de1b1",
+            type: "System",
+            severity: "info",
+            newLevel: 10,
+            oldLevel: 0,
+            battery: 80,
+            health: "good",
+            source: "manual",
+            createdAt: "2025-10-17T16:23:44.389Z",
+            updatedAt: "2025-10-17T16:23:44.389Z",
+            __v: 0,
+        }
+    ];
+    const recentBinsColums = [
+        {
+            header: 'createdAt',
+            accessorKey: 'createdAt',
+            cell: ({ row }) => {
+                return format(new Date(row.original.createdAt), 'yyyy-MM-dd HH:mm')
+            },
+            enableSorting: true,
+
+        },
+
+        {
+            header: 'Reporter',
+            accessorKey: 'type',
+        },
+        {
+            header: 'severity',
+            accessorKey: 'severity',
+            cell: ({ row }) => {
+                const severity = row.original.severity;
+                const variant = severity === 'warning' ? 'pending' : severity === 'critical' ? 'suspended' : 'default';
+                return (
+                    <Badge variant={variant}
+                    >
+                        {severity}
+                    </Badge>
+                );
+            }
+        },
+        {
+            header: 'View log',
+            accessorKey: '_id',
+            cell: ({ row }) => {
+                const id = row.original._id;
+                return (
+                    <Link className="flex gap-2 items-center "
+                        to={`/bins/logs/${id}`}
+                    >
+                        <LinkIcon size={14} /> <span>View log</span>
+                    </Link>
+                );
+            },
+
+        },
+        {
+            header: 'View bin',
+            accessorKey: 'binId',
+            cell: ({ row }) => {
+                const id = row.original.binId;
+                return (
+                    <Link className="flex gap-2 items-center "
+                        to={`/bins/${id}`}
+                    >
+                        <LinkIcon size={14} /> <span>View bin</span>
+                    </Link>
+                );
+            },
+
+        },
+    ]
     //map should display only bins with issues not all the bins!
 
     return (
@@ -94,8 +280,7 @@ function Dashboard() {
                             <CardDescription>List of bins that have triggered alerts or need maintenance.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="bg-red-300">Table</div>
-
+                            <DataTable data={binsNeedingAttention} columns={attentionBinsColums} maxLength={5} />
                         </CardContent>
                     </Card>
                     <Card className='flex-1'>
@@ -108,8 +293,7 @@ function Dashboard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="bg-red-300">Table</div>
-
+                            <DataTable data={recentBinLogs} columns={recentBinsColums} maxLength={5} />
                         </CardContent>
                     </Card>
                 </div>

@@ -1,17 +1,24 @@
 import CustomMarker from "@/components/map/CustomMarker"
 import MapComponent from "@/components/map/MapComponent"
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useBins } from "@/hooks/bins/useBins";
 import { getColor, getVariant } from "@/utils/binHelpers";
-import { BatteryFull, BatteryLow, BatteryMedium } from "lucide-react";
+import { Battery } from "../../components/bins/Battary"
+import { useSearchParams } from "react-router-dom";
+
+
 
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
     const { allBins } = useBins()
-
     if (!binsToUse) {
         binsToUse = allBins
     }
+    const [searchParams] = useSearchParams();
+
+    const zoomFromUrl = Number(searchParams.get("zoom"))
+    const binId = searchParams.get("binId")
+
+
 
     return (
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
@@ -22,17 +29,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                             <Badge className='absolute top-3.5 right-0' variant={getVariant(bin.status.health)}>{bin.status.health}</Badge>
                             <h3 className="font-bold text-lg flex items-center gap-3">
                                 <span>{bin.binName}</span>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span>
-                                            {
-                                                bin.status.battery > 75 ? <BatteryFull color={getColor(bin.status.battery, "battery")} /> :
-                                                    bin.status.battery > 50 ? <BatteryMedium color={getColor(bin.status.battery, "battery")} /> : <BatteryLow color={getColor(bin.status.battery, "battery")} />
-                                            }
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent className={'z-999'}>{bin.status.battery}%</TooltipContent>
-                                </Tooltip>
+                                <Battery level={bin.status.level} />
                             </h3>
                             <div >
                                 <p className="!my-1">Fill Level: <span className={`font-semibold`}>{bin.status.level}%</span></p>
