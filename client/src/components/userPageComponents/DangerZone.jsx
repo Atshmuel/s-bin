@@ -5,8 +5,11 @@ import InputLabel from "../InputLabel";
 import { Label } from "../ui/label";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useState } from "react";
+import { useMe } from "@/hooks/users/auth/useMe";
 
-function DangerZone({ className, userName }) {
+function DangerZone({ className }) {
+    const { me } = useMe()
+    const userName = me.name
     const [deleteInput, setDeleteInput] = useState("");
 
     return (
