@@ -280,7 +280,7 @@ function Dashboard() {
                             <CardDescription>List of bins that have triggered alerts or need maintenance.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <DataTable data={binsNeedingAttention} columns={attentionBinsColums} maxLength={5} />
+                            <DataTable data={binsNeedingAttention} columns={attentionBinsColums} maxLength={5} error={null} isLoading={false} />
                         </CardContent>
                     </Card>
                     <Card className='flex-1'>
@@ -293,7 +293,7 @@ function Dashboard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <DataTable data={recentBinLogs} columns={recentBinsColums} maxLength={5} />
+                            <DataTable data={recentBinLogs} columns={recentBinsColums} maxLength={5} error={null} isLoading={false} />
                         </CardContent>
                     </Card>
                 </div>

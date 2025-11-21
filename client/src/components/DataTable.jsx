@@ -25,15 +25,11 @@ import { IoIosArrowRoundDown, IoIosArrowRoundUp, IoMdArrowDropdown } from "react
 import { Skeleton } from "./ui/skeleton"
 import EmptyTable from "./EmptyTable"
 import { Search, X } from "lucide-react"
-import { Link } from "react-router-dom"
-import { Badge } from "./ui/badge"
 
 
-export default function DataTable({ data, columns, title, maxLength = 10 }) {
+export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null }) {
     const [sorting, setSorting] = useState([])
     const [searching, setSearching] = useState("")
-    const isLoading = false
-
 
     const table = useReactTable({
         data,
@@ -58,7 +54,7 @@ export default function DataTable({ data, columns, title, maxLength = 10 }) {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                {title ? <h1 className="text-2xl capitalize font-bold min-w-72">{title}</h1> : null}
+                {title ? <h1 className="text-2xl capitalize font-bold min-w-20 sm:min-w-72">{title}</h1> : null}
                 <div className={`flex items-center w-full ${title ? "justify-end gap-3" : "justify-between"} `}>
                     <Input
                         withIcon={true}
@@ -71,12 +67,13 @@ export default function DataTable({ data, columns, title, maxLength = 10 }) {
                             if (!searching.length > 0) return;
                             setSearching("")
                         }}
-                        className="w-36 sm:w-48 relative"
+                        disabled={isLoading || error}
+                        className="w-28 sm:w-48 relative"
                     />
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline">Columns <IoMdArrowDropdown /></Button>
+                            <Button disabled={isLoading || error} variant="outline">Columns <IoMdArrowDropdown /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {table
@@ -105,7 +102,7 @@ export default function DataTable({ data, columns, title, maxLength = 10 }) {
                                         onClick={hasData ? header.column.getToggleSortingHandler() : undefined}
                                         className={hasData ? "cursor-pointer" : ""}
                                     >
-                                        <div className="capitalize flex items-center gap-2">
+                                        <div className="capitalize flex items-center gap-2 text-foreground">
                                             {flexRender(
                                                 header.column.columnDef.header,
                                                 header.getContext()
@@ -126,7 +123,7 @@ export default function DataTable({ data, columns, title, maxLength = 10 }) {
                         {hasData && !isLoading ? (
                             table.getRowModel().rows.map(row => (
 
-                                <TableRow key={row.id}>
+                                <TableRow key={row.id} className={'h-12'}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
                                             {flexRender(
@@ -138,15 +135,15 @@ export default function DataTable({ data, columns, title, maxLength = 10 }) {
                                 </TableRow>
                             ))
                         ) : (
-                            Array.from({ length: 10 }).map((_, i) => (
-                                <TableRow key={i} className="h-9">
+                            Array.from({ length: maxLength }).map((_, i) => (
+                                <TableRow key={i} className="h-12">
                                     {columns.map((col, j) => (
-                                        <TableCell key={j}>{isLoading ? <Skeleton className="h-4 w-[250px]" /> : null}</TableCell>
+                                        <TableCell key={j}>{isLoading ? <Skeleton className="h-4 w-[80%]" /> : null}</TableCell>
                                     ))}
                                 </TableRow>
                             ))
                         )}
-                        {!hasData ? <EmptyTable title={"No Results Found"} description={searching ? "No data found for your search." : "No data available to display at the moment."} /> : null}
+                        {(!hasData || error) && !isLoading ? <EmptyTable title={"No Results Found"} description={searching ? "No data found for your search." : "No data available to display at the moment."} /> : null}
                     </TableBody>
                 </Table>
             </div>

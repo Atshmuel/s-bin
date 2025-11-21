@@ -133,7 +133,7 @@ function BinDetails() {
                     <CardDescription>Review detailed records of all bin activities, including fill levels, timestamps, and event types.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <DataTable columns={logsColumns} data={bin.logs} />
+                    <DataTable columns={logsColumns} data={bin.logs} maxLength={5} />
                 </CardContent>
             </Card>
         </div>

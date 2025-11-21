@@ -35,7 +35,7 @@ function Input({
           className
         )}
         {...props} />
-      <Icon onClick={onIconClick} size={iconSize} className={`absolute top-[9px] right-2 ${iconClassName} `} />
+      <Icon onClick={onIconClick} size={iconSize} className={`absolute top-[9px] right-2 ${iconClassName} ${props.disabled ? "opacity-30" : ""}`} />
     </div>
   )
 
