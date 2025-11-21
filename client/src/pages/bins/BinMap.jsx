@@ -15,14 +15,16 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
     }
     const [searchParams] = useSearchParams();
 
-    const zoomFromUrl = Number(searchParams.get("zoom"))
     const binId = searchParams.get("binId")
-
+    const zoomFromUrl = Number(searchParams.get("zoom"))
+    if (binId) {
+        binsToUse = binsToUse.filter(bin => bin._id === binId)
+    }
 
 
     return (
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
-            <MapComponent center={center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoom ?? 11} legend={legend} legendForm={legendForm} >
+            <MapComponent center={center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} >
                 {binsToUse.map((bin) => (
                     <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status.level)} popup={
                         <div className="space-y-2 text-sm p-2 relative">

@@ -11,6 +11,7 @@ export function getColor(level, type = 'fill') {
 export function getVariant(health) {
     switch (health) {
         case "good": return "active"
+        case "info": return "active"
         case "warning": return "pending"
         case "critical": return "suspended"
         default: return "outline"

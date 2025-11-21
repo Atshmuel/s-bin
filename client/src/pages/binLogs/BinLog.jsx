@@ -43,7 +43,7 @@ function BinLog() {
     const log = {
         _id: "68f26d903dac2e78b0a3dfff",
         binId: "68f25bd2d04737ecca9de1b1",
-        type: "System",
+        type: "log",
         severity: "info",
         newLevel: 10,
         oldLevel: 0,

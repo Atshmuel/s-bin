@@ -6,6 +6,7 @@ import DataTable from "@/components/DataTable"
 import { Link } from "react-router-dom"
 import { format } from "date-fns"
 import Battery from '../../components/bins/Battary'
+import { getVariant } from "@/utils/binHelpers"
 
 function Dashboard() {
     //come from the server
@@ -120,7 +121,7 @@ function Dashboard() {
         {
             _id: "68f26d903dac2e78b0a3dfff",
             binId: "68f25bd2d04737ecca9de1b1",
-            type: "System",
+            type: "error",
             severity: "info",
             newLevel: 10,
             oldLevel: 0,
@@ -133,7 +134,7 @@ function Dashboard() {
         }, {
             _id: "68f26d903dac2e78b0a3dfff",
             binId: "68f25bd2d04737ecca9de1b1",
-            type: "System",
+            type: "log",
             severity: "info",
             newLevel: 10,
             oldLevel: 0,
@@ -146,7 +147,7 @@ function Dashboard() {
         }, {
             _id: "68f26d903dac2e78b0a3dfff",
             binId: "68f25bd2d04737ecca9de1b1",
-            type: "System",
+            type: "maintenance",
             severity: "info",
             newLevel: 10,
             oldLevel: 0,
@@ -170,7 +171,7 @@ function Dashboard() {
         },
 
         {
-            header: 'Reporter',
+            header: 'type',
             accessorKey: 'type',
         },
         {
@@ -178,9 +179,8 @@ function Dashboard() {
             accessorKey: 'severity',
             cell: ({ row }) => {
                 const severity = row.original.severity;
-                const variant = severity === 'warning' ? 'pending' : severity === 'critical' ? 'suspended' : 'default';
                 return (
-                    <Badge variant={variant}
+                    <Badge variant={getVariant(severity)}
                     >
                         {severity}
                     </Badge>

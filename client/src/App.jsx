@@ -13,7 +13,6 @@ import Login from '../src/pages/auth/Login'
 import Dashboard from './pages/dashboard/Dashboard';
 import Statistics from './pages/reports/Statistics';
 import Analytics from './pages/reports/Analytics';
-import AppSettings from './pages/settings/AppSettings';
 import BinsList from './pages/bins/BinsList';
 import BinMap from './pages/bins/BinMap';
 import BinDetails from './pages/bins/BinDetails';
@@ -56,7 +55,6 @@ function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="statistics" element={<Statistics />} />
               <Route path="analytics" element={<Analytics />} />
-              <Route path="settings" element={<AppSettings />} />
 
               <Route path='bins'>
                 <Route path="" element={<BinsList />} />

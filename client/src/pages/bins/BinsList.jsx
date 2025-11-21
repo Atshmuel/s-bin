@@ -6,6 +6,9 @@ import Battery from "../../components/bins/Battary";
 import { MapPin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
 import { useBins } from "@/hooks/bins/useBins";
+import { getVariant } from "@/utils/binHelpers";
+
+
 
 function BinsList() {
     const { allBins, isLoadingBins, binsError } = useBins();
@@ -63,9 +66,8 @@ function BinsList() {
             accessorKey: 'status.health',
             cell: ({ row }) => {
                 const health = row.original.status.health;
-                const variant = health === 'warning' ? 'pending' : health === 'critical' ? 'suspended' : 'default';
                 return (
-                    <Badge variant={variant}
+                    <Badge variant={getVariant(health)}
                     >
                         {health}
                     </Badge>
