@@ -4,6 +4,7 @@ import Battery from "../../components/bins/Battary"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
+import { getVariant } from "@/utils/binHelpers"
 
 function BinDetails() {
     const bin = {
@@ -66,17 +67,15 @@ function BinDetails() {
             accessorKey: 'severity',
             cell: ({ row }) => {
                 const severity = row.original.severity;
-                const variant = severity === 'warning' ? 'pending' : severity === 'critical' ? 'suspended' : 'default';
                 return (
-                    <Badge variant={variant}
-                    >
+                    <Badge variant={getVariant(severity)}>
                         {severity}
                     </Badge>
                 );
             }
         },
         {
-            header: 'reporter',
+            header: 'type',
             accessorKey: 'type',
         },
 
@@ -89,10 +88,8 @@ function BinDetails() {
             accessorKey: 'health',
             cell: ({ row }) => {
                 const health = row.original.health;
-                const variant = health === 'warning' ? 'pending' : health === 'critical' ? 'suspended' : 'default';
                 return (
-                    <Badge variant={variant}
-                    >
+                    <Badge variant={getVariant(health)} >
                         {health}
                     </Badge>
                 );

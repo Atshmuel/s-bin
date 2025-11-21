@@ -1,5 +1,7 @@
+import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../ui/card"
 import { Activity, CalendarClock, GaugeCircle, InfoIcon, Trash2 } from "lucide-react"
+import { getVariant } from "@/utils/binHelpers"
 
 function LogCard({ log, ...props }) {
     const isInfo = log.severity === "info"
@@ -39,7 +41,7 @@ function LogCard({ log, ...props }) {
                     <span className="font-medium flex items-center gap-2">
                         <Activity size={16} /> Health:
                     </span>
-                    <span className="capitalize">{log.health}</span>
+                    <Badge variant={getVariant(log.health)}>{log.health}</Badge>
                 </div>
 
                 <div className="flex justify-between">
