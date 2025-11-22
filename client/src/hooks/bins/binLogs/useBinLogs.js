@@ -7,7 +7,7 @@ export function useLogs() {
         queryKey: ['all-logs'],
         queryFn: getAllLogs,
     })
-    if (!data) throw new Error("Failed to get logs");
+
 
     const allLogs = data?.logs
 

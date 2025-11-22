@@ -4,8 +4,7 @@ import { Spinner } from "./ui/spinner";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useBins } from "@/hooks/bins/useBins";
-import { ErrorBoundary } from "react-error-boundary";
-import GlobalErrorFallback from "./GlobalErrorFallback";
+
 
 
 
@@ -28,12 +27,8 @@ export default function ProtectedRoute({ children }) {
       </main>
     );
 
-
-
   if (me && allBins) {
-    return <ErrorBoundary FallbackComponent={GlobalErrorFallback}>
-      {children};
-    </ErrorBoundary>
+    return children
 
   }
 }

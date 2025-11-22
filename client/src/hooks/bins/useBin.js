@@ -9,7 +9,6 @@ export function useBin(id, withLogs = true) {
         enabled: !!id
     })
 
-    if (!data) throw new Error("Bin not found");
 
     const bin = data?.binData[0]
 

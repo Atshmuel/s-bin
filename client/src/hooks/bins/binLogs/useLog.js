@@ -9,7 +9,7 @@ export function useLog(id, withBin = true) {
         enabled: !!id
     })
 
-    if (!data) throw new Error("Log not found");
+
 
     const log = data?.log
 

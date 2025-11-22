@@ -12,7 +12,6 @@ export function useMe() {
         staleTime: Infinity,
         gcTime: Infinity
     });
-    if (!data) throw new Error("Cloud not load user information");
 
     const me = data?.user
     return { me, isLoadingMe, meError };
