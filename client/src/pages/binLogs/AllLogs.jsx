@@ -5,49 +5,10 @@ import { format } from "date-fns";
 import { getVariant } from "@/utils/binHelpers";
 import { Link } from "react-router-dom";
 import { LinkIcon } from "lucide-react";
+import { useLogs } from "@/hooks/bins/binLogs/useBinLogs";
 
 function AllLogs() {
-
-    const log = [{
-        _id: "68f26d903dac2e78b0a3dfff",
-        binId: "68f25bd2d04737ecca9de1b1",
-        type: "maintenance",
-        severity: "info",
-        newLevel: 10,
-        oldLevel: 0,
-        battery: 80,
-        health: "good",
-        source: "manual",
-        createdAt: "2025-10-17T16:23:44.389Z",
-        updatedAt: "2025-10-17T16:23:44.389Z",
-        __v: 0,
-    }, {
-        _id: "68f26d903dac2e78b0a3dfff",
-        binId: "68f25bd2d04737ecca9de1b1",
-        type: "log",
-        severity: "info",
-        newLevel: 10,
-        oldLevel: 0,
-        battery: 80,
-        health: "good",
-        source: "manual",
-        createdAt: "2025-10-17T16:23:44.389Z",
-        updatedAt: "2025-10-17T16:23:44.389Z",
-        __v: 0,
-    }, {
-        _id: "68f26d903dac2e78b0a3dfff",
-        binId: "68f25bd2d04737ecca9de1b1",
-        type: "error",
-        severity: "info",
-        newLevel: 10,
-        oldLevel: 0,
-        battery: 80,
-        health: "good",
-        source: "manual",
-        createdAt: "2025-10-17T16:23:44.389Z",
-        updatedAt: "2025-10-17T16:23:44.389Z",
-        __v: 0,
-    }]
+    const { allLogs, isLoadingLogs, logsError } = useLogs()
 
     const columns = [
         {
@@ -120,7 +81,7 @@ function AllLogs() {
     ]
     return (
         <div>
-            <DataTable columns={columns} data={log} title='all logs' />
+            <DataTable columns={columns} data={allLogs ?? []} isLoading={isLoadingLogs} error={logsError} title='all logs' />
         </div >
     )
 }

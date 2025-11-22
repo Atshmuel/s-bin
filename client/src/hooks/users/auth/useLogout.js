@@ -1,7 +1,6 @@
 import { logoutUser } from "@/services/apiUsers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 export function useLogout() {
     const queryClient = useQueryClient();
@@ -13,7 +12,7 @@ export function useLogout() {
             navigate("/login", { replace: true });
         },
         onError: (error) => {
-            toast.error(error.message);
+            throw error
         },
     });
 

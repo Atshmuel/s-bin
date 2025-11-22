@@ -12,6 +12,7 @@ export function useUsers() {
         staleTime: Infinity,
         gcTime: Infinity
     });
+    if (!data) throw new Error("Cloud not load users information");
 
     const users = data?.users
     return { users, isLoadingUsers, usersError };

@@ -14,6 +14,8 @@ export function useUserSettings() {
         queryFn: () => getUserSettings({ id }),
     });
 
+    if (!data) throw new Error("Cloud not load user settings");
+
     const settings = data?.settings
     return { settings, isLoadingSettings, settingsError };
 }

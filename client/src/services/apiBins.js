@@ -10,8 +10,8 @@ export async function getAllUserBins() {
     if (!res.ok) throw new Error(data?.message);
     return data;
 }
-export async function getBin({ id }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/${id}`, {
+export async function getBin({ id, withLogs }) {
+    const res = await fetch(`${SERVER_URL}/${BINS_EP}/${id}?withLogs=${withLogs}`, {
         method: "GET",
         credentials: "include",
     });

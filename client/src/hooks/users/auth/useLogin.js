@@ -1,7 +1,6 @@
 import { loginUser } from "@/services/apiUsers";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 
 
 export function useLogin() {
@@ -12,7 +11,7 @@ export function useLogin() {
             navigate("/", { replace: true });
         },
         onError: (error) => {
-            toast.error(error.message);
+            throw error
         },
     });
     return { login, isLoggingIn };

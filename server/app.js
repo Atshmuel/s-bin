@@ -41,7 +41,7 @@ app.use("/api/templates", templateRouter)
 
 const main = async () => {
     try {
-        // initMqtt();
+        initMqtt();
         await mongoose.connect(`${DB_URL}`);
         await import("./db/cron/cleanupOTP.js");
         await import("./db/cron/cleanupActivationToken.js");

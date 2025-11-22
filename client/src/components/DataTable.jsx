@@ -27,8 +27,8 @@ import EmptyTable from "./EmptyTable"
 import { Search, X } from "lucide-react"
 
 
-export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null }) {
-    const [sorting, setSorting] = useState([])
+export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy }) {
+    const [sorting, setSorting] = useState(sortingBy ?? [])
     const [searching, setSearching] = useState("")
 
     const table = useReactTable({
@@ -156,7 +156,8 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                 >
                     Previous
                 </Button>
-                {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+                {table.getPageCount() ? `${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}` : ''}
+
                 <Button
                     variant="outline"
                     onClick={() => table.nextPage()}

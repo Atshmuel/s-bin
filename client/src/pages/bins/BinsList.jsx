@@ -3,12 +3,10 @@ import DataTable from "../../components/DataTable"
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import Battery from "../../components/bins/Battary";
-import { MapPin } from "lucide-react";
+import { LinkIcon, MapPin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
 import { useBins } from "@/hooks/bins/useBins";
 import { getVariant } from "@/utils/binHelpers";
-
-
 
 function BinsList() {
     const { allBins, isLoadingBins, binsError } = useBins();
@@ -23,10 +21,9 @@ function BinsList() {
                 const id = row.original._id;
                 const name = row.getValue("binName");
                 return (
-                    <Link
-                        to={`/bins/${id}`}
-                    >
-                        {name}
+                    <Link className="flex gap-2 items-center"
+                        to={`/bins/${id}`}>
+                        <LinkIcon size={14} /> <span>{name}</span>
                     </Link>
                 );
             },
@@ -91,7 +88,7 @@ function BinsList() {
     ]
     return (
         <div className="p-10">
-            <DataTable columns={columns} data={allBins} isLoading={isLoadingBins} error={binsError} title='bins list' />
+            <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title='bins list' />
         </div>
     )
 }
