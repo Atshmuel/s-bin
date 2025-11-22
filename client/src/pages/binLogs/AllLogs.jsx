@@ -20,10 +20,6 @@ function AllLogs() {
             enableSorting: true,
         },
         {
-            header: 'type',
-            accessorKey: 'type',
-        },
-        {
             header: 'severity',
             accessorKey: 'severity',
             cell: ({ row }) => {

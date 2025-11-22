@@ -14,7 +14,7 @@ import { useEffect } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { AlertCircle } from "lucide-react";
 
-function UserSettingForm() {
+function UserSettingForm({ isAdmin = false }) {
     const { settingsError, isLoadingSettings, settings } = useUserSettings()
     const userSettings = useForm({
         defaultValues: {
@@ -57,14 +57,14 @@ function UserSettingForm() {
         <Card className="min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center'>
                 <CardTitle className="mb-1">Preferences & Settings</CardTitle>
-                <CardDescription>Customize your experience by updating your settings</CardDescription>
+                <CardDescription>Customize {isAdmin ? 'user' : 'your'} experience by updating {isAdmin ? 'user' : 'your'} settings</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
             {settingsError ?
                 <CardContent>
                     <div className="flex justify-center items-center gap-4">
                         <AlertCircle />
-                        <p>Failed to get your settings, please try to reload the page in few seconds</p>
+                        <p>Failed to get {isAdmin ? 'user' : 'your'} settings, please try to reload the page in few seconds</p>
                     </div>
                 </CardContent>
                 :
@@ -87,7 +87,7 @@ function UserSettingForm() {
                                                         <Label>Enable Dark Theme</Label>
                                                     </div>
                                                     <FormDescription>
-                                                        This will change the default theme for your interface between light and dark mode.
+                                                        This will change the default theme for {isAdmin ? 'user' : 'your'} interface between light and dark mode.
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -145,7 +145,7 @@ function UserSettingForm() {
                                                         </ToggleGroup>
                                                     </FormControl>
                                                     <FormDescription>
-                                                        Health level of the bin that you want to get notified from.
+                                                        Health level of the bin that {isAdmin ? 'user' : 'you'} want to get notified from.
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -163,7 +163,7 @@ function UserSettingForm() {
                                                         </FormControl>
                                                     </div>
                                                     <FormDescription>
-                                                        The fill percentage of the bin at which you want to receive notifications.
+                                                        The fill percentage of the bin at which {isAdmin ? 'user' : 'you'} want to receive notifications.
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -182,7 +182,7 @@ function UserSettingForm() {
                                                         </ToggleGroup>
                                                     </FormControl>
                                                     <FormDescription>
-                                                        Bin log severity that you want to get notified from.
+                                                        Bin log severity that {isAdmin ? 'user' : 'you'} want to get notified from.
                                                     </FormDescription>
                                                 </FormItem>
                                             )}

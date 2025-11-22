@@ -22,7 +22,7 @@ function UsersList() {
             accessorKey: 'name',
             enableSorting: true,
             cell: ({ row }) => {
-                const id = row.original._id;          // raw row data
+                const id = row.original._id;
                 return (
                     <Link className="flex gap-2 items-center capitalize"
                         to={`/users/${id}`}
@@ -37,7 +37,7 @@ function UsersList() {
             accessorKey: 'email',
         },
         {
-            header: 'Status',
+            header: 'Account Status',
             accessorKey: 'status',
             cell: ({ row }) => {
                 const status = row.original.status
@@ -59,22 +59,7 @@ function UsersList() {
                 );
             },
         },
-        {
-            header: 'settings',
-            accessorKey: 'settingsId',
-            cell: ({ row }) => {
-                const settingsId = row.original.settingsId;
-                return (
-                    settingsId ?
-                        <Link className="flex gap-2 items-center "
-                            to={`/users/settings/${settingsId}`}
-                        >
-                            <LinkIcon size={14} /> <span>View settings</span>
-                        </Link>
-                        : null
-                );
-            },
-        },
+
     ]
 
     return (

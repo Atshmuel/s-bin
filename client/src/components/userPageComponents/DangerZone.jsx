@@ -7,13 +7,13 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { useState } from "react";
 import { useMe } from "@/hooks/users/auth/useMe";
 
-function DangerZone({ className }) {
+function DangerZone({ user, isAdmin = false }) {
     const { me } = useMe()
-    const userName = me.name
+    const userName = user ? user.name : me.name
     const [deleteInput, setDeleteInput] = useState("");
 
     return (
-        <Card className={`${className} min-w-[330px] max-w-[400px] h-fit`}>
+        <Card className={`min-w-[330px] max-w-[400px] h-fit`}>
             <CardHeader className='text-center relative'>
                 <CardTitle className='text-destructive font-extrabold'>Danger Zone</CardTitle>
                 <CardDescription>This section contains actions that will affect all your belongings; Please act carefully.</CardDescription>
@@ -21,7 +21,7 @@ function DangerZone({ className }) {
             <Separator className="mb-5" />
             <CardContent className="overflow-auto max-h-[60vh] space-y-4 pb-4">
                 <div className="flex justify-between">
-                    <Label>Delete Your Bins</Label>
+                    <Label>Delete {isAdmin ? 'User' : 'Your'} Bins</Label>
                     <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
                         <DialogTrigger asChild>
                             <Button className="cursor-pointer" variant='outline_destructive' size='sm'>Delete</Button>
@@ -29,7 +29,7 @@ function DangerZone({ className }) {
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>Confirm Permanent Deletion</DialogTitle>
-                                <DialogDescription>This action will permanently delete all your bins.
+                                <DialogDescription>This action will permanently delete all {isAdmin ? 'user' : 'your'} bins.
                                     To confirm, type "Delete All" in the field below.
                                     This action cannot be undone.</DialogDescription>
                             </DialogHeader>
@@ -45,7 +45,7 @@ function DangerZone({ className }) {
                     </Dialog>
                 </div>
                 <div className="flex justify-between">
-                    <Label>Delete Your Account</Label>
+                    <Label>Delete {isAdmin ? 'User' : 'Your'} Account</Label>
                     <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
                         <DialogTrigger asChild>
                             <Button className="cursor-pointer" variant='outline_destructive' size='sm'>Delete</Button>
@@ -53,7 +53,7 @@ function DangerZone({ className }) {
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>Confirm Permanent Deletion</DialogTitle>
-                                <DialogDescription>This action will permanently delete all your bins.
+                                <DialogDescription>This action will permanently delete all {isAdmin ? 'user' : 'your'} bins.
                                     To confirm, type {userName} in the field below.
                                     This action cannot be undone.</DialogDescription>
                             </DialogHeader>

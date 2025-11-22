@@ -7,7 +7,7 @@ import { useState } from "react";
 import InputLabel from "../InputLabel";
 import { Eye, EyeOff } from "lucide-react";
 
-function PasswordForm() {
+function PasswordForm({ isAdmin = false }) {
     const [showPassword, setShowPassword] = useState(false);
 
     const passwordForm = useForm({
@@ -22,8 +22,8 @@ function PasswordForm() {
     return (
         <Card className="flex-[1_1_400px] min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center'>
-                <CardTitle>Update Your Password</CardTitle>
-                <CardDescription>Keep your account safe by updating your password</CardDescription>
+                <CardTitle>Update {isAdmin ? 'User' : 'Your'} Password</CardTitle>
+                <CardDescription>Keep your account safe by updating {isAdmin ? 'user' : 'your'} password</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
             <FormProvider {...passwordForm}>

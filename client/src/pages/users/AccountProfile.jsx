@@ -9,7 +9,7 @@ function AccountProfile() {
         <div className="h-full flex flex-wrap gap-6 justify-center px-4 py-2 max-w-[1800px] ">
             <div className="flex flex-col gap-4">
                 <ProfileForm />
-                <DangerZone userName={'Shmuel Dev'} />
+                <DangerZone />
             </div>
             <UserSettingForm />
             <PasswordForm />

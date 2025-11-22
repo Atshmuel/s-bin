@@ -10,9 +10,10 @@ import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useMe } from "@/hooks/users/auth/useMe";
 
-function ProfileForm() {
+function ProfileForm({ user, isAdmin = false }) {
+
     const { me } = useMe()
-    const { name, email, role, status } = me
+    const { name, email, role, status } = user ? user : me
     const profileForm = useForm({
         defaultValues: {
             name,
@@ -43,8 +44,8 @@ function ProfileForm() {
                         <AvatarImage src={profileForm.getValues('avatar')} alt={profileForm.watch('name')} />
                         <AvatarFallback>{fallbackName}</AvatarFallback>
                     </Avatar>
-                    <CardTitle className="mb-1">My Profile</CardTitle>
-                    <CardDescription>Update your personal information</CardDescription>
+                    <CardTitle className="mb-1">{isAdmin ? 'User' : 'My'} Profile</CardTitle>
+                    <CardDescription>Update {isAdmin ? 'user' : 'your'} personal information</CardDescription>
                 </div>
                 <Tooltip>
                     <TooltipTrigger className="h-fit sticky top-14 m-0" asChild>
