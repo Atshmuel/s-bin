@@ -61,15 +61,17 @@ function UsersList() {
         },
         {
             header: 'settings',
-            accessorKey: 'settings',
+            accessorKey: 'settingsId',
             cell: ({ row }) => {
-                const settingsId = row.original.settings;
+                const settingsId = row.original.settingsId;
                 return (
-                    <Link className="flex gap-2 items-center "
-                        to={`/users/settings/${settingsId}`}
-                    >
-                        <LinkIcon size={14} /> <span>View log</span>
-                    </Link>
+                    settingsId ?
+                        <Link className="flex gap-2 items-center "
+                            to={`/users/settings/${settingsId}`}
+                        >
+                            <LinkIcon size={14} /> <span>View settings</span>
+                        </Link>
+                        : null
                 );
             },
         },

@@ -5,8 +5,9 @@ import { getVariant } from "@/utils/binHelpers"
 import EmptyCard from "@/components/EmptyCard"
 
 function LogCard({ log, isLoading = true, ...props }) {
-    const isInfo = log.severity === "info"
+    const isInfo = log?.severity === "info"
     const iconColor = isInfo ? 'oklch(0.723 0.219 149.579)' : 'oklch(0.577 0.245 27.325)'
+
 
     return (
         <Card {...props}>

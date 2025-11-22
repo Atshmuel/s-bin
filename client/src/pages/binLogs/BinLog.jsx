@@ -25,9 +25,12 @@ function BinLog() {
 
     const { bin } = log
 
+    console.log(bin.location.coordinates);
+
+
     return (
         <div className="flex flex-col space-y-4 h-full">
-            <Link to={`/bins/${log.binId}`}>
+            <Link to={`/bins/${log?.binId}`}>
                 <Button className={'w-fit mb-2'} variant={'link'}> <ArrowLeft />Back</Button>
             </Link>
             <div className="flex flex-wrap justify-start gap-4">

@@ -24,7 +24,7 @@ export async function createUser(req, res) {
         if (!passwordHash) return res.status(500).json({ message: "Failed to hash the password, couldn't create the user." })
         await session.withTransaction(async () => {
             newUser = new userModel({
-                email,
+                email: email.toLowerCase(),
                 passwordHash,
                 name,
                 accountVerification: {
@@ -36,6 +36,9 @@ export async function createUser(req, res) {
 
             settings = new userSettingModel({ userId: newUser._id });
             await settings.save({ session });
+
+            newUser.settingsId = settings._id;
+            await newUser.save({ session });
 
 
             const url = generateVerificationLink(newUser.accountVerification.token);
@@ -84,6 +87,7 @@ export async function verifyNewUser(req, res) {
 }
 
 export async function loginUser(req, res) {
+
     const { email, password } = req.body
 
     const { error: emailError } = emailSchema.validate(email ?? '')
@@ -92,8 +96,9 @@ export async function loginUser(req, res) {
     if (error) return res.status(400).json({ message: error.message });
 
     const lowerCaseEmail = email.toLowerCase()
+
     try {
-        const user = await userModel.findOne({ email: lowerCaseEmail }).populate({ path: 'settings', select: 'isDark' });
+        const user = await userModel.findOne({ email: lowerCaseEmail }).populate({ path: 'settingsId', select: 'isDark' });
 
         if (!user) return res.status(401).json({ message: 'Please verify your email or password' })
 
