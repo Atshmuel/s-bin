@@ -13,9 +13,19 @@ import { useUserSettings } from "@/hooks/users/useUserSettings";
 import { useEffect } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { AlertCircle } from "lucide-react";
+import { useUpdateUserSettings } from "@/hooks/users/useUpdateUserSettings";
+import { Spinner } from "../ui/spinner";
+import { useParams } from "react-router-dom";
+import { useMe } from "@/hooks/users/auth/useMe";
 
 function UserSettingForm({ isAdmin = false }) {
-    const { settingsError, isLoadingSettings, settings } = useUserSettings()
+    let { id } = useParams()
+    const { me } = useMe()
+    if (!id) {
+        id = me.id
+    }
+    const { updateSettings, isUpdatingSettings } = useUpdateUserSettings()
+    const { settingsError, isLoadingSettings, settings } = useUserSettings(id)
     const userSettings = useForm({
         defaultValues: {
             isDark: true,
@@ -28,7 +38,7 @@ function UserSettingForm({ isAdmin = false }) {
                 daysBeforeMaintenance: [60],
                 level: [50]
             },
-            language: "en"
+            appLanguage: "en"
         }
     });
 
@@ -36,9 +46,9 @@ function UserSettingForm({ isAdmin = false }) {
         if (settings) {
             userSettings.reset({
                 isDark: settings.isDark,
-                notifications: { email: settings.notifications.email },
+                notifications: settings.notifications,
                 alertLevel: settings.alertLevel,
-                language: settings.language
+                appLanguage: settings.appLanguage
             });
         }
     }, [settings, userSettings]);
@@ -47,10 +57,17 @@ function UserSettingForm({ isAdmin = false }) {
 
 
     function handleUpdateSettings(data) {
+        const configToServerModel = {
+            ...data,
+            alertLevel: {
+                ...data.alertLevel,
+                level: Array.isArray(data.alertLevel.level) ? data.alertLevel.level[0] : data.alertLevel.level,
+                daysBeforeMaintenance: Array.isArray(data.alertLevel.daysBeforeMaintenance) ? data.alertLevel.daysBeforeMaintenance[0] : data.alertLevel.daysBeforeMaintenance
+            }
+        }
+        console.log(configToServerModel);
 
-        //TODO - level and daysBeforeMaintenance value that will be sent to the server is an arrays (each), therefore make the convertion in client side before fetching the the server (server will not allow array as level) and when fetcing to get the settings make sure to convert from number to array of number 
-        console.log(data);
-
+        updateSettings({ configToServerModel, id })
     }
 
     return (
@@ -93,23 +110,17 @@ function UserSettingForm({ isAdmin = false }) {
                                             )}
                                         />
                                         <FormField
-                                            name="language"
+                                            name="appLanguage"
                                             control={userSettings.control}
                                             render={({ field }) => (
-                                                <FormItem className="flex items-center gap-4 leading-4">
-                                                    <Label className='min-w-max'>Language Preference</Label>
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl>
-                                                            <SelectTrigger>
-                                                                <SelectValue placeholder="Select Appliction Language" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            <SelectItem value='he'>עברית</SelectItem>
-                                                            <SelectItem value='en'>English</SelectItem>
-                                                        </SelectContent>
-
-                                                    </Select>
+                                                <FormItem>
+                                                    <Label>Language Preference</Label>
+                                                    <FormControl>
+                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="he">עברית</ToggleGroupItem>
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="en">English</ToggleGroupItem>
+                                                        </ToggleGroup>
+                                                    </FormControl>
                                                 </FormItem>
                                             )}
                                         />
@@ -211,11 +222,11 @@ function UserSettingForm({ isAdmin = false }) {
                             </CardContent>
                             <CardFooter>
                                 <Button
-                                    disabled={!isDirty}
+                                    disabled={!isDirty || isUpdatingSettings}
                                     type="submit"
                                     className="cursor-pointer w-full px-3 py-1"
                                 >
-                                    Update
+                                    {isUpdatingSettings ? <Spinner /> : "Update"}
                                 </Button>
                             </CardFooter>
                         </form>

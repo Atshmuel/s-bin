@@ -6,7 +6,7 @@ import { verifyBinOwner } from '../service/sharedService.js';
 export async function getBinLog(req, res) {
     const { withBin } = req.query
     const { logId } = req.params;
-    const { id: ownerId } = req.user
+    const { id: ownerId, role } = req.user
 
     let query = {}
     query = appendFilter(query, true, '_id', logId)
@@ -20,7 +20,7 @@ export async function getBinLog(req, res) {
 
         if (!log) return res.status(404).json({ message: "Bin not found." });
 
-        const isBinOwner = await verifyBinOwner(log.binId, ownerId)
+        const isBinOwner = role === process.env.ROLE_OWNER ?? await verifyBinOwner(binId, ownerId)
 
         if (!isBinOwner)
             return res.status(403).json({ message: 'This bin is not owned by you' })
@@ -39,7 +39,7 @@ export async function getBinLogs(req, res) {
     let query = {}
     query = appendFilter(query, true, 'binId', binId)
 
-    const isBinOwner = await verifyBinOwner(binId, ownerId)
+    const isBinOwner = role === process.env.ROLE_OWNER ?? await verifyBinOwner(binId, ownerId)
 
     if (!isBinOwner)
         return res.status(403).json({ message: 'This bin is not owned by you' })

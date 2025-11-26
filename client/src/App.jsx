@@ -74,12 +74,6 @@ function App() {
               <Route path="account">
                 <Route path="" element={<AccountProfile />} />
               </Route>
-              {/* Role protected routes */}
-              <Route path="management">
-                <Route path="bins" element={<BinsList />} />
-                <Route path="users" element={<UsersList />} />
-              </Route>
-              {/* end of role protected routes */}
 
 
             </Route>

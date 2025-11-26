@@ -14,7 +14,7 @@ export function useForgot() {
             }
         },
         onError: (error) => {
-            throw error
+            toast.error(error.message)
         },
     });
     return { forgot, isFetchingForgot };
@@ -30,7 +30,7 @@ export function useOtp() {
             }
         },
         onError: (error) => {
-            throw error
+            toast.error(error.message)
         },
     });
     return { otp, isVerifingOtp };
@@ -45,7 +45,7 @@ export function useUpdatePasswordByToken() {
             navigate(`/login${variables?.email ? '?email=' + variables?.email : ''}`, { replace: true })
         },
         onError: (error) => {
-            throw error
+            toast.error(error.message)
         },
     });
     return { updatePassword, isUpdatingPassword };

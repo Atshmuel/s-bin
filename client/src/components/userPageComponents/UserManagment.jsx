@@ -4,14 +4,8 @@ import { FormProvider, useForm } from "react-hook-form";
 import { FormControl, FormDescription, FormField, FormItem } from "../ui/form";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
-import { Switch } from "../ui/switch";
-import { Slider } from "../ui/slider";
 import { ToggleGroup } from "@radix-ui/react-toggle-group";
 import { ToggleGroupItem } from "../ui/toggle-group";
-import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "../ui/select";
-
-import { Skeleton } from "../ui/skeleton";
-import { AlertCircle } from "lucide-react";
 import { useMe } from "@/hooks/users/auth/useMe";
 
 function UserManagment({ user }) {

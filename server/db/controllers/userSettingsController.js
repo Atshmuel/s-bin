@@ -28,8 +28,13 @@ export async function updateUserSettings(req, res) {
     const updates = req.body
 
     const filter = {
-        _id: role === process.env.ROLE_OWNER ? id : userId
+        userId: role === process.env.ROLE_OWNER ? id : userId
     };
+
+    if (role !== process.env.ROLE_OWNER && id !== userId) {
+        return res.status(403)
+
+    }
 
     try {
         const settings = await userSettingModel.findOneAndUpdate(filter, updates, { new: true, runValidators: true }

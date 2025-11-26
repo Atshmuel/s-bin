@@ -22,7 +22,6 @@ function UserProfile() {
                 <PasswordForm isAdmin={isAdmin} />
                 <UserManagment />
             </div>
-
             <UserSettingForm isAdmin={isAdmin} />
         </div>
     )

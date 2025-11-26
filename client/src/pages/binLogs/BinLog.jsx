@@ -10,11 +10,12 @@ import { useLog } from "@/hooks/bins/binLogs/useLog"
 import { getColor, getVariant } from "@/utils/binHelpers"
 import { ArrowLeft } from "lucide-react"
 import { Link, useParams } from "react-router-dom"
+import ErrorPage from "../generals/ErrorPage"
 
 function BinLog() {
     const { mapContainerRef, scrollToMap } = useMapSettings();
     const { id } = useParams()
-    const { log, isLoadingLog } = useLog(id);
+    const { log, isLoadingLog, logError } = useLog(id);
 
     if (isLoadingLog) {
         return <div className="flex h-full w-full justify-center items-center">
@@ -22,11 +23,10 @@ function BinLog() {
         </div>
     }
 
-
+    if (logError && !isLoadingLog) {
+        return <ErrorPage />
+    }
     const { bin } = log
-
-    console.log(bin.location.coordinates);
-
 
     return (
         <div className="flex flex-col space-y-4 h-full">

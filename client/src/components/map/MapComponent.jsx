@@ -14,7 +14,6 @@ function MapComponent({ children, center = [32.980, 35.500], zoom = 13, legend =
         : 'Tiles &copy; Esri &mdash; Source: Esri, USGS'
 
 
-    console.log(center);
 
     return (
         <MapContainer center={center} zoom={zoom} className="h-full w-full relative" ref={setMap} {...props}>

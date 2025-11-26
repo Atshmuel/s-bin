@@ -33,7 +33,7 @@ const data = {
       title: "Bins",
       url: "/bins",
       icon: Trash2Icon,
-      // isActive: true,
+      isActive: true,
       items: [
         {
           title: "Add",
@@ -62,50 +62,6 @@ const data = {
           title: "List",
           url: "",
         },
-      ],
-    },
-    {
-      title: "Dev only!",
-      url: "",
-      isActive: true,
-      icon: Code2,
-      items: [
-        {
-          title: "Error",
-          url: "error",
-        },
-        {
-          title: "Login",
-          url: "login",
-        },
-        {
-          title: "Signup",
-          url: "signup",
-        },
-        {
-          title: "Forgot password",
-          url: "forgot-password",
-        },
-        {
-          title: "Account",
-          url: "account",
-        },
-        {
-          title: "Owner - Users List",
-          url: "management/users",
-        },
-        {
-          title: "Owner - Bins List",
-          url: "management/bins",
-        },
-        {
-          title: "Specific Bin Log",
-          url: "bins/logs/:id"
-        },
-        {
-          title: "User profile view",
-          url: "users/:id"
-        }
       ],
     },
   ],

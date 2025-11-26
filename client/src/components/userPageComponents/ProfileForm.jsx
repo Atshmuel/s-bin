@@ -9,20 +9,39 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useMe } from "@/hooks/users/auth/useMe";
+import { useUser } from "@/hooks/users/useUser";
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Skeleton } from "../ui/skeleton";
+import ErrorPage from "@/pages/generals/ErrorPage";
+import EmptyCard from "../EmptyCard";
 
-function ProfileForm({ user, isAdmin = false }) {
-
+function ProfileForm({ isAdmin = false }) {
+    let { id } = useParams()
     const { me } = useMe()
+    if (!id) {
+        id = me.id
+    }
+    const { user, isLoadingUser, userError } = useUser(id)
+
     const { name, email, role, status } = user ? user : me
+
     const profileForm = useForm({
         defaultValues: {
+            name: '',
+            email: '',
+            status: '',
+            role: '',
+        }
+    });
+    useEffect(() => {
+        profileForm.reset({
             name,
             email,
             status,
             role,
-        }
-    });
-
+        })
+    }, [name, email, status, role, profileForm,])
     const { isDirty, isValid } = profileForm.formState;
 
     const nameValue = profileForm.watch('name') || "";
@@ -35,7 +54,31 @@ function ProfileForm({ user, isAdmin = false }) {
         fallbackName = parts[0][0].toUpperCase();
     }
 
+    if (isLoadingUser) {
+        return <Card className="min-w-[330px] flex flex-col items-center justify-start gap-8 p-5 h-[400px] max-w-[400px] ">
+            <div className="flex justify-between w-full">
+                <Skeleton className={'w-16 h-5 rounded-full'} />
+                <Skeleton className={'size-20 rounded-full'} />
+                <Skeleton className={'w-16 h-5 rounded-full'} />
+            </div>
+            <Skeleton className={'w-80 h-15 rounded-full'} />
+            <div className="flex flex-col gap-5 mt-6">
+                <Skeleton className={'w-80 h-7'} />
+                <Skeleton className={'w-80 h-7'} />
+            </div>
+            <Skeleton className={'w-80 h-10'} />
+        </Card>
+    }
+
+    if (userError && !isLoadingUser) {
+        return <Card className="min-w-[330px]  h-[400px] max-w-[400px]">
+            <EmptyCard title={'Cloud not get user info'} description={'Failed to load user information'} />
+        </Card>
+
+    }
+
     return (
+
         <Card className="min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center flex flex-row justify-between relative'>
                 {profileForm.getValues('role').length ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('role').toLocaleLowerCase()}>{profileForm.getValues('role')}</Badge> : null}
