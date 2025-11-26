@@ -5,12 +5,17 @@ import InputLabel from "../InputLabel";
 import { Label } from "../ui/label";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { useState } from "react";
-import { useMe } from "@/hooks/users/auth/useMe";
 
 function DangerZone({ user, isAdmin = false }) {
-    const { me } = useMe()
-    const userName = user ? user.name : me.name
+    const userName = user.name
     const [deleteInput, setDeleteInput] = useState("");
+
+    function handleBinsDeletion() {
+        console.log("bin");
+    }
+    function handleAccountDeletion() {
+        console.log("acc");
+    }
 
     return (
         <Card className={`min-w-[330px] max-w-[400px] h-fit`}>
@@ -39,7 +44,7 @@ function DangerZone({ user, isAdmin = false }) {
                                 <DialogClose asChild>
                                     <Button className="cursor-pointer" variant='outline'>Cancel</Button>
                                 </DialogClose>
-                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== 'delete all'} variant='destructive'>Delete</Button>
+                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== 'delete all'} variant='destructive' onClick={handleBinsDeletion}>Delete</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -63,7 +68,7 @@ function DangerZone({ user, isAdmin = false }) {
                                 <DialogClose asChild>
                                     <Button className="cursor-pointer" variant='outline'>Cancel</Button>
                                 </DialogClose>
-                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== userName.toLowerCase()} variant='destructive'>Delete</Button>
+                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== userName.toLowerCase()} onClick={handleAccountDeletion} variant='destructive'>Delete</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>

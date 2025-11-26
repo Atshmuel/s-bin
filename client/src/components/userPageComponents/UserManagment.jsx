@@ -6,21 +6,35 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { ToggleGroup } from "@radix-ui/react-toggle-group";
 import { ToggleGroupItem } from "../ui/toggle-group";
-import { useMe } from "@/hooks/users/auth/useMe";
+import { useUpdateUserRole, useUpdateUserStatus } from "@/hooks/users/useUpdateUser";
+import { useEffect } from "react";
+import { Spinner } from "../ui/spinner";
 
-function UserManagment({ user }) {
-    const { me } = useMe()
+function UserManagment({ user, isAdmin = false }) {
+    const { updateRole, isUpdatingRole } = useUpdateUserRole()
+    const { updateStatus, isUpdatingStatus } = useUpdateUserStatus()
     const userManagment = useForm({
         defaultValues: {
-            status: user ? user.status : me.status,
-            role: user ? user.role : me.role
+            status: user.status,
+            role: user.role
         }
     })
+    useEffect(() => {
+        userManagment.reset({
+            status: user.status,
+            role: user.role
+        });
+    }, [user, userManagment]);
 
     const { isDirty } = userManagment.formState;
 
     function handleUpdate(data) {
-        console.log(data);
+        user.role !== data.role ? updateRole({ role: data.role, id: user._id }) : null
+        user.status !== data.status ? updateStatus({ status: data.status, id: user._id }) : null
+    }
+
+    if (!isAdmin) {
+        return null
     }
 
     return (
@@ -41,7 +55,7 @@ function UserManagment({ user }) {
                                     <FormItem>
                                         <Label>User Role</Label>
                                         <FormControl>
-                                            <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                            <ToggleGroup disabled={isUpdatingRole} className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">User</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">Technician</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">Admin</ToggleGroupItem>
@@ -62,7 +76,7 @@ function UserManagment({ user }) {
                                     <FormItem>
                                         <Label>User Status</Label>
                                         <FormControl>
-                                            <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                            <ToggleGroup disabled={isUpdatingStatus} className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="pending">Pending</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="active">Active</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="inactive">Inactive</ToggleGroupItem>
@@ -80,11 +94,11 @@ function UserManagment({ user }) {
                     </CardContent>
                     <CardFooter>
                         <Button
-                            disabled={!isDirty}
+                            disabled={!isDirty || isUpdatingRole || isUpdatingStatus}
                             type="submit"
                             className="cursor-pointer w-full px-3 py-1"
                         >
-                            Update
+                            {isUpdatingRole || isUpdatingStatus ? <Spinner /> : 'Update'}
                         </Button>
                     </CardFooter>
                 </form>

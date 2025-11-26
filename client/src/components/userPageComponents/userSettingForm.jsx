@@ -8,24 +8,16 @@ import { Switch } from "../ui/switch";
 import { Slider } from "../ui/slider";
 import { ToggleGroup } from "@radix-ui/react-toggle-group";
 import { ToggleGroupItem } from "../ui/toggle-group";
-import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "../ui/select";
 import { useUserSettings } from "@/hooks/users/useUserSettings";
 import { useEffect } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { useUpdateUserSettings } from "@/hooks/users/useUpdateUserSettings";
 import { Spinner } from "../ui/spinner";
-import { useParams } from "react-router-dom";
-import { useMe } from "@/hooks/users/auth/useMe";
 
-function UserSettingForm({ isAdmin = false }) {
-    let { id } = useParams()
-    const { me } = useMe()
-    if (!id) {
-        id = me.id
-    }
+function UserSettingForm({ user, isAdmin = false }) {
     const { updateSettings, isUpdatingSettings } = useUpdateUserSettings()
-    const { settingsError, isLoadingSettings, settings } = useUserSettings(id)
+    const { settingsError, isLoadingSettings, settings } = useUserSettings(user._id)
     const userSettings = useForm({
         defaultValues: {
             isDark: true,
@@ -65,9 +57,7 @@ function UserSettingForm({ isAdmin = false }) {
                 daysBeforeMaintenance: Array.isArray(data.alertLevel.daysBeforeMaintenance) ? data.alertLevel.daysBeforeMaintenance[0] : data.alertLevel.daysBeforeMaintenance
             }
         }
-        console.log(configToServerModel);
-
-        updateSettings({ configToServerModel, id })
+        updateSettings({ configToServerModel, id: user._id })
     }
 
     return (

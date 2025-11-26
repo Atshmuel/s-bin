@@ -310,10 +310,10 @@ export async function updateUserRole(req, res) {
     const { role } = req.body
     const { id: userId, role: currentUserRole } = req.user
 
-    if (![process.env.ROLE_OPERATOR, process.env.ROLE_TECHNICIAN, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
+    if (![process.env.ROLE_USER, process.env.ROLE_TECHNICIAN, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
         return res.status(400).json({ message: 'This role is not allow' })
     if (id === userId) return res.status(400).json({ message: 'User not allow to update his role' })
-    if (currentUserRole === role) return res.status(400).json({ message: 'User not allow to assign a role equal to his' })
+    if (currentUserRole === role && currentUserRole !== process.env.ROLE_OWNER) return res.status(400).json({ message: 'User not allow to assign a role equal to his' })
 
     try {
         const updatedUser = await userModel.findOneAndUpdate({
@@ -322,7 +322,7 @@ export async function updateUserRole(req, res) {
             ]
         }, { $set: { role }, $inc: { tokenVersion: 1 } }, { new: true }).select('-passwordHash -__v -accountVerification')
         if (!updatedUser)
-            return res.status(403).json({ message: "Not allowed to update this user" });
+            return res.status(403).json({ message: "Not allowed to update this user's role" });
 
         return res.status(200).json({ updatedUser });
     } catch (error) {
@@ -337,9 +337,12 @@ export async function updateUserStatus(req, res) {
     let query = { _id: id }
 
     if (id === userId && role !== process.env.ROLE_OWNER)
-        return res.status(400).json({ message: 'User not allow to update his status' })
+        return res.status(403).json({ message: 'User not allow to update his status' })
+    if (id === userId && role === process.env.ROLE_OWNER) {
+        return res.status(403).json({ message: 'Owner cant change his own status' })
+    }
 
-    if (!["active", "inactive", "suspended"].includes(status))
+    if (!["pending", "active", "inactive", "suspended"].includes(status))
         return res.status(400).json({ message: 'This status is not allow' })
 
     if (role !== process.env.ROLE_OWNER) {
@@ -400,7 +403,7 @@ export async function deleteUser(req, res) {
         }
 
         const userToDelete = await userModel.findById(id);
-        if (currentUserRole !== process.env.ROLE_OWNER && (!userToDelete || userToDelete.role !== process.env.ROLE_OPERATOR)) {
+        if (currentUserRole !== process.env.ROLE_OWNER && (!userToDelete || userToDelete.role !== process.env.ROLE_USER)) {
             return res.status(403).json({ message: "User not found or cannot delete an owner / admin" });
         }
         await deleteUserRefs(id);

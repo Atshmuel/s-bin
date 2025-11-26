@@ -7,7 +7,7 @@ import { useState } from "react";
 import InputLabel from "../InputLabel";
 import { Eye, EyeOff } from "lucide-react";
 
-function PasswordForm({ isAdmin = false }) {
+function PasswordForm({ user, isAdmin = false }) {
     const [showPassword, setShowPassword] = useState(false);
 
     const passwordForm = useForm({

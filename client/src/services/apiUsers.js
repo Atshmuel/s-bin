@@ -169,6 +169,23 @@ export async function updateUserRole({ role, id }) {
     return data;
 }
 
+export async function updateUserStatus({ status, id }) {
+    const res = await fetch(`${SERVER_URL}/${USERS_EP}/status/${id}`, {
+        method: "PATCH",
+        mode: "cors",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}
+
+
+
+
+
 export async function updateUserSettings(settings, userId) {
     const res = await fetch(`${SERVER_URL}/${USERS_EP}/${userId}/settings`, {
         method: "PATCH",
