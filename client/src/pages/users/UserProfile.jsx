@@ -12,11 +12,10 @@ import ErrorPage from "../generals/ErrorPage"
 
 function UserProfile() {
     let { id } = useParams()
-    const { me } = useMe()
+    const { isAdmin } = useMe()
 
     const { user, isLoadingUser, userError } = useUser(id)
 
-    const isAdmin = me.role === 'admin' || me.role === 'owner'
 
     if (isLoadingUser) {
         return <LoadingProfile />

@@ -9,9 +9,8 @@ import ErrorPage from "../generals/ErrorPage"
 
 
 function AccountProfile() {
-    const { me } = useMe()
+    const { me, isAdmin } = useMe()
     const { user, isLoadingUser, userError } = useUser(me.id)
-    const isAdmin = me.role === 'admin' || me.role === 'owner'
 
 
     if (isLoadingUser) {

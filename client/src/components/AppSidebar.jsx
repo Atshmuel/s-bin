@@ -93,7 +93,8 @@ export function AppSidebar({
   ...props
 }) {
   const { state } = useSidebar()
-  const { me } = useMe()
+  const { me, isAdmin } = useMe()
+
 
   const isExpanded = state === 'expanded'
 
@@ -107,7 +108,7 @@ export function AppSidebar({
         <NavGeneral general={data.general} />
       </SidebarContent>
       <SidebarFooter>
-        <NewEntitySheet isExpanded={isExpanded} />
+        {isAdmin ? <NewEntitySheet isExpanded={isExpanded} /> : null}
         <NavAccount account={{ ...me, avater: '/avatars/shadcn.jpg' }} />
       </SidebarFooter>
       <SidebarRail />
