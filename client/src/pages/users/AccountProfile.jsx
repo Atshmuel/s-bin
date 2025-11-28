@@ -11,6 +11,8 @@ import ErrorPage from "../generals/ErrorPage"
 function AccountProfile() {
     const { me } = useMe()
     const { user, isLoadingUser, userError } = useUser(me.id)
+    const isAdmin = me.role === 'admin' || me.role === 'owner'
+
 
     if (isLoadingUser) {
         return <LoadingProfile />
@@ -23,10 +25,10 @@ function AccountProfile() {
     return (
         <div className="h-full flex flex-wrap gap-6 justify-center px-4 py-2 max-w-[1800px] ">
             <div className="flex flex-col gap-4">
-                <ProfileForm user={user} />
-                <DangerZone user={user} />
+                <ProfileForm user={user} isAdmin={isAdmin} />
+                <DangerZone user={user} isAdmin={isAdmin} />
             </div>
-            <UserSettingForm user={user} />
+            <UserSettingForm user={user} isAdmin={isAdmin} />
             <PasswordForm user={user} />
         </div>
     )

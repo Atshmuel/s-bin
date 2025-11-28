@@ -43,8 +43,8 @@ const main = async () => {
     try {
         // initMqtt();
         await mongoose.connect(`${DB_URL}`);
-        await import("./db/cron/cleanupOTP.js");
-        await import("./db/cron/cleanupActivationToken.js");
+        // await import("./db/cron/cleanupOTP.js");
+        // await import("./db/cron/cleanupActivationToken.js");
         app.listen(SERVER_PORT, () => {
             console.log(mongoose.connection.readyState === 1 && `Connected to DB.`);
             console.log(`Listening on port ${SERVER_PORT}`);

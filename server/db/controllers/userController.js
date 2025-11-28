@@ -66,6 +66,59 @@ export async function createUser(req, res) {
     }
 }
 
+export async function createUserAsAdmin(req, res) {
+    const { email, password, name, status, role } = req.body
+    const session = await mongoose.startSession();
+    let newUser;
+    let settings;
+
+    try {
+        const { error: emailError } = emailSchema.validate(email ?? '')
+        if (emailError) throw new Error(emailError.message);
+
+        const { error } = passwordSchema.validate(password ?? '')
+        if (error) return res.status(400).json({ message: error.message });
+
+        const passwordHash = await hashPassword(password)
+        if (!passwordHash) return res.status(500).json({ message: "Failed to hash the password, couldn't create the user." })
+
+        if (![process.env.ROLE_USER, process.env.ROLE_TECHNICIAN, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
+            return res.status(400).json({ message: 'This role is not allow' })
+
+        if (!["pending", "active", "inactive", "suspended"].includes(status))
+            return res.status(400).json({ message: 'This status is not allow' })
+
+        await session.withTransaction(async () => {
+            newUser = new userModel({
+                email: email.toLowerCase(),
+                passwordHash,
+                name,
+                status,
+                role
+            });
+            await newUser.save({ session });
+
+            settings = new userSettingModel({ userId: newUser._id });
+            await settings.save({ session });
+
+            newUser.settingsId = settings._id;
+            await newUser.save({ session });
+        })
+
+        res.status(201).json({
+            user: {
+                name: newUser.name,
+                email: newUser.email,
+                status: newUser.status
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    } finally {
+        session.endSession();
+    }
+}
+
 export async function verifyNewUser(req, res) {
     const { token } = req.params
 
@@ -292,14 +345,6 @@ export async function updateUserPassword(req, res) {
         }, { new: true, select: 'email name' })
         if (!updatedUser) return res.status(401).json({ message: 'Failed to update the password' })
 
-        const accessToken = generateToken({ id: updatedUser._id, role: user.role, tokenVersion: updatedUser.tokenVersion }, '3d');
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 3 * 24 * 60 * 60 * 1000,
-            sameSite: 'strict',
-        });
-
         return res.status(200).json({ updatedUser });
     } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -399,7 +444,7 @@ export async function deleteUser(req, res) {
     try {
 
         if (id === currentUserId) {
-            return res.status(403).json({ message: "You cannot delete your own account using from this method" });
+            return res.status(403).json({ message: "You cannot delete your own account using this method" });
         }
 
         const userToDelete = await userModel.findById(id);

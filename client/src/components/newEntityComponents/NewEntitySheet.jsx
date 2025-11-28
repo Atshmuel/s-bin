@@ -4,15 +4,18 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 
 import { useForm } from "react-hook-form"
 import UserInputs from "./UserInputs"
-import { useIsMobile } from "@/hooks/use-mobile"
+import { useCreateUser } from "@/hooks/users/useCreateUser"
 
 function NewEntitySheet({ isExpanded }) {
-    const isMobile = useIsMobile()
+    const { create, isCreating } = useCreateUser()
+
     const userForm = useForm({
         defaultValues: {
             name: '',
             email: '',
-            password: ''
+            password: '',
+            role: 'user',
+            status: 'active'
         }
     })
 
@@ -20,12 +23,17 @@ function NewEntitySheet({ isExpanded }) {
         userForm.reset({
             name: '',
             email: '',
-            password: ''
+            password: '',
+            role: 'user',
+            status: 'active'
         });
     }
 
-    const onSubmitUser = userForm.handleSubmit((data) => {
-        console.log("User form:", data);
+    const onSubmitUser = userForm.handleSubmit(async (data) => {
+        const res = await create(data)
+        if (res) {
+            handleReset()
+        }
     });
 
     return (
@@ -46,7 +54,7 @@ function NewEntitySheet({ isExpanded }) {
                     <div className="px-4 relative">
 
                         <div className=" md:max-h-[54vh]  md:h-[54vh] overflow-auto">
-                            <UserInputs form={userForm} />
+                            <UserInputs form={userForm} isCreating={isCreating} />
                         </div>
 
 

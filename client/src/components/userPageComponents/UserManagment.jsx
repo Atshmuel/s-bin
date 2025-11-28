@@ -9,8 +9,11 @@ import { ToggleGroupItem } from "../ui/toggle-group";
 import { useUpdateUserRole, useUpdateUserStatus } from "@/hooks/users/useUpdateUser";
 import { useEffect } from "react";
 import { Spinner } from "../ui/spinner";
+import { useMe } from "@/hooks/users/auth/useMe";
+import { toast } from "sonner";
 
 function UserManagment({ user, isAdmin = false }) {
+    const { me } = useMe()
     const { updateRole, isUpdatingRole } = useUpdateUserRole()
     const { updateStatus, isUpdatingStatus } = useUpdateUserStatus()
     const userManagment = useForm({
@@ -29,6 +32,10 @@ function UserManagment({ user, isAdmin = false }) {
     const { isDirty } = userManagment.formState;
 
     function handleUpdate(data) {
+        if (user._id === me.id) {
+            toast.warning("You can't change your own permissions or status")
+            return
+        }
         user.role !== data.role ? updateRole({ role: data.role, id: user._id }) : null
         user.status !== data.status ? updateStatus({ status: data.status, id: user._id }) : null
     }

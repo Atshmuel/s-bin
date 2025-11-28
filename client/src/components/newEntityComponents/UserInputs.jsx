@@ -1,12 +1,13 @@
 import { FormProvider } from "react-hook-form";
-import { FormField, FormItem, FormMessage } from "../ui/form";
+import { FormControl, FormDescription, FormField, FormItem, FormMessage } from "../ui/form";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { useState } from "react";
 import InputLabel from "../InputLabel";
 import { Eye, EyeOff } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 
-function UserInputs({ form }) {
+function UserInputs({ form, isCreating }) {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
@@ -32,7 +33,7 @@ function UserInputs({ form }) {
                     render={({ field }) => (
                         <FormItem>
                             <Label>Full Name</Label>
-                            <Input className="pb-2" {...field} placeholder="Full Name" type="text" />
+                            <Input disabled={isCreating} className="pb-2" {...field} placeholder="Full Name" type="text" />
                             <FormMessage />
                         </FormItem>
                     )}
@@ -57,7 +58,7 @@ function UserInputs({ form }) {
                     render={({ field }) => (
                         <FormItem>
                             <Label>Email Address</Label>
-                            <Input className="pb-2" {...field} placeholder="Email Address" type="text" />
+                            <Input disabled={isCreating} className="pb-2" {...field} placeholder="Email Address" type="text" />
                             <FormMessage />
                         </FormItem>
                     )}
@@ -93,15 +94,54 @@ function UserInputs({ form }) {
                     render={({ field }) => (
                         <FormItem>
                             <div className="relative">
-                                <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >New Password</InputLabel>
+                                <InputLabel disabled={isCreating}{...field} placeholder=" " type={showPassword ? "text" : "password"} >New Password</InputLabel>
                                 {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
                             </div>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
+                <FormField
+                    name="role"
+                    control={form.control}
+                    render={({ field }) => (
+                        <FormItem>
+                            <Label>User Role</Label>
+                            <FormControl>
+                                <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">User</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">Technician</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">Admin</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">Owner</ToggleGroupItem>
+                                </ToggleGroup>
+                            </FormControl>
+                            <FormDescription>
+                                This field will grant the user additional permissions.
+                            </FormDescription>
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    name="status"
+                    control={form.control}
+                    render={({ field }) => (
+                        <FormItem>
+                            <Label>User Status</Label>
+                            <FormControl>
+                                <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="pending">Pending</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="active">Active</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="inactive">Inactive</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="suspended">Suspended</ToggleGroupItem>
+                                </ToggleGroup>
+                            </FormControl>
+                            <FormDescription>
+                                Changing this field may result in the user being blocked.
+                            </FormDescription>
+                        </FormItem>
+                    )}
+                />
             </div>
-
         </FormProvider>
     )
 }

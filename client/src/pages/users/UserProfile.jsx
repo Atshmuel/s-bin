@@ -14,9 +14,6 @@ function UserProfile() {
     let { id } = useParams()
     const { me } = useMe()
 
-    if (!id) {
-        id = me.id
-    }
     const { user, isLoadingUser, userError } = useUser(id)
 
     const isAdmin = me.role === 'admin' || me.role === 'owner'
@@ -25,9 +22,15 @@ function UserProfile() {
         return <LoadingProfile />
     }
 
-    if (!isLoadingUser && userError) {
-        return <ErrorPage />
+    if (!isAdmin) {
+        return <ErrorPage code={403} description="You are not allowed to see this page" navTo="/users" buttonText="Back to users" />
     }
+
+    if (!isLoadingUser && userError) {
+        return <ErrorPage code={500} description="Could not find the user you'r looking for" navTo="/users" buttonText="Back to users" />
+    }
+
+
 
     return (
         <div className="h-full flex flex-wrap gap-6 justify-center px-4 py-2 max-w-[1800px] ">

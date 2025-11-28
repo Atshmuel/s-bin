@@ -205,7 +205,7 @@ export async function updateUserSettings(settings, userId) {
 
 
 //deletion
-export async function deleteUser({ id }) {
+export async function deleteUserById({ id }) {
     const res = await fetch(`${SERVER_URL}/${USERS_EP}/user/${id}`, {
         method: "DELETE",
         credentials: "include",
@@ -226,4 +226,16 @@ export async function deleteAccount() {
 }
 
 
-
+//admin create user
+export async function createUserAsAdmin({ email, password, name, role, status }) {
+    const res = await fetch(`${SERVER_URL}/${USERS_EP}/admin/register`, {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name, role, status }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}
