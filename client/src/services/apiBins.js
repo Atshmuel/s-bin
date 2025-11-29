@@ -74,7 +74,7 @@ export async function deleteBinsBatch({ binIds = [] }) {
     return data;
 }
 
-export async function deleteBin({ id }) {
+export async function deleteBinById({ id }) {
     const res = await fetch(`${SERVER_URL}/${BINS_EP}/${id}`, {
         method: "DELETE",
         credentials: "include",

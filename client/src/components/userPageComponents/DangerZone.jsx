@@ -9,6 +9,8 @@ import { useDeleteUser } from "@/hooks/users/useDeleteUser";
 import { Spinner } from "../ui/spinner";
 import { useParams } from "react-router-dom";
 import { useDeleteAccount } from "@/hooks/users/useDeleteAccount";
+import { useDeleteBinBatch } from "@/hooks/bins/useDeleteAllBins";
+import { useBins } from "@/hooks/bins/useBins";
 
 function DangerZone({ user, isAdmin = false }) {
     const { id } = useParams()
@@ -16,11 +18,17 @@ function DangerZone({ user, isAdmin = false }) {
     const [deleteInput, setDeleteInput] = useState("");
     const { deleteUser, isDeleting } = useDeleteUser()
     const { deleteUserAccount, isDeleting: isDeletingAccount } = useDeleteAccount()
+    const { deleteBins, isDeleting: isDeletingBins } = useDeleteBinBatch()
+    const { allBins } = useBins()
 
     function handleBinsDeletion() {
-        console.log("bin");
+        const binIds = allBins.filter(b => {
+            return b.ownerId === id || b.ownerId === user._id
+        }).map(b => b._id)
 
+        deleteBins({ binIds })
     }
+
     function handleAccountDeletion() {
         if (isAdmin && !id) {
             deleteUserAccount()
@@ -41,7 +49,7 @@ function DangerZone({ user, isAdmin = false }) {
                     <Label>Delete {isAdmin ? 'User' : 'Your'} Bins</Label>
                     <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
                         <DialogTrigger asChild>
-                            <Button className="cursor-pointer" variant='outline_destructive' size='sm'>Delete</Button>
+                            <Button disabled={isDeletingAccount || isDeleting || isDeletingBins} className="cursor-pointer" variant='outline_destructive' size='sm'>{isDeletingAccount || isDeleting || isDeletingBins ? <Spinner /> : 'Delete'}</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -56,7 +64,7 @@ function DangerZone({ user, isAdmin = false }) {
                                 <DialogClose asChild>
                                     <Button className="cursor-pointer" variant='outline'>Cancel</Button>
                                 </DialogClose>
-                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== 'delete all' || isDeleting || isDeletingAccount} variant='destructive' onClick={handleBinsDeletion}>{isDeleting || isDeletingAccount ? <Spinner /> : 'Delete'}</Button>
+                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== 'delete all' || isDeletingBins || isDeleting || isDeletingAccount} variant='destructive' onClick={handleBinsDeletion}>{isDeleting || isDeletingBins || isDeletingAccount ? <Spinner /> : 'Delete'}</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
@@ -65,7 +73,9 @@ function DangerZone({ user, isAdmin = false }) {
                     <Label>Delete {isAdmin ? 'User' : 'Your'} Account</Label>
                     <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
                         <DialogTrigger asChild>
-                            <Button className="cursor-pointer" variant='outline_destructive' size='sm'>Delete</Button>
+                            <Button disabled={isDeletingAccount || isDeleting || isDeletingBins} className="cursor-pointer" variant='outline_destructive' size='sm'>
+                                {isDeletingAccount || isDeleting || isDeletingBins ? <Spinner /> : 'Delete'}
+                            </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -80,8 +90,8 @@ function DangerZone({ user, isAdmin = false }) {
                                 <DialogClose asChild>
                                     <Button className="cursor-pointer" variant='outline'>Cancel</Button>
                                 </DialogClose>
-                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== userName.toLowerCase() || isDeleting || isDeletingAccount} onClick={handleAccountDeletion} variant='destructive'>
-                                    {isDeleting || isDeletingAccount ? <Spinner /> : 'Delete'}</Button>
+                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== userName.toLowerCase() || isDeletingBins || isDeleting || isDeletingAccount} onClick={handleAccountDeletion} variant='destructive'>
+                                    {isDeletingBins || isDeleting || isDeletingAccount ? <Spinner /> : 'Delete'}</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>

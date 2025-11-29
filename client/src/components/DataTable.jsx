@@ -27,7 +27,7 @@ import EmptyTable from "./EmptyTable"
 import { Search, X } from "lucide-react"
 
 
-export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy }) {
+export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null }) {
     const [sorting, setSorting] = useState(sortingBy ?? [])
     const [searching, setSearching] = useState("")
 
@@ -89,6 +89,8 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                                 ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    {ActionButton ? <ActionButton /> : null}
+
                 </div>
             </div>
             <div className="rounded-md border">

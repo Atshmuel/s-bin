@@ -98,7 +98,7 @@ function BinDetails() {
                     <CardDescription>Review detailed records of all bin activities, including fill levels, timestamps, and event types.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <DataTable columns={logsColumns} isLoading={isLoadingBins} data={bin?.logs ?? []} maxLength={5} error={binsError} sortingBy={[{ id: 'createdAt', desc: true }]} />
+                    <DataTable columns={logsColumns} isLoading={isLoadingBins} data={bin?.logs ?? []} maxLength={4} error={binsError} sortingBy={[{ id: 'createdAt', desc: true }]} />
                 </CardContent>
             </Card>
         </div>

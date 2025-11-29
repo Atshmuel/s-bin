@@ -108,7 +108,11 @@ function UserInputs({ form, isCreating }) {
                         <FormItem>
                             <Label>User Role</Label>
                             <FormControl>
-                                <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => {
+                                    if (value) {
+                                        field.onChange(value)
+                                    }
+                                }}>
                                     <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">User</ToggleGroupItem>
                                     <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">Technician</ToggleGroupItem>
                                     <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">Admin</ToggleGroupItem>
@@ -128,7 +132,11 @@ function UserInputs({ form, isCreating }) {
                         <FormItem>
                             <Label>User Status</Label>
                             <FormControl>
-                                <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => {
+                                    if (value) {
+                                        field.onChange(value)
+                                    }
+                                }}>
                                     <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="pending">Pending</ToggleGroupItem>
                                     <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="active">Active</ToggleGroupItem>
                                     <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="inactive">Inactive</ToggleGroupItem>

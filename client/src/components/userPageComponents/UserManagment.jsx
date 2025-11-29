@@ -62,7 +62,11 @@ function UserManagment({ user, isAdmin = false }) {
                                     <FormItem>
                                         <Label>User Role</Label>
                                         <FormControl>
-                                            <ToggleGroup disabled={isUpdatingRole} className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                            <ToggleGroup disabled={isUpdatingRole} className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                if (value) {
+                                                    field.onChange(value)
+                                                }
+                                            }}>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">User</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">Technician</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">Admin</ToggleGroupItem>
@@ -83,7 +87,11 @@ function UserManagment({ user, isAdmin = false }) {
                                     <FormItem>
                                         <Label>User Status</Label>
                                         <FormControl>
-                                            <ToggleGroup disabled={isUpdatingStatus} className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                            <ToggleGroup disabled={isUpdatingStatus} className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                if (value) {
+                                                    field.onChange(value)
+                                                }
+                                            }}>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="pending">Pending</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="active">Active</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="inactive">Inactive</ToggleGroupItem>

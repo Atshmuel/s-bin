@@ -10,8 +10,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import Battery from "./Battary"
 import { Spinner } from "../ui/spinner"
 import EmptyCard from "../EmptyCard"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
+import { useState } from "react"
+import InputLabel from "../InputLabel"
+import { useDeleteBin } from "@/hooks/bins/useDeleteBin"
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
+    const [deleteInput, setDeleteInput] = useState('')
+    const { deleteBin, isDeleting } = useDeleteBin()
 
     function handleCopyDeviceKey() {
         navigator.clipboard.writeText(bin.deviceKey)
@@ -45,7 +51,6 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 Last updated: {new Date(bin.status.updatedAt).toLocaleString()}
                             </CardDescription>
                         </CardHeader>
-
                         <CardContent className="space-y-5 text-sm">
                             <div className="space-y-3">
 
@@ -126,13 +131,30 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 </div>
                             )}
                         </CardContent>
-
                         {actions && (
-                            <CardFooter className="flex justify-center gap-4">
-                                <Button className="flex-1" variant="destructive">
-                                    Delete
-                                </Button>
-                                <Button className="flex-1">Edit</Button>
+                            <CardFooter className="flex justify-center ">
+                                <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
+                                    <DialogTrigger asChild>
+                                        <Button className="cursor-pointer flex-1 py-6" variant='outline_destructive' size='sm'>Delete</Button>
+
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Confirm Permanent Deletion</DialogTitle>
+                                            <DialogDescription>This action will permanently delete the bin. To confirm, type "Delete" in the field below.
+                                                This action cannot be undone.</DialogDescription>
+                                        </DialogHeader>
+                                        <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
+                                            onChange={(e) => setDeleteInput(e.target.value)}>Type: 'Delete' to enable deletion</InputLabel>
+                                        <DialogFooter>
+                                            <DialogClose asChild>
+                                                <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>Cancel</Button>
+                                            </DialogClose>
+                                            <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting} variant='destructive' onClick={() => deleteBin({ id: bin._id })
+                                            }>{isDeleting ? <Spinner /> : 'Delete'}</Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
                             </CardFooter>
                         )}
                     </>

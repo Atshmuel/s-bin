@@ -106,7 +106,13 @@ function UserSettingForm({ user, isAdmin = false }) {
                                                 <FormItem>
                                                     <Label>Language Preference</Label>
                                                     <FormControl>
-                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                            if (value) {
+                                                                field.onChange(value)
+                                                            }
+                                                        }}>
+
+
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="he">עברית</ToggleGroupItem>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="en">English</ToggleGroupItem>
                                                         </ToggleGroup>
@@ -139,7 +145,11 @@ function UserSettingForm({ user, isAdmin = false }) {
                                                 <FormItem>
                                                     <Label>Bin Health Alert</Label>
                                                     <FormControl>
-                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                            if (value) {
+                                                                field.onChange(value)
+                                                            }
+                                                        }}>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="good">Good</ToggleGroupItem>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">Warning</ToggleGroupItem>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">Critical</ToggleGroupItem>
@@ -176,7 +186,11 @@ function UserSettingForm({ user, isAdmin = false }) {
                                                 <FormItem>
                                                     <Label>Log Severity Alert</Label>
                                                     <FormControl>
-                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                            if (value) {
+                                                                field.onChange(value)
+                                                            }
+                                                        }}>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="info">Info</ToggleGroupItem>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">Warning</ToggleGroupItem>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">Critical</ToggleGroupItem>
