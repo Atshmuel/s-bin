@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
-import { binModel, templateModel, userModel, userSettingModel } from '../models/models.js'
-import { binLogModel } from '../models/models.js'
+import { binModel, binLogModel, templateModel, userModel, userSettingModel } from '../models/models.js'
 
 
 //Bins
@@ -102,3 +101,94 @@ export async function innerGetTemplateByTemplateId(templateId) {
     }
 }
 
+//overview
+export async function getAllBins(req, res, next) {
+    try {
+        const bins = await binModel.countDocuments();
+        req.totalBins = bins;
+        next();
+    } catch (error) {
+        return res.status(500).json({ message: 'Error in getAllBinsShared' });
+    }
+}
+
+export async function getAlmostFullBins(req, res, next) {
+    try {
+        const almostFullBins = await binModel.find({ "status.level": { $gte: 80 } });
+        req.totalAlmostFullBins = almostFullBins.length;
+        req.almostFullBins = almostFullBins;
+        next()
+    } catch (error) {
+        return res.status(500).json({ message: 'Error in getAlmostFullBins' });
+    }
+}
+
+export async function getAvgFillLevel(req, res, next) {
+    try {
+        const avg = await binModel.aggregate([{
+            $group: { _id: null, avgLevel: { $avg: "$status.level" } }
+        }])
+
+        req.average = avg[0].avgLevel > 0 ? avg[0].avgLevel : 0
+        next()
+    } catch (error) {
+        res.status(500).json({ message: 'Error in getAvgFillLevel' })
+    }
+
+}
+
+export async function getRequiringMaintenance(req, res, next) {
+    try {
+        const RequirinBins = await binModel.find({
+            "maintenance.nextServiceAt": { $lt: new Date() }
+        })
+        req.totalRequiringMaintenance = RequirinBins.length;
+        req.requirinMaintenanceBins = RequirinBins;
+        next()
+    } catch (error) {
+        res.status(500).json({ message: 'Error in getRequiringMaintenance' })
+    }
+}
+export async function getAllCriticalBins(req, res, next) {
+    try {
+        const almostFullBins = req.almostFullBins
+        const requirinBins = req.requirinMaintenanceBins
+
+        req.criticalBins = [...almostFullBins, ...requirinBins];
+        next()
+    } catch (error) {
+        return res.status(500).json({ message: 'Error in getAllCriticalBins' })
+    }
+
+}
+export async function getRequiringAttentionBins(req, res, next) {
+    try {
+        const criticalBins = req.criticalBins
+        const requiringAttentionBins = await binModel.find({
+            $or: [
+                { "status.battery": { $lte: 40 } },
+                { "status.health": { $in: ["warning", "critical"] } }
+            ]
+        }).limit(50);
+        req.requiringAttentionBins = [...criticalBins, ...requiringAttentionBins];
+        next()
+    } catch (error) {
+        return res.status(500).json({ message: 'Error in getRequiringAttentionBins' })
+
+    }
+}
+
+export async function getRecentBinLogs(req, res, next) {
+    try {
+        const recentLogs = await binLogModel.find({
+            createdAt: {
+                $gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+            }
+        }).sort({ createdAt: -1 }).limit(50);
+
+        req.recentBinLogs = recentLogs;
+        next()
+    } catch (error) {
+        return res.status(400).json({ message: 'Error in getRecentBinLogs' })
+    }
+}

@@ -1,6 +1,6 @@
 import { appendFilter } from '../../utils/helpers.js';
 import { binLogModel } from '../models/models.js'
-import { getBinShared, verifyBinOwner } from '../service/sharedService.js';
+import { verifyBinOwner } from '../service/sharedService.js';
 
 
 export async function getBinLog(req, res) {
