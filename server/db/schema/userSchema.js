@@ -34,6 +34,6 @@ export const userSchema = new mongoose.Schema({
     },
     tokenVersion: { type: Number, default: 0 },
     manager: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    settings: { type: mongoose.Schema.Types.ObjectId, ref: 'UserSettings' }
+    settingsId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserSettings' }
 });
 

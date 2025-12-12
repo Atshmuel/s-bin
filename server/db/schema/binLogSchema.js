@@ -33,3 +33,14 @@ export const binLogSchema = new mongoose.Schema({
     message: String,
 
 }, { timestamps: true });
+
+
+binLogSchema.virtual("bin", {
+    ref: "Bin",
+    localField: 'binId',
+    foreignField: "_id",
+    justOne: true,
+})
+
+binLogSchema.set("toObject", { virtuals: true });
+binLogSchema.set("toJSON", { virtuals: true });

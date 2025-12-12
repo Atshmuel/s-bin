@@ -7,6 +7,7 @@ import { useBins } from "@/hooks/bins/useBins";
 
 
 
+
 export default function ProtectedRoute({ children }) {
   const navigate = useNavigate();
   const { me, meError, isLoadingMe } = useMe();
@@ -26,7 +27,8 @@ export default function ProtectedRoute({ children }) {
       </main>
     );
 
+  if (me && allBins) {
+    return children
 
-
-  if (me && allBins) return children;
+  }
 }

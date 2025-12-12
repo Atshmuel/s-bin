@@ -12,7 +12,7 @@ export function useLogin() {
             navigate("/", { replace: true });
         },
         onError: (error) => {
-            toast.error(error.message);
+            toast.error(error.message || "Could not login")
         },
     });
     return { login, isLoggingIn };

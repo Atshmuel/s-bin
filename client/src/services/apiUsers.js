@@ -169,14 +169,32 @@ export async function updateUserRole({ role, id }) {
     return data;
 }
 
-export async function updateUserSettings({ isDark = null, notifications = null, alertLevel = null, timezone = null, appLanguage = null, userId }) {
+export async function updateUserStatus({ status, id }) {
+    const res = await fetch(`${SERVER_URL}/${USERS_EP}/status/${id}`, {
+        method: "PATCH",
+        mode: "cors",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}
+
+
+
+
+
+export async function updateUserSettings(settings, userId) {
     const res = await fetch(`${SERVER_URL}/${USERS_EP}/${userId}/settings`, {
         method: "PATCH",
         mode: "cors",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isDark, notifications, alertLevel, timezone, appLanguage }),
+        body: JSON.stringify(settings),
     });
+
     const data = await res.json();
     if (!res.ok) throw new Error(data?.message);
     return data;
@@ -187,7 +205,7 @@ export async function updateUserSettings({ isDark = null, notifications = null, 
 
 
 //deletion
-export async function deleteUser({ id }) {
+export async function deleteUserById({ id }) {
     const res = await fetch(`${SERVER_URL}/${USERS_EP}/user/${id}`, {
         method: "DELETE",
         credentials: "include",
@@ -208,4 +226,16 @@ export async function deleteAccount() {
 }
 
 
-
+//admin create user
+export async function createUserAsAdmin({ email, password, name, role, status }) {
+    const res = await fetch(`${SERVER_URL}/${USERS_EP}/admin/register`, {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name, role, status }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}

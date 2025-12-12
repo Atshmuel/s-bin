@@ -24,7 +24,7 @@ export async function createUser(req, res) {
         if (!passwordHash) return res.status(500).json({ message: "Failed to hash the password, couldn't create the user." })
         await session.withTransaction(async () => {
             newUser = new userModel({
-                email,
+                email: email.toLowerCase(),
                 passwordHash,
                 name,
                 accountVerification: {
@@ -37,6 +37,9 @@ export async function createUser(req, res) {
             settings = new userSettingModel({ userId: newUser._id });
             await settings.save({ session });
 
+            newUser.settingsId = settings._id;
+            await newUser.save({ session });
+
 
             const url = generateVerificationLink(newUser.accountVerification.token);
             if (!url) throw new Error('Failed to generate verifiction link')
@@ -47,6 +50,59 @@ export async function createUser(req, res) {
             const localHtml = htmlTemplate.replaceAll('{{verificationLink}}', url)
 
             await sendEmail(senderEmail, email, subject, localText, localHtml)
+        })
+
+        res.status(201).json({
+            user: {
+                name: newUser.name,
+                email: newUser.email,
+                status: newUser.status
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    } finally {
+        session.endSession();
+    }
+}
+
+export async function createUserAsAdmin(req, res) {
+    const { email, password, name, status, role } = req.body
+    const session = await mongoose.startSession();
+    let newUser;
+    let settings;
+
+    try {
+        const { error: emailError } = emailSchema.validate(email ?? '')
+        if (emailError) throw new Error(emailError.message);
+
+        const { error } = passwordSchema.validate(password ?? '')
+        if (error) return res.status(400).json({ message: error.message });
+
+        const passwordHash = await hashPassword(password)
+        if (!passwordHash) return res.status(500).json({ message: "Failed to hash the password, couldn't create the user." })
+
+        if (![process.env.ROLE_USER, process.env.ROLE_TECHNICIAN, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
+            return res.status(400).json({ message: 'This role is not allow' })
+
+        if (!["pending", "active", "inactive", "suspended"].includes(status))
+            return res.status(400).json({ message: 'This status is not allow' })
+
+        await session.withTransaction(async () => {
+            newUser = new userModel({
+                email: email.toLowerCase(),
+                passwordHash,
+                name,
+                status,
+                role
+            });
+            await newUser.save({ session });
+
+            settings = new userSettingModel({ userId: newUser._id });
+            await settings.save({ session });
+
+            newUser.settingsId = settings._id;
+            await newUser.save({ session });
         })
 
         res.status(201).json({
@@ -84,6 +140,7 @@ export async function verifyNewUser(req, res) {
 }
 
 export async function loginUser(req, res) {
+
     const { email, password } = req.body
 
     const { error: emailError } = emailSchema.validate(email ?? '')
@@ -92,8 +149,9 @@ export async function loginUser(req, res) {
     if (error) return res.status(400).json({ message: error.message });
 
     const lowerCaseEmail = email.toLowerCase()
+
     try {
-        const user = await userModel.findOne({ email: lowerCaseEmail }).populate({ path: 'settings', select: 'isDark' });
+        const user = await userModel.findOne({ email: lowerCaseEmail }).populate({ path: 'settingsId', select: 'isDark' });
 
         if (!user) return res.status(401).json({ message: 'Please verify your email or password' })
 
@@ -287,14 +345,6 @@ export async function updateUserPassword(req, res) {
         }, { new: true, select: 'email name' })
         if (!updatedUser) return res.status(401).json({ message: 'Failed to update the password' })
 
-        const accessToken = generateToken({ id: updatedUser._id, role: user.role, tokenVersion: updatedUser.tokenVersion }, '3d');
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 3 * 24 * 60 * 60 * 1000,
-            sameSite: 'strict',
-        });
-
         return res.status(200).json({ updatedUser });
     } catch (error) {
         return res.status(400).json({ message: error.message });
@@ -305,10 +355,10 @@ export async function updateUserRole(req, res) {
     const { role } = req.body
     const { id: userId, role: currentUserRole } = req.user
 
-    if (![process.env.ROLE_OPERATOR, process.env.ROLE_TECHNICIAN, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
+    if (![process.env.ROLE_USER, process.env.ROLE_TECHNICIAN, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
         return res.status(400).json({ message: 'This role is not allow' })
     if (id === userId) return res.status(400).json({ message: 'User not allow to update his role' })
-    if (currentUserRole === role) return res.status(400).json({ message: 'User not allow to assign a role equal to his' })
+    if (currentUserRole === role && currentUserRole !== process.env.ROLE_OWNER) return res.status(400).json({ message: 'User not allow to assign a role equal to his' })
 
     try {
         const updatedUser = await userModel.findOneAndUpdate({
@@ -317,7 +367,7 @@ export async function updateUserRole(req, res) {
             ]
         }, { $set: { role }, $inc: { tokenVersion: 1 } }, { new: true }).select('-passwordHash -__v -accountVerification')
         if (!updatedUser)
-            return res.status(403).json({ message: "Not allowed to update this user" });
+            return res.status(403).json({ message: "Not allowed to update this user's role" });
 
         return res.status(200).json({ updatedUser });
     } catch (error) {
@@ -332,9 +382,12 @@ export async function updateUserStatus(req, res) {
     let query = { _id: id }
 
     if (id === userId && role !== process.env.ROLE_OWNER)
-        return res.status(400).json({ message: 'User not allow to update his status' })
+        return res.status(403).json({ message: 'User not allow to update his status' })
+    if (id === userId && role === process.env.ROLE_OWNER) {
+        return res.status(403).json({ message: 'Owner cant change his own status' })
+    }
 
-    if (!["active", "inactive", "suspended"].includes(status))
+    if (!["pending", "active", "inactive", "suspended"].includes(status))
         return res.status(400).json({ message: 'This status is not allow' })
 
     if (role !== process.env.ROLE_OWNER) {
@@ -391,11 +444,11 @@ export async function deleteUser(req, res) {
     try {
 
         if (id === currentUserId) {
-            return res.status(403).json({ message: "You cannot delete your own account using from this method" });
+            return res.status(403).json({ message: "You cannot delete your own account using this method" });
         }
 
         const userToDelete = await userModel.findById(id);
-        if (currentUserRole !== process.env.ROLE_OWNER && (!userToDelete || userToDelete.role !== process.env.ROLE_OPERATOR)) {
+        if (currentUserRole !== process.env.ROLE_OWNER && (!userToDelete || userToDelete.role !== process.env.ROLE_USER)) {
             return res.status(403).json({ message: "User not found or cannot delete an owner / admin" });
         }
         await deleteUserRefs(id);

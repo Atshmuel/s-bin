@@ -8,11 +8,13 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { useMe } from "@/hooks/users/auth/useMe";
+import { useEffect } from "react";
+import { useUpdateUserInfo } from "@/hooks/users/useUpdateUser";
 
-function ProfileForm() {
-    const { me } = useMe()
-    const { name, email, role, status } = me
+function ProfileForm({ user, isAdmin = false }) {
+    const { name, email, role, status } = user
+    const { updateInfo, isUpdatingInfo } = useUpdateUserInfo()
+
     const profileForm = useForm({
         defaultValues: {
             name,
@@ -21,6 +23,14 @@ function ProfileForm() {
             role,
         }
     });
+    useEffect(() => {
+        profileForm.reset({
+            name: user.name,
+            email: user.email,
+            status: user.status,
+            role: user.role,
+        });
+    }, [user, profileForm]);
 
     const { isDirty, isValid } = profileForm.formState;
 
@@ -34,6 +44,10 @@ function ProfileForm() {
         fallbackName = parts[0][0].toUpperCase();
     }
 
+    const handleSubmit = profileForm.handleSubmit(data => updateInfo({ email: data.email, name: data.name, id: user._id })
+    )
+
+
     return (
         <Card className="min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center flex flex-row justify-between relative'>
@@ -43,8 +57,8 @@ function ProfileForm() {
                         <AvatarImage src={profileForm.getValues('avatar')} alt={profileForm.watch('name')} />
                         <AvatarFallback>{fallbackName}</AvatarFallback>
                     </Avatar>
-                    <CardTitle className="mb-1">My Profile</CardTitle>
-                    <CardDescription>Update your personal information</CardDescription>
+                    <CardTitle className="mb-1">{isAdmin ? 'User' : 'My'} Profile</CardTitle>
+                    <CardDescription>Update {isAdmin ? 'user' : 'your'} personal information</CardDescription>
                 </div>
                 <Tooltip>
                     <TooltipTrigger className="h-fit sticky top-14 m-0" asChild>
@@ -57,7 +71,7 @@ function ProfileForm() {
             </CardHeader>
             <Separator className="mb-5" />
             <FormProvider {...profileForm}>
-                <form onSubmit={profileForm.handleSubmit(data => console.log(data))} >
+                <form onSubmit={handleSubmit} >
                     <CardContent className="overflow-auto max-h-[60vh] space-y-4">
                         <FormField
                             name="name"

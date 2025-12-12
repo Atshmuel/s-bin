@@ -8,14 +8,16 @@ import { Switch } from "../ui/switch";
 import { Slider } from "../ui/slider";
 import { ToggleGroup } from "@radix-ui/react-toggle-group";
 import { ToggleGroupItem } from "../ui/toggle-group";
-import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "../ui/select";
 import { useUserSettings } from "@/hooks/users/useUserSettings";
 import { useEffect } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { AlertCircle } from "lucide-react";
+import { useUpdateUserSettings } from "@/hooks/users/useUpdateUserSettings";
+import { Spinner } from "../ui/spinner";
 
-function UserSettingForm() {
-    const { settingsError, isLoadingSettings, settings } = useUserSettings()
+function UserSettingForm({ user, isAdmin = false }) {
+    const { updateSettings, isUpdatingSettings } = useUpdateUserSettings()
+    const { settingsError, isLoadingSettings, settings } = useUserSettings(user._id)
     const userSettings = useForm({
         defaultValues: {
             isDark: true,
@@ -28,7 +30,7 @@ function UserSettingForm() {
                 daysBeforeMaintenance: [60],
                 level: [50]
             },
-            language: "en"
+            appLanguage: "en"
         }
     });
 
@@ -36,9 +38,9 @@ function UserSettingForm() {
         if (settings) {
             userSettings.reset({
                 isDark: settings.isDark,
-                notifications: { email: settings.notifications.email },
+                notifications: settings.notifications,
                 alertLevel: settings.alertLevel,
-                language: settings.language
+                appLanguage: settings.appLanguage
             });
         }
     }, [settings, userSettings]);
@@ -47,24 +49,29 @@ function UserSettingForm() {
 
 
     function handleUpdateSettings(data) {
-
-        //TODO - level and daysBeforeMaintenance value that will be sent to the server is an arrays (each), therefore make the convertion in client side before fetching the the server (server will not allow array as level) and when fetcing to get the settings make sure to convert from number to array of number 
-        console.log(data);
-
+        const configToServerModel = {
+            ...data,
+            alertLevel: {
+                ...data.alertLevel,
+                level: Array.isArray(data.alertLevel.level) ? data.alertLevel.level[0] : data.alertLevel.level,
+                daysBeforeMaintenance: Array.isArray(data.alertLevel.daysBeforeMaintenance) ? data.alertLevel.daysBeforeMaintenance[0] : data.alertLevel.daysBeforeMaintenance
+            }
+        }
+        updateSettings({ configToServerModel, id: user._id })
     }
 
     return (
         <Card className="min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center'>
                 <CardTitle className="mb-1">Preferences & Settings</CardTitle>
-                <CardDescription>Customize your experience by updating your settings</CardDescription>
+                <CardDescription>Customize {isAdmin ? 'user' : 'your'} experience by updating {isAdmin ? 'user' : 'your'} settings</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
             {settingsError ?
                 <CardContent>
                     <div className="flex justify-center items-center gap-4">
                         <AlertCircle />
-                        <p>Failed to get your settings, please try to reload the page in few seconds</p>
+                        <p>Failed to get {isAdmin ? 'user' : 'your'} settings, please try to reload the page in few seconds</p>
                     </div>
                 </CardContent>
                 :
@@ -87,29 +94,29 @@ function UserSettingForm() {
                                                         <Label>Enable Dark Theme</Label>
                                                     </div>
                                                     <FormDescription>
-                                                        This will change the default theme for your interface between light and dark mode.
+                                                        This will change the default theme for {isAdmin ? 'user' : 'your'} interface between light and dark mode.
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
                                         />
                                         <FormField
-                                            name="language"
+                                            name="appLanguage"
                                             control={userSettings.control}
                                             render={({ field }) => (
-                                                <FormItem className="flex items-center gap-4 leading-4">
-                                                    <Label className='min-w-max'>Language Preference</Label>
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl>
-                                                            <SelectTrigger>
-                                                                <SelectValue placeholder="Select Appliction Language" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            <SelectItem value='he'>עברית</SelectItem>
-                                                            <SelectItem value='en'>English</SelectItem>
-                                                        </SelectContent>
+                                                <FormItem>
+                                                    <Label>Language Preference</Label>
+                                                    <FormControl>
+                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                            if (value) {
+                                                                field.onChange(value)
+                                                            }
+                                                        }}>
 
-                                                    </Select>
+
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="he">עברית</ToggleGroupItem>
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="en">English</ToggleGroupItem>
+                                                        </ToggleGroup>
+                                                    </FormControl>
                                                 </FormItem>
                                             )}
                                         />
@@ -138,14 +145,18 @@ function UserSettingForm() {
                                                 <FormItem>
                                                     <Label>Bin Health Alert</Label>
                                                     <FormControl>
-                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                            if (value) {
+                                                                field.onChange(value)
+                                                            }
+                                                        }}>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="good">Good</ToggleGroupItem>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">Warning</ToggleGroupItem>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">Critical</ToggleGroupItem>
                                                         </ToggleGroup>
                                                     </FormControl>
                                                     <FormDescription>
-                                                        Health level of the bin that you want to get notified from.
+                                                        Health level of the bin that {isAdmin ? 'user' : 'you'} want to get notified from.
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -163,7 +174,7 @@ function UserSettingForm() {
                                                         </FormControl>
                                                     </div>
                                                     <FormDescription>
-                                                        The fill percentage of the bin at which you want to receive notifications.
+                                                        The fill percentage of the bin at which {isAdmin ? 'user' : 'you'} want to receive notifications.
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -175,14 +186,18 @@ function UserSettingForm() {
                                                 <FormItem>
                                                     <Label>Log Severity Alert</Label>
                                                     <FormControl>
-                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                            if (value) {
+                                                                field.onChange(value)
+                                                            }
+                                                        }}>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="info">Info</ToggleGroupItem>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">Warning</ToggleGroupItem>
                                                             <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">Critical</ToggleGroupItem>
                                                         </ToggleGroup>
                                                     </FormControl>
                                                     <FormDescription>
-                                                        Bin log severity that you want to get notified from.
+                                                        Bin log severity that {isAdmin ? 'user' : 'you'} want to get notified from.
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -211,11 +226,11 @@ function UserSettingForm() {
                             </CardContent>
                             <CardFooter>
                                 <Button
-                                    disabled={!isDirty}
+                                    disabled={!isDirty || isUpdatingSettings}
                                     type="submit"
                                     className="cursor-pointer w-full px-3 py-1"
                                 >
-                                    Update
+                                    {isUpdatingSettings ? <Spinner /> : "Update"}
                                 </Button>
                             </CardFooter>
                         </form>

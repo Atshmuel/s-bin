@@ -9,6 +9,8 @@ export function useBins() {
         refetchInterval: 60000,
     })
 
+
+
     const allBins = data?.binsData
     return { allBins, isLoadingBins, binsError }
 }

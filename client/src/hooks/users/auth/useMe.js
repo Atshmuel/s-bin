@@ -14,5 +14,6 @@ export function useMe() {
     });
 
     const me = data?.user
-    return { me, isLoadingMe, meError };
+    const isAdmin = me?.role === 'admin' || me?.role === "owner"
+    return { me, isAdmin, isLoadingMe, meError };
 }

@@ -11,10 +11,10 @@ export const mqttClient = mqtt.connect("mqtt://broker.hivemq.com:1883", {
 
 /*
 -- test with mosquitto to create bin registration message:
-mosquitto_pub -h broker.hivemq.com -p 1883 -t "bins/register" -m '{"mac":"EC:FA:11:9F:42:A2","userId":"68c5841c822b68f8c6fc4224","location":[32.123,34.232],"battery":60}' -V mqttv311
+mosquitto_pub -h broker.hivemq.com -p 1883 -t "bins/register" -m '{"mac":"EC:FA:11:9F:42:A2","userId":"68c5841c822b68f8c6fc4224","location":[32.705433,35.591543],"battery":60}' -V mqttv311
 
 -- log from device:
-mosquitto_pub -h broker.hivemq.com -p 1883 -t "bins/EC:FA:11:9F:42:A2/update/log" -m '{"location":[32.123,34.232],"health":"good","level":0,"battery":57,"deviceKey":"602818730e9290ac667b6d8ea04abeea48f039115e7e58fe7ec5ea639fb7ef48"}' -V mqttv311 
+mosquitto_pub -h broker.hivemq.com -p 1883 -t "bins/EC:FA:11:9F:42:A2/update/log" -m '{"location":[32.705433,35.591543],"health":"warning","level":21,"battery":87,"deviceKey":"602818730e9290ac667b6d8ea04abeea48f039115e7e58fe7ec5ea639fb7ef48"}' -V mqttv311 
 
 -- command for bin to listen for events
  - subscribe to specific bin commands

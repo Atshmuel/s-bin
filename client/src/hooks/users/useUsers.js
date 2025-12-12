@@ -13,6 +13,7 @@ export function useUsers() {
         gcTime: Infinity
     });
 
+
     const users = data?.users
     return { users, isLoadingUsers, usersError };
 }

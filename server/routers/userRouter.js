@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authRole, authToken, resetToken } from '../middlewares/authMiddleware.js'
-import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, forgotPassword, verifyRecoveryCode, updateUserForgotenPassword, verifyNewUser, updateUserNameOrEmail, updateUserPassword, updateUserRole, updateUserStatus, deleteAccount } from "../db/controllers/userController.js";
+import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, forgotPassword, verifyRecoveryCode, updateUserForgotenPassword, verifyNewUser, updateUserNameOrEmail, updateUserPassword, updateUserRole, updateUserStatus, deleteAccount, createUserAsAdmin } from "../db/controllers/userController.js";
 import { validateBodyFields, validateParamExist } from "../middlewares/validationMiddleware.js";
 import { getSettingsByUserId, updateUserSettings } from "../db/controllers/userSettingsController.js";
 export const userRouter = Router();
@@ -55,3 +55,8 @@ userRouter.delete('/account', authToken, deleteAccount)
 //user settings
 userSettingsRouter.get('/', getSettingsByUserId)
 userSettingsRouter.patch('/', validateBodyFields([], ['isDark', 'notifications', 'alertLevel', 'timezone', 'appLanguage']), updateUserSettings)
+
+
+userRouter.post('/admin/register', authToken, (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+}, validateBodyFields(['email', 'password', 'name', 'role', 'status']), createUserAsAdmin)

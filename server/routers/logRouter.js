@@ -8,7 +8,7 @@ export const logRouter = Router();
 
 logRouter.get('/', authToken, (req, res, next) => { authRole([process.env.ROLE_OWNER])(req, res, next) }, getAllLogs) //get all logs data
 logRouter.get('/all/:binId', authToken, validateParamExist('binId'), getBinLogs) //get all bin logs by bin id
-logRouter.get('/:binId/:logId', authToken, validateParamExist('binId'), validateParamExist('logId'), getBinLog) //get specific bin log id
+logRouter.get('/:logId', authToken, validateParamExist('logId'), getBinLog) //get specific bin log id
 
 
 

@@ -4,20 +4,26 @@ import { verifyBinOwner } from '../service/sharedService.js';
 
 
 export async function getBinLog(req, res) {
-    const { logId, binId } = req.params;
-    const { id: ownerId } = req.user
+    const { withBin } = req.query
+    const { logId } = req.params;
+    const { id: ownerId, role } = req.user
 
     let query = {}
     query = appendFilter(query, true, '_id', logId)
-    query = appendFilter(query, true, 'binId', binId)
 
-    const isBinOwner = await verifyBinOwner(binId, ownerId)
-
-    if (!isBinOwner)
-        return res.status(403).json({ message: 'This bin is not owned by you' })
     try {
-        const log = await binLogModel.findOne(query, { __v: 0, updatedAt: 0, binId: 0 });
+        let logQuery = binLogModel.findOne(query, { __v: 0, updatedAt: 0 });
+        if (withBin) {
+            logQuery = logQuery.populate('bin')
+        }
+        const log = await logQuery;
+
         if (!log) return res.status(404).json({ message: "Bin not found." });
+
+        const isBinOwner = role === process.env.ROLE_OWNER ?? await verifyBinOwner(binId, ownerId)
+
+        if (!isBinOwner)
+            return res.status(403).json({ message: 'This bin is not owned by you' })
 
         res.status(201).json({ log })
     } catch (error) {
@@ -33,7 +39,7 @@ export async function getBinLogs(req, res) {
     let query = {}
     query = appendFilter(query, true, 'binId', binId)
 
-    const isBinOwner = await verifyBinOwner(binId, ownerId)
+    const isBinOwner = role === process.env.ROLE_OWNER ?? await verifyBinOwner(binId, ownerId)
 
     if (!isBinOwner)
         return res.status(403).json({ message: 'This bin is not owned by you' })
@@ -49,8 +55,8 @@ export async function getBinLogs(req, res) {
 
 export async function getAllLogs(req, res) {
     try {
-        const log = await binLogModel.find({}, { __v: 0, updatedAt: 0, binId: 0 });
-        res.status(201).json({ log })
+        const logs = await binLogModel.find({}, { __v: 0, updatedAt: 0, binId: 0 });
+        res.status(201).json({ logs })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
     }

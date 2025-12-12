@@ -123,7 +123,11 @@ function MapLegend({ legendForm = false }) {
                                     <FormItem>
                                         <Label>Bin Health Alert</Label>
                                         <FormControl>
-                                            <ToggleGroup className="mt-3 border-[0.2px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => field.onChange(value)}>
+                                            <ToggleGroup className="mt-3 border-[0.2px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                if (value) {
+                                                    field.onChange(value)
+                                                }
+                                            }}>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-br-none rounded-tr-none' value="good">Good</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-none' value="warning">Warning</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-none' value="critical">Critical</ToggleGroupItem>
