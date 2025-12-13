@@ -193,8 +193,6 @@ function Dashboard() {
         icon: GaugeCircle
     }]
 
-    console.log(data);
-
 
     return (
         <div className="space-y-8">
