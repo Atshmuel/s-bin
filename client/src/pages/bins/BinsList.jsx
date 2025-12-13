@@ -52,7 +52,7 @@ function BinsList() {
                     />
                 );
             },
-            accessorKey: "_id",
+            id: "Checkboxs",
             enableSorting: false,
             cell: ({ row }) => {
                 const id = row.original._id;
@@ -69,21 +69,23 @@ function BinsList() {
         {
             header: 'bin name',
             accessorKey: 'binName',
+            id: 'Bin name',
+
             enableSorting: true,
             cell: ({ row }) => {
                 const id = row.original._id;
-                const name = row.getValue("binName");
+
                 return (
                     <Link className="flex gap-2 items-center"
                         to={`/bins/${id}`}>
-                        <LinkIcon size={14} /> <span>{name}</span>
+                        <LinkIcon size={14} /> <span>{row.original.binName}</span>
                     </Link>
                 );
             },
         },
         {
             header: 'location',
-            accessorKey: 'location.coordinates',
+            accessorKey: 'Location',
             cell: ({ row }) => {
                 const coords = row.original.location.coordinates;
                 const id = row.original._id;
@@ -108,11 +110,15 @@ function BinsList() {
         },
         {
             header: 'fill level',
+            id: 'Fill level',
             accessorKey: 'status.level',
+            cell: ({ row }) => {
+                return `${row.original.status.level}%`
+            }
         },
         {
             header: 'health',
-            accessorKey: 'status.health',
+            accessorKey: 'Health',
             cell: ({ row }) => {
                 const health = row.original.status.health;
                 return (
@@ -125,14 +131,14 @@ function BinsList() {
         },
         {
             header: 'battery',
-            accessorKey: 'status.battery',
+            accessorKey: 'Battery',
             cell: ({ row }) => {
                 return <Battery level={row.original.status.battery} />
             }
         },
         {
-            header: 'maintenance',
-            accessorKey: 'maintenance.lastServiceAt',
+            header: 'Last maintenance',
+            accessorKey: 'Last maintenance',
             cell: ({ row }) => {
                 return format(new Date(row.original.maintenance.lastServiceAt), 'yyyy-MM-dd HH:mm')
             },
@@ -169,7 +175,7 @@ function BinsList() {
 
     return (
         <div className="p-10">
-            <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title='bins list' ActionButton={allBins.length && binIds.length ? ActionButton : null} />
+            <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title='bins list' ActionButton={allBins?.length && binIds?.length ? ActionButton : null} />
         </div>
     )
 }

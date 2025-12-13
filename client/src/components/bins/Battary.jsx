@@ -8,12 +8,12 @@ function Battary({ level }) {
     return (
         <Tooltip >
             <TooltipTrigger asChild>
-                <span >
+                <p className="w-fit" >
                     {
                         level > 75 ? <BatteryFull color={color} /> :
                             level > 50 ? <BatteryMedium color={color} /> : <BatteryLow color={color} />
                     }
-                </span>
+                </p >
             </TooltipTrigger>
             <TooltipContent className={'z-999'}>{level}%</TooltipContent>
         </Tooltip>

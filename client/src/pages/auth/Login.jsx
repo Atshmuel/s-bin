@@ -24,8 +24,8 @@ function Login() {
 
     const form = useForm({
         defaultValues: {
-            email: emailParam || "",
-            password: ""
+            email: emailParam || "nopro10@gmail.com",
+            password: "12345678!Qq"
         }
     });
 

@@ -13,7 +13,7 @@ function AllLogs() {
     const columns = [
         {
             header: 'created at',
-            accessorKey: 'createdAt',
+            accessorKey: 'Created At',
             cell: ({ row }) => {
                 return format(new Date(row.original.createdAt), 'yyyy-MM-dd HH:mm')
             },
@@ -21,7 +21,7 @@ function AllLogs() {
         },
         {
             header: 'severity',
-            accessorKey: 'severity',
+            accessorKey: 'Severity',
             cell: ({ row }) => {
                 const severity = row.original.severity;
                 return (
@@ -34,18 +34,22 @@ function AllLogs() {
         },
         {
             header: 'fill level',
+            id: 'Fill level',
             accessorKey: 'newLevel',
+            cell: ({ row }) => {
+                return `${row.original.newLevel}%`
+            }
         },
         {
             header: 'battery',
-            accessorKey: 'battery',
+            accessorKey: 'Battery',
             cell: ({ row }) => {
                 return <Battery level={row.original.battery} />
             }
         },
         {
-            header: 'health',
-            accessorKey: 'health',
+            header: 'Health',
+            id: 'Health',
             cell: ({ row }) => {
                 const health = row.original.health;
                 return (
@@ -57,12 +61,14 @@ function AllLogs() {
             },
         },
         {
-            header: 'source',
+            header: 'Source',
+            id: 'Source',
             accessorKey: 'source',
+
         },
         {
             header: 'View log',
-            accessorKey: '_id',
+            id: 'View log',
             cell: ({ row }) => {
                 const id = row.original._id;
                 return (

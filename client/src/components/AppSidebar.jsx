@@ -51,12 +51,19 @@ const data = {
           title: "Logs",
           url: "logs",
         },
+        {
+          title: "Owner Only Example",
+          url: "",
+          isOwnerOnly: true,
+
+        },
       ],
     },
     {
       title: "Users",
       url: "/users",
       icon: UserCircle2Icon,
+      isAdminAndAbove: true,
       items: [
         {
           title: "List",
