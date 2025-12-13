@@ -75,3 +75,13 @@ export function checkPayloadFields({ location, health, level, battery }) {
 
     return true;
 }
+
+
+export function UnionArraysById(arr1, arr2) {
+    const map = new Map();
+
+    [...arr1, ...arr2].forEach(obj => {
+        map.set(obj._id.toString(), obj);
+    })
+    return map.size ? Array.from(map.values()) : [];
+}

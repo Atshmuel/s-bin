@@ -12,7 +12,7 @@ binRouter.use(authToken) //demends jwt for all requests
 binRouter.get('/all', getAllUserBins) //all user bins in db
 binRouter.post('/status', validateBodyFields(['level', 'health']), getBinsByStatus) //get bin
 binRouter.get('/:id', validateParamExist(), getBin) //get bin
-binRouter.post('/radius/:id', validateParamExist(), validateBodyFields(['coordinates', 'radius'], ['health', 'minLevel', 'maxLevel']), getBinsInUserRadius) //get bin
+binRouter.post('/radius', validateBodyFields(['coordinates', 'radius'], ['health', 'minLevel', 'maxLevel']), getBinsInUserRadius) //get bins
 
 //updates
 binRouter.patch('/maintenance/:id', (req, res, next) => {

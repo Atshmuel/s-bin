@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { getAllBins, getAlmostFullBins, getAvgFillLevel, getRequiringMaintenance, getAllCriticalBins, getRequiringAttentionBins, getRecentBinLogs } from "../db/service/sharedService.js";
-export const overViewRouter = Router();
+import { authToken } from "../middlewares/authMiddleware.js";
+import { getAllBins, getAlmostFullBins, getAvgFillLevel, getRequiringMaintenance, getAllCriticalBins, getRequiringAttentionBins, getRecentBinLogs, mapOverviewToResponse } from "../db/service/sharedService.js";
 
-overViewRouter.get("/all", getAllBins, getAlmostFullBins, getAvgFillLevel, getRequiringMaintenance, getAllCriticalBins, getRequiringAttentionBins, getRecentBinLogs);
+export const overViewRouter = Router();
+overViewRouter.use(authToken);
+
+overViewRouter.get("/", getAllBins, getAlmostFullBins, getAvgFillLevel, getRequiringMaintenance, getAllCriticalBins, getRequiringAttentionBins, getRecentBinLogs, mapOverviewToResponse);
