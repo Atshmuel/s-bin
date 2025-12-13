@@ -14,15 +14,11 @@ import ErrorPage from "../generals/ErrorPage"
 function Dashboard() {
     const { data, isLoadingOverviews, overviewsError } = useOverviews()
 
-
-    //come from the server
-
-
-
     const attentionBinsColums = [
         {
             header: 'Bin name',
             accessorKey: 'binName',
+            id: 'Bin name',
             cell: ({ row }) => {
                 const id = row.original._id;
                 return (
@@ -38,10 +34,15 @@ function Dashboard() {
         {
             header: 'fill level',
             accessorKey: 'status.level',
+            id: 'Fill level',
+            cell: ({ row }) => {
+                return row.original.status.level + '%'
+            }
         },
         {
             header: 'Health',
             accessorKey: 'status.health',
+            id: 'Health',
             cell: ({ row }) => {
                 const health = row.original.status.health;
                 const variant = health === 'warning' ? 'pending' : health === 'critical' ? 'suspended' : 'default';
@@ -58,6 +59,7 @@ function Dashboard() {
         {
             header: 'battery',
             accessorKey: 'status.battery',
+            id: 'Battery',
             cell: ({ row }) => {
                 return <Battery level={row.original.status.battery} />
             }
@@ -65,6 +67,7 @@ function Dashboard() {
         {
             header: 'Last Updated',
             accessorKey: 'updatedAt',
+            id: 'Last Updated',
             cell: ({ row }) => {
                 return format(new Date(row.original.updatedAt), 'yyyy-MM-dd HH:mm')
             },
@@ -75,6 +78,7 @@ function Dashboard() {
         {
             header: 'createdAt',
             accessorKey: 'createdAt',
+            id: 'Created At',
             cell: ({ row }) => {
                 return format(new Date(row.original.createdAt), 'yyyy-MM-dd HH:mm')
             },
@@ -102,6 +106,7 @@ function Dashboard() {
         {
             header: 'View log',
             accessorKey: '_id',
+            id: 'View log',
             cell: ({ row }) => {
                 const id = row.original._id;
                 return (
@@ -117,6 +122,7 @@ function Dashboard() {
         {
             header: 'View bin',
             accessorKey: 'binId',
+            id: 'View bin',
             cell: ({ row }) => {
                 const id = row.original.binId;
                 return (
@@ -130,7 +136,6 @@ function Dashboard() {
 
         },
     ]
-    //map should display only bins with issues not all the bins!
 
     if (isLoadingOverviews) {
         return <div className="space-y-6">
@@ -265,7 +270,7 @@ function Dashboard() {
                             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                                 Recent Bin Logs
                             </CardTitle>
-                            <CardDescription>A summary of the most recent actions, maintenance, or events related to your bins.
+                            <CardDescription>A summary of bin-related actions, maintenance, and events from the past 24 hours.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
