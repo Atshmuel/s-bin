@@ -3,7 +3,7 @@ import { FormControl, FormField, FormItem } from "../ui/form"
 import { Label } from "../ui/label"
 import { Slider } from "../ui/slider"
 import { Button } from "../ui/button"
-import { MapPin, MenuSquare, Search, X } from "lucide-react"
+import { MapPin, MenuSquare, Search, X, XCircle } from "lucide-react"
 import { useState } from "react"
 import { Marker, Popup, useMapEvent } from "react-leaflet"
 import { Switch } from "../ui/switch"
@@ -12,27 +12,32 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useMapSettings } from "@/contexts/mapContext"
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group"
 import { toast } from "sonner"
+import { useSearchParams } from "react-router-dom"
 
 function MapLegend({ legendForm = false }) {
+    const isMobile = useIsMobile();
     const { flyEnabled, setFlyEnabled, tile, setTile, isOpen, setIsOpen } = useMapSettings()
+    const [searchParams, setSearchParams] = useSearchParams()
+    let { radius, minLevel, maxLevel, health } = Object.fromEntries([...searchParams]);
+
+    const [isFilterd, setIsFiltered] = useState(searchParams.size > 0);
+
+
     const mapp = useMapEvent({
         move: () => { setLocation(mapp.getCenter().lat.toFixed(3) + ", " + mapp.getCenter().lng.toFixed(3)) },
         zoom: () => setZoom(mapp.getZoom())
     })
-
     const [zoom, setZoom] = useState(mapp.getZoom());
     const [location, setLocation] = useState(mapp.getCenter().lat.toFixed(3) + ", " + mapp.getCenter().lng.toFixed(3));
 
-    const isMobile = useIsMobile();
-
     const mapConfig = useForm({
         defaultValues: {
-            radius: [50],
-            level: [0, 100],
-            health: 'all'
+            radius: radius ? [radius] : [50],
+            level: minLevel && maxLevel ? [minLevel, maxLevel] : [0, 100],
+            health: health ?? 'all',
         }
     })
-    //once again note that the radius an array on submittion because slider returns an array and the server expects a number, also note that the server expects a center point which we are not sending now
+
     const [userMarker, setUserMarker] = useState(null);
 
     function locateMe() {
@@ -44,7 +49,7 @@ function MapLegend({ legendForm = false }) {
             const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
             mapp.flyTo(latlng, 17);
             setUserMarker(latlng);
-            setTimeout(() => { setUserMarker(null) }, 10000)
+            setTimeout(() => { setUserMarker(null) }, 60000)
 
         }, (err) => {
             // Handle permission denied or other errors
@@ -69,14 +74,32 @@ function MapLegend({ legendForm = false }) {
         }
     }
 
+    function onSubmit(data) {
+        setSearchParams({
+            radius: data.radius[0],
+            minLevel: data.level[0],
+            maxLevel: data.level[1],
+            health: data.health === 'all' ? 'all' : data.health,
+            coordinates: userMarker
+                ? userMarker.lat + ',' + userMarker.lng
+                : mapp.getCenter().lat + ',' + mapp.getCenter().lng,
+            zoom: mapp.getZoom()
+        })
+        setIsFiltered(true);
+    }
+
+    function clearFilters() {
+        setSearchParams({})
+        setIsFiltered(false);
+    }
+
 
     return (
-
         <div className={`absolute flex flex-col justify-center items-center bottom-1.5 right-1.5 z-400 h-10 w-10 bg-accent rounded-md px-2 py-2 transition-all duration-500 ease-in-out  ${isOpen ? 'w-fit h-fit space-y-2' : ''}`}>
             <div className="self-end" onClick={() => setIsOpen(open => !open)}>{isOpen ? <X /> : <MenuSquare />}</div>
             <div className={`flex flex-col space-y-4 overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'opacity-0 max-h-0'}`}>
                 {legendForm ? <FormProvider {...mapConfig}>
-                    <form className="flex flex-col space-y-4 mb-4 justify-between items-center" onSubmit={mapConfig.handleSubmit(data => console.log(data))}>
+                    <form className="flex flex-col space-y-4 mb-4 justify-between items-center" onSubmit={mapConfig.handleSubmit(onSubmit)}>
                         <div className="flex flex-col gap-4">
                             <FormField
                                 name="radius"
@@ -139,7 +162,20 @@ function MapLegend({ legendForm = false }) {
                             />
                         </div>
 
-                        <Button className='cursor-pointer w-full' type="submit"><Search /> Search</Button>
+                        <div className="w-full flex flex-row items-center justify-between px-1">
+                            <Button className={`cursor-pointer ${isFilterd ? 'w-9/12' : 'w-full'}`} type="submit"><Search /> Search</Button>
+                            {isFilterd ?
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button onClick={clearFilters} className="cursor-pointer" variant={'destructive'} ><XCircle /></Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side={isMobile ? "top" : "bottom"} className='z-400'>
+                                        <p>Clear search filters</p>
+                                    </TooltipContent>
+                                </Tooltip>
+
+                                : null}
+                        </div>
 
                     </form>
                 </FormProvider> : null}

@@ -7,63 +7,18 @@ import { Link } from "react-router-dom"
 import { format } from "date-fns"
 import Battery from '../../components/bins/Battary'
 import { getVariant } from "@/utils/binHelpers"
+import { useOverviews } from "@/hooks/overviews/useOverviews"
+import { Skeleton } from "@/components/ui/skeleton"
+import ErrorPage from "../generals/ErrorPage"
 
 function Dashboard() {
-    //come from the server
-    const cardsData = [{
-        title: 'Bins Requiring Maintenance',
-        count: 7,
-        description: 'Required maintenance immediately',
-        badgeVariant: 'suspended',
-        icon: CircleAlert
-    }, {
-        title: 'Almost Full Bins',
-        count: 7,
-        description: 'Check these bins for emptying today',
-        badgeVariant: 'inactive',
-        icon: InfoIcon
-    }, {
-        title: 'Total Bins',
-        count: 50,
-        description: 'Total number of bins in the system',
-        badgeVariant: 'outline',
-        icon: Trash2
-    }
-        , {
-        title: 'Avg Fill Level',
-        count: "65%",
-        description: 'Average fill level across all bins',
-        badgeVariant: 'outline',
-        icon: GaugeCircle
-    }]
+    const { data, isLoadingOverviews, overviewsError } = useOverviews()
 
-    const binsNeedingAttention = [
-        {
-            _id: "68f25bd2d04737ecca9de1b1",
-            binName: "BIN-10000001",
-            deviceKey: "336bd87d07914084dafc89c1940d2d436bb84149baf09823d4144e976f2cadfa",
-            location: {
-                type: "Point",
-                coordinates: [32.084, 34.782],
-            },
-            status: {
-                health: "warning",
-                level: 91,
-                battery: 75,
-                updatedAt: "2025-10-17T16:41:41.577Z",
-            },
-            ownerId: "68c5841c822b68f8c6fc4224",
-            maintenance: {
-                lastServiceAt: "2025-10-17T17:02:50.791Z",
-                nextServiceAt: "2025-11-16T17:02:50.791Z",
-                notes: "Fixed the sensor!",
-                technicianId: "68c5841c822b68f8c6fc4224",
-            },
-            __v: 0,
-            createdAt: "2025-10-17T15:08:02.627Z",
-            updatedAt: "2025-10-17T17:04:28.218Z",
-        }
-    ];
+
+    //come from the server
+
+
+
     const attentionBinsColums = [
         {
             header: 'Bin name',
@@ -116,49 +71,6 @@ function Dashboard() {
         },
     ]
 
-
-    const recentBinLogs = [
-        {
-            _id: "68f26d903dac2e78b0a3dfff",
-            binId: "68f25bd2d04737ecca9de1b1",
-            type: "error",
-            severity: "info",
-            newLevel: 10,
-            oldLevel: 0,
-            battery: 80,
-            health: "good",
-            source: "manual",
-            createdAt: "2025-10-17T16:23:44.389Z",
-            updatedAt: "2025-10-17T16:23:44.389Z",
-            __v: 0,
-        }, {
-            _id: "68f26d903dac2e78b0a3dfff",
-            binId: "68f25bd2d04737ecca9de1b1",
-            type: "log",
-            severity: "info",
-            newLevel: 10,
-            oldLevel: 0,
-            battery: 80,
-            health: "good",
-            source: "manual",
-            createdAt: "2025-10-17T16:23:44.389Z",
-            updatedAt: "2025-10-17T16:23:44.389Z",
-            __v: 0,
-        }, {
-            _id: "68f26d903dac2e78b0a3dfff",
-            binId: "68f25bd2d04737ecca9de1b1",
-            type: "maintenance",
-            severity: "info",
-            newLevel: 10,
-            oldLevel: 0,
-            battery: 80,
-            health: "good",
-            source: "manual",
-            createdAt: "2025-10-17T16:23:44.389Z",
-            updatedAt: "2025-10-17T16:23:44.389Z",
-            __v: 0,
-        }
-    ];
     const recentBinsColums = [
         {
             header: 'createdAt',
@@ -220,6 +132,70 @@ function Dashboard() {
     ]
     //map should display only bins with issues not all the bins!
 
+    if (isLoadingOverviews) {
+        return <div className="space-y-6">
+            <div className="space-y-6">
+                <div className="space-y-2">
+                    <Skeleton className={'w-1/4 h-8'} />
+                    <Skeleton className={'w-1/2 h-12'} />
+                </div>
+                <div className="flex gap-4 flex-col md:flex-row">
+                    <Skeleton className={'w-full md:w-1/4 h-46'} />
+                    <Skeleton className={'w-full md:w-1/4 h-46'} />
+                    <Skeleton className={'w-full md:w-1/4 h-46'} />
+                    <Skeleton className={'w-full md:w-1/4 h-46'} />
+                </div>
+                <Skeleton className={'w-full h-96'} />
+            </div>
+            <div className="space-y-6">
+                <div className="space-y-2">
+                    <Skeleton className={'w-1/4 h-8'} />
+                    <Skeleton className={'w-1/2 h-12'} />
+                </div>
+                <div className="flex gap-4 flex-col md:flex-row">
+                    <Skeleton className={'w-full md:w-1/4 h-46'} />
+                    <Skeleton className={'w-full md:w-1/4 h-46'} />
+                    <Skeleton className={'w-full md:w-1/4 h-46'} />
+                    <Skeleton className={'w-full md:w-1/4 h-46'} />
+                </div>
+                <Skeleton className={'w-full h-96'} />
+            </div>
+        </div>
+    }
+    if (!isLoadingOverviews && overviewsError) {
+        return <ErrorPage />
+    }
+
+    const cardsData = [{
+        title: 'Bins Requiring Maintenance',
+        count: data.totalRequiringMaintenance,
+        description: 'Required maintenance immediately',
+        badgeVariant: 'suspended',
+        icon: CircleAlert
+    }, {
+        title: 'Almost Full Bins',
+        count: data.totalAlmostFullBins,
+        description: 'Check these bins for emptying today',
+        badgeVariant: 'inactive',
+        icon: InfoIcon
+    }, {
+        title: 'Total Bins',
+        count: data.totalBins,
+        description: 'Total number of bins in the system',
+        badgeVariant: 'outline',
+        icon: Trash2
+    }
+        , {
+        title: 'Avg Fill Level',
+        count: data.averageFillLevel + "%",
+        description: 'Average fill level across all bins',
+        badgeVariant: 'outline',
+        icon: GaugeCircle
+    }]
+
+    console.log(data);
+
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col gap-4">
@@ -254,7 +230,7 @@ function Dashboard() {
                         ))}
                     </div>
                     <div className="h-[250px] lg:h-auto lg:w-1/2">
-                        <BinMap zoom={13} legend={true} legendForm={false} />
+                        <BinMap binsToUse={data.criticalBins} zoom={13} legend={true} legendForm={false} />
                     </div>
                 </div>
 
@@ -268,7 +244,8 @@ function Dashboard() {
                 <div>
                     <h3 className="text-xl md:text-2xl">Bins Overview</h3>
                     <p className="text-sm text-muted-foreground">
-                        A detailed view of current bin alerts and recent activity logs across the system                    </p>
+                        A detailed view of current bin alerts and recent activity logs across the system
+                    </p>
                 </div>
                 <div className="space-y-4 lg:space-y-0 lg:flex lg:flex-row lg:flex-wrap gap-6">
                     <Card className='flex-1'>
@@ -280,7 +257,7 @@ function Dashboard() {
                             <CardDescription>List of bins that have triggered alerts or need maintenance.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <DataTable data={binsNeedingAttention
+                            <DataTable data={data.requiringAttentionBins
                                 ?? []} columns={attentionBinsColums} maxLength={5} error={null} isLoading={false} />
                         </CardContent>
                     </Card>
@@ -294,7 +271,7 @@ function Dashboard() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <DataTable data={recentBinLogs ?? []} columns={recentBinsColums} maxLength={5} error={null} isLoading={false} />
+                            <DataTable data={data.recentBinLogs ?? []} columns={recentBinsColums} maxLength={5} error={null} isLoading={false} />
                         </CardContent>
                     </Card>
                 </div>

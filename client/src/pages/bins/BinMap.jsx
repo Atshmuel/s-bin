@@ -4,12 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { useBins } from "@/hooks/bins/useBins";
 import { getColor, getVariant } from "@/utils/binHelpers";
 import Battery from "../../components/bins/Battary"
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 
 
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
-    const { allBins } = useBins()
+    const { allBins, isLoadingBins } = useBins()
+
     if (!binsToUse) {
         binsToUse = allBins
     }
@@ -17,6 +18,8 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
 
     const binId = searchParams.get("binId")
     const zoomFromUrl = Number(searchParams.get("zoom"))
+    const locationFromUrl = searchParams.get("coordinates")?.split(",").map(Number)
+
     if (binId) {
         binsToUse = binsToUse.filter(bin => bin._id === binId)
     }
@@ -24,8 +27,8 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
 
     return (
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
-            <MapComponent center={center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} >
-                {binsToUse.map((bin) => (
+            <MapComponent center={locationFromUrl ? locationFromUrl : center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} isLoading={isLoadingBins} >
+                {binsToUse?.map((bin) => (
                     <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status.level)} popup={
                         <div className="space-y-2 text-sm p-2 relative">
                             <Badge className='absolute top-3.5 right-0' variant={getVariant(bin.status.health)}>{bin.status.health}</Badge>
@@ -33,9 +36,10 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                                 <span>{bin.binName}</span>
                                 <Battery level={bin.status.level} />
                             </h3>
-                            <div >
+                            <div className="flex flex-col">
                                 <p className="!my-1">Fill Level: <span className={`font-semibold`}>{bin.status.level}%</span></p>
                                 <p className="!my-1">Last Updated: {new Date(bin.status.updatedAt).toLocaleString()}</p>
+                                <Link to={`/bins/${bin._id}`} className="w-fit self-end underline !text-primary font-extrabold">View Bin</Link>
                             </div>
                         </div>
                     } />

@@ -20,13 +20,13 @@ export async function getBin({ id, withLogs }) {
     return data;
 }
 
-export async function getBinsInUserRadius({ id, coordinates, radius, health = null, minLevel = null, maxLevel = null }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/radius/${id}`, {
+export async function getBinsInUserRadius({ coordinates, radius, health = null, minLevel = null, maxLevel = null }) {
+    const res = await fetch(`${SERVER_URL}/${BINS_EP}/radius`, {
         method: "POST",
         mode: "cors",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, coordinates, radius, health, minLevel, maxLevel }),
+        body: JSON.stringify({ coordinates, radius, health, minLevel, maxLevel }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.message);
