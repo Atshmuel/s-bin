@@ -68,6 +68,7 @@ export async function createUser(req, res) {
 
 export async function createUserAsAdmin(req, res) {
     const { email, password, name, status, role } = req.body
+    const { role: currentUserRole } = req.user
     const session = await mongoose.startSession();
     let newUser;
     let settings;
@@ -87,6 +88,10 @@ export async function createUserAsAdmin(req, res) {
 
         if (!["pending", "active", "inactive", "suspended"].includes(status))
             return res.status(400).json({ message: 'This status is not allow' })
+
+        if (currentUserRole === process.env.ROLE_ADMIN && ![process.env.ROLE_USER, process.env.ROLE_TECHNICIAN].includes(role)) {
+            return res.status(403).json({ message: 'Not allowed to create an owner or admin user' })
+        }
 
         await session.withTransaction(async () => {
             newUser = new userModel({
