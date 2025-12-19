@@ -32,6 +32,7 @@ export async function verifyBinOwner(binId, ownerId) {
     try {
         if (!binId || !ownerId)
             throw new Error('binId and ownerId are mandatory')
+
         const exists = await binModel.exists({ _id: binId, ownerId })
         return !!exists
     } catch (error) {
