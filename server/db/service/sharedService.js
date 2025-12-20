@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { binModel, binLogModel, templateModel, userModel, userSettingModel } from '../models/models.js'
+import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
 import { appendFilter, UnionArraysById } from '../../utils/helpers.js'
 
 
@@ -100,6 +100,18 @@ export async function innerGetTemplateByTemplateId(templateId) {
     } catch (error) {
         console.error(error?.message || 'Error in innerGetTemplateByTemplateId: ', error);
         return null
+    }
+}
+
+//Orgs
+export async function organizationExist(org) {
+    try {
+        if (!org)
+            throw new Error('org is mandatory')
+        return await organizationModel.exists({ _id: org })
+    } catch (error) {
+        console.error(error)
+        return false;
     }
 }
 

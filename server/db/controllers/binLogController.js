@@ -21,8 +21,14 @@ export async function getBinLog(req, res) {
 
         if (!log) return res.status(404).json({ message: "Bin not found." });
 
-        const isBinOwner = role !== process.env.ROLE_OWNER ? await verifyBinOwner(log.binId, ownerId) : true;
+        let isBinOwner = role === process.env.ROLE_OWNER
 
+        if (withBin && role !== process.env.ROLE_OWNER) {
+            isBinOwner = log.bin.ownerId.toString() === ownerId;
+        }
+        else if (!withBin && role !== process.env.ROLE_OWNER) {
+            isBinOwner = await verifyBinOwner(log.binId, ownerId)
+        }
         if (!isBinOwner)
             return res.status(403).json({ message: 'This bin is not owned by you' })
 
@@ -40,7 +46,7 @@ export async function getBinLogs(req, res) {
     let query = {}
     query = appendFilter(query, true, 'binId', binId)
 
-    const isBinOwner = role !== process.env.ROLE_OWNER ? await verifyBinOwner(log.binId, ownerId) : true;
+    const isBinOwner = role !== process.env.ROLE_OWNER ? await verifyBinOwner(binId, ownerId) : true;
 
     if (!isBinOwner)
         return res.status(403).json({ message: 'This bin is not owned by you' })

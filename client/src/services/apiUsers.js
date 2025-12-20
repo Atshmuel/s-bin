@@ -126,6 +126,17 @@ export async function getUserSettings({ id }) {
     if (!res.ok) throw new Error(data?.message);
     return data;
 }
+
+export async function getOrgManagers({ org }) {
+    let route = org ? `${SERVER_URL}/${USERS_EP}/managers/${org}` : `${SERVER_URL}/${USERS_EP}/managers`
+    const res = await fetch(route, {
+        method: "GET",
+        credentials: "include",
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}
 //end
 
 
@@ -182,6 +193,19 @@ export async function updateUserStatus({ status, id }) {
     return data;
 }
 
+export async function updateUserOrgAndManager({ userId, org, manager }) {
+    const res = await fetch(`${SERVER_URL}/${USERS_EP}/managerAndOrg/${userId}`, {
+        method: "PATCH",
+        mode: "cors",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ org, manager }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}
+
 
 
 
@@ -227,13 +251,13 @@ export async function deleteAccount() {
 
 
 //admin create user
-export async function createUserAsAdmin({ email, password, name, role, status }) {
+export async function createUserAsAdmin({ email, password, name, role, status, org, manager }) {
     const res = await fetch(`${SERVER_URL}/${USERS_EP}/admin/register`, {
         method: "POST",
         mode: "cors",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name, role, status }),
+        body: JSON.stringify({ email, password, name, role, status, org, manager }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.message);
