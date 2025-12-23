@@ -14,6 +14,7 @@ import { authRouter } from './routers/authRouter.js'
 import { logRouter } from './routers/logRouter.js'
 import { overViewRouter } from './routers/overViewRouter.js';
 import { templateRouter } from './routers/templateRouter.js';
+import { organizationRouter } from './routers/organizationRouter.js';
 import { setEmailServiceCredentials } from './utils/mailService.js';
 import { initMqtt } from './mqtt/mqttClient.js';
 
@@ -36,6 +37,7 @@ app.set("trust proxy", false);
 app.use("/api/bins", binRouter);
 app.use("/api/logs", logRouter);
 app.use("/api/users", userRouter);
+app.use("/api/organizations", organizationRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/templates", templateRouter)
 app.use("/api/overview", overViewRouter);

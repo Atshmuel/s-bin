@@ -12,12 +12,11 @@ export async function getBin(req, res) {
 
     let query = {}
     query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(id))
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     const pipeline = [
         { $match: query },
         { $project: { macAddress: 0 } }
-
     ]
     if (withLogs) {
         pipeline.push({
@@ -46,7 +45,7 @@ export async function getAllUserBins(req, res) {
     const { withLogs } = req.query
 
     let query = {}
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     const pipeline = [
         { $match: query },
@@ -77,7 +76,7 @@ export async function getBinsByStatus(req, res) {
     const { level, health } = req.body
 
     let query = {}
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, level && typeof level === 'number', 'status.level', { $gt: level })
     query = appendFilter(query, health && Array.isArray(health), 'status.health', { $in: health })
 
@@ -177,7 +176,7 @@ export async function deleteBin(req, res) {
     const { id: ownerId, role } = req.user
 
     let query = {}
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, true, '_id', id)
 
     const session = await mongoose.startSession();
@@ -216,7 +215,7 @@ export async function deleteBinsBatch(req, res) {
     const binIds = req.binIds
 
     let query = {}
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, true, '_id', { $in: binIds })
 
     const session = await mongoose.startSession();

@@ -2,8 +2,9 @@ import { userModel, userSettingModel } from '../models/models.js'
 import { hashPassword, comparePasswords, generateToken, appendFilter, generateOTP, generateVerificationLink } from '../../utils/helpers.js'
 import { sendEmail } from '../../utils/mailService.js'
 import { emailSchema, passwordSchema } from '../../utils/inputValidations.js'
-import { deleteUserRefs, innerGetTemplateByTemplateId } from '../service/sharedService.js'
+import { deleteUserRefs, innerGetTemplateByTemplateId, organizationExist } from '../service/sharedService.js'
 import { v4 as uuidv4 } from 'uuid'
+import { ROLE_LEVEL } from '../../utils/constants.js'
 import mongoose from 'mongoose'
 
 
@@ -67,8 +68,9 @@ export async function createUser(req, res) {
 }
 
 export async function createUserAsAdmin(req, res) {
-    const { email, password, name, status, role } = req.body
     const { role: currentUserRole } = req.user
+    const { email, password, name, status, role, org, manager } = req.body
+
     const session = await mongoose.startSession();
     let newUser;
     let settings;
@@ -83,14 +85,37 @@ export async function createUserAsAdmin(req, res) {
         const passwordHash = await hashPassword(password)
         if (!passwordHash) return res.status(500).json({ message: "Failed to hash the password, couldn't create the user." })
 
-        if (![process.env.ROLE_USER, process.env.ROLE_TECHNICIAN, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
-            return res.status(400).json({ message: 'This role is not allow' })
+        if (!ROLE_LEVEL[role]) {
+            return res.status(400).json({ message: 'Invalid role provided' })
+        }
+
+        if (currentUserRole !== process.env.ROLE_OWNER && role === process.env.ROLE_OWNER) {
+            return res.status(403).json({ message: 'You cannot assign greated role then yours' })
+        }
 
         if (!["pending", "active", "inactive", "suspended"].includes(status))
             return res.status(400).json({ message: 'This status is not allow' })
 
-        if (currentUserRole === process.env.ROLE_ADMIN && ![process.env.ROLE_USER, process.env.ROLE_TECHNICIAN].includes(role)) {
-            return res.status(403).json({ message: 'Not allowed to create an owner or admin user' })
+
+        if (currentUserRole !== process.env.ROLE_OWNER || manager) {
+            const orgExist = await organizationExist(org)
+
+            if (!orgExist)
+                return res.status(400).json({ message: 'This organization does not exist' })
+            if (!manager)
+                return res.status(400).json({ message: 'manager is mandatory' })
+            const managerEntity = await userModel.findById(manager)
+            if (!managerEntity) {
+                return res.status(400).json({ message: 'This manager does not exist' })
+            }
+            if (manager && managerEntity.org.toString() !== org) {
+                return res.status(403).json({ message: 'Manager must belong to the same organization' })
+            }
+            if (ROLE_LEVEL[managerEntity.role] <= ROLE_LEVEL[role]) {
+                return res.status(400).json({
+                    message: 'Manager must have a higher role than the user'
+                })
+            }
         }
 
         await session.withTransaction(async () => {
@@ -99,7 +124,9 @@ export async function createUserAsAdmin(req, res) {
                 passwordHash,
                 name,
                 status,
-                role
+                role,
+                org,
+                manager
             });
             await newUser.save({ session });
 
@@ -411,20 +438,25 @@ export async function updateUserStatus(req, res) {
         return res.status(400).json({ message: error.message });
     }
 }
+export async function updateUserManagerAndOrg(req, res) {
+    //need to implement
+
+    return res.status(200).json({ message: 'Done' })
+}
 
 export async function getUser(req, res) {
     const { id } = req.params
     const { role } = req.user
 
-    let query = { _id: id }
-
-    const isUserOwner = role !== process.env.ROLE_OWNER
-    query = appendFilter(query, isUserOwner, 'role', { $ne: process.env.ROLE_OWNER })
+    let query = { _id: new mongoose.Types.ObjectId(id) }
 
     try {
         const userData = await userModel.findOne(query, { passwordHash: 0, __v: 0 })
 
         if (!userData) return res.status(404).json({ message: "User not found." });
+        if (userData && ROLE_LEVEL[role] < ROLE_LEVEL[userData.role]) {
+            return res.status(403).json({ message: "Forbidden" });
+        }
         res.status(200).json({ userData })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
@@ -440,6 +472,40 @@ export async function getAllUsers(req, res) {
         res.status(200).json({ users: users || [] })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
+    }
+}
+export async function getUserManagers(req, res) {
+    const { org, role } = req.user
+
+    let query = {
+        role: { $in: [process.env.ROLE_ADMIN, process.env.ROLE_OWNER] }
+    }
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'org', new mongoose.Types.ObjectId(org))
+    try {
+        if (!org && role !== process.env.ROLE_OWNER)
+            return res.status(400).json({ message: 'User does not belong to an organization' })
+        const managers = await userModel.find(query).select('name _id role')
+
+        return res.status(200).json({ managers: managers || [] })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ managers: [] })
+    }
+}
+export async function getUserManagersByOrgId(req, res) {
+    const { id } = req.params
+
+    let query = {
+        org: new mongoose.Types.ObjectId(id),
+        role: { $in: [process.env.ROLE_ADMIN, process.env.ROLE_OWNER] }
+    }
+    try {
+        const managers = await userModel.find(query).select('name _id role')
+
+        return res.status(200).json({ managers: managers || [] })
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ managers: [] })
     }
 }
 

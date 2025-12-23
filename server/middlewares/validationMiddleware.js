@@ -49,7 +49,6 @@ export function validateBodyFields(requiredFields = [], optionalFields = []) {
             return res.status(400).json({ message: 'Request body cannot be empty' });
         }
 
-        // בדיקה עבור שדות לא חוקיים
         const invalidFields = keys.filter(key => !allowedFields.includes(key));
         if (invalidFields.length > 0) {
             return res.status(400).json({
@@ -57,7 +56,6 @@ export function validateBodyFields(requiredFields = [], optionalFields = []) {
             });
         }
 
-        // בדיקה עבור שדות מחייבים
         const missingFields = requiredFields.filter(field => !keys.includes(field));
         if (missingFields.length > 0) {
             return res.status(400).json({

@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { authRole, authToken, resetToken } from '../middlewares/authMiddleware.js'
-import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, forgotPassword, verifyRecoveryCode, updateUserForgotenPassword, verifyNewUser, updateUserNameOrEmail, updateUserPassword, updateUserRole, updateUserStatus, deleteAccount, createUserAsAdmin } from "../db/controllers/userController.js";
+import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, forgotPassword, verifyRecoveryCode, updateUserForgotenPassword, verifyNewUser, updateUserNameOrEmail, updateUserPassword, updateUserRole, updateUserStatus, deleteAccount, createUserAsAdmin, getUserManagers, getUserManagersByOrgId, updateUserManagerAndOrg } from "../db/controllers/userController.js";
 import { validateBodyFields, validateParamExist } from "../middlewares/validationMiddleware.js";
 import { getSettingsByUserId, updateUserSettings } from "../db/controllers/userSettingsController.js";
 export const userRouter = Router();
 export const userSettingsRouter = Router({ mergeParams: true });
-userRouter.use('/:id/settings', authToken, validateParamExist('id'), userSettingsRouter);
+userRouter.use('/:id/settings', authToken, validateParamExist(), userSettingsRouter);
 
 
 //REGISTER
@@ -28,9 +28,15 @@ userRouter.post('/reset', resetToken, validateBodyFields(['password']), updateUs
 userRouter.get('/all', authToken, (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, getAllUsers)
+userRouter.get('/managers', authToken, (req, res, next) => {
+    authRole([process.env.ROLE_OWNER])(req, res, next)
+}, getUserManagers);
+userRouter.get('/managers/:id', authToken, validateParamExist(), getUserManagersByOrgId);
+
 userRouter.get('/:id', authToken, (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, validateParamExist(), getUser)
+
 
 userRouter.patch('/info/:id', authToken, validateBodyFields([], ['name', 'email']), validateParamExist(), updateUserNameOrEmail) //update email&name
 
@@ -40,6 +46,10 @@ userRouter.patch('/password/:id', authToken, validateBodyFields(['oldPassword', 
 userRouter.patch('/status/:id', authToken, (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, validateBodyFields(['status']), validateParamExist(), updateUserStatus)
+
+userRouter.patch('/managerAndOrg/:id', authToken, (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+}, validateBodyFields(['org'], ['manager']), validateParamExist(), updateUserManagerAndOrg)
 
 //update role (owner only)
 userRouter.patch('/role/:id', authToken, (req, res, next) => {
@@ -59,4 +69,4 @@ userSettingsRouter.patch('/', validateBodyFields([], ['isDark', 'notifications',
 
 userRouter.post('/admin/register', authToken, (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
-}, validateBodyFields(['email', 'password', 'name', 'role', 'status']), createUserAsAdmin)
+}, validateBodyFields(['email', 'password', 'name', 'role', 'status', 'org'], ['manager']), createUserAsAdmin)

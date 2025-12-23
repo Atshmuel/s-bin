@@ -34,6 +34,7 @@ export function authBinWithRoleFallback(allowedRoles = []) {
 
 export async function authToken(req, res, next) {
     const accessToken = req.cookies?.accessToken
+
     if (!accessToken)
         return res.status(401).json({ message: 'Unauthenticated user' })
 
@@ -56,6 +57,7 @@ export async function authToken(req, res, next) {
             email: user.email,
             name: user.name,
             status: user.status,
+            org: user.org ? user.org.toString() : null,
         }
         next();
     } catch (error) {

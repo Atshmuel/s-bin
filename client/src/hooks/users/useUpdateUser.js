@@ -1,4 +1,4 @@
-import { updateUserPassword, updateUserRole, updateUserStatus, updateUserNameOrEmail } from "@/services/apiUsers";
+import { updateUserPassword, updateUserRole, updateUserStatus, updateUserNameOrEmail, updateUserOrgAndManager } from "@/services/apiUsers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -63,4 +63,19 @@ export function useUpdateUserPassword() {
         },
     });
     return { updatePassword, isUpdatingPassword };
+}
+
+export function useUpdateOrgAndManager() {
+    const queryClient = useQueryClient();
+    const { mutate: updateOrgAndManager, isPending: isUpdatingOrgAndManager } = useMutation({
+        mutationFn: updateUserOrgAndManager,
+        onSuccess: () => (_, variables) => {
+            toast.success('Updated manager and organization successfully')
+            queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
+        },
+        onError: (error) => {
+            toast.error(error.message || "Could not login")
+        },
+    });
+    return { updateOrgAndManager, isUpdatingOrgAndManager };
 }

@@ -6,9 +6,19 @@ import { useState } from "react";
 import InputLabel from "../InputLabel";
 import { Eye, EyeOff } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
+import { useMe } from "@/hooks/users/auth/useMe";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
+import { useOrgManagers } from "@/hooks/users/useOrgManagers";
+import { Skeleton } from "../ui/skeleton";
+import { useOrganizations } from "@/hooks/organizations/useOrganizations";
 
 function UserInputs({ form, isCreating }) {
+    const { me, isOwner } = useMe();
     const [showPassword, setShowPassword] = useState(false);
+    const { data: organizations, isLoadingOrgs, orgsError } = useOrganizations()
+
+    const selectedOrgId = isOwner ? form.watch("org") : me.org;
+    const { managers, isLoadingManagers, managersError } = useOrgManagers(selectedOrgId);
 
     return (
         <FormProvider {...form} >
@@ -116,7 +126,7 @@ function UserInputs({ form, isCreating }) {
                                     <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">User</ToggleGroupItem>
                                     <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">Technician</ToggleGroupItem>
                                     <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">Admin</ToggleGroupItem>
-                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">Owner</ToggleGroupItem>
+                                    {me.role === 'owner' ? <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">Owner</ToggleGroupItem> : null}
                                 </ToggleGroup>
                             </FormControl>
                             <FormDescription>
@@ -149,6 +159,67 @@ function UserInputs({ form, isCreating }) {
                         </FormItem>
                     )}
                 />
+                {isOwner ?
+                    <FormField
+                        name="org"
+                        control={form.control}
+                        render={({ field }) => (
+                            <FormItem className="px-1">
+                                <Label>Organzation</Label>
+                                <FormControl>
+                                    {isLoadingOrgs ? <Skeleton className="w-full px-1 h-10" /> :
+                                        <Select onValueChange={field.onChange}
+                                            value={field.value ?? ""}
+                                        >
+                                            <SelectTrigger className="">
+                                                <SelectValue placeholder="Select Organzation" />
+                                            </SelectTrigger>
+                                            <SelectContent className="z-[1000]">
+                                                <SelectGroup>
+                                                    <SelectLabel>{orgsError ? "Failed to get organizations" : "Organizations"}</SelectLabel>
+                                                    <div className="max-h-52 overflow-y-auto">
+                                                        {!orgsError ? organizations?.map(m => (
+                                                            <SelectItem className="capitalize max-w-[320px] truncate" key={m._id} value={m._id}>{m.name}</SelectItem>
+                                                        )) : null}
+                                                    </div>
+                                                </SelectGroup>
+                                            </SelectContent>
+                                        </Select>}
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+                    : null}
+                <FormField
+                    name="manager"
+                    control={form.control}
+                    render={({ field }) => (
+                        <FormItem className="px-1">
+                            <Label>User's Manager</Label>
+                            <FormControl>
+                                {isLoadingManagers ? <Skeleton className="w-full px-1 h-10" /> :
+                                    <Select onValueChange={field.onChange}
+                                        value={field.value ?? ""}
+                                    >
+                                        <SelectTrigger className="">
+                                            <SelectValue placeholder="Select Manager" />
+                                        </SelectTrigger>
+                                        <SelectContent className="z-[1000]">
+                                            <SelectGroup>
+                                                <SelectLabel>{managersError ? "Failed to get managers" : "Managers"}</SelectLabel>
+                                                <div className="max-h-52 overflow-y-auto">
+                                                    {!managersError ? managers?.map(m => (
+                                                        <SelectItem className="capitalize" key={m._id} value={m._id} isbadged={m.role}>{m.name}</SelectItem>
+                                                    )) : null}
+                                                </div>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>}
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+
             </div>
         </FormProvider>
     )
