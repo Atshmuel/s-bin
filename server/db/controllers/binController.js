@@ -7,17 +7,30 @@ import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
 export async function getBin(req, res) {
     const { id } = req.params;
-    const { id: ownerId, role } = req.user
+    const { org } = req.user
     const { withLogs } = req.query
 
     let query = {}
     query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(id))
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     const pipeline = [
         { $match: query },
-        { $project: { macAddress: 0 } }
+        { $project: { macAddress: 0 } },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'ownerId',
+                foreignField: '_id',
+                as: 'owner'
+            }
+        },
+        { $unwind: '$owner' }
     ]
+    let orgQuery = {}
+    orgQuery = appendFilter(orgQuery, !!org, 'owner.org', new mongoose.Types.ObjectId(org))
+
+    pipeline.push({ $match: orgQuery })
+
     if (withLogs) {
         pipeline.push({
             $lookup: {
