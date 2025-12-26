@@ -67,14 +67,15 @@ function NewEntitySheet({ isExpanded }) {
 
 
     const ToggleView = () => {
-        return <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={isUserCreation ? "user" : "org"} onValueChange={(value) => {
+
+        return isOwner ? <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={isUserCreation ? "user" : "org"} onValueChange={(value) => {
             if (value) {
                 setIsUserCreation(v => !v)
             }
         }}>
             <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">User</ToggleGroupItem>
             <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="org">Organization</ToggleGroupItem>
-        </ToggleGroup>
+        </ToggleGroup> : null
     }
 
     return (
