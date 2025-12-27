@@ -30,12 +30,12 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
             <MapComponent center={locationFromUrl ? locationFromUrl : center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} isLoading={isLoadingBins} >
                 {binsToUse?.map((bin) => (
                     <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status.level)} popup={
-                        <div className="space-y-2 text-sm p-2 relative">
+                        <div className="flex flex-col space-y-2 text-sm relative">
                             <Badge className='absolute top-3.5 right-0' variant={getVariant(bin.status.health)}>{bin.status.health}</Badge>
-                            <h3 className="font-bold text-lg flex items-center gap-3">
+                            <div className="font-bold text-lg flex items-center gap-3 h-11">
                                 <span>{bin.binName}</span>
                                 <Battery level={bin.status.level} />
-                            </h3>
+                            </div>
                             <div className="flex flex-col">
                                 <p className="!my-1">Fill Level: <span className={`font-semibold`}>{bin.status.level}%</span></p>
                                 <p className="!my-1">Last Updated: {new Date(bin.status.updatedAt).toLocaleString()}</p>

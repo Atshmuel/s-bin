@@ -10,3 +10,13 @@ export async function getOverviews() {
     if (!res.ok) throw new Error(data?.message);
     return data;
 }
+
+export async function getBinsStatusOverviews() {
+    const res = await fetch(`${SERVER_URL}/${OVERVIEW_EP}/binstatus`, {
+        method: "GET",
+        credentials: "include",
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}

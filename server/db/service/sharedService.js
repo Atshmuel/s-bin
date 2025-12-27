@@ -238,7 +238,6 @@ export async function getRecentBinLogs(req, res, next) {
     }
 }
 
-
 export function mapOverviewToResponse(req, res) {
     const overview = {
         totalBins: req?.totalBins || 0,
@@ -250,4 +249,49 @@ export function mapOverviewToResponse(req, res) {
         recentBinLogs: req?.recentBinLogs || []
     }
     return res.status(200).json(overview);
+}
+
+export async function getBinsStatusOV(req, res) {
+    const { role, org: ownerId } = req.user
+    let query = {}
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+
+    try {
+        const binsCount = await binModel.aggregate([
+            { $match: query },
+            {
+                $facet: {
+                    byStatus: [
+                        {
+                            $group: {
+                                _id: "$status.health",
+                                count: { $sum: 1 }
+                            },
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                status: "$_id",
+                                count: 1,
+                            }
+                        }
+                    ],
+                    total: [
+                        { $count: 'total' }
+                    ]
+                }
+
+            },
+            {
+                $project: {
+                    total: { $ifNull: [{ $arrayElemAt: ["$total.total", 0] }, 0] },
+                    byStatus: 1
+                }
+            }
+        ])
+
+        return res.status(200).json({ binsCount })
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to count bins by status' })
+    }
 }
