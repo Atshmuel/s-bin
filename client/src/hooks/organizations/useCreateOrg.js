@@ -8,11 +8,11 @@ export function useCreateOrg() {
     const { mutateAsync: createOrg, isPending: isCreatingOrg } = useMutation({
         mutationFn: createOrgApi,
         onSuccess: () => {
-            toast.success('User created successfully')
-            queryClient.invalidateQueries({ queryKey: ["users"] })
+            toast.success('Organization created successfully')
+            queryClient.invalidateQueries({ queryKey: ["organizations"] })
         },
         onError: (error) => {
-            toast.error(error.message || "Failed to create user's account")
+            toast.error(error.message || "Failed to create organization")
         },
     });
     return { createOrg, isCreatingOrg };

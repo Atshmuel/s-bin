@@ -14,10 +14,6 @@ function OrgInputs({ form, isCreating }) {
                         required: "Name is required", validate: {
                             notEmpty: (value) =>
                                 value.trim().length > 0 || "Name cannot be empty or only spaces",
-                            fullName: (value) => {
-                                const parts = value.trim().split(/\s+/); // מפרק לפי רווחים
-                                return parts.length >= 2 || "Please enter first and last name";
-                            },
                             noWhitespace: (value) => {
                                 return value.trim() === value || "Name cannot start or end with whitespace";
                             }

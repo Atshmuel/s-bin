@@ -111,7 +111,7 @@ export async function createUserAsAdmin(req, res) {
             if (manager && managerEntity.org.toString() !== org) {
                 return res.status(403).json({ message: 'Manager must belong to the same organization' })
             }
-            if (ROLE_LEVEL[managerEntity.role] <= ROLE_LEVEL[role]) {
+            if (ROLE_LEVEL[managerEntity.role] < ROLE_LEVEL[role]) {
                 return res.status(400).json({
                     message: 'Manager must have a higher role than the user'
                 })

@@ -39,7 +39,7 @@ export const binSchema = new mongoose.Schema({
     },
     ownerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Organization",
         required: true
     },
     maintenance: {

@@ -10,6 +10,7 @@ export function useCreateUser() {
         onSuccess: () => {
             toast.success('User created successfully')
             queryClient.invalidateQueries({ queryKey: ["users"] })
+            queryClient.invalidateQueries({ queryKey: ["managers"] });
         },
         onError: (error) => {
             toast.error(error.message || "Failed to delete user's account")

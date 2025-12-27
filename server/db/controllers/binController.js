@@ -7,17 +7,30 @@ import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
 export async function getBin(req, res) {
     const { id } = req.params;
-    const { id: ownerId, role } = req.user
+    const { role, org: ownerId } = req.user
     const { withLogs } = req.query
 
     let query = {}
     query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(id))
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     const pipeline = [
         { $match: query },
-        { $project: { macAddress: 0 } }
+        { $project: { macAddress: 0 } },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'ownerId',
+                foreignField: '_id',
+                as: 'owner'
+            }
+        },
+        { $unwind: '$owner' }
     ]
+    let orgQuery = {}
+    orgQuery = appendFilter(orgQuery, !!org, 'owner.org', new mongoose.Types.ObjectId(org))
+
+    pipeline.push({ $match: orgQuery })
+
     if (withLogs) {
         pipeline.push({
             $lookup: {
@@ -41,7 +54,7 @@ export async function getBin(req, res) {
 }
 
 export async function getAllUserBins(req, res) {
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
     const { withLogs } = req.query
 
     let query = {}
@@ -72,7 +85,7 @@ export async function getAllUserBins(req, res) {
 }
 
 export async function getBinsByStatus(req, res) {
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
     const { level, health } = req.body
 
     let query = {}
@@ -89,7 +102,7 @@ export async function getBinsByStatus(req, res) {
 }
 
 export async function getBinsInUserRadius(req, res) {
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
     const { coordinates, radius, health, minLevel, maxLevel } = req.body
     if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
 
@@ -173,7 +186,7 @@ export async function updateBinDeviceKey(req, res) {
 
 export async function deleteBin(req, res) {
     const { id } = req.params;
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
 
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
@@ -211,7 +224,7 @@ export async function deleteBin(req, res) {
 
 export async function deleteBinsBatch(req, res) {
 
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
     const binIds = req.binIds
 
     let query = {}

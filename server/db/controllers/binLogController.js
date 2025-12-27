@@ -7,7 +7,7 @@ import { verifyBinOwner } from '../service/sharedService.js';
 export async function getBinLog(req, res) {
     const { withBin } = req.query
     const { logId } = req.params;
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
 
     let query = {}
     query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(logId))
@@ -41,7 +41,7 @@ export async function getBinLog(req, res) {
 
 export async function getBinLogs(req, res) {
     const { binId } = req.params;
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
 
     let query = {}
     query = appendFilter(query, true, 'binId', binId)
@@ -61,7 +61,7 @@ export async function getBinLogs(req, res) {
 
 
 export async function getAllLogs(req, res) {
-    const { id, role } = req.user
+    const { org: ownerId, role } = req.user
 
     const pipeline = [
         {
@@ -78,7 +78,7 @@ export async function getAllLogs(req, res) {
     if (role !== process.env.ROLE_OWNER) {
         pipeline.push({
             $match: {
-                'bin.ownerId': new mongoose.Types.ObjectId(id),
+                'bin.ownerId': new mongoose.Types.ObjectId(ownerId),
             },
         });
     }

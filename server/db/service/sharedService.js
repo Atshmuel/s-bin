@@ -117,9 +117,9 @@ export async function organizationExist(org) {
 
 //overview
 export async function getAllBins(req, res, next) {
-    const { id, role } = req.user;
+    const { org: ownerId, role } = req.user;
     let filter = {}
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', id)
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const bins = await binModel.countDocuments(filter);
@@ -131,10 +131,10 @@ export async function getAllBins(req, res, next) {
 }
 
 export async function getAlmostFullBins(req, res, next) {
-    const { id, role } = req.user;
+    const { org: ownerId, role } = req.user;
     let filter = { "status.level": { $gte: 80 } }
 
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', id)
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const almostFullBins = await binModel.find(filter);
@@ -147,11 +147,11 @@ export async function getAlmostFullBins(req, res, next) {
 }
 
 export async function getAvgFillLevel(req, res, next) {
-    const { id, role } = req.user;
+    const { org: ownerId, role } = req.user;
     const aggregation = []
 
     if (role !== process.env.ROLE_OWNER) {
-        aggregation.push({ $match: { ownerId: new mongoose.Types.ObjectId(id) } })
+        aggregation.push({ $match: { ownerId: new mongoose.Types.ObjectId(ownerId) } })
     }
     aggregation.push({ $group: { _id: null, avgLevel: { $avg: "$status.level" } } })
     try {
@@ -170,13 +170,13 @@ export async function getAvgFillLevel(req, res, next) {
 }
 
 export async function getRequiringMaintenance(req, res, next) {
-    const { id, role } = req.user;
+    const { org: ownerId, role } = req.user;
 
     let filter = {
         "maintenance.nextServiceAt": { $lt: new Date() }
     }
 
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', id)
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const RequirinBins = await binModel.find(filter)
@@ -199,7 +199,7 @@ export async function getAllCriticalBins(req, res, next) {
 
 }
 export async function getRequiringAttentionBins(req, res, next) {
-    const { id, role } = req.user;
+    const { org: ownerId, role } = req.user;
     let filter = {
         $or: [
             { "status.battery": { $lte: 40 } },
@@ -207,7 +207,7 @@ export async function getRequiringAttentionBins(req, res, next) {
         ]
     }
 
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', id)
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const requiringAttentionBins = await binModel.find(filter).limit(50);
@@ -221,13 +221,13 @@ export async function getRequiringAttentionBins(req, res, next) {
 }
 
 export async function getRecentBinLogs(req, res, next) {
-    const { id, role } = req.user;
+    const { org: ownerId, role } = req.user;
     let filter = {
         createdAt: {
             $gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
         }
     }
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', id)
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const recentLogs = await binLogModel.find(filter).sort({ createdAt: -1 }).limit(50);
