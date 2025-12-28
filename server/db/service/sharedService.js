@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
 import { appendFilter, UnionArraysById } from '../../utils/helpers.js'
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { AI_INSTRUCTIONS } from "../../utils/constants.js";
 
 
 //Bins
@@ -294,4 +296,56 @@ export async function getBinsStatusOV(req, res) {
     } catch (error) {
         return res.status(500).json({ message: 'Failed to count bins by status' })
     }
+}
+
+//ai-ov
+export async function getAIOverview(req, res) {
+    const { role, org: ownerId } = req.user
+    let query = {}
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+
+    try {
+        const ai = new GoogleGenerativeAI(process.env.GEMINI_API_SECOND_KEY)
+        const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" })
+
+        const logs = await binLogModel.find(query).limit(150)
+
+        const stream = await model.generateContentStream(
+            AI_INSTRUCTIONS + JSON.stringify(logs)
+        )
+
+        res.setHeader('Content-Type', 'text/event-stream')
+        res.setHeader('Cache-Control', 'no-cache')
+        res.setHeader('Connection', 'keep-alive')
+
+        let fullText = ''
+
+        for await (const chunk of stream.stream) {
+            const text =
+                chunk?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+
+            if (text) {
+                fullText += text
+                res.write(`data: ${JSON.stringify({ content: text })}\n\n`)
+            }
+        }
+
+        const cleaned = fullText
+            .replace(/```json/g, '')
+            .replace(/```/g, '')
+            .trim()
+
+        let insights = []
+
+        const parsed = JSON.parse(cleaned)
+        insights = parsed.insights || []
+
+        res.write(`data: ${JSON.stringify({ insights })}\n\n`)
+        res.write('data: [DONE]\n\n')
+        res.end()
+
+    } catch (error) {
+        res.status(500).json({ message: error?.message || 'Error in getAIOverview' })
+    }
+
 }
