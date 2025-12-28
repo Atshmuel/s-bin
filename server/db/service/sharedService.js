@@ -295,3 +295,53 @@ export async function getBinsStatusOV(req, res) {
         return res.status(500).json({ message: 'Failed to count bins by status' })
     }
 }
+
+export async function getLogTypes(req, res) {
+    const { role, org: ownerId } = req.user
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    let query = {
+        createdAt: { $gt: thirtyDaysAgo }
+    }
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+
+    try {
+        const logsByTypes = await binLogModel.aggregate([
+            { $match: query },
+            {
+                $group: {
+                    _id: {
+                        $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+                    },
+                    maintenance: {
+                        $sum: { $cond: [{ $eq: ['$type', 'maintenance'] }, 1, 0] }
+                    },
+                    error: {
+                        $sum: { $cond: [{ $eq: ['$type', 'error'] }, 1, 0] }
+                    },
+                    log: {
+                        $sum: { $cond: [{ $eq: ['$type', 'log'] }, 1, 0] }
+                    }
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    day: "$_id",
+                    maintenance: 1,
+                    error: 1,
+                    log: 1
+                }
+            },
+            {
+                $sort: {
+                    day: 1
+                }
+            }
+        ])
+        return res.status(200).json({ logsByTypes })
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to count bins by status' })
+    }
+
+}
