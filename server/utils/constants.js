@@ -26,7 +26,7 @@ Analyze the attached dataset (JSON of smart bins) and generate insights for dire
 * Do NOT add any additional keys, nesting, metadata, or comments.
 * Do NOT ask questions, suggest next steps, or offer further assistance.
 * Do NOT add an introduction, conclusion, disclaimers, or any extra text.
-* All text values must be written in **Hebrew only**.
+* All text values must be written in **{{language}} only**.
 * Any deviation from this structure or format is considered an error.
 
 ⸻

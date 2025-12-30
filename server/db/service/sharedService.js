@@ -300,10 +300,13 @@ export async function getBinsStatusOV(req, res) {
 
 //ai-ov
 export async function getAIOverview(req, res) {
-    const { role, org: ownerId } = req.user
+    const { id, role, org: ownerId } = req.user
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
+    const { appLanguage } = await userSettingModel.findOne({ userId: id }).select('appLanguage -_id')
+
+    let intstuction = AI_INSTRUCTIONS.replaceAll('{{language}}', appLanguage === 'he' ? 'Hebrew' : 'English')
     try {
         const ai = new GoogleGenerativeAI(process.env.GEMINI_API_SECOND_KEY)
         const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" })
@@ -311,7 +314,7 @@ export async function getAIOverview(req, res) {
         const logs = await binLogModel.find(query).limit(150)
 
         const stream = await model.generateContentStream(
-            AI_INSTRUCTIONS + JSON.stringify(logs)
+            intstuction + JSON.stringify(logs)
         )
 
         res.setHeader('Content-Type', 'text/event-stream')
