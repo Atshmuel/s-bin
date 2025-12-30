@@ -1,13 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAIOverviewStream } from '../../services/apiOverview';
-export function useAIOverview(onStreamUpdate) {
-    return useQuery({
+import { toast } from "sonner";
+
+export function useAIOverview() {
+    const {
+        data,
+        isPending: isLoadingAIOverview,
+        error: aiOverviewError,
+    } = useQuery({
         queryKey: ['aiOverview'],
-        queryFn: ({ signal }) => getAIOverviewStream(onStreamUpdate, signal),
+        queryFn: getAIOverviewStream,
         enabled: true,
         staleTime: 1000 * 60 * 30,
         gcTime: 1000 * 60 * 60,
         retry: false,
         refetchOnWindowFocus: false,
     });
+
+
+    if (!data && aiOverviewError) {
+        return toast.error(aiOverviewError.message || "Failed to load overview status.");
+    }
+
+    const insights = data?.insights || []
+    return { insights, isLoadingAIOverview, aiOverviewError };
 }

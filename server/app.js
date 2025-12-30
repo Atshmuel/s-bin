@@ -40,7 +40,7 @@ app.use("/api/users", userRouter);
 app.use("/api/organizations", organizationRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/templates", templateRouter)
-app.use("/api/overview", overViewRouter);
+app.use("/api/overviews", overViewRouter);
 
 const main = async () => {
     try {

@@ -6,6 +6,6 @@ export const BINS_EP = 'api/bins'
 export const LOGS_EP = 'api/logs'
 export const USERS_EP = 'api/users'
 export const AUTH_EP = 'api/auth'
-export const OVERVIEW_EP = 'api/overview'
+export const OVERVIEW_EP = 'api/overviews'
 export const ORG_EP = 'api/organizations'
 

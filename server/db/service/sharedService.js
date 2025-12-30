@@ -1,9 +1,9 @@
 import mongoose from 'mongoose'
 import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
 import { appendFilter, UnionArraysById } from '../../utils/helpers.js'
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AI_INSTRUCTIONS } from "../../utils/constants.js";
-
+import { GoogleGenAI } from "@google/genai";
+import { z } from "zod";
 
 //Bins
 export async function getBinShared(binId) {
@@ -307,45 +307,33 @@ export async function getAIOverview(req, res) {
     const { appLanguage } = await userSettingModel.findOne({ userId: id }).select('appLanguage -_id')
 
     let intstuction = AI_INSTRUCTIONS.replaceAll('{{language}}', appLanguage === 'he' ? 'Hebrew' : 'English')
-    try {
-        const ai = new GoogleGenerativeAI(process.env.GEMINI_API_SECOND_KEY)
-        const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" })
 
+    const feedBackScheme = z.object({
+        insights: z.array(
+            z.object({
+                title: z.string().describe('The title of the insight according to the logs and the instructions'),
+                content: z.string().describe('The content of the insight according to the logs and the instructions'),
+            })
+        )
+    })
+
+    try {
         const logs = await binLogModel.find(query).limit(150)
 
-        const stream = await model.generateContentStream(
-            intstuction + JSON.stringify(logs)
-        )
-
-        res.setHeader('Content-Type', 'text/event-stream')
-        res.setHeader('Cache-Control', 'no-cache')
-        res.setHeader('Connection', 'keep-alive')
-
-        let fullText = ''
-
-        for await (const chunk of stream.stream) {
-            const text =
-                chunk?.candidates?.[0]?.content?.parts?.[0]?.text || ''
-
-            if (text) {
-                fullText += text
-                res.write(`data: ${JSON.stringify({ content: text })}\n\n`)
+        const aiModel = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+        const modelResponse = await aiModel.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: intstuction + JSON.stringify(logs),
+            config: {
+                responseMimeType: 'application/json',
+                responseJsonSchema: feedBackScheme.toJSONSchema(),
             }
-        }
+        })
 
-        const cleaned = fullText
-            .replace(/```json/g, '')
-            .replace(/```/g, '')
-            .trim()
+        const response = modelResponse?.candidates?.[0]?.content?.parts?.[0]?.text
+        const insights = JSON.parse(response)?.insights || []
 
-        let insights = []
-
-        const parsed = JSON.parse(cleaned)
-        insights = parsed.insights || []
-
-        res.write(`data: ${JSON.stringify({ insights })}\n\n`)
-        res.write('data: [DONE]\n\n')
-        res.end()
+        return res.status(200).json({ insights })
 
     } catch (error) {
         res.status(500).json({ message: error?.message || 'Error in getAIOverview' })
