@@ -5,7 +5,7 @@ import { useLogs } from "@/hooks/bins/binLogs/useBinLogs"
 import { useBinStatusOV } from "@/hooks/overviews/useBinStatusOV"
 import { useState } from "react"
 import { Area, AreaChart, CartesianGrid, Label, Pie, PieChart, XAxis } from "recharts"
-
+import AIInsights from "./AIInsights"
 
 
 const statusChartConfig = {
@@ -66,7 +66,8 @@ function Analytics() {
 
 
     return (
-        <div>
+        <div className="space-y-6">
+            <AIInsights />
             <div className="lg:flex lg:gap-4 space-y-4 lg:space-y-0 ">
                 <Card className='lg:w-11/12'>
                     <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">

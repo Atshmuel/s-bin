@@ -1,12 +1,12 @@
 import cron from "node-cron";
 import { binLogModel } from "../models/models.js";
-import { sendEmail, buildEmailHtml } from "../../utils/mailService.js";
+import { sendEmail } from "../../utils/mailService.js";
+import { innerGetTemplateByTemplateId } from "../service/sharedService.js";
 
 if (!global.dailyBinsStatusCronStarted) {
     global.dailyBinsStatusCronStarted = true;
 
     cron.schedule("0 8 * * *", async () => {
-        console.log("Cron started");
         try {
             const reportBins = await binLogModel.aggregate([
                 { $sort: { createdAt: -1 } },
@@ -42,19 +42,10 @@ if (!global.dailyBinsStatusCronStarted) {
 
             if (reportBins.length === 0) return;
 
-            console.log("Report bins:", reportBins);
-
-            const html = buildEmailHtml(reportBins);
-
-            await sendEmail(
-                process.env.EMAIL_USER,
-                "adva1230@gmail.com",
-                "Daily Bins Status Report",
-                "",
-                html
-            );
-
-            console.log(`[Cron] Daily bins status report sent (${reportBins.length} bins)`);
+            const { textTemplate, htmlTemplate, email: senderEmail, subject } = await innerGetTemplateByTemplateId('notifyCriticalBins')
+            let localHtml = htmlTemplate.replaceAll('{{criticalCount}}', reportBins.length)
+            let localText = textTemplate.replaceAll('{{criticalCount}}', reportBins.length)
+            await sendEmail(senderEmail, "adva1230@gmail.com", subject, localText, localHtml);
 
         } catch (err) {
             console.error("[Cron] Error sending daily bins status report:", err);
