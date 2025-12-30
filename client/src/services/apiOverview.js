@@ -58,3 +58,12 @@ export async function getAIOverviewStream(onChunk, signal) {
 
     return { status: "success" };
 }
+export async function getLogTypeOverviews() {
+    const res = await fetch(`${SERVER_URL}/${OVERVIEW_EP}/logtype`, {
+        method: "GET",
+        credentials: "include",
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}
