@@ -304,9 +304,13 @@ export async function getAIOverview(req, res) {
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
+    const logs = await binLogModel.find(query).limit(150)
+
     const { appLanguage } = await userSettingModel.findOne({ userId: id }).select('appLanguage -_id')
 
     let intstuction = AI_INSTRUCTIONS.replaceAll('{{language}}', appLanguage === 'he' ? 'Hebrew' : 'English')
+
+    let lastError;
 
     const feedBackScheme = z.object({
         insights: z.array(
@@ -316,28 +320,44 @@ export async function getAIOverview(req, res) {
             })
         )
     })
+    const apiKeys = [
+        process.env.GEMINI_API_KEY,
+        process.env.GEMINI_API_SECOND_KEY,
+        process.env.GEMINI_API_THIRD_KEY,
+        process.env.GEMINI_API_FOURTH_KEY
+    ].filter(Boolean);
 
-    try {
-        const logs = await binLogModel.find(query).limit(150)
+    for (let i = 0; i < apiKeys.length; i++) {
+        try {
 
-        const aiModel = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-        const modelResponse = await aiModel.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: intstuction + JSON.stringify(logs),
-            config: {
-                responseMimeType: 'application/json',
-                responseJsonSchema: feedBackScheme.toJSONSchema(),
+
+            const aiModel = new GoogleGenAI({ apiKey: apiKeys[i] })
+            const modelResponse = await aiModel.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: intstuction + JSON.stringify(logs),
+                config: {
+                    responseMimeType: 'application/json',
+                    responseJsonSchema: feedBackScheme.toJSONSchema(),
+                }
+            })
+
+            const response = modelResponse?.candidates?.[0]?.content?.parts?.[0]?.text
+            const insights = JSON.parse(response)?.insights || []
+
+            return res.status(200).json({ insights })
+
+        } catch (error) {
+            lastError = error;
+            const isQuotaError = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('quota');
+
+            if (isQuotaError && i < apiKeys.length - 1) {
+                console.warn(`API Key ${i + 1} failed (Quota). Trying next key...`);
+                continue;
             }
-        })
-
-        const response = modelResponse?.candidates?.[0]?.content?.parts?.[0]?.text
-        const insights = JSON.parse(response)?.insights || []
-
-        return res.status(200).json({ insights })
-
-    } catch (error) {
-        res.status(500).json({ message: error?.message || 'Error in getAIOverview' })
+            break;
+        }
     }
+    res.status(500).json({ message: lastError?.message || 'Error in getAIOverview' })
 }
 export async function getLogTypes(req, res) {
     const { role, org: ownerId } = req.user
