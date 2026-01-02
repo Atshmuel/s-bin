@@ -1,29 +1,22 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const AppSideContext = createContext();
 
 function AppSideProvider({ children }) {
+    const { i18n } = useTranslation()
     const [isRight, setIsRight] = useState(true);
     const [side, setSide] = useState("right");
+    const [opSide, setOpSide] = useState("left");
 
-    useEffect(() => {
-        const checkDirection = () => {
-            const dir = document.documentElement.dir || getComputedStyle(document.documentElement).direction;
-            const isRtl = dir === 'rtl';
+    const toggleSide = (lang) => {
+        i18n.changeLanguage(lang)
+        setIsRight(!isRight);
+        setSide(isRight ? "left" : "right");
+        setOpSide(isRight ? "right" : "left");
+    }
 
-            setIsRight(!isRtl);
-            setSide(isRtl ? "left" : "right");
-        };
-
-        checkDirection();
-
-        const observer = new MutationObserver(checkDirection);
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ["dir"] });
-
-        return () => observer.disconnect();
-    }, []);
-
-    return <AppSideContext.Provider value={{ side, isRight }}>{children}</AppSideContext.Provider>
+    return <AppSideContext.Provider value={{ side, isRight, opSide, toggleSide, language: i18n.language }}>{children}</AppSideContext.Provider>
 }
 
 function useAppSide() {

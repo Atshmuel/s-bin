@@ -48,9 +48,10 @@ function SheetOverlay({
 function SheetContent({
   className,
   children,
-  side = "right",
+  side,
   ...props
 }) {
+
   return (
     <SheetPortal>
       <SheetOverlay />

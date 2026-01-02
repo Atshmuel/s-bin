@@ -14,6 +14,7 @@ import { useOrganizations } from "@/hooks/organizations/useOrganizations";
 
 function UserInputs({ form, isCreating }) {
     const { me, isOwner } = useMe();
+
     const [showPassword, setShowPassword] = useState(false);
     const { data: organizations, isLoadingOrgs, orgsError } = useOrganizations()
 

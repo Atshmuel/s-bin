@@ -4,7 +4,7 @@ import { Spinner } from "./ui/spinner";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUserSettings } from "@/hooks/users/useUserSettings";
-import { useTranslation } from "react-i18next";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 
 
@@ -12,8 +12,8 @@ import { useTranslation } from "react-i18next";
 export default function ProtectedRoute({ children }) {
   const navigate = useNavigate();
   const { me, meError, isLoadingMe } = useMe();
-  const { i18n } = useTranslation();
   const { isLoadingSettings, settings } = useUserSettings(me?.id)
+  const { toggleSide, language } = useAppSide();
 
 
   useEffect(() => {
@@ -24,12 +24,12 @@ export default function ProtectedRoute({ children }) {
   }, [meError, navigate]);
 
   useEffect(() => {
-    if (settings?.appLanguage && i18n.language !== settings.appLanguage) {
-      i18n.changeLanguage(settings.appLanguage);
+    if (settings?.appLanguage && language !== settings.appLanguage) {
+      toggleSide(settings.appLanguage)
     }
 
-    document.documentElement.lang = i18n.language;
-  }, [settings, i18n]);
+    document.documentElement.lang = language;
+  }, [settings, language, toggleSide]);
 
 
   if (isLoadingMe || (me && isLoadingSettings))

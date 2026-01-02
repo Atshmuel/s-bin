@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sidebar"
 import NewEntitySheet from "./newEntityComponents/NewEntitySheet"
 import { useMe } from "@/hooks/users/auth/useMe"
+import { useAppSide } from "@/contexts/AppSideProvider"
 
 const data = {
   listItems: [
@@ -101,12 +102,12 @@ export function AppSidebar({
 }) {
   const { state } = useSidebar()
   const { me, isAdmin } = useMe()
-
+  const { opSide } = useAppSide()
 
   const isExpanded = state === 'expanded'
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar side={opSide} collapsible="icon" {...props}>
       <SidebarHeader>
         <AppLogo />
       </SidebarHeader>

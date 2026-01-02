@@ -2,7 +2,6 @@ import { Outlet } from "react-router-dom";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Separator } from "@radix-ui/react-dropdown-menu";
-
 import { useDarkMode } from "@/contexts/darkModelContext";
 import { Breakcrumbs } from "./Breadcrumbs";
 import { Moon, SunMedium } from "lucide-react";

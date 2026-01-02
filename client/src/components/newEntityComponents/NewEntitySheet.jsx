@@ -10,6 +10,7 @@ import { useMe } from "@/hooks/users/auth/useMe"
 import { useCreateOrg } from "@/hooks/organizations/useCreateOrg"
 import { useState } from "react"
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group"
+import { useAppSide } from "@/contexts/AppSideProvider"
 
 function NewEntitySheet({ isExpanded }) {
     const { create, isCreating } = useCreateUser()
@@ -17,6 +18,7 @@ function NewEntitySheet({ isExpanded }) {
 
     const [isUserCreation, setIsUserCreation] = useState(true);
     const { me, isOwner } = useMe()
+    const { side } = useAppSide()
 
     const userForm = useForm({
         defaultValues: {
@@ -67,7 +69,6 @@ function NewEntitySheet({ isExpanded }) {
 
 
     const ToggleView = () => {
-
         return isOwner ? <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={isUserCreation ? "user" : "org"} onValueChange={(value) => {
             if (value) {
                 setIsUserCreation(v => !v)
@@ -83,7 +84,7 @@ function NewEntitySheet({ isExpanded }) {
             <SheetTrigger asChild>
                 <Button size={isExpanded ? 'default' : 'icon'}>{isExpanded ? <div className="flex  items-center gap-2"><LucidePlus /> <span>Create New entity</span></div> : <LucidePlus />}</Button>
             </SheetTrigger>
-            <SheetContent>
+            <SheetContent side={side}>
                 <SheetHeader>
                     <SheetTitle className={'text-sm  md:text-lg'}>Create New {isUserCreation ? "User" : "Organization"}</SheetTitle>
                     <SheetDescription>Create new application {isUserCreation ? "user" : "organization"}</SheetDescription>
