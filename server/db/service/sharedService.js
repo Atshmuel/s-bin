@@ -326,7 +326,6 @@ export async function getAIOverview(req, res) {
         process.env.GEMINI_API_THIRD_KEY,
         process.env.GEMINI_API_FOURTH_KEY
     ].filter(Boolean);
-
     for (let i = 0; i < apiKeys.length; i++) {
         try {
 

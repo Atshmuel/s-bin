@@ -74,9 +74,9 @@ export default function AIInsights() {
                     </div>
                 ) : (
                     !isLoadingAIOverview && !aiOverviewError && (
-                        <p className="flex items-center justify-center gap-2 text-sm text-center"> <Terminal className="h-4 w-4" /><Typewriter
+                        <p className="flex items-center justify-center gap-2 text-sm text-center"> <Terminal size={30} className='text-muted-foreground' /><Typewriter
                             text="No logs available for analysis."
-                            speed={50}
+                            speed={200}
                         /></p>
                     )
                 )}
