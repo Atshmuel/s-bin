@@ -3,6 +3,8 @@ import { useEffect } from "react"
 import { Spinner } from "./ui/spinner";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useUserSettings } from "@/hooks/users/useUserSettings";
+import { useTranslation } from "react-i18next";
 
 
 
@@ -10,6 +12,9 @@ import { toast } from "sonner";
 export default function ProtectedRoute({ children }) {
   const navigate = useNavigate();
   const { me, meError, isLoadingMe } = useMe();
+  const { i18n } = useTranslation();
+  const { isLoadingSettings, settings } = useUserSettings(me?.id)
+
 
   useEffect(() => {
     if (meError) {
@@ -18,7 +23,16 @@ export default function ProtectedRoute({ children }) {
     }
   }, [meError, navigate]);
 
-  if (isLoadingMe)
+  useEffect(() => {
+    if (settings?.appLanguage && i18n.language !== settings.appLanguage) {
+      i18n.changeLanguage(settings.appLanguage);
+    }
+
+    document.documentElement.lang = i18n.language;
+  }, [settings, i18n]);
+
+
+  if (isLoadingMe || (me && isLoadingSettings))
     return (
       <main className="w-full h-dvh flex justify-center items-center">
         <Spinner className={'size-24'} />

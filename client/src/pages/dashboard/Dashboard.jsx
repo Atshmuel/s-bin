@@ -9,14 +9,16 @@ import Battery from '../../components/bins/Battary'
 import { getVariant } from "@/utils/binHelpers"
 import { useOverviews } from "@/hooks/overviews/useOverviews"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useTranslation } from 'react-i18next';
+
 import ErrorPage from "../generals/ErrorPage"
 
 function Dashboard() {
     const { data, isLoadingOverviews, overviewsError } = useOverviews()
-
+    const { t } = useTranslation();
     const attentionBinsColums = [
         {
-            header: 'Bin name',
+            header: t('binName'),
             accessorKey: 'binName',
             id: 'Bin name',
             cell: ({ row }) => {
@@ -32,7 +34,7 @@ function Dashboard() {
             enableSorting: true,
         },
         {
-            header: 'fill level',
+            header: t('fillLevel'),
             accessorKey: 'status.level',
             id: 'Fill level',
             cell: ({ row }) => {

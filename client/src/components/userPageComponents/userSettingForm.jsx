@@ -14,9 +14,12 @@ import { Skeleton } from "../ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { useUpdateUserSettings } from "@/hooks/users/useUpdateUserSettings";
 import { Spinner } from "../ui/spinner";
+import { useTranslation } from "react-i18next";
 
 function UserSettingForm({ user, isAdmin = false }) {
+    const { i18n } = useTranslation()
     const { updateSettings, isUpdatingSettings } = useUpdateUserSettings()
+
     const { settingsError, isLoadingSettings, settings } = useUserSettings(user._id)
     const userSettings = useForm({
         defaultValues: {
@@ -58,6 +61,7 @@ function UserSettingForm({ user, isAdmin = false }) {
             }
         }
         updateSettings({ configToServerModel, id: user._id })
+        i18n.changeLanguage(data.appLanguage)
     }
 
     return (

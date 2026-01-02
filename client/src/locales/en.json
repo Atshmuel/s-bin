@@ -1,0 +1,26 @@
+{
+    "welcome": "Welcome",
+    "login": "Login",
+    "logout": "Logout",
+    "settings": "Settings",
+    "profile": "Profile",
+    "language": "Language",
+    "help": "Help",
+    "search": "Search",
+    "notifications": "Notifications",
+    "messages": "Messages",
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "admin": "Admin",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "update": "Update",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "binName": "Bin name",
+    "fillLevel": "Fill level"
+
+}

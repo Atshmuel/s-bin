@@ -1,0 +1,28 @@
+
+{
+    "welcome": "ברוך הבא",
+    "login": "התחברות",
+    "logout": "התנתקות",
+    "settings": "הגדרות",
+    "profile": "פרופיל",
+    "language": "שפה",
+    "help": "עזרה",
+    "search": "חיפוש",
+    "notifications": "התראות",
+    "messages": "הודעות",
+    "dashboard": "לוח מחוונים",
+    "users": "משתמשים",
+    "admin": "מנהל מערכת",
+    "save": "שמור",
+    "cancel": "ביטול",
+    "edit": "ערוך",
+    "delete": "מחק",
+    "update": "עדכן",
+    "loading": "טוען...",
+    "error": "שגיאה",
+    "success": "הצלחה",
+    "binName": "שם הפח",
+    "fillLevel": "רמת מילוי"
+
+
+}

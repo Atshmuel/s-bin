@@ -29,6 +29,7 @@ import { MapProvider } from './contexts/mapContext';
 import AddBin from './pages/bins/AddBin';
 import { BreadcrumbProvider } from './contexts/breadcrumbsContext';
 import AccountVerify from './pages/auth/AccountVerify';
+import { AppSideProvider } from './contexts/AppSideProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -37,59 +38,61 @@ const queryClient = new QueryClient({
 function App() {
 
   return <QueryClientProvider client={queryClient}>
-    <ReactQueryDevtools buttonPosition='bottom-left' initialIsOpen={false} />
-    <DarkModeProvider>
-      <BrowserRouter>
-        <BreadcrumbProvider>
-          <Routes>
-            <Route
-              element={
-                <ProtectedRoute>
-                  <MapProvider>
-                    <AppLayout />
-                  </MapProvider>
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate replace to="dashboard" />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="statistics" element={<Statistics />} />
-              <Route path="analytics" element={<Analytics />} />
+    <AppSideProvider>
+      <ReactQueryDevtools buttonPosition='bottom-left' initialIsOpen={false} />
+      <DarkModeProvider>
+        <BrowserRouter>
+          <BreadcrumbProvider>
+            <Routes>
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <MapProvider>
+                      <AppLayout />
+                    </MapProvider>
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate replace to="dashboard" />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="statistics" element={<Statistics />} />
+                <Route path="analytics" element={<Analytics />} />
 
-              <Route path='bins'>
-                <Route path="" element={<BinsList />} />
-                <Route path="map" element={<BinMap />} />
-                <Route path="add" element={<AddBin />} />
-                <Route path=":id" element={<BinDetails />} />
-                <Route path='logs'>
-                  <Route path="" element={<AllLogs />} />
-                  <Route path=":id" element={<BinLog />} />
+                <Route path='bins'>
+                  <Route path="" element={<BinsList />} />
+                  <Route path="map" element={<BinMap />} />
+                  <Route path="add" element={<AddBin />} />
+                  <Route path=":id" element={<BinDetails />} />
+                  <Route path='logs'>
+                    <Route path="" element={<AllLogs />} />
+                    <Route path=":id" element={<BinLog />} />
+                  </Route>
                 </Route>
+
+                <Route path='users'>
+                  <Route path='' element={<UsersList />} />
+                  <Route path=':id' element={<UserProfile />} />
+                </Route>
+                <Route path="account">
+                  <Route path="" element={<AccountProfile />} />
+                </Route>
+
+
               </Route>
-
-              <Route path='users'>
-                <Route path='' element={<UsersList />} />
-                <Route path=':id' element={<UserProfile />} />
+              <Route path="login" element={<Login />} />
+              <Route path="signup" element={<Signup />} />
+              <Route path="forgot-password" element={<ForgotPassword />} />
+              <Route path="/user">
+                <Route path="verify" element={<AccountVerify />} />
               </Route>
-              <Route path="account">
-                <Route path="" element={<AccountProfile />} />
-              </Route>
+              <Route path="support" element={<SupportPage />} />
 
-
-            </Route>
-            <Route path="login" element={<Login />} />
-            <Route path="signup" element={<Signup />} />
-            <Route path="forgot-password" element={<ForgotPassword />} />
-            <Route path="/user">
-              <Route path="verify" element={<AccountVerify />} />
-            </Route>
-            <Route path="support" element={<SupportPage />} />
-
-            <Route path="*" element={<ErrorPage />} />
-          </Routes>
-        </BreadcrumbProvider>
-      </BrowserRouter>
-    </DarkModeProvider>
+              <Route path="*" element={<ErrorPage />} />
+            </Routes>
+          </BreadcrumbProvider>
+        </BrowserRouter>
+      </DarkModeProvider>
+    </AppSideProvider>
     <Toaster richColors duration={3000} position="top-right" />
   </QueryClientProvider >
 
