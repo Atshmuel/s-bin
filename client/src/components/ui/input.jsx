@@ -40,7 +40,7 @@ function Input({
           isRight ? "pr-10" : "pl-10"
         )}
         {...props} />
-      <Icon onClick={onIconClick} size={iconSize} className={`absolute top-[9px] right-2 ${iconClassName} ${props.disabled ? "opacity-30" : ""}`} />
+      <Icon onClick={onIconClick} size={iconSize} className={`absolute top-[9px] ${isRight ? "right-2" : "left-2"} ${iconClassName} ${props.disabled ? "opacity-30" : ""}`} />
     </div>
   )
 

@@ -11,9 +11,12 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { useOrgManagers } from "@/hooks/users/useOrgManagers";
 import { Skeleton } from "../ui/skeleton";
 import { useOrganizations } from "@/hooks/organizations/useOrganizations";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 function UserInputs({ form, isCreating }) {
     const { me, isOwner } = useMe();
+    const { isRight } = useAppSide()
+
 
     const [showPassword, setShowPassword] = useState(false);
     const { data: organizations, isLoadingOrgs, orgsError } = useOrganizations()
@@ -106,7 +109,9 @@ function UserInputs({ form, isCreating }) {
                         <FormItem>
                             <div className="relative">
                                 <InputLabel disabled={isCreating}{...field} placeholder=" " type={showPassword ? "text" : "password"} >New Password</InputLabel>
-                                {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
+                                    className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                    <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                             </div>
                             <FormMessage />
                         </FormItem>
@@ -119,7 +124,7 @@ function UserInputs({ form, isCreating }) {
                         <FormItem>
                             <Label>User Role</Label>
                             <FormControl>
-                                <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => {
+                                <ToggleGroup isRight={isRight} disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => {
                                     if (value) {
                                         field.onChange(value)
                                     }
@@ -143,7 +148,7 @@ function UserInputs({ form, isCreating }) {
                         <FormItem>
                             <Label>User Status</Label>
                             <FormControl>
-                                <ToggleGroup disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => {
+                                <ToggleGroup isRight={isRight} disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md " type="single" value={field.value} onValueChange={(value) => {
                                     if (value) {
                                         field.onChange(value)
                                     }
@@ -169,18 +174,18 @@ function UserInputs({ form, isCreating }) {
                                 <Label>Organzation</Label>
                                 <FormControl>
                                     {isLoadingOrgs ? <Skeleton className="w-full px-1 h-10" /> :
-                                        <Select onValueChange={field.onChange}
+                                        <Select isRight={isRight} onValueChange={field.onChange}
                                             value={field.value ?? ""}
                                         >
-                                            <SelectTrigger className="">
+                                            <SelectTrigger isRight={isRight} >
                                                 <SelectValue placeholder="Select Organzation" />
                                             </SelectTrigger>
                                             <SelectContent className="z-[1000]">
                                                 <SelectGroup>
-                                                    <SelectLabel>{orgsError ? "Failed to get organizations" : "Organizations"}</SelectLabel>
+                                                    <SelectLabel isRight={isRight}>{orgsError ? "Failed to get organizations" : "Organizations"}</SelectLabel>
                                                     <div className="max-h-52 overflow-y-auto">
                                                         {!orgsError ? organizations?.map(m => (
-                                                            <SelectItem className="capitalize max-w-[320px] truncate" key={m._id} value={m._id}>{m.name}</SelectItem>
+                                                            <SelectItem isRight={isRight} className="capitalize max-w-[320px] truncate" key={m._id} value={m._id}>{m.name}</SelectItem>
                                                         )) : null}
                                                     </div>
                                                 </SelectGroup>
@@ -199,18 +204,18 @@ function UserInputs({ form, isCreating }) {
                             <Label>User's Manager</Label>
                             <FormControl>
                                 {isLoadingManagers ? <Skeleton className="w-full px-1 h-10" /> :
-                                    <Select onValueChange={field.onChange}
+                                    <Select isRight={isRight} onValueChange={field.onChange}
                                         value={field.value ?? ""}
                                     >
-                                        <SelectTrigger className="">
+                                        <SelectTrigger isRight={isRight}>
                                             <SelectValue placeholder="Select Manager" />
                                         </SelectTrigger>
                                         <SelectContent className="z-[1000]">
                                             <SelectGroup>
-                                                <SelectLabel>{managersError ? "Failed to get managers" : "Managers"}</SelectLabel>
+                                                <SelectLabel isRight={isRight}>{managersError ? "Failed to get managers" : "Managers"}</SelectLabel>
                                                 <div className="max-h-52 overflow-y-auto">
                                                     {!managersError ? managers?.map(m => (
-                                                        <SelectItem className="capitalize" key={m._id} value={m._id} isbadged={m.role}>{m.name}</SelectItem>
+                                                        <SelectItem isRight={isRight} className="capitalize" key={m._id} value={m._id} isbadged={m.role}>{m.name}</SelectItem>
                                                     )) : null}
                                                 </div>
                                             </SelectGroup>

@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import {
   Collapsible,
@@ -17,11 +17,13 @@ import {
 } from "@/components/ui/sidebar"
 import { NavLink } from "react-router-dom";
 import { useMe } from "@/hooks/users/auth/useMe";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 export function NavMain({
-  items
+  items,
 }) {
   const { me, isAdmin } = useMe();
+  const { isRight } = useAppSide();
 
   return (
     <SidebarGroup>
@@ -39,8 +41,13 @@ export function NavMain({
                   <SidebarMenuButton tooltip={item.title}>
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>
-                    <ChevronRight
-                      className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    {isRight ?
+                      <ChevronRight
+                        className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                      :
+                      <ChevronLeft
+                        className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:-rotate-90" />
+                    }
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>

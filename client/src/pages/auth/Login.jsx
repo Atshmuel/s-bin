@@ -12,10 +12,12 @@ import {
 import { NavLink, useSearchParams } from "react-router-dom";
 import { useLogin } from "@/hooks/users/auth/useLogin";
 import { Spinner } from "@/components/ui/spinner";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 
 function Login() {
     const [searchParams] = useSearchParams();
+    const { isRight } = useAppSide();
     const emailParam = searchParams.get('email');
 
     const { login, isLoggingIn } = useLogin()
@@ -85,7 +87,9 @@ function Login() {
                                 <FormItem>
                                     <div className="relative">
                                         <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >Password</InputLabel>
-                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
+                                            className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                            <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -107,7 +111,7 @@ function Login() {
             </CardContent>
             <CardFooter>
 
-                <div className="sm:flex text-center justify-between w-full">
+                <div className={`flex ${isRight ? "flex-row" : "flex-row-reverse"} text-center justify-between w-full`}>
 
                     <Button variant='link' className={'m-0 p-0'}>
 

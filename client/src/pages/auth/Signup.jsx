@@ -16,10 +16,12 @@ import Terms from "@/components/Terms";
 import { useSignup } from "@/hooks/users/auth/useSignup";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 
 function Signup() {
     const { signup, isSigningup } = useSignup()
+    const { isRight } = useAppSide()
     const [successfullyCreated, setSuccessfullyCreated] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const form = useForm({
@@ -147,7 +149,9 @@ function Signup() {
                                     <FormItem>
                                         <div className="relative">
                                             <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >Password</InputLabel>
-                                            {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                            {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
+                                                className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                                <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                         </div>
                                         <FormMessage />
                                     </FormItem>

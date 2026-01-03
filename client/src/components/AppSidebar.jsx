@@ -52,12 +52,6 @@ const data = {
           title: "Logs",
           url: "logs",
         },
-        {
-          title: "Owner Only Example",
-          url: "",
-          isOwnerOnly: true,
-
-        },
       ],
     },
     {
@@ -83,17 +77,7 @@ const data = {
       name: "Analytics",
       url: "/analytics",
       icon: ChartSplineIcon,
-    },
-    {
-      name: "Statistics",
-      url: "/statistics",
-      icon: BarChart3,
-    },
-    {
-      name: "Support",
-      url: "/support",
-      icon: HelpCircleIcon,
-    },
+    }
   ],
 }
 
@@ -102,7 +86,7 @@ export function AppSidebar({
 }) {
   const { state } = useSidebar()
   const { me, isAdmin } = useMe()
-  const { opSide } = useAppSide()
+  const { opSide, isRight } = useAppSide()
 
   const isExpanded = state === 'expanded'
 
@@ -117,7 +101,7 @@ export function AppSidebar({
       </SidebarContent>
       <SidebarFooter>
         {isAdmin ? <NewEntitySheet isExpanded={isExpanded} /> : null}
-        <NavAccount account={{ ...me, avater: '/avatars/shadcn.jpg' }} />
+        <NavAccount isRight={isRight} account={{ ...me, avater: '/avatars/shadcn.jpg' }} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

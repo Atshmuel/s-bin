@@ -174,7 +174,7 @@ function BinsList() {
 
 
     return (
-        <div className="p-10">
+        <div className="sm:p-10">
             <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title='bins list' ActionButton={allBins?.length && binIds?.length ? ActionButton : null} />
         </div>
     )

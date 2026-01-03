@@ -12,7 +12,10 @@
     "messages": "הודעות",
     "dashboard": "לוח מחוונים",
     "users": "משתמשים",
+    "owner": "בעלים",
     "admin": "מנהל מערכת",
+    "user": "משתמש",
+    "technician": "טכנאי",
     "save": "שמור",
     "cancel": "ביטול",
     "edit": "ערוך",
@@ -22,7 +25,9 @@
     "error": "שגיאה",
     "success": "הצלחה",
     "binName": "שם הפח",
-    "fillLevel": "רמת מילוי"
+    "fillLevel": "רמת מילוי",
+    "tablePage": "מתוך",
+    "columns": "עמודות"
 
 
 }

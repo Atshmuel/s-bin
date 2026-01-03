@@ -13,9 +13,11 @@ import { useMapSettings } from "@/contexts/mapContext"
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group"
 import { toast } from "sonner"
 import { useSearchParams } from "react-router-dom"
+import { useAppSide } from "@/contexts/AppSideProvider"
 
 function MapLegend({ legendForm = false }) {
     const isMobile = useIsMobile();
+    const { isRight } = useAppSide()
     const { flyEnabled, setFlyEnabled, tile, setTile, isOpen, setIsOpen } = useMapSettings()
     const [searchParams, setSearchParams] = useSearchParams()
     let { radius, minLevel, maxLevel, health } = Object.fromEntries([...searchParams]);
@@ -146,7 +148,7 @@ function MapLegend({ legendForm = false }) {
                                     <FormItem>
                                         <Label>Bin Health Alert</Label>
                                         <FormControl>
-                                            <ToggleGroup className="mt-3 border-[0.2px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                            <ToggleGroup isRight={isRight} className="mt-3 border-[0.2px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
                                                 if (value) {
                                                     field.onChange(value)
                                                 }

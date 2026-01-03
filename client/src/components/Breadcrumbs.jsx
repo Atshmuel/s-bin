@@ -4,9 +4,11 @@ import { Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, Breadcr
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import React from "react";
 import { useBreadcrumbs } from "@/contexts/breadcrumbsContext";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 export function Breakcrumbs() {
     const { crumbs } = useBreadcrumbs();
+    const { isRight } = useAppSide()
 
     if (crumbs.length > 4) {
         const firstCrumb = crumbs[0];
@@ -21,7 +23,7 @@ export function Breakcrumbs() {
                         <NavLink className={'capitalize'} to={firstCrumb.path || ''}>{firstCrumb.label}</NavLink>
                     </BreadcrumbLink>
                 </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbSeparator isRight={isRight} className="hidden md:block" />
                 <BreadcrumbItem className={"hidden md:flex"}>
                     <DropdownMenu>
                         <DropdownMenuTrigger className="flex items-center gap-1">
@@ -40,7 +42,7 @@ export function Breakcrumbs() {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbSeparator isRight={isRight} className="hidden md:block" />
                 <BreadcrumbItem key={crumbs.length - 1} className={"hidden md:block"}>
                     <BreadcrumbLink asChild={true}>
                         <NavLink className={'capitalize'} to={penultimateCrumb.path || ''}>{penultimateCrumb.label}</NavLink>
@@ -71,7 +73,7 @@ export function Breakcrumbs() {
                                 }
                             </BreadcrumbLink>
                         </BreadcrumbItem>
-                        {index < crumbs.length - 1 && <BreadcrumbSeparator className="hidden md:block" />}
+                        {index < crumbs.length - 1 && <BreadcrumbSeparator isRight={isRight} className="hidden md:block" />}
                     </React.Fragment>
                 ))
             }

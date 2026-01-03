@@ -63,7 +63,7 @@ function UsersList() {
     ]
 
     return (
-        <div className="p-10">
+        <div className="sm:p-10">
             <DataTable columns={columns} data={usersList ?? []} isLoading={isLoadingUsers} error={usersError} title='users list' />
         </div>
     )

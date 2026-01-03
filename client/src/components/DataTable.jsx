@@ -25,9 +25,12 @@ import { IoIosArrowRoundDown, IoIosArrowRoundUp, IoMdArrowDropdown } from "react
 import { Skeleton } from "./ui/skeleton"
 import EmptyTable from "./EmptyTable"
 import { Search, X } from "lucide-react"
+import { useAppSide } from "@/contexts/AppSideProvider"
+import { t } from "i18next"
 
 
 export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null }) {
+    const { isRight } = useAppSide()
     const [sorting, setSorting] = useState(sortingBy ?? [])
     const [searching, setSearching] = useState("")
 
@@ -54,13 +57,13 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                {title ? <h1 className="text-2xl capitalize font-bold min-w-20 sm:min-w-72">{title}</h1> : null}
+                {title ? <h1 className="text-lg sm:text-2xl capitalize font-bold min-w-20 sm:min-w-72">{title}</h1> : null}
                 <div className={`flex items-center w-full ${title ? "justify-end gap-3" : "justify-between"} `}>
                     <Input
                         withIcon={true}
                         Icon={iconToShow}
                         type="text"
-                        placeholder="Search..."
+                        placeholder={t("search") + '...'}
                         value={searching}
                         onChange={(e) => setSearching(e.target.value)}
                         onIconClick={() => {
@@ -68,18 +71,21 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                             setSearching("")
                         }}
                         disabled={isLoading || error}
-                        className="w-28 sm:w-48 relative"
+                        className="w-24 sm:w-48 relative"
                     />
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button disabled={isLoading || error} variant="outline">Columns <IoMdArrowDropdown /></Button>
+                            <Button disabled={isLoading || error} variant="outline">
+                                {t("columns")} <IoMdArrowDropdown />
+                            </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align={isRight ? "end" : "start"} className="max-h-60 overflow-y-auto">
                             {table
                                 .getAllLeafColumns()
                                 .map(column => (
                                     <DropdownMenuCheckboxItem
+                                        isRight={isRight}
                                         key={column.id}
                                         checked={column.getIsVisible()}
                                         onCheckedChange={() => column.toggleVisibility()}
@@ -150,7 +156,7 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                 </Table>
             </div>
 
-            <div className="flex justify-between">
+            <div className={`flex justify-between`}>
                 <Button
                     variant="outline"
                     onClick={() => table.previousPage()}
@@ -158,7 +164,13 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                 >
                     Previous
                 </Button>
-                {table.getPageCount() ? `${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}` : ''}
+                {table.getPageCount() ?
+                    <div className={`flex gap-1 ${isRight ? "" : "flex-row-reverse"}`}>
+                        <span>{table.getState().pagination.pageIndex + 1}</span>
+                        <span> {t("tablePage")} </span>
+                        <span>{table.getPageCount()}</span>
+                    </div>
+                    : null}
 
                 <Button
                     variant="outline"

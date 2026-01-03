@@ -18,7 +18,7 @@ function NewEntitySheet({ isExpanded }) {
 
     const [isUserCreation, setIsUserCreation] = useState(true);
     const { me, isOwner } = useMe()
-    const { side } = useAppSide()
+    const { side, isRight } = useAppSide()
 
     const userForm = useForm({
         defaultValues: {
@@ -82,7 +82,7 @@ function NewEntitySheet({ isExpanded }) {
     return (
         <Sheet >
             <SheetTrigger asChild>
-                <Button size={isExpanded ? 'default' : 'icon'}>{isExpanded ? <div className="flex  items-center gap-2"><LucidePlus /> <span>Create New entity</span></div> : <LucidePlus />}</Button>
+                <Button size={isExpanded ? 'default' : 'icon'}>{isExpanded ? <div className={`flex  items-center ${isRight ? '' : 'flex-row-reverse'} gap-2`}><LucidePlus /> <span>Create New entity</span></div> : <LucidePlus />}</Button>
             </SheetTrigger>
             <SheetContent side={side}>
                 <SheetHeader>

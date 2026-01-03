@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 import { Spinner } from "@/components/ui/spinner"
+import { useAppSide } from "@/contexts/AppSideProvider"
 import { CircleCheck, Eye, EyeOff, Info } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -11,6 +12,7 @@ import { toast } from "sonner"
 function AddBin() {
     const user = { id: "12421cs-d2d2-23f2-3r2t23f", role: "admin" }; //dummy user, replace with actual user from context/auth
     const [api, setApi] = useState(null);
+    const { isRight } = useAppSide();
 
     const [checking, setChecking] = useState(false);
     const [deviceConnected, setDeviceConnected] = useState(false);
@@ -50,13 +52,13 @@ function AddBin() {
             // Bin data being sent to the server after connecting to its Wi-Fi
             // {
             //   "macAddress": "EC:FA:11:9F:42",
-            //   "userId": "64b2a8d4e1c9f...",
+            //   "ownerId": "64b2a8d4e1c9f...",
             //   "location": [40.7128, -74.0060]
             // }
 
             if (res.ok) {
                 toast.success("Wi-Fi details sent successfully!");
-                api.scrollNext()
+                api.scrollNext();
             } else {
                 toast.error("Failed to send Wi-Fi details. Try again.");
             }
@@ -72,7 +74,7 @@ function AddBin() {
     return (
         <div className="flex justify-center items-center">
             <Carousel allowDrag={false} setApi={setApi}>
-                <CarouselContent className="max-w-[370px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] p-1">
+                <CarouselContent isRight={isRight} className="max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] p-1">
                     {/* Step 1: Info */}
                     <CarouselItem key={1}>
                         <Card >
@@ -120,7 +122,9 @@ function AddBin() {
                                         disabled={!deviceConnected || checking}
 
                                         onChange={(e) => setPassword(e.target.value)} placeholder=" " type={showPassword && deviceConnected ? "text" : "password"} >WIFI Password</InputLabel>
-                                    {showPassword && deviceConnected ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                    {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
+                                        className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                        <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                 </div>
                             </CardContent>
                             <CardFooter className="flex flex-col items-end justify-end">

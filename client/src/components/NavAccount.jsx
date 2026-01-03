@@ -31,7 +31,8 @@ import { useLogout } from "@/hooks/users/auth/useLogout"
 import { Spinner } from "./ui/spinner"
 
 export function NavAccount({
-  account
+  account,
+  isRight,
 }) {
   //TODO - Notifications should open a dialog with notifications and to allow the user edit his pref, also this this should be fetched to the server when he submit the form
   const { isMobile } = useSidebar()
@@ -45,12 +46,12 @@ export function NavAccount({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+              className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground ${isRight ? 'flex flex-row-reverse' : ''}`}>
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={account.avatar} alt={account.name} />
                 <AvatarFallback className="rounded-lg uppercase">{splitedName[0][0]}{splitedName[1][0]}</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className={`grid flex-1  text-sm leading-tight ${isRight ? 'text-left' : 'text-right'}`}>
                 <span className="truncate font-semibold capitalize">{account.name}</span>
                 <span className="truncate text-xs">{account.email}</span>
               </div>
@@ -63,13 +64,13 @@ export function NavAccount({
             align="end"
             sideOffset={4}>
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+              <div className={`flex items-center gap-2 px-1 py-1.5 ${isRight ? 'text-left' : 'text-right flex-row-reverse'} text-sm`}>
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={account.avatar} alt={account.name} />
                   <AvatarFallback className="rounded-lg uppercase">{splitedName[0][0]}{splitedName[1][0]}</AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <div className="flex items-center justify-between">
+                <div className={`grid flex-1  text-sm leading-tight ${isRight ? 'text-left' : 'text-right'}`}>
+                  <div className={`flex ${isRight ? '' : 'flex-row-reverse'}  items-center justify-between`}>
                     <span className="truncate font-semibold capitalize mr-2">{account.name}</span>
                     <Badge variant={account.role}>{account.role}</Badge>
                   </div>
@@ -80,7 +81,7 @@ export function NavAccount({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <NavLink to="/account">
-                <DropdownMenuItem>
+                <DropdownMenuItem isRight={isRight}>
                   <UserCog />
                   Account
                 </DropdownMenuItem>
@@ -92,7 +93,7 @@ export function NavAccount({
               </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
+            <DropdownMenuItem isRight={isRight} onClick={logout}>
 
               {isLoggingOut ? <Spinner /> : <><LogOut />
                 Log out</>}

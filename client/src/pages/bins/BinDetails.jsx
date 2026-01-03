@@ -12,9 +12,10 @@ import { useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { useAppSide } from "@/contexts/AppSideProvider"
 
 function BinDetails() {
-
+    const { isRight } = useAppSide()
     const { id } = useParams()
 
     const { bin, isLoadingBins, binsError } = useBin(id)
@@ -141,21 +142,21 @@ function BinDetails() {
                             Battery level and fill percentage trends based on sensor logs.
                         </CardDescription>
                     </div>
-                    <Select value={timeRange} onValueChange={setTimeRange}>
-                        <SelectTrigger
+                    <Select isRight={isRight} value={timeRange} onValueChange={setTimeRange}>
+                        <SelectTrigger isRight={isRight}
                             className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
                             aria-label="Select a value"
                         >
                             <SelectValue placeholder="Last 3 months" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
-                            <SelectItem value="90d" className="rounded-lg">
+                            <SelectItem isRight={isRight} value="90d" className="rounded-lg">
                                 Last 3 months
                             </SelectItem>
-                            <SelectItem value="30d" className="rounded-lg">
+                            <SelectItem isRight={isRight} value="30d" className="rounded-lg">
                                 Last 30 days
                             </SelectItem>
-                            <SelectItem value="7d" className="rounded-lg">
+                            <SelectItem isRight={isRight} value="7d" className="rounded-lg">
                                 Last 7 days
                             </SelectItem>
                         </SelectContent>

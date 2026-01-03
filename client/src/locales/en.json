@@ -11,7 +11,10 @@
     "messages": "Messages",
     "dashboard": "Dashboard",
     "users": "Users",
+        "owner": "Owner",
     "admin": "Admin",
+    "user": "User",
+    "technician": "Technician",
     "save": "Save",
     "cancel": "Cancel",
     "edit": "Edit",
@@ -21,6 +24,8 @@
     "error": "Error",
     "success": "Success",
     "binName": "Bin name",
-    "fillLevel": "Fill level"
+    "fillLevel": "Fill level",
+    "tablePage": "of",
+    "columns": "Columns"
 
 }

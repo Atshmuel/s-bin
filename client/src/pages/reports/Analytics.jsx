@@ -8,6 +8,7 @@ import { useLogsTypeOV } from "@/hooks/overviews/useLogsTypeOV"
 import { useState } from "react"
 import AIInsights from "./AIInsights"
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Label, Pie, PieChart, XAxis } from "recharts"
+import { useAppSide } from "@/contexts/AppSideProvider"
 
 
 
@@ -57,6 +58,8 @@ const barChartConfig = {
 
 function Analytics() {
     const [timeRange, setTimeRange] = useState("90d")
+    const { isRight } = useAppSide()
+
     const { allLogs, isLoadingLogs, logsError } = useLogs()
     const { binsCount, isLoadingStatusOV, statusOVError } = useBinStatusOV()
     const { logTypes, isLoadingLogTypeOV, logTypeOVError } = useLogsTypeOV()
@@ -83,8 +86,8 @@ function Analytics() {
     return (
         <div className="space-y-6">
             <AIInsights />
-            <div className="lg:flex lg:gap-6 space-y-6 lg:space-y-0 ">
-                <Card className='lg:w-11/12'>
+            <div className="flex flex-col xl:flex-row gap-6">
+                <Card className="flex-3">
                     <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
                         <div className="grid flex-1 gap-1">
                             <CardTitle>Bin Status Over Time</CardTitle>
@@ -94,19 +97,20 @@ function Analytics() {
                         </div>
                         <Select disabled={isLoadingLogs || logsError} value={timeRange} onValueChange={setTimeRange}>
                             <SelectTrigger
+                                isRight={isRight}
                                 className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
                                 aria-label="Select a value"
                             >
                                 <SelectValue placeholder="Last 3 months" />
                             </SelectTrigger>
                             <SelectContent className="rounded-xl">
-                                <SelectItem value="90d" className="rounded-lg">
+                                <SelectItem isRight={isRight} value="90d" className="rounded-lg">
                                     Last 3 months
                                 </SelectItem>
-                                <SelectItem value="30d" className="rounded-lg">
+                                <SelectItem isRight={isRight} value="30d" className="rounded-lg">
                                     Last 30 days
                                 </SelectItem>
-                                <SelectItem value="7d" className="rounded-lg">
+                                <SelectItem isRight={isRight} value="7d" className="rounded-lg">
                                     Last 7 days
                                 </SelectItem>
                             </SelectContent>
@@ -186,16 +190,16 @@ function Analytics() {
                             </ChartContainer>}
                     </CardContent>
                 </Card>
-                <Card className="flex flex-col lg:1/12">
+                <Card className="flex flex-col min-w-0 flex-1">
                     <CardHeader className="items-center pb-0">
                         <CardTitle>Fleet Health Overview</CardTitle>
                         <CardDescription>Real-time bin status distribution</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex-1 pb-0">
+                    <CardContent className="pb-0">
                         {isLoadingStatusOV && !statusOVError ? <Skeleton className="size-45 mx-auto rounded-full my-10" /> :
                             <ChartContainer
                                 config={pieChartConfig}
-                                className="mx-auto lg:aspect-square min-h-[250px]"
+                                className="mx-auto aspect-auto h-[250px]"
                             >
                                 <PieChart>
                                     <ChartTooltip

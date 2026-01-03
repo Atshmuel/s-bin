@@ -1,9 +1,11 @@
 import { useId } from "react";
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 function InputLabel({ children, variant = 'float', ...props }) {
     const id = useId();
+    const { isRight } = useAppSide();
 
     return (
         variant === 'float' ?
@@ -21,7 +23,7 @@ function InputLabel({ children, variant = 'float', ...props }) {
                 />
                 <Label
                     htmlFor={id}
-                    className="absolute left-3 top-0.5 text-sm text-muted-foreground transition-all      peer-placeholder-shown:top-2.5    peer-placeholder-shown:text-base       peer-placeholder-shown:text-gray-400       peer-focus:top-0.5       peer-focus:text-xs       peer-focus:text-primary"
+                    className={`absolute ${isRight ? "left-3" : "right-3"} top-0.5 text-sm text-muted-foreground transition-all peer-placeholder-shown:top-2.5peer-placeholder-shown:text-base   peer-placeholder-shown:text-gray-400 peer-focus:top-0.5 peer-focus:text-xs   peer-focus:text-primary`}
                     {...props}
                 >{children}</Label>
             </div>

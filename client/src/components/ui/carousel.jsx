@@ -116,7 +116,7 @@ const Carousel = React.forwardRef((
 })
 Carousel.displayName = "Carousel"
 
-const CarouselContent = React.forwardRef(({ className, ...props }, ref) => {
+const CarouselContent = React.forwardRef(({ isRight, className, ...props }, ref) => {
   const { carouselRef, orientation } = useCarousel()
 
   return (
@@ -126,7 +126,8 @@ const CarouselContent = React.forwardRef(({ className, ...props }, ref) => {
         className={cn(
           "flex",
           orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
-          className
+          className,
+          isRight ? "" : "flex-row-reverse"
         )}
         {...props} />
     </div>

@@ -8,10 +8,12 @@ import InputLabel from "../InputLabel";
 import { Eye, EyeOff } from "lucide-react";
 import { useUpdateUserPassword } from "@/hooks/users/useUpdateUser";
 import { Spinner } from "../ui/spinner";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 function PasswordForm({ user, isAdmin = false }) {
     const { updatePassword, isUpdatingPassword } = useUpdateUserPassword()
     const [showPassword, setShowPassword] = useState(false);
+    const { isRight } = useAppSide();
 
     const passwordForm = useForm({
         defaultValues: {
@@ -80,7 +82,9 @@ function PasswordForm({ user, isAdmin = false }) {
                                 >
                                     <div className="relative">
                                         <InputLabel disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >Old Password</InputLabel>
-                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
+                                            className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                            <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -118,7 +122,9 @@ function PasswordForm({ user, isAdmin = false }) {
                                 <FormItem>
                                     <div className="relative">
                                         <InputLabel disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >New Password</InputLabel>
-                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
+                                            className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                            <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -136,8 +142,10 @@ function PasswordForm({ user, isAdmin = false }) {
                             render={({ field }) => (
                                 <FormItem>
                                     <div className="relative">
-                                        <InputLabel disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >Confirm New Password</InputLabel>
-                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                        <InputLabel  disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >Confirm New Password</InputLabel>
+                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
+                                            className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                            <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
