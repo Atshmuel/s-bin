@@ -10,7 +10,7 @@
     "search": "חיפוש",
     "notifications": "התראות",
     "messages": "הודעות",
-    "dashboard": "לוח מחוונים",
+    "dashboard": "לוח בקרה",
     "bins":"פחים",
     "bin":"פח",
     "map":"מפה",
@@ -146,7 +146,6 @@
     "success": "הצלחה",
     "binName": "שם הפח",
     "fillLevel": "רמת מילוי",
-    "tablePage": "מתוך",
     "columns": "עמודות",
     "sidebar": {
         "managment":{
@@ -166,7 +165,7 @@
         "general":{
             "title":"כללי",
             "items":{
-                "dashboard":"לוח מחוונים",
+                "dashboard":"לוח בקרה",
                 "analytics":"אנליטיקות"
             }
         }
@@ -191,6 +190,71 @@
         "locationUnavailable":"מידע על המיקום אינו זמין.",
         "locationTimeout":"בקשת המיקום פגה. נסה שוב.",
         "unknownError":"אירעה שגיאה לא ידועה בעת קבלת המיקום."
+    }
+    },
+      "globalTable":{
+    "next":"הבא",
+    "previous":"הקודם",
+    "noResults":"לא נמצאו תוצאות",
+    "nothingToShow":"אין נתונים זמינים להצגה כרגע.",
+        "noSearchResults":"אין תוצאות התואמות את החיפוש שלך.",
+    "tablePage": "מתוך"
+
+  },
+  "pages":{
+    "dashboard":{
+       "titles":{
+        "quickOverview":{
+          "title":"סקירה מהירה",
+          "description":"מדדים מרכזיים עבור הפחים שלך במבט חטוף, כולל רמות מילוי, סך כל הפחים וצרכי תחזוקה."
+        },
+        "binOverview":{
+          "title":"סקירת פחים",
+          "description":"תצוגה מפורטת של התראות פחים נוכחיות ויומני פעילות אחרונים במערכת."
+        }
+      },
+      "cards":{
+        "almostFull":{
+          "title":"פחים כמעט מלאים",
+          "description":"בדוק את הפחים האלה לפני שהם יתמלאו."
+        },
+        "requiredMaintenance":{
+          "title":"פחים הדורשים תחזוקה",
+          "description":"פחים אלה זקוקים לתשומת לב מהטכנאי."
+        },
+        "totalBins":{
+          "title":"סך כל הפחים",
+          "description":"מספר כולל של פחים במערכת."
+        },
+        "avgFillLevel":{
+          "title":"רמת מילוי ממוצעת",
+          "description":"רמת המילוי הממוצעת של כל הפחים."
+        }
+      },
+      "tables":{
+        "recentLogs":{
+          "title":"תיעודים אחרונים של פחים",
+          "description":"סיכום של פעולות, תחזוקה ואירועים הקשורים לפחים ב-24 השעות האחרונות.",
+          "columns":{
+            "binName":"שם הפח",
+            "fillLevel":"רמת מילוי",
+            "healthStatus":"מצב בריאות",
+            "batteryLevel":"רמת סוללה",
+            "lastUpdated":"עודכן לאחרונה"
+          }
+        },
+        "topFilledBins":{
+          "title":"פחים הדורשים תשומת לב",
+          "description":"רשימת פחים שהפעילו התראות או זקוקים לתחזוקה.",
+          "columns":{
+            "createdAt":"נוצר בתאריך",
+            "type":"סוג",
+            "severity":"חומרה",
+            "viewLog":"הצג תיעוד",
+            "viewBin":"הצג פח"
+          }
+        }
+      }
     }
   }
 }

@@ -153,7 +153,7 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                                 </TableRow>
                             ))
                         )}
-                        {(!hasData || error) && !isLoading ? <EmptyTable title={"No Results Found"} description={searching ? "No data found for your search." : "No data available to display at the moment."} /> : null}
+                        {(!hasData || error) && !isLoading ? <EmptyTable title={t("globalTable.noResults")} description={searching ? t("globalTable.noSearchResults") : t("globalTable.nothingToShow")} /> : null}
                     </TableBody>
                 </Table>
             </div>
@@ -164,12 +164,12 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                     onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
                 >
-                    Previous
+                    {t("globalTable.previous")}
                 </Button>
                 {table.getPageCount() ?
-                    <div className={`flex gap-1 ${isRight ? "" : "flex-row-reverse"}`}>
+                    <div className={`flex gap-1`}>
                         <span>{table.getState().pagination.pageIndex + 1}</span>
-                        <span> {t("tablePage")} </span>
+                        <span> {t("globalTable.tablePage")} </span>
                         <span>{table.getPageCount()}</span>
                     </div>
                     : null}
@@ -179,7 +179,7 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                     onClick={() => table.nextPage()}
                     disabled={!table.getCanNextPage()}
                 >
-                    Next
+                    {t("globalTable.next")}
                 </Button>
             </div>
         </div>

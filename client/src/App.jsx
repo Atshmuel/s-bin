@@ -11,7 +11,6 @@ import { DarkModeProvider } from './contexts/darkModelContext';
 import { Toaster } from './components/ui/sonner';
 import Login from '../src/pages/auth/Login'
 import Dashboard from './pages/dashboard/Dashboard';
-import Statistics from './pages/reports/Statistics';
 import Analytics from './pages/reports/Analytics';
 import BinsList from './pages/bins/BinsList';
 import BinMap from './pages/bins/BinMap';
@@ -55,7 +54,6 @@ function App() {
               >
                 <Route index element={<Navigate replace to="dashboard" />} />
                 <Route path="dashboard" element={<Dashboard />} />
-                <Route path="statistics" element={<Statistics />} />
                 <Route path="analytics" element={<Analytics />} />
 
                 <Route path='bins'>

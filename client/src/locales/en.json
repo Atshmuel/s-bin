@@ -20,6 +20,7 @@
     "location":"Location",
     "coordinates":"Coordinates",
     "zoom":"Zoom",
+
   "roles":{
       "owner": "Owner",
       "admin": "Admin",
@@ -45,7 +46,6 @@
 
   "binName": "Bin name",
   "fillLevel": "Fill level",
-  "tablePage": "of",
   "columns": "Columns",
 
   "sidebar": {
@@ -193,5 +193,72 @@
         "locationTimeout":"Location request timed out. Try again.",
         "unknownError":"An unknown error occurred while retrieving location."
     }
+  },
+  "globalTable":{
+    "next":"Next",
+    "previous":"Previous",
+    "noResults":"No results found",
+    "nothingToShow":"No data available to display at the moment.",
+    "noSearchResults":"No results match your search.",
+      "tablePage": "of"
+
+  },
+    
+  "pages":{
+    "dashboard":{
+      "titles":{
+        "quickOverview":{
+          "title":"Quick Overview",
+          "description":"Key metrics for your bins at a glance, including fill levels, total bins, and maintenance needs."
+        },
+        "binOverview":{
+          "title":"Bin Overview",
+          "description":"A detailed view of current bin alerts and recent activity logs across the system."
+        }
+      },
+      "cards":{
+        "almostFull":{
+          "title":"Almost Full Bins",
+          "description":"Check these bins before they overflow."
+        },
+        "requiredMaintenance":{
+          "title":"Bins Requiring Maintenance",
+          "description":"These bins need attention from the technician."
+        },
+        "totalBins":{
+          "title":"Total Bins",
+          "description":"Total number of bins in the system."
+        },
+        "avgFillLevel":{
+          "title":"Average Fill Level",
+          "description":"Average fill level across all bins."
+        }
+      },
+      "tables":{
+        "recentLogs":{
+          "title":"Recent Bin Logs",
+          "description":"A summary of bin-related actions, maintenance, and events from the past 24 hours.",
+          "columns":{
+            "binName":"Bin Name",
+            "fillLevel":"Fill Level",
+            "healthStatus":"Health Status",
+            "batteryLevel":"Battery Level",
+            "lastUpdated":"Last Updated"
+          }
+        },
+        "topFilledBins":{
+          "title":"Bins Requiring Attention",
+          "description":"List of bins that have triggered alerts or need maintenance.",
+          "columns":{
+            "createdAt":"Created At",
+            "type":"Type",
+            "severity":"Severity",
+            "viewLog":"View Log",
+            "viewBin":"View Bin"
+          }
+        }
+      }
+    }
   }
+
 }
