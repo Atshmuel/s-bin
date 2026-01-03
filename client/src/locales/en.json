@@ -17,11 +17,20 @@
     "map":"Map",
     "logs":"Logs",
     "analytics":"Analytics",
+    "location":"Location",
+    "coordinates":"Coordinates",
+    "zoom":"Zoom",
   "roles":{
       "owner": "Owner",
       "admin": "Admin",
       "user": "User",
       "technician": "Technician"
+    },
+        "levels":{
+        "critical":"Critical",
+        "warning":"Warning",
+        "good":"Good",
+        "all":"All"
     },
   "organization": "Organization",
   "reset": "Reset",
@@ -162,6 +171,27 @@
       "loading": {
         "organizations": "Loading organizations..."
       }
+    }
+  },
+  "mapLegend":{
+  "search":{
+        "binRadius":"Bins within radius of",
+        "fillLevel":"Fill level between",
+        "healthStatus":"Bin health status",
+        "meters":"meters",
+        "clearFilters":"Clear filters"
+      },
+      "locations":{
+        "myLocation":"My Location",
+        "flyToLocation":"Fly to Location",
+        "toggleMapType":"Toggle Map Type"
+      },
+    "errors":{
+        "gepError":"Geolocation is not supported by your browser",
+        "locationDenied":"Location access is denied. Please enable it in your browser settings.",
+        "locationUnavailable":"Location information is unavailable.",
+        "locationTimeout":"Location request timed out. Try again.",
+        "unknownError":"An unknown error occurred while retrieving location."
     }
   }
 }

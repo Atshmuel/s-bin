@@ -17,11 +17,20 @@
     "add":"הוספה",
     "logs":"תיעודים",
     "analytics":"אנליטיקות",
+    "location":"מיקום",
+    "coordinates":"קואורדינטות",
+    "zoom":"זום",
     "roles":{
        "owner": "בעלים",
         "admin": "מנהל מערכת",
         "user": "משתמש",
       "technician": "טכנאי"
+    },
+    "levels":{
+        "critical":"קריטי",
+        "warning":"אזהרה",
+        "good":"טוב",
+        "all":"הכל"
     },
     "users": "משתמשים",
     "organization": "ארגון",
@@ -162,6 +171,26 @@
             }
         }
 
+    },
+     "mapLegend":{
+      "search":{
+        "binRadius":"פחים ברדיוס של",
+        "fillLevel":"רמת מלאי בין",
+        "healthStatus":"מצב בריאות הפחים",
+        "meters":"מטרים",
+        "clearFilters":"נקה מסננים"
+      },
+      "locations":{
+        "myLocation":"המיקום שלי",
+        "flyToLocation":"עבור למיקום זה",
+        "toggleMapType":"החלף סוג מפה"
+      },
+    "errors":{
+        "gepError":"מיקום אינו נתמך על ידי הדפדפן שלך",
+        "locationDenied":"גישה למיקום נדחתה. אנא אפשר זאת בהגדרות הדפדפן שלך.",
+        "locationUnavailable":"מידע על המיקום אינו זמין.",
+        "locationTimeout":"בקשת המיקום פגה. נסה שוב.",
+        "unknownError":"אירעה שגיאה לא ידועה בעת קבלת המיקום."
     }
-
+  }
 }
