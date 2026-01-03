@@ -18,16 +18,17 @@ import {
 import { NavLink } from "react-router-dom";
 import { useMe } from "@/hooks/users/auth/useMe";
 import { useAppSide } from "@/contexts/AppSideProvider";
+import { useTranslation } from "react-i18next";
 
 export function NavMain({
   items,
 }) {
   const { me, isAdmin } = useMe();
   const { isRight } = useAppSide();
-
+  const { t } = useTranslation();
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Management</SidebarGroupLabel>
+      <SidebarGroupLabel>{t("sidebar.managment.title")}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           item?.isOwnerOnly && me.role !== 'owner' || item?.isAdminAndAbove && !isAdmin ? null :

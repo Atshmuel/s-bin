@@ -27,63 +27,68 @@ import {
 import NewEntitySheet from "./newEntityComponents/NewEntitySheet"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { useAppSide } from "@/contexts/AppSideProvider"
+import { useTranslation } from "react-i18next"
 
-const data = {
-  listItems: [
-    {
-      title: "Bins",
-      url: "/bins",
-      icon: Trash2Icon,
-      isActive: true,
-      items: [
-        {
-          title: "Add",
-          url: "add",
-        },
-        {
-          title: "List",
-          url: "",
-        },
-        {
-          title: "Map",
-          url: "map",
-        },
-        {
-          title: "Logs",
-          url: "logs",
-        },
-      ],
-    },
-    {
-      title: "Users",
-      url: "/users",
-      icon: UserCircle2Icon,
-      isAdminAndAbove: true,
-      items: [
-        {
-          title: "List",
-          url: "",
-        },
-      ],
-    },
-  ],
-  general: [
-    {
-      name: "Dashboard",
-      url: "/dashboard",
-      icon: LayoutDashboardIcon,
-    },
-    {
-      name: "Analytics",
-      url: "/analytics",
-      icon: ChartSplineIcon,
-    }
-  ],
-}
+
 
 export function AppSidebar({
   ...props
 }) {
+  const { t } = useTranslation()
+
+  const data = {
+    listItems: [
+      {
+        title: t("sidebar.managment.subtitles.bins"),
+        url: "/bins",
+        icon: Trash2Icon,
+        isActive: true,
+        items: [
+          {
+            title: t("sidebar.managment.items.addBin"),
+            url: "add",
+          },
+          {
+            title: t("sidebar.managment.items.binList"),
+            url: "",
+          },
+          {
+            title: t("sidebar.managment.items.map"),
+            url: "map",
+          },
+          {
+            title: t("sidebar.managment.items.logs"),
+            url: "logs",
+          },
+        ],
+      },
+      {
+        title: t("sidebar.managment.subtitles.users"),
+        url: "/users",
+        icon: UserCircle2Icon,
+        isAdminAndAbove: true,
+        items: [
+          {
+            title: t("sidebar.managment.items.userList"),
+            url: "",
+          },
+        ],
+      },
+    ],
+    general: [
+      {
+        name: t("sidebar.general.items.dashboard"),
+        url: "/dashboard",
+        icon: LayoutDashboardIcon,
+      },
+      {
+        name: t("sidebar.general.items.analytics"),
+        url: "/analytics",
+        icon: ChartSplineIcon,
+      }
+    ],
+  }
+
   const { state } = useSidebar()
   const { me, isAdmin } = useMe()
   const { opSide, isRight } = useAppSide()

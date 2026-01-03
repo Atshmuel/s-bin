@@ -26,10 +26,12 @@ import { Skeleton } from "./ui/skeleton"
 import EmptyTable from "./EmptyTable"
 import { Search, X } from "lucide-react"
 import { useAppSide } from "@/contexts/AppSideProvider"
-import { t } from "i18next"
+import { useTranslation } from "react-i18next"
 
 
 export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null }) {
+    const { t } = useTranslation()
+
     const { isRight } = useAppSide()
     const [sorting, setSorting] = useState(sortingBy ?? [])
     const [searching, setSearching] = useState("")

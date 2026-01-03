@@ -4,17 +4,128 @@
     "login": "התחברות",
     "logout": "התנתקות",
     "settings": "הגדרות",
-    "profile": "פרופיל",
+    "profile": "פרופיל משתמש",
     "language": "שפה",
     "help": "עזרה",
     "search": "חיפוש",
     "notifications": "התראות",
     "messages": "הודעות",
     "dashboard": "לוח מחוונים",
+    "bins":"פחים",
+    "bin":"פח",
+    "map":"מפה",
+    "add":"הוספה",
+    "logs":"תיעודים",
+    "analytics":"אנליטיקות",
+    "roles":{
+       "owner": "בעלים",
+        "admin": "מנהל מערכת",
+        "user": "משתמש",
+      "technician": "טכנאי"
+    },
     "users": "משתמשים",
-    "owner": "בעלים",
-    "admin": "מנהל מערכת",
-    "user": "משתמש",
+    "organization": "ארגון",
+    "newEntity":{
+        "title":"צור ישות חדשה",
+        "createNewUser":"צור משתמש חדש",
+        "createNewOrganization":"צור ארגון חדש",
+        "createNewUserSubtitle":"מלא את הפרטים ליצירת משתמש חדש",
+        "createNewOrganizationSubtitle":"מלא את הפרטים ליצירת ארגון חדש",
+        "fillInputs":"מלא את השדות",
+        "submitSheet":"שלח לשמירת השינויים",
+       "userInputs": {
+    "fields": {
+      "fullName": {
+        "label": "שם מלא",
+        "placeholder": "שם פרטי ושם משפחה"
+      },
+      "email": {
+        "label": "כתובת אימייל",
+        "placeholder": "כתובת אימייל"
+      },
+      "password": {
+        "label": "סיסמה חדשה"
+      },
+      "role": {
+        "label": "תפקיד משתמש",
+        "description": "שדה זה מעניק למשתמש הרשאות נוספות",
+        "options": {
+          "user": "משתמש",
+          "technician": "טכנאי",
+          "admin": "מנהל",
+          "owner": "בעלים"
+        }
+      },
+      "status": {
+        "label": "סטטוס משתמש",
+        "description": "שינוי סטטוס עשוי לגרום לחסימת המשתמש",
+        "options": {
+          "pending": "בהמתנה",
+          "active": "פעיל",
+          "inactive": "לא פעיל",
+          "suspended": "מושהה"
+        }
+      },
+      "organization": {
+        "label": "ארגון",
+        "placeholder": "בחר ארגון",
+        "error": "שגיאה בטעינת ארגונים"
+      },
+      "manager": {
+        "label": "מנהל אחראי",
+        "placeholder": "בחר מנהל",
+        "error": "שגיאה בטעינת מנהלים"
+      }
+    },
+
+    "validation": {
+      "name": {
+        "required": "שם הוא שדה חובה",
+        "notEmpty": "שם לא יכול להיות ריק או להכיל רווחים בלבד",
+        "fullName": "יש להזין שם פרטי ושם משפחה",
+        "noWhitespace": "השם לא יכול להתחיל או להסתיים ברווח"
+      },
+      "email": {
+        "required": "אימייל הוא שדה חובה",
+        "invalid": "כתובת אימייל לא תקינה",
+        "notEmpty": "אימייל לא יכול להיות ריק או להכיל רווחים בלבד",
+        "noWhitespace": "האימייל לא יכול להתחיל או להסתיים ברווח"
+      },
+      "password": {
+        "required": "סיסמה היא שדה חובה",
+        "minLength": "הסיסמה חייבת להכיל לפחות 8 תווים",
+        "maxLength": "הסיסמה לא יכולה להכיל יותר מ-30 תווים",
+        "lowercase": "הסיסמה חייבת להכיל לפחות אות קטנה אחת",
+        "uppercase": "הסיסמה חייבת להכיל לפחות אות גדולה אחת",
+        "number": "הסיסמה חייבת להכיל לפחות ספרה אחת",
+        "special": "הסיסמה חייבת להכיל לפחות תו מיוחד (!@#$%^&*)"
+      }
+    },
+
+    "loading": {
+      "organizations": "טוען ארגונים...",
+      "managers": "טוען מנהלים..."
+    }
+  },
+        "orgInputs": {
+            "fields": {
+                "name": {
+                    "label": "שם הארגון",
+                    "placeholder": "שם הארגון"
+                }
+            },
+            "validation": {
+                "name": {
+                    "required": "שם הארגון הוא שדה חובה",
+                    "notEmpty": "שם הארגון לא יכול להיות ריק או להכיל רווחים בלבד"
+                }
+            },
+            "loading": {
+                "organizations": "טוען ארגונים..."
+            }
+        }
+    },
+    "reset": "איפוס",
     "technician": "טכנאי",
     "save": "שמור",
     "cancel": "ביטול",
@@ -27,7 +138,30 @@
     "binName": "שם הפח",
     "fillLevel": "רמת מילוי",
     "tablePage": "מתוך",
-    "columns": "עמודות"
+    "columns": "עמודות",
+    "sidebar": {
+        "managment":{
+            "title":"ניהול",
+            "subtitles":{
+                "bins":"פחים",
+                "users":"משתמשים"
+            },
+            "items":{
+                "binList":"רשימת פחים",
+                "addBin":"הוסף פח",
+                "map":"מפה",
+                "logs":"תיעודים",
+                "userList":"רשימת משתמשים"
+            }
+        },
+        "general":{
+            "title":"כללי",
+            "items":{
+                "dashboard":"לוח מחוונים",
+                "analytics":"אנליטיקות"
+            }
+        }
 
+    }
 
 }

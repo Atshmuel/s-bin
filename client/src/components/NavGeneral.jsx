@@ -8,16 +8,18 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { useMe } from "@/hooks/users/auth/useMe";
+import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
 export function NavGeneral({
   general
 }) {
   const { me, isAdmin } = useMe();
+  const { t } = useTranslation();
 
   return (
     <SidebarGroup className="group/collapsible">
-      <SidebarGroupLabel>General</SidebarGroupLabel>
+      <SidebarGroupLabel>{t("sidebar.general.title")}</SidebarGroupLabel>
       <SidebarMenu>
         {general.map((item) => (
           item?.isOwnerOnly && me.role !== 'owner' || item?.isAdminAndAbove && !isAdmin ? null : (

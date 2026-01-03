@@ -29,14 +29,15 @@ import { Badge } from "./ui/badge"
 import { NavLink } from "react-router-dom"
 import { useLogout } from "@/hooks/users/auth/useLogout"
 import { Spinner } from "./ui/spinner"
+import { useTranslation } from "react-i18next"
 
 export function NavAccount({
   account,
   isRight,
 }) {
-  //TODO - Notifications should open a dialog with notifications and to allow the user edit his pref, also this this should be fetched to the server when he submit the form
   const { isMobile } = useSidebar()
   const { logout, isLoggingOut } = useLogout()
+  const { t } = useTranslation()
   const splitedName = account.name.split(' ')
 
   return (
@@ -72,7 +73,7 @@ export function NavAccount({
                 <div className={`grid flex-1  text-sm leading-tight ${isRight ? 'text-left' : 'text-right'}`}>
                   <div className={`flex ${isRight ? '' : 'flex-row-reverse'}  items-center justify-between`}>
                     <span className="truncate font-semibold capitalize mr-2">{account.name}</span>
-                    <Badge variant={account.role}>{account.role}</Badge>
+                    <Badge variant={account.role}>{t(`roles.${account.role}`)}</Badge>
                   </div>
                   <span className="truncate text-xs">{account.email}</span>
                 </div>
@@ -83,20 +84,15 @@ export function NavAccount({
               <NavLink to="/account">
                 <DropdownMenuItem isRight={isRight}>
                   <UserCog />
-                  Account
+                  {t('profile')}
                 </DropdownMenuItem>
               </NavLink>
-
-              {/* <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem isRight={isRight} onClick={logout}>
 
               {isLoggingOut ? <Spinner /> : <><LogOut />
-                Log out</>}
+                {t('logout')}</>}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -1,29 +1,43 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 
-const breadcrumbMap = {
-    dashboard: "Dashboard",
-    settings: "Settings",
-    users: "Users",
+const routeKeyMap = {
+    dashboard: "dashboard",
+    settings: "settings",
+    users: "users",
+    login: "login",
+    profile: "profile",
+    bins: "bins",
+    analytics: "analytics",
+    statistics: "statistics",
+    support: "support",
+    account: "account",
+    logs: "logs",
+    add: "add",
+    map: "map"
 };
-
 const BreadcrumbContext = createContext();
 
 export function BreadcrumbProvider({ children }) {
     const [crumbs, setBreadcrumbs] = useState([]);
     const [customBreadcrumbs, setCustomBreadcrumbs] = useState(null);
     const location = useLocation();
+    const { t } = useTranslation();
 
-    // Generate default crumbs from the current route
     useEffect(() => {
-        if (customBreadcrumbs) return; // if custom set, don't override
+        if (customBreadcrumbs) return;
         const segments = location.pathname.split("/").filter(Boolean);
-        const autoCrumbs = segments.map((seg, idx) => ({
-            label: breadcrumbMap[seg] || seg,
-            path: "/" + segments.slice(0, idx + 1).join("/"),
-        }));
+        const autoCrumbs = segments.map((seg, idx) => {
+            const translationKey = routeKeyMap[seg];
+            const label = translationKey ? t(translationKey) : seg;
+            return {
+                label,
+                path: "/" + segments.slice(0, idx + 1).join("/"),
+            }
+        });
         setBreadcrumbs(autoCrumbs);
-    }, [location, customBreadcrumbs]);
+    }, [location, customBreadcrumbs, t]);
 
     // When customBreadcrumbs changes, use them instead
     useEffect(() => {

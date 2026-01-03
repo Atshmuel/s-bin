@@ -1,31 +1,167 @@
 {
-    "welcome": "Welcome",
-    "login": "Login",
-    "logout": "Logout",
-    "settings": "Settings",
-    "profile": "Profile",
-    "language": "Language",
-    "help": "Help",
-    "search": "Search",
-    "notifications": "Notifications",
-    "messages": "Messages",
-    "dashboard": "Dashboard",
-    "users": "Users",
-        "owner": "Owner",
-    "admin": "Admin",
-    "user": "User",
-    "technician": "Technician",
-    "save": "Save",
-    "cancel": "Cancel",
-    "edit": "Edit",
-    "delete": "Delete",
-    "update": "Update",
-    "loading": "Loading...",
-    "error": "Error",
-    "success": "Success",
-    "binName": "Bin name",
-    "fillLevel": "Fill level",
-    "tablePage": "of",
-    "columns": "Columns"
+  "welcome": "Welcome",
+  "login": "Login",
+  "logout": "Logout",
+  "settings": "Settings",
+  "profile": "User Profile",
+  "language": "Language",
+  "help": "Help",
+  "search": "Search",
+  "notifications": "Notifications",
+  "messages": "Messages",
+  "dashboard": "Dashboard",
+  "users": "Users",
+  "bins":"Bins",
+  "bin":"Bin",
+    "add":"Add",
+    "map":"Map",
+    "logs":"Logs",
+    "analytics":"Analytics",
+  "roles":{
+      "owner": "Owner",
+      "admin": "Admin",
+      "user": "User",
+      "technician": "Technician"
+    },
+  "organization": "Organization",
+  "reset": "Reset",
+  "save": "Save",
+  "cancel": "Cancel",
+  "edit": "Edit",
+  "delete": "Delete",
+  "update": "Update",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
 
+  "binName": "Bin name",
+  "fillLevel": "Fill level",
+  "tablePage": "of",
+  "columns": "Columns",
+
+  "sidebar": {
+    "managment": {
+      "title": "Management",
+      "subtitles": {
+        "bins": "Bins",
+        "users": "Users"
+      },
+      "items": {
+        "binList": "List of Bins",
+        "addBin": "Add Bin",
+        "map": "Map",
+        "logs": "Logs",
+        "userList": "List of Users"
+      }
+    },
+    "general": {
+      "title": "General",
+      "items": {
+        "dashboard": "Dashboard",
+        "analytics": "Analytics"
+      }
+    }
+  },
+
+  "newEntity": {
+    "title": "Create New Entity",
+    "createNewUser": "Create New User",
+    "createNewOrganization": "Create New Organization",
+    "createNewUserSubtitle": "Fill in the details to create a new user",
+    "createNewOrganizationSubtitle": "Fill in the details to create a new organization",
+    "fillInputs": "Fill in the fields below to create the entity",
+    "submitSheet": "Submit for saving changes",
+
+    "userInputs": {
+      "fields": {
+        "fullName": {
+          "label": "Full Name",
+          "placeholder": "First and Last Name"
+        },
+        "email": {
+          "label": "Email Address",
+          "placeholder": "Email Address"
+        },
+        "password": {
+          "label": "New Password"
+        },
+        "role": {
+          "label": "User Role",
+          "description": "This field grants the user additional permissions",
+          "options": {
+            "user": "User",
+            "technician": "Technician",
+            "admin": "Admin",
+            "owner": "Owner"
+          }
+        },
+        "status": {
+          "label": "User Status",
+          "description": "Changing this status may result in the user being blocked",
+          "options": {
+            "pending": "Pending",
+            "active": "Active",
+            "inactive": "Inactive",
+            "suspended": "Suspended"
+          }
+        },
+        "organization": {
+          "label": "Organization",
+          "placeholder": "Select Organization",
+          "error": "Failed to load organizations"
+        },
+        "manager": {
+          "label": "User's Manager",
+          "placeholder": "Select Manager",
+          "error": "Failed to load managers"
+        }
+      },
+      "validation": {
+        "name": {
+          "required": "Name is required",
+          "notEmpty": "Name cannot be empty or contain only spaces",
+          "fullName": "Please enter first and last name",
+          "noWhitespace": "Name cannot start or end with whitespace"
+        },
+        "email": {
+          "required": "Email is required",
+          "invalid": "Invalid email address",
+          "notEmpty": "Email cannot be empty or contain only spaces",
+          "noWhitespace": "Email cannot start or end with whitespace"
+        },
+        "password": {
+          "required": "Password is required",
+          "minLength": "Password must be at least 8 characters long",
+          "maxLength": "Password must not exceed 30 characters",
+          "lowercase": "Password must include at least one lowercase letter",
+          "uppercase": "Password must include at least one uppercase letter",
+          "number": "Password must include at least one number",
+          "special": "Password must include at least one special character (!@#$%^&*)"
+        }
+      }
+    },
+
+    "loading": {
+      "organizations": "Loading organizations...",
+      "managers": "Loading managers..."
+    },
+
+    "orgInputs": {
+      "fields": {
+        "name": {
+          "label": "Organization Name",
+          "placeholder": "Organization Name"
+        }
+      },
+      "validation": {
+        "name": {
+          "required": "Organization name is required",
+          "notEmpty": "Organization name cannot be empty or contain only spaces"
+        }
+      },
+      "loading": {
+        "organizations": "Loading organizations..."
+      }
+    }
+  }
 }
