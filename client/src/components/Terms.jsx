@@ -9,16 +9,18 @@ import {
     DialogClose
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useAppSide } from "@/contexts/AppSideProvider"
 
 function Terms({ title }) {
+    const { isRight, side } = useAppSide()
     return (
         <Dialog>
             <DialogTrigger asChild>
                 <Button variant="link">{title || 'Open Terms'}</Button>
             </DialogTrigger>
 
-            <DialogContent className="max-w-[350px] sm:max-w-[700px] p-10">
-                <DialogHeader >
+            <DialogContent side={side} className="max-w-[350px] sm:max-w-[700px] p-10">
+                <DialogHeader isRight={isRight} >
                     <DialogTitle>Terms of Use</DialogTitle>
                     <DialogDescription>
                         Your Agreement for Using the S-Bin Smart Waste-Management Platform

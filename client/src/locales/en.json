@@ -1,0 +1,351 @@
+{
+  "welcome": "Welcome",
+  "login": "Login",
+  "logout": "Logout",
+  "settings": "Settings",
+  "profile": "User Profile",
+  "language": "Language",
+  "help": "Help",
+  "search": "Search",
+  "notifications": "Notifications",
+  "messages": "Messages",
+  "dashboard": "Dashboard",
+  "users": "Users",
+  "bins":"Bins",
+  "bin":"Bin",
+    "add":"Add",
+    "map":"Map",
+    "logs":"Logs",
+    "analytics":"Analytics",
+    "location":"Location",
+    "coordinates":"Coordinates",
+    "zoom":"Zoom",
+
+  "roles":{
+      "owner": "Owner",
+      "admin": "Admin",
+      "user": "User",
+      "technician": "Technician"
+    },
+        "levels":{
+        "critical":"Critical",
+        "warning":"Warning",
+        "good":"Good",
+        "all":"All"
+    },
+    "sevirities":{
+      "critical":"Critical",
+      "warning":"Warning",
+      "info":"Info"
+    },
+    "statuses":{
+      "pending":"Pending",
+      "active":"Active",
+      "inactive":"Inactive",
+      "suspended":"Suspended"
+    },
+  "organization": "Organization",
+  "reset": "Reset",
+  "save": "Save",
+  "cancel": "Cancel",
+  "edit": "Edit",
+  "delete": "Delete",
+  "update": "Update",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+
+  "binName": "Bin name",
+  "fillLevel": "Fill level",
+  "columns": "Columns",
+
+  "sidebar": {
+    "managment": {
+      "title": "Management",
+      "subtitles": {
+        "bins": "Bins",
+        "users": "Users"
+      },
+      "items": {
+        "binList": "List of Bins",
+        "addBin": "Add Bin",
+        "map": "Map",
+        "logs": "Logs",
+        "userList": "List of Users"
+      }
+    },
+    "general": {
+      "title": "General",
+      "items": {
+        "dashboard": "Dashboard",
+        "analytics": "Analytics"
+      }
+    }
+  },
+
+  "newEntity": {
+    "title": "Create New Entity",
+    "createNewUser": "Create New User",
+    "createNewOrganization": "Create New Organization",
+    "createNewUserSubtitle": "Fill in the details to create a new user",
+    "createNewOrganizationSubtitle": "Fill in the details to create a new organization",
+    "fillInputs": "Fill in the fields below to create the entity",
+    "submitSheet": "Submit for saving changes",
+
+    "userInputs": {
+      "fields": {
+        "fullName": {
+          "label": "Full Name",
+          "placeholder": "First and Last Name"
+        },
+        "email": {
+          "label": "Email Address",
+          "placeholder": "Email Address"
+        },
+        "password": {
+          "label": "New Password"
+        },
+        "role": {
+          "label": "User Role",
+          "description": "This field grants the user additional permissions",
+          "options": {
+            "user": "User",
+            "technician": "Technician",
+            "admin": "Admin",
+            "owner": "Owner"
+          }
+        },
+        "status": {
+          "label": "User Status",
+          "description": "Changing this status may result in the user being blocked",
+          "options": {
+            "pending": "Pending",
+            "active": "Active",
+            "inactive": "Inactive",
+            "suspended": "Suspended"
+          }
+        },
+        "organization": {
+          "label": "Organization",
+          "placeholder": "Select Organization",
+          "error": "Failed to load organizations"
+        },
+        "manager": {
+          "label": "User's Manager",
+          "placeholder": "Select Manager",
+          "error": "Failed to load managers"
+        }
+      },
+      "validation": {
+        "name": {
+          "required": "Name is required",
+          "notEmpty": "Name cannot be empty or contain only spaces",
+          "fullName": "Please enter first and last name",
+          "noWhitespace": "Name cannot start or end with whitespace"
+        },
+        "email": {
+          "required": "Email is required",
+          "invalid": "Invalid email address",
+          "notEmpty": "Email cannot be empty or contain only spaces",
+          "noWhitespace": "Email cannot start or end with whitespace"
+        },
+        "password": {
+          "required": "Password is required",
+          "minLength": "Password must be at least 8 characters long",
+          "maxLength": "Password must not exceed 30 characters",
+          "lowercase": "Password must include at least one lowercase letter",
+          "uppercase": "Password must include at least one uppercase letter",
+          "number": "Password must include at least one number",
+          "special": "Password must include at least one special character (!@#$%^&*)"
+        }
+      }
+    },
+
+    "loading": {
+      "organizations": "Loading organizations...",
+      "managers": "Loading managers..."
+    },
+
+    "orgInputs": {
+      "fields": {
+        "name": {
+          "label": "Organization Name",
+          "placeholder": "Organization Name"
+        }
+      },
+      "validation": {
+        "name": {
+          "required": "Organization name is required",
+          "notEmpty": "Organization name cannot be empty or contain only spaces"
+        }
+      },
+      "loading": {
+        "organizations": "Loading organizations..."
+      }
+    }
+  },
+  "mapLegend":{
+  "search":{
+        "binRadius":"Bins within radius of",
+        "fillLevel":"Fill level between",
+        "healthStatus":"Bin health status",
+        "meters":"meters",
+        "clearFilters":"Clear filters"
+      },
+      "locations":{
+        "myLocation":"My Location",
+        "flyToLocation":"Fly to Location",
+        "toggleMapType":"Toggle Map Type"
+      },
+    "errors":{
+        "gepError":"Geolocation is not supported by your browser",
+        "locationDenied":"Location access is denied. Please enable it in your browser settings.",
+        "locationUnavailable":"Location information is unavailable.",
+        "locationTimeout":"Location request timed out. Try again.",
+        "unknownError":"An unknown error occurred while retrieving location."
+    }
+  },
+  "globalTable":{
+    "next":"Next",
+    "previous":"Previous",
+    "noResults":"No results found",
+    "nothingToShow":"No data available to display at the moment.",
+    "noSearchResults":"No results match your search.",
+      "tablePage": "of"
+
+  },
+    
+  "pages":{
+    "dashboard":{
+      "titles":{
+        "quickOverview":{
+          "title":"Quick Overview",
+          "description":"Key metrics for your bins at a glance, including fill levels, total bins, and maintenance needs."
+        },
+        "binOverview":{
+          "title":"Bin Overview",
+          "description":"A detailed view of current bin alerts and recent activity logs across the system."
+        }
+      },
+      "cards":{
+        "almostFull":{
+          "title":"Almost Full Bins",
+          "description":"Check these bins before they overflow."
+        },
+        "requiredMaintenance":{
+          "title":"Bins Requiring Maintenance",
+          "description":"These bins need attention from the technician."
+        },
+        "totalBins":{
+          "title":"Total Bins",
+          "description":"Total number of bins in the system."
+        },
+        "avgFillLevel":{
+          "title":"Average Fill Level",
+          "description":"Average fill level across all bins."
+        }
+      },
+      "tables":{
+        "recentLogs":{
+          "title":"Recent Bin Logs",
+          "description":"A summary of bin-related actions, maintenance, and events from the past 24 hours.",
+          "columns":{
+            "binName":"Bin Name",
+            "fillLevel":"Fill Level",
+            "healthStatus":"Health Status",
+            "batteryLevel":"Battery Level",
+            "lastUpdated":"Last Updated"
+          }
+        },
+        "topFilledBins":{
+          "title":"Bins Requiring Attention",
+          "description":"List of bins that have triggered alerts or need maintenance.",
+          "columns":{
+            "createdAt":"Created At",
+            "type":"Type",
+            "severity":"Severity",
+            "viewLog":"View Log",
+            "viewBin":"View Bin"
+          }
+        }
+      }
+    },
+    "binsList":{
+      "title":"Bins List",
+      "columns":{
+        "binName":"Bin Name",
+        "location":"Location",
+        "fillLevel":"Fill Level",
+        "healthStatus":"Health Status",
+        "batteryLevel":"Battery Level",
+        "lastMaintenance":"Last Maintenance"
+      },
+      "deletion":{
+        "confirmationTitle":"Confirm Permanent Deletion",
+        "confirmationDescription":"This action will permanently delete the selected bins. To confirm, type 'Delete' in the field below, This action cannot be undone.",
+        "typeDelete":"Type: 'Delete' to perform deletion"
+      },
+      "locateBin":"Locate the bin on the map"
+    },
+    "logList":{
+      "title":"All Logs",
+      "columns":{
+        "createAt":"Created At",
+        "severity":"Severity",
+        "fillLevel":"Fill Level",
+        "batteryLevel":"Battery Level",
+        "healthStatus":"Health Status",
+        "source":"Source",
+        "viewLog":"View Log"
+      },
+      "sensor":"Sensor",
+      "system":"System",
+      "manual":"Manual"
+    },
+    "userList":{
+      "title":"Users List",
+      "columns":{
+        "fullName":"Full Name",
+        "email":"Email",
+        "role":"Role",
+        "accountStatus":"Account Status",
+        "orgnization":"Organization",
+        "manager":"Manager"
+      },
+      "viewManager":"View Manager",
+      "managerNotAssigned":"Manager not assigned"
+    },
+    "analytics":{
+      "aiOverviewTitle":"AI-Based Analytics Overview",
+      "binStatusOverTime":{
+        "title":"Bin Status Over Time",
+        "description":"Battery level and fill percentage trends based on sensor logs."
+      },
+      "fleetHealthOverview":{
+        "title":"Fleet Health Overview",
+        "description":"Real-time insights into the overall health of your bin fleet.",
+        "footer":"Real-time bins health status based on sensor data."
+      },
+      "binsEventDistribution":{
+        "title":"Bins Event Distribution",
+        "description":"Last 30 days of event distribution by severity levels."
+      },
+      "pie":{
+        "bins":"Bins",
+        "good":"Good",
+        "warning":"Warning",
+        "critical":"Critical"
+      },
+      "area":{
+        "battery":"Battery Level",
+        "level":"Fill Level"
+      },
+      "bar":{
+        "maintenance":"Maintenance",
+        "error":"Error",
+        "log":"Log"
+      },
+      "lastDays":"Last {{count}} Days"
+      }
+    }
+}

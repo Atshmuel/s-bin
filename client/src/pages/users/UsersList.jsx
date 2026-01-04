@@ -3,22 +3,23 @@ import DataTable from "../../components/DataTable"
 import { Link } from "react-router-dom";
 import { useUsers } from "@/hooks/users/useUsers";
 import { LinkIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 
 function UsersList() {
     const { users: usersList, isLoadingUsers, usersError } = useUsers()
-
+    const { t } = useTranslation()
     const columns = [
         {
-            header: 'Role',
+            header: t('pages.userList.columns.role'),
             accessorKey: 'role',
             cell: ({ row }) => {
                 const role = row.original.role
-                return <Badge variant={role}>{role}</Badge>
+                return <Badge variant={role}>{t(`roles.${role}`)}</Badge>
             }
         },
         {
-            header: 'Name',
+            header: t('pages.userList.columns.fullName'),
             accessorKey: 'name',
             enableSorting: true,
             cell: ({ row }) => {
@@ -33,19 +34,19 @@ function UsersList() {
             },
         },
         {
-            header: 'Email',
+            header: t('pages.userList.columns.email'),
             accessorKey: 'email',
         },
         {
-            header: 'Account Status',
+            header: t('pages.userList.columns.accountStatus'),
             accessorKey: 'status',
             cell: ({ row }) => {
                 const status = row.original.status
-                return <Badge variant={status}>{status}</Badge>
+                return <Badge variant={status}>{t(`statuses.${status}`)}</Badge>
             }
         },
         {
-            header: 'manager',
+            header: t('pages.userList.columns.manager'),
             accessorKey: 'manager',
             cell: ({ row }) => {
                 const managerId = row.original.manager;
@@ -53,8 +54,8 @@ function UsersList() {
                     managerId ? <Link className="flex gap-2 items-center capitalize"
                         to={`/users/${managerId}`}
                     >
-                        <LinkIcon size={14} /> <span>View manager</span>
-                    </Link> : <span className="capitalize">no manager found</span>
+                        <LinkIcon size={14} /> <span>{t('pages.userList.viewManager')}</span>
+                    </Link> : <span className="capitalize text-muted-foreground/50">{t('pages.userList.managerNotAssigned')}</span>
 
                 );
             },
@@ -63,8 +64,8 @@ function UsersList() {
     ]
 
     return (
-        <div className="p-10">
-            <DataTable columns={columns} data={usersList ?? []} isLoading={isLoadingUsers} error={usersError} title='users list' />
+        <div className="sm:p-10">
+            <DataTable columns={columns} data={usersList ?? []} isLoading={isLoadingUsers} error={usersError} title={t('pages.userList.title')} />
         </div>
     )
 }

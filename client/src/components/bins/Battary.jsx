@@ -11,7 +11,8 @@ function Battary({ level }) {
                 <p className="w-fit" >
                     {
                         level > 75 ? <BatteryFull color={color} /> :
-                            level > 50 ? <BatteryMedium color={color} /> : <BatteryLow color={color} />
+                            level > 50 ? <BatteryMedium color={color} /> :
+                                <BatteryLow color={color} />
                     }
                 </p >
             </TooltipTrigger>

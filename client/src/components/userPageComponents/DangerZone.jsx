@@ -11,9 +11,11 @@ import { useParams } from "react-router-dom";
 import { useDeleteAccount } from "@/hooks/users/useDeleteAccount";
 import { useDeleteBinBatch } from "@/hooks/bins/useDeleteAllBins";
 import { useBins } from "@/hooks/bins/useBins";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 function DangerZone({ user, isAdmin = false }) {
     const { id } = useParams()
+    const { isRight } = useAppSide()
     const userName = user.name
     const [deleteInput, setDeleteInput] = useState("");
     const { deleteUser, isDeleting } = useDeleteUser()
@@ -52,9 +54,9 @@ function DangerZone({ user, isAdmin = false }) {
                             <Button disabled={isDeletingAccount || isDeleting || isDeletingBins} className="cursor-pointer" variant='outline_destructive' size='sm'>{isDeletingAccount || isDeleting || isDeletingBins ? <Spinner /> : 'Delete'}</Button>
                         </DialogTrigger>
                         <DialogContent>
-                            <DialogHeader>
+                            <DialogHeader isRight={isRight}>
                                 <DialogTitle>Confirm Permanent Deletion</DialogTitle>
-                                <DialogDescription>This action will permanently delete all {isAdmin ? 'user' : 'your'} bins.
+                                <DialogDescription isRight={isRight}>This action will permanently delete all {isAdmin ? 'user' : 'your'} bins.
                                     To confirm, type "Delete All" in the field below.
                                     This action cannot be undone.</DialogDescription>
                             </DialogHeader>
@@ -78,9 +80,9 @@ function DangerZone({ user, isAdmin = false }) {
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
-                            <DialogHeader>
+                            <DialogHeader isRight={isRight}>
                                 <DialogTitle>Confirm Permanent Deletion</DialogTitle>
-                                <DialogDescription>This action will permanently delete all {isAdmin ? 'user' : 'your'} bins.
+                                <DialogDescription isRight={isRight}>This action will permanently delete all {isAdmin ? 'user' : 'your'} bins.
                                     To confirm, type {userName} in the field below.
                                     This action cannot be undone.</DialogDescription>
                             </DialogHeader>

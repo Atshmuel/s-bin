@@ -6,13 +6,14 @@ import { getVariant } from "@/utils/binHelpers";
 import { Link } from "react-router-dom";
 import { LinkIcon } from "lucide-react";
 import { useLogs } from "@/hooks/bins/binLogs/useBinLogs";
+import { useTranslation } from "react-i18next";
 
 function AllLogs() {
+    const { t } = useTranslation();
     const { allLogs, isLoadingLogs, logsError } = useLogs()
-
     const columns = [
         {
-            header: 'created at',
+            header: t('pages.logList.columns.createAt'),
             accessorKey: 'Created At',
             cell: ({ row }) => {
                 return format(new Date(row.original.createdAt), 'yyyy-MM-dd HH:mm')
@@ -20,20 +21,20 @@ function AllLogs() {
             enableSorting: true,
         },
         {
-            header: 'severity',
+            header: t('pages.logList.columns.severity'),
             accessorKey: 'Severity',
             cell: ({ row }) => {
                 const severity = row.original.severity;
                 return (
                     <Badge variant={getVariant(severity)}
                     >
-                        {severity}
+                        {t(`sevirities.${severity.toLowerCase()}`)}
                     </Badge>
                 );
             }
         },
         {
-            header: 'fill level',
+            header: t('pages.logList.columns.fillLevel'),
             id: 'Fill level',
             accessorKey: 'newLevel',
             cell: ({ row }) => {
@@ -41,33 +42,35 @@ function AllLogs() {
             }
         },
         {
-            header: 'battery',
+            header: t('pages.logList.columns.batteryLevel'),
             accessorKey: 'Battery',
             cell: ({ row }) => {
                 return <Battery level={row.original.battery} />
             }
         },
         {
-            header: 'Health',
+            header: t('pages.logList.columns.healthStatus'),
             id: 'Health',
             cell: ({ row }) => {
                 const health = row.original.health;
                 return (
                     <Badge variant={getVariant(health)}
                     >
-                        {health}
+                        {t(`levels.${health.toLowerCase()}`)}
                     </Badge>
                 );
             },
         },
         {
-            header: 'Source',
+            header: t('pages.logList.columns.source'),
             id: 'Source',
             accessorKey: 'source',
-
+            cell: ({ row }) => {
+                return t(`pages.logList.${row.original.source.toLowerCase()}`);
+            }
         },
         {
-            header: 'View log',
+            header: t('pages.logList.columns.viewLog'),
             id: 'View log',
             cell: ({ row }) => {
                 const id = row.original._id;
@@ -75,7 +78,7 @@ function AllLogs() {
                     <Link className="flex gap-2 items-center "
                         to={`/bins/logs/${id}`}
                     >
-                        <LinkIcon size={14} /> <span>View log</span>
+                        <LinkIcon size={14} /> <span>{t('pages.logList.columns.viewLog')}</span>
                     </Link>
                 );
             },

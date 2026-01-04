@@ -8,55 +8,63 @@ import { useLogsTypeOV } from "@/hooks/overviews/useLogsTypeOV"
 import { useState } from "react"
 import AIInsights from "./AIInsights"
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Label, Pie, PieChart, XAxis } from "recharts"
+import { useAppSide } from "@/contexts/AppSideProvider"
+import { useTranslation } from "react-i18next"
 
 
 
-const pieChartConfig = {
-    bins: {
-        label: "Bins",
-    },
-    good: {
-        label: "Good",
-        color: "var(--color-chart-2)",
-    },
-    warning: {
-        label: "Warning",
-        color: "var(--color-chart-3)",
-    },
-    critical: {
-        label: "Critical",
-        color: "var(--color-chart-1)",
-    }
-}
-const areaChartConfig = {
-    battery: {
-        label: 'Battery',
-        color: 'var(--chart-1)'
-    },
-    newLevel: {
-        label: "Level",
-        color: "var(--chart-2)",
-    }
-}
-const barChartConfig = {
-    maintenance: {
-        label: "Maintenance",
-        color: "var(--color-chart-1)",
-    },
-    error: {
-        label: "Error",
-        color: "var(--color-chart-2)",
-    },
-    log: {
-        label: "Standard Log",
-        color: "var(--color-chart-3)",
-    },
-}
+
 
 
 
 function Analytics() {
+    const { t } = useTranslation()
+    const pieChartConfig = {
+        bins: {
+            label: t("pages.analytics.pie.bins"),
+        },
+        good: {
+            label: t("pages.analytics.pie.good"),
+            color: "var(--color-chart-2)",
+        },
+        warning: {
+            label: t("pages.analytics.pie.warning"),
+            color: "var(--color-chart-3)",
+        },
+        critical: {
+            label: t("pages.analytics.pie.critical"),
+            color: "var(--color-chart-1)",
+        }
+    }
+    const areaChartConfig = {
+        battery: {
+            label: t("pages.analytics.area.battery"),
+            color: 'var(--chart-1)'
+        },
+        newLevel: {
+            label: t("pages.analytics.area.level"),
+            color: "var(--chart-2)",
+        }
+    }
+    const barChartConfig = {
+        maintenance: {
+            label: t("pages.analytics.bar.maintenance"),
+            color: "var(--color-chart-1)",
+        },
+        error: {
+            label: t("pages.analytics.bar.error"),
+            color: "var(--color-chart-2)",
+        },
+        log: {
+            label: t("pages.analytics.bar.log"),
+            color: "var(--color-chart-3)",
+        },
+    }
+
+
     const [timeRange, setTimeRange] = useState("90d")
+    const { isRight } = useAppSide()
+
     const { allLogs, isLoadingLogs, logsError } = useLogs()
     const { binsCount, isLoadingStatusOV, statusOVError } = useBinStatusOV()
     const { logTypes, isLoadingLogTypeOV, logTypeOVError } = useLogsTypeOV()
@@ -83,31 +91,32 @@ function Analytics() {
     return (
         <div className="space-y-6">
             <AIInsights />
-            <div className="lg:flex lg:gap-6 space-y-6 lg:space-y-0 ">
-                <Card className='lg:w-11/12'>
+            <div className="flex flex-col xl:flex-row gap-6">
+                <Card className="flex-3">
                     <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
                         <div className="grid flex-1 gap-1">
-                            <CardTitle>Bin Status Over Time</CardTitle>
-                            <CardDescription>
-                                Battery level and fill percentage trends based on sensor logs.
+                            <CardTitle>{t("pages.analytics.binStatusOverTime.title")}</CardTitle>
+                            < CardDescription >
+                                {t("pages.analytics.binStatusOverTime.description")}
                             </CardDescription>
                         </div>
                         <Select disabled={isLoadingLogs || logsError} value={timeRange} onValueChange={setTimeRange}>
                             <SelectTrigger
+                                isRight={isRight}
                                 className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
                                 aria-label="Select a value"
                             >
-                                <SelectValue placeholder="Last 3 months" />
+                                <SelectValue placeholder={t(`pages.analytics.lastDays`, { count: 90 })} />
                             </SelectTrigger>
                             <SelectContent className="rounded-xl">
-                                <SelectItem value="90d" className="rounded-lg">
-                                    Last 3 months
+                                <SelectItem isRight={isRight} value="90d" className="rounded-lg">
+                                    {t(`pages.analytics.lastDays`, { count: 90 })}
                                 </SelectItem>
-                                <SelectItem value="30d" className="rounded-lg">
-                                    Last 30 days
+                                <SelectItem isRight={isRight} value="30d" className="rounded-lg">
+                                    {t(`pages.analytics.lastDays`, { count: 30 })}
                                 </SelectItem>
-                                <SelectItem value="7d" className="rounded-lg">
-                                    Last 7 days
+                                <SelectItem isRight={isRight} value="7d" className="rounded-lg">
+                                    {t(`pages.analytics.lastDays`, { count: 7 })}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
@@ -144,9 +153,10 @@ function Analytics() {
                                         axisLine={false}
                                         tickMargin={8}
                                         minTickGap={32}
+                                        reversed={!isRight}
                                         tickFormatter={(value) => {
                                             const date = new Date(value)
-                                            return date.toLocaleDateString("en-US", {
+                                            return date.toLocaleDateString(isRight ? "en-US" : "he-IL", {
                                                 month: "short",
                                                 day: "numeric",
                                             })
@@ -157,7 +167,7 @@ function Analytics() {
                                         content={
                                             <ChartTooltipContent
                                                 labelFormatter={(value) => {
-                                                    return new Date(value).toLocaleDateString("en-US", {
+                                                    return new Date(value).toLocaleDateString(isRight ? "en-US" : "he-IL", {
                                                         month: "short",
                                                         day: "numeric",
                                                     })
@@ -186,16 +196,16 @@ function Analytics() {
                             </ChartContainer>}
                     </CardContent>
                 </Card>
-                <Card className="flex flex-col lg:1/12">
+                <Card className="flex flex-col min-w-0 flex-1">
                     <CardHeader className="items-center pb-0">
-                        <CardTitle>Fleet Health Overview</CardTitle>
-                        <CardDescription>Real-time bin status distribution</CardDescription>
+                        <CardTitle>{t("pages.analytics.fleetHealthOverview.title")}</CardTitle>
+                        <CardDescription>{t("pages.analytics.fleetHealthOverview.description")}</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex-1 pb-0">
+                    <CardContent className="pb-0">
                         {isLoadingStatusOV && !statusOVError ? <Skeleton className="size-45 mx-auto rounded-full my-10" /> :
                             <ChartContainer
                                 config={pieChartConfig}
-                                className="mx-auto lg:aspect-square min-h-[250px]"
+                                className="mx-auto aspect-auto h-[250px]"
                             >
                                 <PieChart>
                                     <ChartTooltip
@@ -231,7 +241,7 @@ function Analytics() {
                                                                 y={(viewBox.cy || 0) + 24}
                                                                 className="fill-muted-foreground"
                                                             >
-                                                                Bins
+                                                                {t("bins")}
                                                             </tspan>
                                                         </text>
                                                     )
@@ -245,7 +255,7 @@ function Analytics() {
                     </CardContent>
                     <CardFooter className="flex-col gap-2 text-sm">
                         <div className="text-muted-foreground leading-none">
-                            Real-time bins status
+                            {t("pages.analytics.fleetHealthOverview.footer", { count: binsCount?.total.toLocaleString() || 0 })}
                         </div>
                     </CardFooter>
                 </Card>
@@ -253,8 +263,8 @@ function Analytics() {
             <div>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Bin Event Distribution</CardTitle>
-                        <CardDescription>Last 30 days of standard activity, maintenance, and error logs</CardDescription>
+                        <CardTitle>{t("pages.analytics.binsEventDistribution.title")}</CardTitle>
+                        <CardDescription>{t("pages.analytics.binsEventDistribution.description")}</CardDescription>
                     </CardHeader>
                     <CardContent className="overflow-hidden">
                         {isLoadingLogTypeOV && !logTypeOVError ?
@@ -278,7 +288,8 @@ function Analytics() {
                                         tickLine={false}
                                         tickMargin={10}
                                         axisLine={false}
-                                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                                        reversed={!isRight}
+                                        tickFormatter={(value) => new Date(value).toLocaleDateString(isRight ? "en-US" : "he-IL", { day: '2-digit', month: 'short' })}
                                     />
                                     <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                     <ChartLegend content={<ChartLegendContent />} />

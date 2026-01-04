@@ -1,0 +1,350 @@
+
+{
+    "welcome": "ברוך הבא",
+    "login": "התחברות",
+    "logout": "התנתקות",
+    "settings": "הגדרות",
+    "profile": "פרופיל משתמש",
+    "language": "שפה",
+    "help": "עזרה",
+    "search": "חיפוש",
+    "notifications": "התראות",
+    "messages": "הודעות",
+    "dashboard": "לוח בקרה",
+    "bins":"פחים",
+    "bin":"פח",
+    "map":"מפה",
+    "add":"הוספה",
+    "logs":"תיעודים",
+    "analytics":"אנליטיקות",
+    "location":"מיקום",
+    "coordinates":"קואורדינטות",
+    "zoom":"זום",
+    "roles":{
+       "owner": "בעלים",
+        "admin": "מנהל מערכת",
+        "user": "משתמש",
+      "technician": "טכנאי"
+    },
+    "levels":{
+        "critical":"קריטי",
+        "warning":"אזהרה",
+        "good":"טוב",
+        "all":"הכל"
+    },  
+    "sevirities":{
+      "critical":"קריטי",
+      "warning":"אזהרה",
+      "info":"מידע"
+    },
+    "statuses":{
+      "pending":"בהמתנה",
+      "active":"פעיל",
+      "inactive":"לא פעיל",
+      "suspended":"מושהה"
+    },
+    "users": "משתמשים",
+    "organization": "ארגון",
+    "newEntity":{
+        "title":"צור ישות חדשה",
+        "createNewUser":"צור משתמש חדש",
+        "createNewOrganization":"צור ארגון חדש",
+        "createNewUserSubtitle":"מלא את הפרטים ליצירת משתמש חדש",
+        "createNewOrganizationSubtitle":"מלא את הפרטים ליצירת ארגון חדש",
+        "fillInputs":"מלא את השדות",
+        "submitSheet":"שלח לשמירת השינויים",
+       "userInputs": {
+    "fields": {
+      "fullName": {
+        "label": "שם מלא",
+        "placeholder": "שם פרטי ושם משפחה"
+      },
+      "email": {
+        "label": "כתובת אימייל",
+        "placeholder": "כתובת אימייל"
+      },
+      "password": {
+        "label": "סיסמה חדשה"
+      },
+      "role": {
+        "label": "תפקיד משתמש",
+        "description": "שדה זה מעניק למשתמש הרשאות נוספות",
+        "options": {
+          "user": "משתמש",
+          "technician": "טכנאי",
+          "admin": "מנהל",
+          "owner": "בעלים"
+        }
+      },
+      "status": {
+        "label": "סטטוס משתמש",
+        "description": "שינוי סטטוס עשוי לגרום לחסימת המשתמש",
+        "options": {
+          "pending": "בהמתנה",
+          "active": "פעיל",
+          "inactive": "לא פעיל",
+          "suspended": "מושהה"
+        }
+      },
+      "organization": {
+        "label": "ארגון",
+        "placeholder": "בחר ארגון",
+        "error": "שגיאה בטעינת ארגונים"
+      },
+      "manager": {
+        "label": "מנהל אחראי",
+        "placeholder": "בחר מנהל",
+        "error": "שגיאה בטעינת מנהלים"
+      }
+    },
+
+    "validation": {
+      "name": {
+        "required": "שם הוא שדה חובה",
+        "notEmpty": "שם לא יכול להיות ריק או להכיל רווחים בלבד",
+        "fullName": "יש להזין שם פרטי ושם משפחה",
+        "noWhitespace": "השם לא יכול להתחיל או להסתיים ברווח"
+      },
+      "email": {
+        "required": "אימייל הוא שדה חובה",
+        "invalid": "כתובת אימייל לא תקינה",
+        "notEmpty": "אימייל לא יכול להיות ריק או להכיל רווחים בלבד",
+        "noWhitespace": "האימייל לא יכול להתחיל או להסתיים ברווח"
+      },
+      "password": {
+        "required": "סיסמה היא שדה חובה",
+        "minLength": "הסיסמה חייבת להכיל לפחות 8 תווים",
+        "maxLength": "הסיסמה לא יכולה להכיל יותר מ-30 תווים",
+        "lowercase": "הסיסמה חייבת להכיל לפחות אות קטנה אחת",
+        "uppercase": "הסיסמה חייבת להכיל לפחות אות גדולה אחת",
+        "number": "הסיסמה חייבת להכיל לפחות ספרה אחת",
+        "special": "הסיסמה חייבת להכיל לפחות תו מיוחד (!@#$%^&*)"
+      }
+    },
+
+    "loading": {
+      "organizations": "טוען ארגונים...",
+      "managers": "טוען מנהלים..."
+    }
+  },
+        "orgInputs": {
+            "fields": {
+                "name": {
+                    "label": "שם הארגון",
+                    "placeholder": "שם הארגון"
+                }
+            },
+            "validation": {
+                "name": {
+                    "required": "שם הארגון הוא שדה חובה",
+                    "notEmpty": "שם הארגון לא יכול להיות ריק או להכיל רווחים בלבד"
+                }
+            },
+            "loading": {
+                "organizations": "טוען ארגונים..."
+            }
+        }
+    },
+    "reset": "איפוס",
+    "technician": "טכנאי",
+    "save": "שמור",
+    "cancel": "ביטול",
+    "edit": "ערוך",
+    "delete": "מחק",
+    "update": "עדכן",
+    "loading": "טוען...",
+    "error": "שגיאה",
+    "success": "הצלחה",
+    "binName": "שם הפח",
+    "fillLevel": "רמת מילוי",
+    "columns": "עמודות",
+    "sidebar": {
+        "managment":{
+            "title":"ניהול",
+            "subtitles":{
+                "bins":"פחים",
+                "users":"משתמשים"
+            },
+            "items":{
+                "binList":"רשימת פחים",
+                "addBin":"הוסף פח",
+                "map":"מפה",
+                "logs":"תיעודים",
+                "userList":"רשימת משתמשים"
+            }
+        },
+        "general":{
+            "title":"כללי",
+            "items":{
+                "dashboard":"לוח בקרה",
+                "analytics":"אנליטיקות"
+            }
+        }
+
+    },
+     "mapLegend":{
+      "search":{
+        "binRadius":"פחים ברדיוס של",
+        "fillLevel":"רמת מלאי בין",
+        "healthStatus":"מצב בריאות הפחים",
+        "meters":"מטרים",
+        "clearFilters":"נקה מסננים"
+      },
+      "locations":{
+        "myLocation":"המיקום שלי",
+        "flyToLocation":"עבור למיקום זה",
+        "toggleMapType":"החלף סוג מפה"
+      },
+    "errors":{
+        "gepError":"מיקום אינו נתמך על ידי הדפדפן שלך",
+        "locationDenied":"גישה למיקום נדחתה. אנא אפשר זאת בהגדרות הדפדפן שלך.",
+        "locationUnavailable":"מידע על המיקום אינו זמין.",
+        "locationTimeout":"בקשת המיקום פגה. נסה שוב.",
+        "unknownError":"אירעה שגיאה לא ידועה בעת קבלת המיקום."
+    }
+    },
+      "globalTable":{
+    "next":"הבא",
+    "previous":"הקודם",
+    "noResults":"לא נמצאו תוצאות",
+    "nothingToShow":"אין נתונים זמינים להצגה כרגע.",
+        "noSearchResults":"אין תוצאות התואמות את החיפוש שלך.",
+    "tablePage": "מתוך"
+
+  },
+  "pages":{
+    "dashboard":{
+       "titles":{
+        "quickOverview":{
+          "title":"סקירה מהירה",
+          "description":"מדדים מרכזיים עבור הפחים שלך במבט חטוף, כולל רמות מילוי, סך כל הפחים וצרכי תחזוקה."
+        },
+        "binOverview":{
+          "title":"סקירת פחים",
+          "description":"תצוגה מפורטת של התראות פחים נוכחיות ויומני פעילות אחרונים במערכת."
+        }
+      },
+      "cards":{
+        "almostFull":{
+          "title":"פחים כמעט מלאים",
+          "description":"בדוק את הפחים האלה לפני שהם יתמלאו."
+        },
+        "requiredMaintenance":{
+          "title":"פחים הדורשים תחזוקה",
+          "description":"פחים אלה זקוקים לתשומת לב מהטכנאי."
+        },
+        "totalBins":{
+          "title":"סך כל הפחים",
+          "description":"מספר כולל של פחים במערכת."
+        },
+        "avgFillLevel":{
+          "title":"רמת מילוי ממוצעת",
+          "description":"רמת המילוי הממוצעת של כל הפחים."
+        }
+      },
+      "tables":{
+        "recentLogs":{
+          "title":"תיעודים אחרונים של פחים",
+          "description":"סיכום של פעולות, תחזוקה ואירועים הקשורים לפחים ב-24 השעות האחרונות.",
+          "columns":{
+            "binName":"שם הפח",
+            "fillLevel":"רמת מילוי",
+            "healthStatus":"מצב בריאות",
+            "batteryLevel":"רמת סוללה",
+            "lastUpdated":"עודכן לאחרונה"
+          }
+        },
+        "topFilledBins":{
+          "title":"פחים הדורשים תשומת לב",
+          "description":"רשימת פחים שהפעילו התראות או זקוקים לתחזוקה.",
+          "columns":{
+            "createdAt":"נוצר בתאריך",
+            "type":"סוג",
+            "severity":"חומרה",
+            "viewLog":"הצג תיעוד",
+            "viewBin":"הצג פח"
+          }
+        }
+      }
+    },
+    "binsList":{
+      "title":"רשימת פחים",
+      "description":"נהל את הפחים שלך על ידי צפייה, עריכה או מחיקה שלהם.",
+      "columns":{
+        "binName":"שם הפח",
+        "location":"מיקום",
+        "fillLevel":"רמת מילוי",
+        "healthStatus":"מצב בריאות",
+        "batteryLevel":"רמת סוללה",
+        "lastMaintenance":"תחזוקה אחרונה"
+      },
+      "deletion":{
+        "confirmationTitle":"אשר מחיקה לצמיתות",
+        "confirmationDescription":"פעולה זו תמחק לצמיתות את הפחים המסומנים, לאשר על ידי הקלדת 'מחק' בשדה למטה, פעולה זו אינה ניתנת לביטול.",
+        "typeDelete":"הקלד: 'מחק' כדי לבצע את המחיקה"
+      },
+      "locateBin":"אתר את הפח על המפה"
+    },
+    "logList":{
+      "title":"כל התיעודים",
+      "columns":{
+        "createAt":"נוצר בתאריך",
+        "severity":"חומרה",
+        "fillLevel":"רמת מילוי",
+        "batteryLevel":"רמת סוללה",
+        "healthStatus":"מצב בריאות",
+        "source":"מקור",
+        "viewLog":"הצג תיעוד"
+      },
+      "sensor":"חיישן",
+      "system":"מערכת",
+      "manual":"ידני"
+    },
+       "userList":{
+      "title":"רשימת משתמשים",
+      "columns":{
+        "fullName":"שם מלא",
+        "email":"אימייל",
+        "role":"תפקיד",
+        "accountStatus":"מצב חשבון",
+        "orgnization":"ארגון",
+        "manager":"מנהל"
+      },
+      "viewManager":"הצג מנהל",
+      "managerNotAssigned":"לא הוקצה מנהל"
+    },
+       "analytics":{
+      "aiOverviewTitle":"סקירת אנליטיקות מבוססות AI",
+      "binStatusOverTime":{
+        "title":"מצב פחים לאורך זמן",
+        "description":"מגמות ברמת הסוללה ואחוז המילוי בהתבסס על תיעודים מהחיישנים."
+      },
+      "fleetHealthOverview":{
+        "title":"סקירת בריאות צי הפחים",
+        "description":"תובנות בזמן אמת על הבריאות הכוללת של צי הפחים שלך.",
+        "footer":"מצב בריאות הפחים בזמן אמת בהתבסס על נתוני חיישנים."
+      },
+      "binsEventDistribution":{
+        "title":"התפגלות תיעודים של הפחים",
+        "description":"התפלגות אירועי שדווחו על ידי הפחים ב-30 הימים האחרונים לפי רמות חומרה."
+      },
+      "pie":{
+        "bins":"פחים",
+        "good":"טוב",
+        "warning":"אזהרה",
+        "critical":"קריטי"
+      },
+      "area":{
+        "battery":"רמת סוללה",
+        "level":"רמת מלאי"
+      },
+      "bar":{
+        "maintenance":"תחזוקה",
+        "error":"שגיאה",
+        "log":"תיעוד"
+      },
+      "lastDays":"{{count}} ימים אחרונים"
+
+    }
+  }
+}

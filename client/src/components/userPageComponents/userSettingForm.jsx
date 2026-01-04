@@ -14,9 +14,12 @@ import { Skeleton } from "../ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { useUpdateUserSettings } from "@/hooks/users/useUpdateUserSettings";
 import { Spinner } from "../ui/spinner";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 function UserSettingForm({ user, isAdmin = false }) {
+    const { toggleSide, isRight } = useAppSide()
     const { updateSettings, isUpdatingSettings } = useUpdateUserSettings()
+
     const { settingsError, isLoadingSettings, settings } = useUserSettings(user._id)
     const userSettings = useForm({
         defaultValues: {
@@ -58,6 +61,9 @@ function UserSettingForm({ user, isAdmin = false }) {
             }
         }
         updateSettings({ configToServerModel, id: user._id })
+
+        toggleSide(data.appLanguage)
+
     }
 
     return (
@@ -89,7 +95,7 @@ function UserSettingForm({ user, isAdmin = false }) {
                                                 <FormItem>
                                                     <div className="flex items-center gap-4 leading-4">
                                                         <FormControl>
-                                                            <Switch className="m-0" checked={field.value} onCheckedChange={field.onChange} />
+                                                            <Switch isRight={isRight} className="m-0" checked={field.value} onCheckedChange={field.onChange} />
                                                         </FormControl>
                                                         <Label>Enable Dark Theme</Label>
                                                     </div>
@@ -132,7 +138,7 @@ function UserSettingForm({ user, isAdmin = false }) {
                                             render={({ field }) => (
                                                 <FormItem className="flex items-center gap-4">
                                                     <FormControl>
-                                                        <Switch className="m-0" checked={field.value} onCheckedChange={field.onChange} />
+                                                        <Switch isRight={isRight} className="m-0" checked={field.value} onCheckedChange={field.onChange} />
                                                     </FormControl>
                                                     <Label>Enable Email Notifications</Label>
                                                 </FormItem>

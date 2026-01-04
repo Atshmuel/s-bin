@@ -8,12 +8,14 @@ import { Spinner } from "@/components/ui/spinner"
 import { useMapSettings } from "@/contexts/mapContext"
 import { useLog } from "@/hooks/bins/binLogs/useLog"
 import { getColor, getVariant } from "@/utils/binHelpers"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, ArrowRight } from "lucide-react"
 import { Link, useParams } from "react-router-dom"
 import ErrorPage from "../generals/ErrorPage"
+import { useAppSide } from "@/contexts/AppSideProvider"
 
 function BinLog() {
     const { mapContainerRef, scrollToMap } = useMapSettings();
+    const { isRight } = useAppSide()
     const { id } = useParams()
     const { log, isLoadingLog, logError } = useLog(id);
 
@@ -31,7 +33,7 @@ function BinLog() {
     return (
         <div className="flex flex-col space-y-4 h-full">
             <Link to={`/bins/${log?.binId}`}>
-                <Button className={'w-fit mb-2'} variant={'link'}> <ArrowLeft />Back To Bin</Button>
+                <Button className={'w-fit mb-2'} variant={'link'}> {isRight ? <ArrowLeft /> : <ArrowRight />}Back To Bin</Button>
             </Link>
             <div className="flex flex-wrap justify-start gap-4">
                 <BinCard className="flex-1 min-w-xs" bin={bin} actions={false} handleLocationClick={() => scrollToMap(bin.location.coordinates)} isLoading={isLoadingLog} />

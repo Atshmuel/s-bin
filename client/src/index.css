@@ -162,3 +162,11 @@
 .leaflet-top, .leaflet-bottom{
   z-index: 400 !important;
 }
+
+html[lang="he"] {
+  direction: rtl;
+}
+
+html[lang="en"] {
+  direction: ltr;
+}

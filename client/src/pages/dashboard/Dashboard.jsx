@@ -9,14 +9,16 @@ import Battery from '../../components/bins/Battary'
 import { getVariant } from "@/utils/binHelpers"
 import { useOverviews } from "@/hooks/overviews/useOverviews"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useTranslation } from 'react-i18next';
+
 import ErrorPage from "../generals/ErrorPage"
 
 function Dashboard() {
     const { data, isLoadingOverviews, overviewsError } = useOverviews()
-
+    const { t } = useTranslation();
     const attentionBinsColums = [
         {
-            header: 'Bin name',
+            header: t('pages.dashboard.tables.recentLogs.columns.binName'),
             accessorKey: 'binName',
             id: 'Bin name',
             cell: ({ row }) => {
@@ -32,7 +34,7 @@ function Dashboard() {
             enableSorting: true,
         },
         {
-            header: 'fill level',
+            header: t('pages.dashboard.tables.recentLogs.columns.fillLevel'),
             accessorKey: 'status.level',
             id: 'Fill level',
             cell: ({ row }) => {
@@ -40,7 +42,7 @@ function Dashboard() {
             }
         },
         {
-            header: 'Health',
+            header: t('pages.dashboard.tables.recentLogs.columns.healthStatus'),
             accessorKey: 'status.health',
             id: 'Health',
             cell: ({ row }) => {
@@ -49,7 +51,7 @@ function Dashboard() {
                 return (
                     <Badge variant={variant}
                     >
-                        {health}
+                        {t(`levels.${health}`)}
                     </Badge>
                 );
             },
@@ -57,7 +59,7 @@ function Dashboard() {
         },
 
         {
-            header: 'battery',
+            header: t('pages.dashboard.tables.recentLogs.columns.batteryLevel'),
             accessorKey: 'status.battery',
             id: 'Battery',
             cell: ({ row }) => {
@@ -65,7 +67,7 @@ function Dashboard() {
             }
         },
         {
-            header: 'Last Updated',
+            header: t('pages.dashboard.tables.recentLogs.columns.lastUpdated'),
             accessorKey: 'updatedAt',
             id: 'Last Updated',
             cell: ({ row }) => {
@@ -76,7 +78,7 @@ function Dashboard() {
 
     const recentBinsColums = [
         {
-            header: 'createdAt',
+            header: t('pages.dashboard.tables.topFilledBins.columns.createdAt'),
             accessorKey: 'createdAt',
             id: 'Created At',
             cell: ({ row }) => {
@@ -87,11 +89,11 @@ function Dashboard() {
         },
 
         {
-            header: 'type',
+            header: t('pages.dashboard.tables.topFilledBins.columns.type'),
             accessorKey: 'type',
         },
         {
-            header: 'severity',
+            header: t('pages.dashboard.tables.topFilledBins.columns.severity'),
             accessorKey: 'severity',
             cell: ({ row }) => {
                 const severity = row.original.severity;
@@ -104,7 +106,7 @@ function Dashboard() {
             }
         },
         {
-            header: 'View log',
+            header: t('pages.dashboard.tables.topFilledBins.columns.viewLog'),
             accessorKey: '_id',
             id: 'View log',
             cell: ({ row }) => {
@@ -113,14 +115,14 @@ function Dashboard() {
                     <Link className="flex gap-2 items-center "
                         to={`/bins/logs/${id}`}
                     >
-                        <LinkIcon size={14} /> <span>View log</span>
+                        <LinkIcon size={14} /> <span>{t('pages.dashboard.tables.topFilledBins.columns.viewLog')}</span>
                     </Link>
                 );
             },
 
         },
         {
-            header: 'View bin',
+            header: t('pages.dashboard.tables.topFilledBins.columns.viewBin'),
             accessorKey: 'binId',
             id: 'View bin',
             cell: ({ row }) => {
@@ -129,7 +131,7 @@ function Dashboard() {
                     <Link className="flex gap-2 items-center "
                         to={`/bins/${id}`}
                     >
-                        <LinkIcon size={14} /> <span>View bin</span>
+                        <LinkIcon size={14} /> <span>{t('pages.dashboard.tables.topFilledBins.columns.viewBin')}</span>
                     </Link>
                 );
             },
@@ -172,28 +174,28 @@ function Dashboard() {
     }
 
     const cardsData = [{
-        title: 'Bins Requiring Maintenance',
+        title: t('pages.dashboard.cards.requiredMaintenance.title'),
         count: data.totalRequiringMaintenance,
-        description: 'Required maintenance immediately',
+        description: t('pages.dashboard.cards.requiredMaintenance.description'),
         badgeVariant: 'suspended',
         icon: CircleAlert
     }, {
-        title: 'Almost Full Bins',
+        title: t('pages.dashboard.cards.almostFull.title'),
         count: data.totalAlmostFullBins,
-        description: 'Check these bins for emptying today',
+        description: t('pages.dashboard.cards.almostFull.description'),
         badgeVariant: 'inactive',
         icon: InfoIcon
     }, {
-        title: 'Total Bins',
+        title: t('pages.dashboard.cards.totalBins.title'),
         count: data.totalBins,
-        description: 'Total number of bins in the system',
+        description: t('pages.dashboard.cards.totalBins.description'),
         badgeVariant: 'outline',
         icon: Trash2
     }
         , {
-        title: 'Avg Fill Level',
+        title: t('pages.dashboard.cards.avgFillLevel.title'),
         count: data.averageFillLevel + "%",
-        description: 'Average fill level across all bins',
+        description: t('pages.dashboard.cards.avgFillLevel.description'),
         badgeVariant: 'outline',
         icon: GaugeCircle
     }]
@@ -203,9 +205,9 @@ function Dashboard() {
         <div className="space-y-8">
             <div className="flex flex-col gap-4">
                 <div>
-                    <h3 className="text-xl md:text-2xl">Quick Overview</h3>
+                    <h3 className="text-xl md:text-2xl">{t('pages.dashboard.titles.quickOverview.title')}</h3>
                     <p className="text-sm text-muted-foreground">
-                        Key metrics for your bins at a glance, including fill levels, total bins, and maintenance needs.
+                        {t('pages.dashboard.titles.quickOverview.description')}
                     </p>
                 </div>
                 <div className="lg:flex gap-4">
@@ -245,9 +247,9 @@ function Dashboard() {
 
             <div className="space-y-4">
                 <div>
-                    <h3 className="text-xl md:text-2xl">Bins Overview</h3>
+                    <h3 className="text-xl md:text-2xl">{t('pages.dashboard.titles.binOverview.title')}</h3>
                     <p className="text-sm text-muted-foreground">
-                        A detailed view of current bin alerts and recent activity logs across the system
+                        {t('pages.dashboard.titles.binOverview.description')}
                     </p>
                 </div>
                 <div className="space-y-4 lg:space-y-0 lg:flex lg:flex-row lg:flex-wrap gap-6">
@@ -255,9 +257,9 @@ function Dashboard() {
                         <CardHeader>
                             <h3 className="text-xl md:text-2xl"></h3>
                             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                                Bins Requiring Attention
+                                {t('pages.dashboard.cards.requiredMaintenance.title')}
                             </CardTitle>
-                            <CardDescription>List of bins that have triggered alerts or need maintenance.</CardDescription>
+                            <CardDescription>{t('pages.dashboard.cards.requiredMaintenance.description')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <DataTable data={data.requiringAttentionBins
@@ -268,10 +270,9 @@ function Dashboard() {
                         <CardHeader>
                             <h3 className="text-xl md:text-2xl"></h3>
                             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                                Recent Bin Logs
+                                {t('pages.dashboard.tables.recentLogs.title')}
                             </CardTitle>
-                            <CardDescription>A summary of bin-related actions, maintenance, and events from the past 24 hours.
-                            </CardDescription>
+                            <CardDescription>{t('pages.dashboard.tables.recentLogs.description')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <DataTable data={data.recentBinLogs ?? []} columns={recentBinsColums} maxLength={5} error={null} isLoading={false} />
