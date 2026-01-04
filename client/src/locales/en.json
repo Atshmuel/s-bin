@@ -33,6 +33,17 @@
         "good":"Good",
         "all":"All"
     },
+    "sevirities":{
+      "critical":"Critical",
+      "warning":"Warning",
+      "info":"Info"
+    },
+    "statuses":{
+      "pending":"Pending",
+      "active":"Active",
+      "inactive":"Inactive",
+      "suspended":"Suspended"
+    },
   "organization": "Organization",
   "reset": "Reset",
   "save": "Save",
@@ -258,6 +269,51 @@
           }
         }
       }
+    },
+    "binsList":{
+      "title":"Bins List",
+      "columns":{
+        "binName":"Bin Name",
+        "location":"Location",
+        "fillLevel":"Fill Level",
+        "healthStatus":"Health Status",
+        "batteryLevel":"Battery Level",
+        "lastMaintenance":"Last Maintenance"
+      },
+      "deletion":{
+        "confirmationTitle":"Confirm Permanent Deletion",
+        "confirmationDescription":"This action will permanently delete the selected bins. To confirm, type 'Delete' in the field below, This action cannot be undone.",
+        "typeDelete":"Type: 'Delete' to perform deletion"
+      },
+      "locateBin":"Locate the bin on the map"
+    },
+    "logList":{
+      "title":"All Logs",
+      "columns":{
+        "createAt":"Created At",
+        "severity":"Severity",
+        "fillLevel":"Fill Level",
+        "batteryLevel":"Battery Level",
+        "healthStatus":"Health Status",
+        "source":"Source",
+        "viewLog":"View Log"
+      },
+      "sensor":"Sensor",
+      "system":"System",
+      "manual":"Manual"
+    },
+    "userList":{
+      "title":"Users List",
+      "columns":{
+        "fullName":"Full Name",
+        "email":"Email",
+        "role":"Role",
+        "accountStatus":"Account Status",
+        "orgnization":"Organization",
+        "manager":"Manager"
+      },
+      "viewManager":"View Manager",
+      "managerNotAssigned":"Manager not assigned"
     }
   }
 

@@ -14,8 +14,10 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import InputLabel from "@/components/InputLabel";
 import { Spinner } from "@/components/ui/spinner";
 import { useDeleteBinBatch } from "@/hooks/bins/useDeleteAllBins";
+import { useTranslation } from "react-i18next";
 
 function BinsList() {
+    const { t } = useTranslation();
     const { allBins, isLoadingBins, binsError } = useBins();
     const { deleteBins, isDeleting } = useDeleteBinBatch()
     const [binIds, setBinIds] = useState([]);
@@ -67,7 +69,7 @@ function BinsList() {
             }
         },
         {
-            header: 'bin name',
+            header: t('pages.binsList.columns.binName'),
             accessorKey: 'binName',
             id: 'Bin name',
 
@@ -84,7 +86,7 @@ function BinsList() {
             },
         },
         {
-            header: 'location',
+            header: t('pages.binsList.columns.location'),
             accessorKey: 'Location',
             cell: ({ row }) => {
                 const coords = row.original.location.coordinates;
@@ -101,7 +103,7 @@ function BinsList() {
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent>
-                                Locate the bin on the map
+                                {t('pages.binsList.locateBin')}
                             </TooltipContent>
                         </Tooltip>
                     </Link>
@@ -109,7 +111,7 @@ function BinsList() {
             }
         },
         {
-            header: 'fill level',
+            header: t('pages.binsList.columns.fillLevel'),
             id: 'Fill level',
             accessorKey: 'status.level',
             cell: ({ row }) => {
@@ -117,27 +119,27 @@ function BinsList() {
             }
         },
         {
-            header: 'health',
+            header: t('pages.binsList.columns.healthStatus'),
             accessorKey: 'Health',
             cell: ({ row }) => {
                 const health = row.original.status.health;
                 return (
                     <Badge variant={getVariant(health)}
                     >
-                        {health}
+                        {t(`levels.${health}`)}
                     </Badge>
                 );
             },
         },
         {
-            header: 'battery',
+            header: t('pages.binsList.columns.batteryLevel'),
             accessorKey: 'Battery',
             cell: ({ row }) => {
                 return <Battery level={row.original.status.battery} />
             }
         },
         {
-            header: 'Last maintenance',
+            header: t('pages.binsList.columns.lastMaintenance'),
             accessorKey: 'Last maintenance',
             cell: ({ row }) => {
                 return format(new Date(row.original.maintenance.lastServiceAt), 'yyyy-MM-dd HH:mm')
@@ -150,22 +152,21 @@ function BinsList() {
 
         return <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
             <DialogTrigger asChild>
-                <Button variant='destructive' className={'cursor-pointer'}><Trash /> Delete {binIds.length} Bins</Button>
+                <Button variant='destructive' className={'cursor-pointer'}><Trash /> {t("delete")} {binIds.length} {t("bins")}</Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Confirm Permanent Deletion</DialogTitle>
-                    <DialogDescription>This action will permanently delete the bin. To confirm, type "Delete" in the field below.
-                        This action cannot be undone.</DialogDescription>
+                    <DialogTitle>{t("pages.binsList.deletion.confirmationTitle")}</DialogTitle>
+                    <DialogDescription>{t("pages.binsList.deletion.confirmationDescription")}</DialogDescription>
                 </DialogHeader>
                 <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
-                    onChange={(e) => setDeleteInput(e.target.value)}>Type: 'Delete' to enable deletion</InputLabel>
+                    onChange={(e) => setDeleteInput(e.target.value)}>{t("pages.binsList.deletion.typeDelete")}</InputLabel>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>Cancel</Button>
+                        <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
                     </DialogClose>
-                    <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting} variant='destructive' onClick={() => deleteBins({ binIds })
-                    }>{isDeleting ? <Spinner /> : 'Delete'}</Button>
+                    <Button className="cursor-pointer" disabled={(deleteInput.toLowerCase() !== 'מחק' && deleteInput.toLowerCase() !== 'delete') || isDeleting} variant='destructive' onClick={() => deleteBins({ binIds })
+                    }>{isDeleting ? <Spinner /> : t("delete")}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -175,7 +176,7 @@ function BinsList() {
 
     return (
         <div className="sm:p-10">
-            <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title='bins list' ActionButton={allBins?.length && binIds?.length ? ActionButton : null} />
+            <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title={t('pages.binsList.title')} ActionButton={allBins?.length && binIds?.length ? ActionButton : null} />
         </div>
     )
 }
