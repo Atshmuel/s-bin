@@ -17,9 +17,10 @@ const SelectTrigger = React.forwardRef(({ className, isRight, children, ...props
     className={cn(
       "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className,
-      isRight ? "" : "flex-row-reverse"
     )}
-    {...props}>
+    {...props}
+    dir={isRight ? "ltr" : "rtl"}
+  >
     {children}
     <SelectPrimitive.Icon asChild>
       <ChevronDown className="h-4 w-4 opacity-50" />
@@ -87,11 +88,12 @@ const SelectItem = React.forwardRef(({ className, isRight, children, ...props },
     className={cn(
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2  text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className,
-      isRight ? "pr-8" : "flex-row-reverse pr-4"
+      isRight ? "pr-8" : "pr-4"
     )}
-    {...props}>
+    {...props}
+    dir={isRight ? "ltr" : "rtl"}>
     {props.isbadged ?
-      <Badge className={`absolute ${isRight ? 'right-10' : 'left-4'}`} variant={props.isbadged}>{props.isbadged}</Badge>
+      <Badge className={`absolute ${isRight ? 'right-10' : 'left-10'}`} variant={props.isbadged}>{props.isbadged}</Badge>
       : null}
     <span className={`absolute ${isRight ? 'right-2' : 'left-2'} flex h-3.5 w-3.5 items-center justify-center`}>
       <SelectPrimitive.ItemIndicator>

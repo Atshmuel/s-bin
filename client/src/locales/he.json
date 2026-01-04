@@ -312,6 +312,39 @@
       },
       "viewManager":"הצג מנהל",
       "managerNotAssigned":"לא הוקצה מנהל"
+    },
+       "analytics":{
+      "aiOverviewTitle":"סקירת אנליטיקות מבוססות AI",
+      "binStatusOverTime":{
+        "title":"מצב פחים לאורך זמן",
+        "description":"מגמות ברמת הסוללה ואחוז המילוי בהתבסס על תיעודים מהחיישנים."
+      },
+      "fleetHealthOverview":{
+        "title":"סקירת בריאות צי הפחים",
+        "description":"תובנות בזמן אמת על הבריאות הכוללת של צי הפחים שלך.",
+        "footer":"מצב בריאות הפחים בזמן אמת בהתבסס על נתוני חיישנים."
+      },
+      "binsEventDistribution":{
+        "title":"התפגלות תיעודים של הפחים",
+        "description":"התפלגות אירועי שדווחו על ידי הפחים ב-30 הימים האחרונים לפי רמות חומרה."
+      },
+      "pie":{
+        "bins":"פחים",
+        "good":"טוב",
+        "warning":"אזהרה",
+        "critical":"קריטי"
+      },
+      "area":{
+        "battery":"רמת סוללה",
+        "level":"רמת מלאי"
+      },
+      "bar":{
+        "maintenance":"תחזוקה",
+        "error":"שגיאה",
+        "log":"תיעוד"
+      },
+      "lastDays":"{{count}} ימים אחרונים"
+
     }
   }
 }

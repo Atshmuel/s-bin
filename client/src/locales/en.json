@@ -314,7 +314,38 @@
       },
       "viewManager":"View Manager",
       "managerNotAssigned":"Manager not assigned"
+    },
+    "analytics":{
+      "aiOverviewTitle":"AI-Based Analytics Overview",
+      "binStatusOverTime":{
+        "title":"Bin Status Over Time",
+        "description":"Battery level and fill percentage trends based on sensor logs."
+      },
+      "fleetHealthOverview":{
+        "title":"Fleet Health Overview",
+        "description":"Real-time insights into the overall health of your bin fleet.",
+        "footer":"Real-time bins health status based on sensor data."
+      },
+      "binsEventDistribution":{
+        "title":"Bins Event Distribution",
+        "description":"Last 30 days of event distribution by severity levels."
+      },
+      "pie":{
+        "bins":"Bins",
+        "good":"Good",
+        "warning":"Warning",
+        "critical":"Critical"
+      },
+      "area":{
+        "battery":"Battery Level",
+        "level":"Fill Level"
+      },
+      "bar":{
+        "maintenance":"Maintenance",
+        "error":"Error",
+        "log":"Log"
+      },
+      "lastDays":"Last {{count}} Days"
+      }
     }
-  }
-
 }
