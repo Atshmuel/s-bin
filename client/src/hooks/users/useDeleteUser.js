@@ -9,9 +9,9 @@ export function useDeleteUser() {
     const queryClient = useQueryClient();
     const { mutate: deleteUser, isPending: isDeleting } = useMutation({
         mutationFn: deleteUserById,
-        onSuccess: (_, variables) => {
+        onSuccess: () => {
             toast.success('User deleted successfully')
-            queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
+            queryClient.invalidateQueries({ queryKey: ["users"] });
             navigate("/users", { replace: true });
         },
         onError: (error) => {
