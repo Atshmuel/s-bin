@@ -313,8 +313,12 @@
       "viewManager":"הצג מנהל",
       "managerNotAssigned":"לא הוקצה מנהל"
     },
-       "analytics":{
-      "aiOverviewTitle":"סקירת אנליטיקות מבוססות AI",
+    "analytics":{
+      "aiOverview":{
+        "title": "סקירת מבוססת AI",
+        "noInsightsYet": "אין תובנות שנוצרו על ידי AI זמינות כרגע. אנא בדוק מאוחר יותר.",
+        "waitingForData": "מערכת ה-AI מעבדת כרגע נתונים ליצירת תובנות. זה עשוי לקחת כמה רגעים."
+      },
       "binStatusOverTime":{
         "title":"מצב פחים לאורך זמן",
         "description":"מגמות ברמת הסוללה ואחוז המילוי בהתבסס על תיעודים מהחיישנים."

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const Typewriter = ({ text, speed = 30, className = "" }) => {
+export const Typewriter = ({ text, speed = 30, timeOut = 0, className = "" }) => {
     const [displayedText, setDisplayedText] = useState("");
 
     useEffect(() => {
@@ -8,26 +8,34 @@ export const Typewriter = ({ text, speed = 30, className = "" }) => {
 
         if (!text) return;
 
-        const words = text.split(" ");
-        let index = 0;
+        let intervalId = null;
 
-        const intervalId = setInterval(() => {
-            if (index < words.length) {
-                const nextWord = words[index];
+        const timeoutId = setTimeout(() => {
+            const words = text.split(" ");
+            let index = 0;
 
-                if (nextWord !== undefined) {
-                    setDisplayedText((prev) =>
-                        prev + (index === 0 ? "" : " ") + nextWord
-                    );
+            intervalId = setInterval(() => {
+                if (index < words.length) {
+                    const nextWord = words[index];
+
+                    if (nextWord !== undefined) {
+                        setDisplayedText((prev) =>
+                            prev + (index === 0 ? "" : " ") + nextWord
+                        );
+                    }
+                    index++;
+                } else {
+                    clearInterval(intervalId);
                 }
-                index++;
-            } else {
-                clearInterval(intervalId);
-            }
-        }, speed);
+            }, speed);
 
-        return () => clearInterval(intervalId);
-    }, [text, speed]);
+        }, timeOut);
+
+        return () => {
+            clearTimeout(timeoutId);
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [text, speed, timeOut]);
 
     return <span className={className}>{displayedText}</span>;
 };

@@ -316,7 +316,11 @@
       "managerNotAssigned":"Manager not assigned"
     },
     "analytics":{
-      "aiOverviewTitle":"AI-Based Analytics Overview",
+      "aiOverview":{
+        "title": "AI-Powered Overview",
+        "noInsightsYet": "No AI-generated insights available at the moment. Please check back later.",
+        "waitingForData": "The AI system is currently processing data to generate insights. This may take a few moments."
+      },
       "binStatusOverTime":{
         "title":"Bin Status Over Time",
         "description":"Battery level and fill percentage trends based on sensor logs."

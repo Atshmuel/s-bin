@@ -11,12 +11,6 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Label, Pie, PieChart, XA
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
 
-
-
-
-
-
-
 function Analytics() {
     const { t } = useTranslation()
     const pieChartConfig = {
@@ -255,7 +249,7 @@ function Analytics() {
                     </CardContent>
                     <CardFooter className="flex-col gap-2 text-sm">
                         <div className="text-muted-foreground leading-none">
-                            {t("pages.analytics.fleetHealthOverview.footer", { count: binsCount?.total.toLocaleString() || 0 })}
+                            {t("pages.analytics.fleetHealthOverview.footer", { count: binsCount?.total?.toLocaleString() || 0 })}
                         </div>
                     </CardFooter>
                 </Card>
