@@ -357,6 +357,35 @@
         "log":"Log"
       },
       "lastDays":"Last {{count}} Days"
+    },
+    "addBin":{
+      "toasts":{
+        "connected":"Connected to bin Wi-Fi. Proceeding to next step.",
+        "wifiDataSent":"Wi-Fi credentials sent to bin. Connecting to internet...",
+        "wifiDataFailed":"Failed to send Wi-Fi credentials to bin. Please try again.",
+        "cannotReachBin":"Cannot reach the bin. Ensure you are connected to the bin's Wi-Fi network."
+      },
+      "stepOne":{
+        "title":"Step 1: Power On & Connect to Bin Wi-Fi",
+        "description":"Make sure your new bin is powered on. The LED should be blinking slowly. Connect your phone/computer to the network: Bin-Setup-XXXX",
+        "attention":"Attention",
+        "keepNear":"Keep the bin near your device for setup.",
+        "autoContinue":"Once connected, the setup process will automatically continue",
+        "button": "Waiting for connection"
+        },
+        "stepTwo":{
+        "title":"Step 2: Wi-Fi Configuration",
+        "description":"Enter your Wi-Fi network and enter the password to connect the bin to the internet.",
+        "wifiNetwork":"Wi-Fi SSID (Wi-Fi Name)",
+        "wifiPassword":"Wi-Fi Password",
+        "button":"Connect to Wi-Fi",
+        "notConnected":"Device not connected. Please return to Step 1 and ensure you are connected to the bin's Wi-Fi."
+              },
+        "stepThree":{
+        "title":"Step 3: Connected Successfully!",
+        "description":"Your bin is now connected to the internet.",
+        "descriptionTwo":"You can now place the bin in its designated location and start monitoring it through the application."
       }
     }
+  }
 }
