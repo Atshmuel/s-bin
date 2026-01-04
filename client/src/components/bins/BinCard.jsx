@@ -28,8 +28,6 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
         toast.success('Copied device key to your clipboard!')
     }
 
-    bin = null
-
     return (
         <Card {...props}>
             {isLoading ?
