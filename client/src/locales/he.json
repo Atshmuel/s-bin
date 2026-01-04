@@ -32,10 +32,15 @@
         "good":"טוב",
         "all":"הכל"
     },  
-    "sevirities":{
+    "severities":{
       "critical":"קריטי",
       "warning":"אזהרה",
       "info":"מידע"
+    },
+    "types":{
+      "maintenance": "תחזוקה",
+      "error": "שגיאה",
+      "log": "תיעוד"
     },
     "statuses":{
       "pending":"בהמתנה",
@@ -157,6 +162,8 @@
     "success": "הצלחה",
     "binName": "שם הפח",
     "fillLevel": "רמת מילוי",
+    "lastUpdated": "עודכן לאחרונה",
+    "viewBin": "הצג פח",
     "columns": "עמודות",
     "sidebar": {
         "managment":{

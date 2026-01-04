@@ -91,6 +91,9 @@ function Dashboard() {
         {
             header: t('pages.dashboard.tables.topFilledBins.columns.type'),
             accessorKey: 'type',
+            cell: ({ row }) => {
+                return t(`types.${row.original.type.toLowerCase()}`);
+            }
         },
         {
             header: t('pages.dashboard.tables.topFilledBins.columns.severity'),
@@ -100,7 +103,7 @@ function Dashboard() {
                 return (
                     <Badge variant={getVariant(severity)}
                     >
-                        {severity}
+                        {t(`severities.${severity}`)}
                     </Badge>
                 );
             }
@@ -115,7 +118,8 @@ function Dashboard() {
                     <Link className="flex gap-2 items-center "
                         to={`/bins/logs/${id}`}
                     >
-                        <LinkIcon size={14} /> <span>{t('pages.dashboard.tables.topFilledBins.columns.viewLog')}</span>
+                        <LinkIcon size={14} />
+                        <span>{t('pages.dashboard.tables.topFilledBins.columns.viewLog')}</span>
                     </Link>
                 );
             },

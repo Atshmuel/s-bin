@@ -33,7 +33,7 @@
         "good":"Good",
         "all":"All"
     },
-    "sevirities":{
+    "severities":{
       "critical":"Critical",
       "warning":"Warning",
       "info":"Info"
@@ -43,6 +43,11 @@
       "active":"Active",
       "inactive":"Inactive",
       "suspended":"Suspended"
+    },
+      "types":{
+      "maintenance": "Maintenance",
+      "error": "Error",
+      "log": "Log"
     },
   "organization": "Organization",
   "reset": "Reset",
@@ -57,6 +62,8 @@
 
   "binName": "Bin name",
   "fillLevel": "Fill level",
+  "lastUpdated": "Last Updated",
+  "viewBin": "View Bin",
   "columns": "Columns",
 
   "sidebar": {

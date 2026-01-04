@@ -28,7 +28,7 @@ function AllLogs() {
                 return (
                     <Badge variant={getVariant(severity)}
                     >
-                        {t(`sevirities.${severity.toLowerCase()}`)}
+                        {t(`severities.${severity.toLowerCase()}`)}
                     </Badge>
                 );
             }
