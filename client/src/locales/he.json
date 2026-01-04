@@ -386,5 +386,31 @@
       "descriptionTwo": "כעת ניתן למקם את הפח במיקומו המיועד ולהתחיל לנטר אותו בעזרת האפליקציה."
     }
   }
+  },
+   "confirmations":{
+    "confirmationTitle":"אשר מחיקה לצמיתות",
+    "confirmationDescription":"פעולה זו תמחק לצמיתות את הפח, לאשר על ידי הקלדת 'מחק' בשדה למטה, פעולה זו אינה ניתנת לביטול.",
+    "typeDelete":"הקלד: 'מחק' כדי לבצע את המחיקה"
+  },
+   "components":{
+    "binCard":{
+       "lastUpdated":"עודכן לאחרונה",
+       "fillLevel":"רמת מילוי",
+       "deviceKey":"מפתח הצפנה של המכשיר",
+       "ownerId":"מזהה בעלים",
+       "location":"מיקום",
+       "locationTooltip":"לחץ כדי לאתר את הפח על המפה",
+       "maintenance":{
+        "title":"תחזוקה",
+        "lastService":"שירות אחרון",
+        "nextService":"שירות הבא מתוכנן",
+        "notServedYet":"פח זה טרם טופל.",
+        "technician":"טכנאי",
+        "seeProfile":"הצג פרופיל",
+        "techNote":"הערת טכנאי"
+        },
+        "emptyCard":"לא ניתן לטעון את נתוני הפח.",
+        "emptyDescription":"מידע על הפח אינו זמין כרגע. אנא נסה שוב מאוחר יותר."
+    }
   }
 }

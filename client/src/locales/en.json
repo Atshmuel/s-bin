@@ -387,5 +387,31 @@
         "descriptionTwo":"You can now place the bin in its designated location and start monitoring it through the application."
       }
     }
+  },
+  "confirmations":{
+    "confirmationTitle":"Confirm Permanent Deletion",
+    "confirmationDescription":"This action will permanently delete the bin. To confirm, type 'Delete' in the field below. This action cannot be undone.",
+    "typeDelete":"Type: 'Delete' to perform deletion"
+  },
+  "components":{
+    "binCard":{
+       "lastUpdated":"Last Updated",
+       "fillLevel":"Fill Level",
+       "deviceKey":"Device Key",
+       "ownerId":"Owner ID",
+       "location":"Location",
+       "locationTooltip":"Click to locate the bin on the map",
+       "maintenance":{
+        "title":"Maintenance",
+        "lastService":"Last Service",
+        "nextService":"Next Service Due",
+        "notServedYet":"This bin has not been serviced yet.",
+        "technician":"Technician",
+        "seeProfile":"See Profile",
+        "techNote":"Technician Note"
+        },
+        "emptyCard":"Could not load bin data.",
+        "emptyDescription":"The bin information is currently unavailable. Please try again later."
+    }
   }
 }

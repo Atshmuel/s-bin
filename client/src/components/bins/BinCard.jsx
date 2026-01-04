@@ -14,15 +14,21 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { useState } from "react"
 import InputLabel from "../InputLabel"
 import { useDeleteBin } from "@/hooks/bins/useDeleteBin"
+import { useTranslation } from "react-i18next"
+import { useAppSide } from "@/contexts/appSideProvider"
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
     const [deleteInput, setDeleteInput] = useState('')
     const { deleteBin, isDeleting } = useDeleteBin()
+    const { t } = useTranslation()
+    const { isRight } = useAppSide()
 
     function handleCopyDeviceKey() {
-        navigator.clipboard.writeText(bin.deviceKey)
+        navigator.clipboard.writeText(bin?.deviceKey)
         toast.success('Copied device key to your clipboard!')
     }
+
+    bin = null
 
     return (
         <Card {...props}>
@@ -44,23 +50,23 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 </div>
 
                                 <Badge variant={getVariant(bin.status.health)}>
-                                    {bin.status.health.toUpperCase()}
+                                    {t(`levels.${bin.status.health}`)}
                                 </Badge>
                             </CardTitle>
                             <CardDescription>
-                                Last updated: {new Date(bin.status.updatedAt).toLocaleString()}
+                                {t('lastUpdated')}: {new Date(bin.status.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-5 text-sm">
                             <div className="space-y-3">
 
                                 <div className="flex flex-row justify-between">
-                                    <span className="font-medium">Fill Level:</span>
+                                    <span className="font-medium">{t('fillLevel')}:</span>
                                     <span>{bin.status.level}%</span>
                                 </div>
 
                                 <div className="flex flex-row justify-between">
-                                    <span className="font-medium">Device Key:</span>
+                                    <span className="font-medium">{t('components.binCard.deviceKey')}:</span>
                                     <Tooltip >
                                         <TooltipTrigger className="cursor-copy" asChild>
                                             <div onClick={handleCopyDeviceKey} className="flex gap-2">
@@ -72,12 +78,12 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 </div>
 
                                 <div className="flex flex-row justify-between">
-                                    <span className="font-medium">Owner ID:</span>
+                                    <span className="font-medium">{t('components.binCard.ownerId')}:</span>
                                     <span className="truncate max-w-[200px]">{bin.ownerId}</span>
                                 </div>
 
                                 <div className="flex flex-row justify-between">
-                                    <span className="font-medium">Location:</span>
+                                    <span className="font-medium">{t('components.binCard.location')}:</span>
                                     {handleLocationClick ? <Tooltip>
                                         <TooltipTrigger asChild>
                                             <div onClick={handleLocationClick} className="flex flex-row gap-2 cursor-pointer">
@@ -86,7 +92,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            Locate the bin on the map
+                                            {t('components.binCard.locationTooltip')}
                                         </TooltipContent>
                                     </Tooltip> : <div className="flex flex-row gap-2">
                                         <span>{bin.location.coordinates.join(", ")}</span>
@@ -99,33 +105,34 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                             {bin.maintenance && (
                                 <div className="space-y-2.5">
                                     <p className="text-sm md:text-base font-medium flex gap-2">
-                                        <Wrench size={18} /> <span>Maintenance:</span>
+                                        <Wrench size={18} /> <span>{t('components.binCard.maintenance.title')}:</span>
                                     </p>
                                     <div className="flex justify-between">
-                                        <span>Last Service:</span>
+                                        <span>{t('components.binCard.maintenance.lastService')}:</span>
                                         <span>{new Date(bin.maintenance.lastServiceAt).toLocaleDateString()}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span>Next Service:</span>
+                                        <span>{t('components.binCard.maintenance.nextService')}:</span>
                                         <span>{new Date(bin.maintenance.nextServiceAt).toLocaleDateString()}</span>
                                     </div>
                                     {bin.maintenance.technicianId ?
                                         <>
                                             <div className="flex justify-between">
-                                                <span>Technician:</span>
-                                                <Link to={`/user/${bin.maintenance.technicianId}`}><Button className={"p-0 m-0 h-fit"} variant={'link'}>See profile</Button></Link>
+                                                <span>{t('components.binCard.maintenance.technician')}:</span>
+                                                <Link to={`/user/${bin.maintenance.technicianId}`}><Button className={"p-0 m-0 h-fit"} variant={'link'}>{t('components.binCard.maintenance.seeProfile')}</Button></Link>
                                             </div>
-                                            bin.maintenance.notes && <div>
-                                                <span className="">Technician note:</span>
+                                            {bin.maintenance.notes && <div>
+                                                <span className="">{t('components.binCard.maintenance.techNote')}:</span>
                                                 <p className="mt-2 text-sm italic text-muted-foreground">
                                                     “{bin.maintenance?.notes}”
                                                 </p>
                                             </div>
+                                            }
                                         </>
                                         :
                                         <div className="text-primary flex gap-4 text-base items-center">
                                             <Info size={18} />
-                                            <p>Bin hasn't been served yet.</p>
+                                            <p>{t('components.binCard.maintenance.notServedYet')}</p>
                                         </div>
                                     }
                                 </div>
@@ -135,23 +142,22 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                             <CardFooter className="flex justify-center ">
                                 <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
                                     <DialogTrigger asChild>
-                                        <Button className="cursor-pointer flex-1 py-6" variant='outline_destructive' size='sm'>Delete</Button>
+                                        <Button className="cursor-pointer flex-1 py-6" variant='outline_destructive' size='sm'>{t('delete')}</Button>
 
                                     </DialogTrigger>
                                     <DialogContent>
                                         <DialogHeader>
-                                            <DialogTitle>Confirm Permanent Deletion</DialogTitle>
-                                            <DialogDescription>This action will permanently delete the bin. To confirm, type "Delete" in the field below.
-                                                This action cannot be undone.</DialogDescription>
+                                            <DialogTitle>{t('confirmations.confirmationTitle')}</DialogTitle>
+                                            <DialogDescription>{t('confirmations.confirmationDescription')}</DialogDescription>
                                         </DialogHeader>
                                         <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
-                                            onChange={(e) => setDeleteInput(e.target.value)}>Type: 'Delete' to enable deletion</InputLabel>
+                                            onChange={(e) => setDeleteInput(e.target.value)}>{t('confirmations.typeDelete')}</InputLabel>
                                         <DialogFooter>
                                             <DialogClose asChild>
-                                                <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>Cancel</Button>
+                                                <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>{t('cancel')}</Button>
                                             </DialogClose>
-                                            <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== 'delete' || isDeleting} variant='destructive' onClick={() => deleteBin({ id: bin._id })
-                                            }>{isDeleting ? <Spinner /> : 'Delete'}</Button>
+                                            <Button className="cursor-pointer" disabled={(deleteInput.toLowerCase() !== 'delete' && deleteInput.toLowerCase() !== 'מחק') || isDeleting} variant='destructive' onClick={() => deleteBin({ id: bin._id })
+                                            }>{isDeleting ? <Spinner /> : t('delete')}</Button>
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
@@ -159,7 +165,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                         )}
                     </>
                     :
-                    <EmptyCard title={'Could not load bin'} description={'Failed to load bin information'} />
+                    <EmptyCard title={t("components.binCard.emptyCard")} description={t("components.binCard.emptyDescription")} />
             }
         </Card>
     )
