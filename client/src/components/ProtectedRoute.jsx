@@ -1,8 +1,9 @@
 import { useMe } from "@/hooks/users/auth/useMe";
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { Spinner } from "./ui/spinner";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useDarkMode } from "@/contexts/darkModelContext";
 
 
 
@@ -10,6 +11,9 @@ import { toast } from "sonner";
 export default function ProtectedRoute({ children }) {
   const navigate = useNavigate();
   const { me, meError, isLoadingMe } = useMe();
+  const { applyDarkMode } = useDarkMode()
+
+  const isSynced = useRef(false);
 
   useEffect(() => {
     if (meError) {
@@ -17,6 +21,15 @@ export default function ProtectedRoute({ children }) {
       navigate('/login', { replace: true });
     }
   }, [meError, navigate]);
+
+  useEffect(() => {
+    if (!me || typeof me.isDark !== "boolean") return;
+    if (isSynced.current) return;
+
+    applyDarkMode(me.isDark)
+    isSynced.current = true;
+  }, [me, applyDarkMode]);
+
 
   if (isLoadingMe)
     return (

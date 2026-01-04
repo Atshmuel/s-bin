@@ -7,7 +7,7 @@ function DarkModeProvider({ children }) {
     const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
     const isLocalView = JSON.parse(localStorage.getItem('isDarkMode'))
 
-    const [isDark, setIsDark] = useState(isLocalView || prefersDarkScheme.matches)
+    const [isDark, setIsDark] = useState(isLocalView ?? prefersDarkScheme.matches)
 
     useEffect(() => {
         isDark ? document.body.classList.add('dark') : document.body.classList.remove('dark');
@@ -28,7 +28,12 @@ function DarkModeProvider({ children }) {
             return newValue;
         });
     }
-    return <DarkModeContext.Provider value={{ isDark, toggleView }}>{children}</DarkModeContext.Provider>
+    function applyDarkMode(value) {
+        setIsDark(value);
+        localStorage.setItem("isDarkMode", JSON.stringify(value));
+    }
+
+    return <DarkModeContext.Provider value={{ isDark, applyDarkMode, toggleView }}>{children}</DarkModeContext.Provider>
 }
 
 function useDarkMode() {
