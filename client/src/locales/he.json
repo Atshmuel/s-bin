@@ -48,6 +48,11 @@
       "inactive":"לא פעיל",
       "suspended":"מושהה"
     },
+    "sources":{
+          "sensor":"חיישן",
+          "system":"מערכת",
+          "manual":"ידני"
+    } ,
     "users": "משתמשים",
     "organization": "ארגון",
     "newEntity":{
@@ -162,6 +167,8 @@
     "success": "הצלחה",
     "binName": "שם הפח",
     "fillLevel": "רמת מילוי",
+  "healthStatus":"מצב בריאות",
+
     "lastUpdated": "עודכן לאחרונה",
     "viewBin": "הצג פח",
     "columns": "עמודות",
@@ -411,6 +418,17 @@
         },
         "emptyCard":"לא ניתן לטעון את נתוני הפח.",
         "emptyDescription":"מידע על הפח אינו זמין כרגע. אנא נסה שוב מאוחר יותר."
+    },
+    "logCard":{
+      "log":"תיעוד",
+      "details":"פרטים",
+      "binId":"מזהה פח",
+      "maintenance":"תחזוקה",
+      "healthStatus":"מצב בריאות",
+      "timestamp":"חותמת זמן",
+      "logSource":"מקור התיעוד",
+      "errorCard":"לא ניתן לטעון את נתוני התיעוד.",
+      "errorDescription":"המידע אודות התיעוד אינו זמין כרגע. אנא נסה שוב מאוחר יותר."
     }
   }
 }

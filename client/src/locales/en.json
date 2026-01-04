@@ -62,6 +62,8 @@
 
   "binName": "Bin name",
   "fillLevel": "Fill level",
+  "healthStatus":"Health Status",
+
   "lastUpdated": "Last Updated",
   "viewBin": "View Bin",
   "columns": "Columns",
@@ -412,6 +414,17 @@
         },
         "emptyCard":"Could not load bin data.",
         "emptyDescription":"The bin information is currently unavailable. Please try again later."
+    },
+    "logCard":{
+      "log":"Log",
+      "details":"Details",
+      "binId":"Bin ID",
+      "maintenance":"Maintenance",
+      "healthStatus":"Health Status",
+      "timestamp":"Timestamp",
+      "logSource":"Log Source",
+      "errorCard":"Could not load log data.",
+      "errorDescription":"The log information is currently unavailable. Please try again later."
     }
   }
 }
