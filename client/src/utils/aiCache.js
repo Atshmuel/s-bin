@@ -1,5 +1,4 @@
-const CACHE_KEY = 'aiCache'
-const CACHE_TTL = 24 * 60 * 60 * 1000
+import { CACHE_KEY, CACHE_TTL } from "./constants"
 
 export function getAICache() {
     const obj = localStorage.getItem(CACHE_KEY)

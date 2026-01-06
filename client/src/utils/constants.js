@@ -9,3 +9,5 @@ export const AUTH_EP = 'api/auth'
 export const OVERVIEW_EP = 'api/overviews'
 export const ORG_EP = 'api/organizations'
 
+export const CACHE_KEY = 'aiCache'
+export const CACHE_TTL = 24 * 60 * 60 * 1000
