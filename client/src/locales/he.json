@@ -20,6 +20,8 @@
     "location":"מיקום",
     "coordinates":"קואורדינטות",
     "zoom":"זום",
+"backToBin":"חזרה לפח",
+
     "roles":{
        "owner": "בעלים",
         "admin": "מנהל מערכת",
@@ -392,7 +394,31 @@
       "description": "הפח מחובר כעת לאינטרנט.",
       "descriptionTwo": "כעת ניתן למקם את הפח במיקומו המיועד ולהתחיל לנטר אותו בעזרת האפליקציה."
     }
-  }
+  },
+  "binDetails":{
+      "logsTable":{
+        "title":"סקירת התיעודים של הפח",
+        "description":"תיעודים אחרונים שנוצרו על ידי הפח, כולל רמות מילוי, מצב בריאות ומידע חשוב אחר.",
+        "columns":{
+          "createdAt":"נוצר בתאריך",
+          "type":"סוג",
+          "severity":"חומרה",
+          "fillLevel":"מלאי",
+          "batteryLevel": "סוללה",
+          "healthStatus":"בריאות",
+          "source":"מקור",
+          "viewLog":"הצג תיעוד"
+        }
+      },
+      "areaChart":{
+        "title":"מגמות רמת סוללה ומילוי",
+        "description":"מגמות ברמת הסוללה ואחוז המילוי בהתבסס על תיעודים מהחיישנים.",
+        "battery":"רמת סוללה",
+        "level":"רמת מילוי",
+        "lastDays":"{{count}} ימים אחרונים"
+      }
+    }
+    
   },
    "confirmations":{
     "confirmationTitle":"אשר מחיקה לצמיתות",

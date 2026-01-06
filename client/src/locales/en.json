@@ -20,7 +20,7 @@
     "location":"Location",
     "coordinates":"Coordinates",
     "zoom":"Zoom",
-
+"backToBin":"Back to Bin",
   "roles":{
       "owner": "Owner",
       "admin": "Admin",
@@ -387,6 +387,29 @@
         "title":"Step 3: Connected Successfully!",
         "description":"Your bin is now connected to the internet.",
         "descriptionTwo":"You can now place the bin in its designated location and start monitoring it through the application."
+      }
+    },
+    "binDetails":{
+      "logsTable":{
+        "title":"Log Overview",
+        "description":"Review detailed records of all bin activities, including fill levels, timestamps, and event types.",
+        "columns":{
+          "createdAt":"Created At",
+          "type":"Type",
+          "severity":"Severity",
+          "fillLevel":"Fill Level",
+          "batteryLevel": "Battery Level",
+          "healthStatus":"Health Status",
+          "source":"Source",
+          "viewLog":"View Log"
+        }
+      },
+      "areaChart":{
+        "title":"Bin Status Over Time",
+        "description":"Battery level and fill percentage trends based on sensor logs.",
+        "battery":"Battery Level",
+        "level":"Fill Level",
+        "lastDays":"Last {{count}} Days"
       }
     }
   },

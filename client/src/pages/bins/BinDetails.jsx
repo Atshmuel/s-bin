@@ -13,68 +13,82 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { useAppSide } from "@/contexts/AppSideProvider"
+import { useTranslation } from "react-i18next"
 
 function BinDetails() {
     const { isRight } = useAppSide()
+    const { t } = useTranslation()
     const { id } = useParams()
 
     const { bin, isLoadingBins, binsError } = useBin(id)
 
     const logsColumns = [
         {
-            header: 'created at',
+            header: t("pages.binDetails.logsTable.columns.createdAt"),
             accessorKey: 'createdAt',
             cell: ({ row }) => {
                 return format(new Date(row.original.createdAt), 'yyyy-MM-dd HH:mm')
             },
         },
         {
-            header: 'severity',
+            header: t("pages.binDetails.logsTable.columns.severity"),
             accessorKey: 'severity',
             cell: ({ row }) => {
                 const severity = row.original.severity;
                 return (
                     <Badge variant={getVariant(severity)}>
-                        {severity}
+                        {t(`severities.${severity}`)}
                     </Badge>
                 );
             }
         },
         {
-            header: 'type',
+            header: t("pages.binDetails.logsTable.columns.type"),
             accessorKey: 'type',
+            cell: ({ row }) => {
+                const type = row.original.type;
+                return (
+                    t(`types.${type}`)
+                );
+            }
         },
 
         {
-            header: 'fill level',
+            header: t("pages.binDetails.logsTable.columns.fillLevel"),
             accessorKey: 'newLevel',
         },
         {
-            header: 'health',
+            header: t("pages.binDetails.logsTable.columns.healthStatus"),
             accessorKey: 'health',
             cell: ({ row }) => {
                 const health = row.original.health;
                 return (
                     <Badge variant={getVariant(health)} >
-                        {health}
+                        {t(`levels.${health}`)}
                     </Badge>
                 );
             },
         },
 
         {
-            header: 'battery',
+            header: t("pages.binDetails.logsTable.columns.batteryLevel"),
             accessorKey: 'battery',
             cell: ({ row }) => {
                 return <Battery level={row.original.battery} />
             }
         },
         {
-            header: 'source',
+            header: t("pages.binDetails.logsTable.columns.source"),
             accessorKey: 'source',
+            cell: ({ row }) => {
+                const source = row.original.source;
+                return (
+                    t(`sources.${source}`)
+                );
+            }
         },
         {
-            header: 'View log',
+            header: t("pages.binDetails.logsTable.columns.viewLog"),
             accessorKey: '_id',
             cell: ({ row }) => {
                 const id = row.original._id;
@@ -82,7 +96,7 @@ function BinDetails() {
                     <Link className="flex gap-2 items-center "
                         to={`/bins/logs/${id}`}
                     >
-                        <LinkIcon size={14} /> <span>View log</span>
+                        <LinkIcon size={14} /> <span>{t("pages.binDetails.logsTable.columns.viewLog")}</span>
                     </Link>
                 );
             },
@@ -92,11 +106,11 @@ function BinDetails() {
 
     const chartConfig = {
         battery: {
-            label: 'Battery',
+            label: t("pages.binDetails.areaChart.battery"),
             color: 'var(--chart-1)'
         },
         newLevel: {
-            label: "Level",
+            label: t("pages.binDetails.areaChart.level"),
             color: "var(--chart-2)",
         }
     }
@@ -124,9 +138,9 @@ function BinDetails() {
                     <CardHeader>
                         <h3 className="text-xl md:text-2xl"></h3>
                         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                            Logs Overview
+                            {t("pages.binDetails.logsTable.title")}
                         </CardTitle>
-                        <CardDescription>Review detailed records of all bin activities, including fill levels, timestamps, and event types.</CardDescription>
+                        <CardDescription>{t("pages.binDetails.logsTable.description")}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <DataTable columns={logsColumns} isLoading={isLoadingBins} data={bin?.logs ?? []} maxLength={4} error={binsError} sortingBy={[{ id: 'createdAt', desc: true }]} />
@@ -137,9 +151,9 @@ function BinDetails() {
             <Card>
                 <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
                     <div className="grid flex-1 gap-1">
-                        <CardTitle>Bin Status Over Time</CardTitle>
+                        <CardTitle>{t("pages.binDetails.areaChart.title")}</CardTitle>
                         <CardDescription>
-                            Battery level and fill percentage trends based on sensor logs.
+                            {t("pages.binDetails.areaChart.description")}
                         </CardDescription>
                     </div>
                     <Select isRight={isRight} value={timeRange} onValueChange={setTimeRange}>
@@ -151,13 +165,13 @@ function BinDetails() {
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
                             <SelectItem isRight={isRight} value="90d" className="rounded-lg">
-                                Last 3 months
+                                {t("pages.binDetails.areaChart.lastDays", { count: 90 })}
                             </SelectItem>
                             <SelectItem isRight={isRight} value="30d" className="rounded-lg">
-                                Last 30 days
+                                {t("pages.binDetails.areaChart.lastDays", { count: 30 })}
                             </SelectItem>
                             <SelectItem isRight={isRight} value="7d" className="rounded-lg">
-                                Last 7 days
+                                {t("pages.binDetails.areaChart.lastDays", { count: 7 })}
                             </SelectItem>
                         </SelectContent>
                     </Select>
@@ -167,7 +181,8 @@ function BinDetails() {
                         config={chartConfig}
                         className="aspect-auto h-[300px] w-full"
                     >
-                        <AreaChart data={filteredData}>
+                        <AreaChart
+                            data={filteredData}>
                             <defs>
                                 <linearGradient id="fillLevel" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.8} />
@@ -186,9 +201,10 @@ function BinDetails() {
                                 axisLine={false}
                                 tickMargin={8}
                                 minTickGap={32}
+                                reversed={!isRight}
                                 tickFormatter={(value) => {
                                     const date = new Date(value)
-                                    return date.toLocaleDateString("en-US", {
+                                    return date.toLocaleDateString(isRight ? "en-US" : "he-IL", {
                                         month: "short",
                                         day: "numeric",
                                     })

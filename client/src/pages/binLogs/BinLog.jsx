@@ -35,7 +35,9 @@ function BinLog() {
     return (
         <div className="flex flex-col space-y-4 h-full">
             <Link to={`/bins/${log?.binId}`}>
-                <Button className={'w-fit mb-2'} variant={'link'}> {isRight ? <ArrowLeft /> : <ArrowRight />}Back To Bin</Button>
+                <Button className={'w-fit mb-2'} variant={'link'}> {isRight ? <ArrowLeft /> : <ArrowRight />}
+                    {t("backToBin")}
+                </Button>
             </Link>
             <div className="flex flex-wrap justify-start gap-4">
                 <BinCard className="flex-1 min-w-xs" bin={bin} actions={false} handleLocationClick={() => scrollToMap(bin.location.coordinates)} isLoading={isLoadingLog} />
