@@ -17,11 +17,13 @@ import { useSignup } from "@/hooks/users/auth/useSignup";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useAppSide } from "@/contexts/AppSideProvider";
+import { useTranslation } from "react-i18next";
 
 
 function Signup() {
     const { signup, isSigningup } = useSignup()
     const { isRight } = useAppSide()
+    const { t } = useTranslation()
     const [successfullyCreated, setSuccessfullyCreated] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const form = useForm({
@@ -39,14 +41,14 @@ function Signup() {
             const signedUp = await signup(data)
             if (signedUp) {
                 setSuccessfullyCreated(true)
-                toast.success('Account signed up successfully, please check your email.')
+                toast.success(t("pages.signupPage.toasts.success"))
             }
         } catch (error) {
             if (error?.message) {
                 if (error.message.includes('duplicate')) {
-                    toast.error("Account already exist")
+                    toast.error(t("pages.signupPage.toasts.errorDuplicate"))
                 } else {
-                    toast.error('Failed to create your account, please try again in few moments')
+                    toast.error(t("pages.signupPage.toasts.errorGeneric"))
                 }
             }
 
@@ -57,17 +59,15 @@ function Signup() {
         <Card className="w-full max-w-md shadow-lg">
             <CardHeader>
                 <CardTitle >
-                    {successfullyCreated ? "Account Created Successfully" : "Create an account"}
+                    {successfullyCreated ? t("pages.signupPage.titles.accountCreated") : t("pages.signupPage.titles.createAccount")}
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                    {successfullyCreated ? "Please check your email to activate your account" : "Let's get started. Fill in the details below to create your account."}
-
-
+                    {successfullyCreated ? t("pages.signupPage.titles.activateSubtitle") : t("pages.signupPage.titles.createSubtitle")}
                 </p>
             </CardHeader>
             <CardContent>
 
-                {successfullyCreated ? <><PartyPopper /> Please verify you account via email</> :
+                {successfullyCreated ? <><PartyPopper /> {t("pages.signupPage.titles.verifyBody")}</> :
                     <FormProvider {...form}>
 
                         <form onSubmit={form.handleSubmit((data) => handleSignup(data))} className="space-y-4">
@@ -75,19 +75,19 @@ function Signup() {
                                 name="name"
                                 control={form.control}
                                 rules={{
-                                    required: "Name is required", validate: {
+                                    required: t("pages.signupPage.validation.name.nameRequired"), validate: {
                                         notEmpty: (value) =>
-                                            value.trim().length > 0 || "Name cannot be empty or only spaces",
+                                            value.trim().length > 0 || t("pages.signupPage.validation.name.nameNotEmpty"),
                                         fullName: (value) => {
                                             const parts = value.trim().split(/\s+/); // מפרק לפי רווחים
-                                            return parts.length >= 2 || "Please enter first and last name";
+                                            return parts.length >= 2 || t("pages.signupPage.validation.fullNameCheck");
                                         },
                                     }
                                 }}
                                 render={({ field }) => (
                                     <FormItem>
                                         <InputLabel {...field} placeholder=" " type="text">
-                                            Full name
+                                            {t("pages.signupPage.form.fullName")}
                                         </InputLabel>
                                         <FormMessage />
                                     </FormItem>
@@ -97,20 +97,20 @@ function Signup() {
                                 name="email"
                                 control={form.control}
                                 rules={{
-                                    required: "Email is required",
+                                    required: t("pages.signupPage.validation.emailRequired"),
                                     pattern: {
                                         value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                        message: "Invalid email address",
+                                        message: t("pages.signupPage.validation.emailInvalid"),
                                     },
                                     validate: {
                                         notEmpty: (value) =>
-                                            value.trim().length > 0 || "Email cannot be empty or only spaces",
+                                            value.trim().length > 0 || t("pages.signupPage.validation.emailNotEmpty"),
                                     },
                                 }}
                                 render={({ field }) => (
                                     <FormItem>
                                         <InputLabel {...field} placeholder=" " type="email">
-                                            Email address
+                                            {t("pages.signupPage.form.email")}
                                         </InputLabel>
                                         <FormMessage />
                                     </FormItem>
@@ -121,34 +121,34 @@ function Signup() {
                                 name="password"
                                 control={form.control}
                                 rules={{
-                                    required: "Password is required",
+                                    required: t("pages.signupPage.validation.passwordRequired"),
                                     minLength: {
                                         value: 8,
-                                        message: "Password must be at least 8 characters long",
+                                        message: t("pages.signupPage.validation.passwordMin"),
                                     },
                                     maxLength: {
                                         value: 30,
-                                        message: "Password must not exceed 30 characters",
+                                        message: t("pages.signupPage.validation.passwordMax"),
                                     },
                                     validate: {
                                         hasLowercase: (value) =>
                                             /[a-z]/.test(value) ||
-                                            "Password must include at least one lowercase letter",
+                                            t("pages.signupPage.validation.passwordLower"),
                                         hasUppercase: (value) =>
                                             /[A-Z]/.test(value) ||
-                                            "Password must include at least one uppercase letter",
+                                            t("pages.signupPage.validation.passwordUpper"),
                                         hasNumber: (value) =>
                                             /[0-9]/.test(value) ||
-                                            "Password must include at least one number",
+                                            t("pages.signupPage.validation.passwordNumber"),
                                         hasSpecial: (value) =>
                                             /[!@#$%^&*]/.test(value) ||
-                                            "Password must include at least one special character (!@#$%^&*)",
+                                            t("pages.signupPage.validation.passwordSpecial"),
                                     },
                                 }}
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="relative">
-                                            <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >Password</InputLabel>
+                                            <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >{t("pages.signupPage.form.password")}</InputLabel>
                                             {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
                                                 className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> :
                                                 <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
@@ -162,9 +162,9 @@ function Signup() {
                                 name="confirmPassword"
                                 control={form.control}
                                 rules={{
-                                    required: "Please confirm your password",
+                                    required: t("pages.signupPage.validation.confirmPasswordRequired"),
                                     validate: (value) =>
-                                        value === form.getValues("password") || "Passwords do not match",
+                                        value === form.getValues("password") || t("pages.signupPage.validation.passwordsNoMatch"),
                                 }}
                                 render={({ field }) => (
                                     <FormItem>
@@ -173,7 +173,7 @@ function Signup() {
                                             placeholder=" "
                                             type={showPassword ? "text" : "password"}
                                         >
-                                            Confirm Password
+                                            {t("pages.signupPage.form.confirmPassword")}
                                         </InputLabel>
                                         <FormMessage />
                                     </FormItem>
@@ -185,7 +185,7 @@ function Signup() {
                                 name="terms"
                                 control={form.control}
                                 rules={{
-                                    required: "Accept terms is required",
+                                    required: t("pages.signupPage.validation.termsRequired"),
                                 }}
                                 render={({ field }) => (
                                     <FormItem >
@@ -198,7 +198,7 @@ function Signup() {
                                                 onCheckedChange={field.onChange}
                                             />
                                             <Label htmlFor="terms" className="text-sm text-muted-foreground">
-                                                <Terms title={'Accept terms and conditions'} />
+                                                <Terms title={t("pages.signupPage.form.acceptTerms")} />
                                             </Label>
                                         </div>
                                         <FormMessage />
@@ -212,7 +212,7 @@ function Signup() {
                                 className="w-full cursor-pointer"
                                 disabled={isSigningup}
                             >
-                                {isSigningup ? <Spinner /> : "Sign up"}
+                                {isSigningup ? <Spinner /> : t("pages.signupPage.form.submitButton")}
                             </Button>
                         </form>
 
@@ -222,9 +222,9 @@ function Signup() {
             <CardFooter>
 
                 {successfullyCreated ? null : <p className="w-full text-center text-sm text-muted-foreground p-0 m-0">
-                    Already have account?
+                    {t("pages.signupPage.footer.alreadyHaveAccount")}
                     <Button variant='link' className={'m-0 px-1'}>
-                        <NavLink to={'/login'}>Sign-in</NavLink>
+                        <NavLink to={'/login'}>{t("pages.signupPage.footer.signIn")}</NavLink>
                     </Button>
                 </p>}
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -14,7 +15,14 @@ function AppSideProvider({ children }) {
         setIsRight(!isRight);
         setSide(isRight ? "left" : "right");
         setOpSide(isRight ? "right" : "left");
+
     }
+
+    //Temp for login page
+    useEffect(() => {
+        toggleSide('he')
+        document.documentElement.lang = 'he';
+    }, [])
 
     return <AppSideContext.Provider value={{ side, isRight, opSide, toggleSide, language: i18n.language }}>{children}</AppSideContext.Provider>
 }

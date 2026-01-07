@@ -51,7 +51,7 @@ function UserManagment({ user, isAdmin = false }) {
 
     function handleUpdate(data) {
         if (user._id === me.id) {
-            toast.warning("You can't change your own capabilities")
+            toast.warning(t("components.userManagementCard.updateErrorSameUser"))
             return
         }
         user.role !== data.role ? updateRole({ role: data.role, id: user._id }) : null
@@ -66,8 +66,8 @@ function UserManagment({ user, isAdmin = false }) {
     return (
         <Card className="min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center'>
-                <CardTitle className="mb-1">Account managment</CardTitle>
-                <CardDescription>Update user's status and role</CardDescription>
+                <CardTitle className="mb-1">{t("components.userManagementCard.title")}</CardTitle>
+                <CardDescription>{t("components.userManagementCard.description")}</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
             <FormProvider {...userManagment}>
@@ -79,21 +79,21 @@ function UserManagment({ user, isAdmin = false }) {
                                 control={userManagment.control}
                                 render={({ field }) => (
                                     <FormItem>
-                                        <Label>User Role</Label>
+                                        <Label>{t("components.userManagementCard.roleField.label")}</Label>
                                         <FormControl>
                                             <ToggleGroup disabled={isUpdatingRole} className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
                                                 if (value) {
                                                     field.onChange(value)
                                                 }
                                             }}>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">User</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">Technician</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">Admin</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">Owner</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">{t("roles.user")}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">{t("roles.technician")}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">{t("roles.admin")}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">{t("roles.owner")}</ToggleGroupItem>
                                             </ToggleGroup>
                                         </FormControl>
                                         <FormDescription>
-                                            This field will grant the user additional permissions.
+                                            {t("components.userManagementCard.roleField.description")}
                                         </FormDescription>
                                     </FormItem>
                                 )}
@@ -104,21 +104,21 @@ function UserManagment({ user, isAdmin = false }) {
                                 control={userManagment.control}
                                 render={({ field }) => (
                                     <FormItem>
-                                        <Label>User Status</Label>
+                                        <Label>{t("components.userManagementCard.statusField.label")}</Label>
                                         <FormControl>
                                             <ToggleGroup disabled={isUpdatingStatus} className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
                                                 if (value) {
                                                     field.onChange(value)
                                                 }
                                             }}>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="pending">Pending</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="active">Active</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="inactive">Inactive</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="suspended">Suspended</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="pending">{t("statuses.pending")}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="active">{t("statuses.active")}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="inactive">{t("statuses.inactive")}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="suspended">{t("statuses.suspended")}</ToggleGroupItem>
                                             </ToggleGroup>
                                         </FormControl>
                                         <FormDescription>
-                                            Changing this field may result in the user being blocked.
+                                            {t("components.userManagementCard.statusField.description")}
                                         </FormDescription>
                                     </FormItem>
                                 )}
@@ -128,18 +128,18 @@ function UserManagment({ user, isAdmin = false }) {
                                 control={userManagment.control}
                                 render={({ field }) => (
                                     <FormItem className="px-1">
-                                        <Label>Organzation</Label>
+                                        <Label>{t("components.userManagementCard.organizationField.label")}</Label>
                                         <FormControl>
                                             {isLoadingOrgs ? <Skeleton className="w-full px-1 h-10" /> :
                                                 <Select onValueChange={field.onChange}
                                                     value={field.value ?? ""}
                                                 >
                                                     <SelectTrigger className="">
-                                                        <SelectValue placeholder="Select Organzation" />
+                                                        <SelectValue placeholder={t("components.userManagementCard.organizationField.placeholder")} />
                                                     </SelectTrigger>
                                                     <SelectContent className="z-[1000]">
                                                         <SelectGroup>
-                                                            <SelectLabel>{orgsError ? "Failed to get organizations" : "Organizations"}</SelectLabel>
+                                                            <SelectLabel>{orgsError ? t("components.userManagementCard.organizationField.error") : t("components.userManagementCard.organizationField.label")}</SelectLabel>
                                                             <div className="max-h-52 overflow-y-auto">
                                                                 {!orgsError ? organizations?.map(m => (
                                                                     <SelectItem className="capitalize max-w-[320px] truncate" key={m._id} value={m._id}>{m.name}</SelectItem>
@@ -157,21 +157,22 @@ function UserManagment({ user, isAdmin = false }) {
                                 control={userManagment.control}
                                 render={({ field }) => (
                                     <FormItem className="px-1">
-                                        <Label>User's Manager</Label>
+                                        <Label>{t("components.userManagementCard.managerField.label")}</Label>
                                         <FormControl>
                                             {isLoadingManagers ? <Skeleton className="w-full px-1 h-10" /> :
                                                 <Select onValueChange={field.onChange}
                                                     value={field.value ?? ""}
                                                 >
                                                     <SelectTrigger className="">
-                                                        <SelectValue placeholder="Select Manager" />
+                                                        <SelectValue placeholder={t("components.userManagementCard.managerField.placeholder")} />
                                                     </SelectTrigger>
                                                     <SelectContent className="z-[1000]">
                                                         <SelectGroup>
-                                                            <SelectLabel>{managersError ? "Failed to get managers" : "Managers"}</SelectLabel>
+                                                            <SelectLabel>{managersError ? t("components.userManagementCard.managerField.error") : t("components.userManagementCard.managerField.label")}</SelectLabel>
                                                             <div className="max-h-52 overflow-y-auto">
                                                                 {!managersError ? managers?.map(m => (
-                                                                    <SelectItem className="capitalize" key={m._id} value={m._id} isbadged={m.role}>{m.name}</SelectItem>
+                                                                    <SelectItem className="capitalize" key={m._id} value={m._id} isbadged={m.role}
+                                                                        tranlatedBadge={t(`roles.${m.role}`)}>{m.name}</SelectItem>
                                                                 )) : null}
                                                             </div>
                                                         </SelectGroup>
@@ -190,7 +191,7 @@ function UserManagment({ user, isAdmin = false }) {
                             type="submit"
                             className="cursor-pointer w-full px-3 py-1"
                         >
-                            {isUpdatingRole || isUpdatingStatus || isUpdatingOrgAndManager ? <Spinner /> : 'Update'}
+                            {isUpdatingRole || isUpdatingStatus || isUpdatingOrgAndManager ? <Spinner /> : t("components.userManagementCard.updateButton")}
                         </Button>
                     </CardFooter>
                 </form>

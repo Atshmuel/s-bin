@@ -16,11 +16,15 @@ import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carouse
 import { Eye, EyeOff } from "lucide-react";
 import { useForgot, useOtp, useUpdatePasswordByToken } from "@/hooks/users/auth/useForgot";
 import { Spinner } from "@/components/ui/spinner";
+import { useTranslation } from "react-i18next";
+import { useAppSide } from "@/contexts/appSideProvider";
 
 
 function ForgotPassword() {
     const { forgot, isFetchingForgot } = useForgot()
     const { otp, isVerifingOtp } = useOtp()
+    const { isRight } = useAppSide()
+    const { t } = useTranslation()
     const { updatePassword, isUpdatingPassword } = useUpdatePasswordByToken()
 
 
@@ -76,10 +80,10 @@ function ForgotPassword() {
                         <Card className="w-full max-w-md shadow-lg">
                             <CardHeader>
                                 <CardTitle >
-                                    Forgot Password
+                                    {t("pages.forgotPasswordPage.stepOne.title")}
                                 </CardTitle>
                                 <p className="text-sm text-muted-foreground">
-                                    Enter your email address to receive a password reset code.
+                                    {t("pages.forgotPasswordPage.stepOne.description")}
                                 </p>
                             </CardHeader>
                             <CardContent>
@@ -89,20 +93,20 @@ function ForgotPassword() {
                                             name="email"
                                             control={stepOneForm.control}
                                             rules={{
-                                                required: "Email is required",
+                                                required: t("pages.forgotPasswordPage.stepOne.errors.emailRequired"),
                                                 pattern: {
                                                     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                                    message: "Invalid email address",
+                                                    message: t("pages.forgotPasswordPage.stepOne.errors.invalidEmail"),
                                                 },
                                                 validate: {
                                                     notEmpty: (value) =>
-                                                        value.trim().length > 0 || "Email cannot be empty or only spaces",
+                                                        value.trim().length > 0 || t("pages.forgotPasswordPage.stepOne.errors.emailNotEmpty"),
                                                 },
                                             }}
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <InputLabel {...field} placeholder=" " type="email">
-                                                        Email address
+                                                        {t("pages.forgotPasswordPage.stepOne.emailLabel")}
                                                     </InputLabel>
                                                     <FormMessage />
                                                 </FormItem>
@@ -114,7 +118,7 @@ function ForgotPassword() {
                                             className="w-full cursor-pointer"
                                             disabled={isFetchingForgot}
                                         >
-                                            {isFetchingForgot ? <Spinner /> : "Send Reset Code"}
+                                            {isFetchingForgot ? <Spinner /> : t("pages.forgotPasswordPage.stepOne.sendRecovery")}
                                         </Button>
                                     </form>
 
@@ -123,15 +127,15 @@ function ForgotPassword() {
                             <CardFooter>
                                 <div className="sm:flex text-center justify-between w-full">
                                     <p className="text-sm text-muted-foreground p-0 m-0">
-                                        Remember your password?
+                                        {t("pages.forgotPasswordPage.remembered")}
                                         <Button variant='link'>
-                                            <NavLink to={'/login'}>Sign-in</NavLink>
+                                            <NavLink to={'/login'}>{t("pages.forgotPasswordPage.login")}</NavLink>
                                         </Button>
                                     </p>
                                     <p className="text-sm text-muted-foreground p-0 m-0">
-                                        Don't have an account?
+                                        {t("pages.forgotPasswordPage.noAccount")}
                                         <Button variant='link'>
-                                            <NavLink to={'/signup'}>Sign-up</NavLink>
+                                            <NavLink to={'/signup'}>{t("pages.forgotPasswordPage.signUp")}</NavLink>
                                         </Button>
                                     </p>
                                 </div>
@@ -142,10 +146,10 @@ function ForgotPassword() {
                         <Card className="w-full max-w-md shadow-lg">
                             <CardHeader>
                                 <CardTitle >
-                                    Forgot Password
+                                    {t("pages.forgotPasswordPage.stepTwo.title")}
                                 </CardTitle>
                                 <p className="text-sm text-muted-foreground">
-                                    One-Time Password                    </p>
+                                    {t("pages.forgotPasswordPage.stepTwo.otpTitle")}                    </p>
                             </CardHeader>
                             <CardContent className="pb-2">
                                 <FormProvider {...stepTwoForm}>
@@ -154,15 +158,15 @@ function ForgotPassword() {
                                             name="code"
                                             control={stepTwoForm.control}
                                             rules={{
-                                                required: "One-Time password is required",
+                                                required: t("pages.forgotPasswordPage.stepTwo.otpRequired"),
                                                 validate: {
                                                     isSixDigits: (value) =>
-                                                        value.trim().length === 6 || "OTP must be 6 digits",
+                                                        value.trim().length === 6 || t("pages.forgotPasswordPage.stepTwo.otpLength"),
                                                 },
                                             }}
                                             render={({ field }) => (
                                                 <FormItem >
-                                                    <FormControl >
+                                                    <FormControl>
                                                         <InputOTP pattern={REGEXP_ONLY_DIGITS} maxLength={6} {...field}>
                                                             <InputOTPGroup className="mx-auto">
                                                                 <InputOTPSlot className="p-6 text-md" index={0} />
@@ -187,14 +191,14 @@ function ForgotPassword() {
                                                 disabled={isVerifingOtp}
                                             >
 
-                                                Back
+                                                {t("pages.forgotPasswordPage.back")}
                                             </Button>
                                             <Button
                                                 type="submit"
                                                 className="cursor-pointer px-3"
                                                 disabled={isVerifingOtp}
                                             >
-                                                {isVerifingOtp ? <Spinner /> : "Submit"}
+                                                {isVerifingOtp ? <Spinner /> : t("pages.forgotPasswordPage.stepTwo.submit")}
                                             </Button>
                                         </div>
                                     </form>
@@ -203,9 +207,9 @@ function ForgotPassword() {
                             <CardFooter className="pb-2">
                                 <div className="sm:flex text-center justify-between w-full">
                                     <p className="text-sm text-muted-foreground p-0 m-0">
-                                        Remember your password?
+                                        {t("pages.forgotPasswordPage.remembered")}
                                         <Button variant='link'>
-                                            <NavLink to={'/login'}>Sign-in</NavLink>
+                                            <NavLink to={'/login'}>{t("pages.forgotPasswordPage.login")}</NavLink>
                                         </Button>
                                     </p>
                                 </div>
@@ -216,10 +220,10 @@ function ForgotPassword() {
                         <Card>
                             <CardHeader>
                                 <CardTitle >
-                                    Reset Password
+                                    {t("pages.forgotPasswordPage.stepThree.title")}
                                 </CardTitle>
                                 <p className="text-sm text-muted-foreground">
-                                    Enter your new password to reset your password.
+                                    {t("pages.forgotPasswordPage.stepThree.description")}
                                 </p>
                             </CardHeader>
                             <CardContent className="p-6">
@@ -229,35 +233,35 @@ function ForgotPassword() {
                                             name="password"
                                             control={stepThreeForm.control}
                                             rules={{
-                                                required: "Password is required",
+                                                required: t("pages.forgotPasswordPage.stepThree.passwordRequired"),
                                                 minLength: {
                                                     value: 8,
-                                                    message: "Password must be at least 8 characters long",
+                                                    message: t("pages.forgotPasswordPage.stepThree.minLength"),
                                                 },
                                                 maxLength: {
                                                     value: 30,
-                                                    message: "Password must not exceed 30 characters",
+                                                    message: t("pages.forgotPasswordPage.stepThree.maxLength"),
                                                 },
                                                 validate: {
                                                     hasLowercase: (value) =>
                                                         /[a-z]/.test(value) ||
-                                                        "Password must include at least one lowercase letter",
+                                                        t("pages.forgotPasswordPage.stepThree.lowercase"),
                                                     hasUppercase: (value) =>
                                                         /[A-Z]/.test(value) ||
-                                                        "Password must include at least one uppercase letter",
+                                                        t("pages.forgotPasswordPage.stepThree.uppercase"),
                                                     hasNumber: (value) =>
                                                         /[0-9]/.test(value) ||
-                                                        "Password must include at least one number",
+                                                        t("pages.forgotPasswordPage.stepThree.number"),
                                                     hasSpecial: (value) =>
                                                         /[!@#$%^&*]/.test(value) ||
-                                                        "Password must include at least one special character (!@#$%^&*)",
+                                                        t("pages.forgotPasswordPage.stepThree.special"),
                                                 },
                                             }}
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <div className="relative">
-                                                        <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >New Password</InputLabel>
-                                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                                        <InputLabel  {...field} placeholder=" " type={showPassword ? "text" : "password"} >{t("pages.forgotPasswordPage.stepThree.newPassword")}</InputLabel>
+                                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> : <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                                     </div>
                                                     <FormMessage />
                                                 </FormItem>
@@ -268,15 +272,15 @@ function ForgotPassword() {
                                             name="confirmPassword"
                                             control={stepThreeForm.control}
                                             rules={{
-                                                required: "Please confirm your password",
+                                                required: t("pages.forgotPasswordPage.stepThree.passwordRequired"),
                                                 validate: (value) =>
-                                                    value === stepThreeForm.getValues("password") || "Passwords do not match",
+                                                    value === stepThreeForm.getValues("password") || t("pages.forgotPasswordPage.stepThree.notMatch"),
                                             }}
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <div className="relative">
-                                                        <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >Confirm New Password</InputLabel>
-                                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" /> : <EyeOff onClick={() => setShowPassword(show => !show)} className="absolute top-3 right-3" />}
+                                                        <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >{t("pages.forgotPasswordPage.stepThree.confirmPassword")}</InputLabel>
+                                                        {showPassword ? <Eye onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> : <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                                     </div>
                                                     <FormMessage />
                                                 </FormItem>
@@ -288,7 +292,7 @@ function ForgotPassword() {
                                             disabled={isUpdatingPassword}
 
                                         >
-                                            {isUpdatingPassword ? <Spinner /> : " Reset Password"}
+                                            {isUpdatingPassword ? <Spinner /> : t("pages.forgotPasswordPage.stepThree.resetPassword")}
                                         </Button>
                                     </form>
                                 </FormProvider>
@@ -296,9 +300,9 @@ function ForgotPassword() {
                             <CardFooter>
                                 <div className="sm:flex text-center justify-between w-full">
                                     <p className="text-sm text-muted-foreground p-0 m-0">
-                                        Remember your password?
+                                        {t("pages.forgotPasswordPage.remembered")}
                                         <Button variant='link'>
-                                            <NavLink to={'/login'}>Sign-in</NavLink>
+                                            <NavLink to={'/login'}>{t("pages.forgotPasswordPage.login")}</NavLink>
                                         </Button>
                                     </p>
                                 </div>

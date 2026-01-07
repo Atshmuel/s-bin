@@ -93,7 +93,7 @@ const SelectItem = React.forwardRef(({ className, isRight, children, ...props },
     {...props}
     dir={isRight ? "ltr" : "rtl"}>
     {props.isbadged ?
-      <Badge className={`absolute ${isRight ? 'right-10' : 'left-10'}`} variant={props.isbadged}>{props.isbadged}</Badge>
+      <Badge className={`absolute ${isRight ? 'right-10' : 'left-10'}`} variant={props.isbadged}>{props.tranlatedBadge ?? props.isbadged}</Badge>
       : null}
     <span className={`absolute ${isRight ? 'right-2' : 'left-2'} flex h-3.5 w-3.5 items-center justify-center`}>
       <SelectPrimitive.ItemIndicator>
