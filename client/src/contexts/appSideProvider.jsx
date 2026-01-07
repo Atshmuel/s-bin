@@ -20,8 +20,15 @@ function AppSideProvider({ children }) {
 
     //Temp for login page
     useEffect(() => {
-        toggleSide('he')
-        document.documentElement.lang = 'he';
+        const browserLang =
+            navigator.languages?.[0] || navigator.language || "en";
+
+        const lang = browserLang.split("-")[0];
+
+        if (lang === "he") {
+            toggleSide(lang)
+            document.documentElement.lang = lang;
+        }
     }, [])
 
     return <AppSideContext.Provider value={{ side, isRight, opSide, toggleSide, language: i18n.language }}>{children}</AppSideContext.Provider>
