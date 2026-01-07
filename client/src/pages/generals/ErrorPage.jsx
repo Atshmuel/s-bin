@@ -1,24 +1,27 @@
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "react-i18next"
 import { NavLink } from "react-router-dom"
 
 function ErrorPage({
     code = 404,
-    description = "Oops, it looks like the page you're looking for doesn't exist.",
-    buttonText = "Go To Homepage",
+    description,
+    buttonText,
     navTo = "/"
 }) {
+    const { t } = useTranslation()
+
     return (
         <div className="flex justify-center items-center h-screen ">
             <div className="text-center space-y-6">
                 <div>
                     <h3 className="text-7xl text-primary">{code}</h3>
                     <p className="text-lg">
-                        {description}
+                        {description ?? t('components.errorPage.description')}
                     </p>
                 </div>
                 <Button asChild={true}>
                     <NavLink to={navTo}>
-                        {buttonText}
+                        {buttonText ?? t('components.errorPage.buttonText')}
                     </NavLink>
                 </Button>
             </div>

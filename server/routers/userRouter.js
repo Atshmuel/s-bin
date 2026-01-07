@@ -33,9 +33,7 @@ userRouter.get('/managers', authToken, (req, res, next) => {
 }, getUserManagers);
 userRouter.get('/managers/:id', authToken, validateParamExist(), getUserManagersByOrgId);
 
-userRouter.get('/:id', authToken, (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
-}, validateParamExist(), getUser)
+userRouter.get('/:id', authToken, validateParamExist(), getUser)
 
 
 userRouter.patch('/info/:id', authToken, validateBodyFields([], ['name', 'email']), validateParamExist(), updateUserNameOrEmail) //update email&name

@@ -9,9 +9,12 @@ import { Eye, EyeOff } from "lucide-react";
 import { useUpdateUserPassword } from "@/hooks/users/useUpdateUser";
 import { Spinner } from "../ui/spinner";
 import { useAppSide } from "@/contexts/AppSideProvider";
+import { useTranslation } from "react-i18next";
 
 function PasswordForm({ user, isAdmin = false }) {
     const { updatePassword, isUpdatingPassword } = useUpdateUserPassword()
+    const { t } = useTranslation();
+
     const [showPassword, setShowPassword] = useState(false);
     const { isRight } = useAppSide();
 
@@ -41,8 +44,10 @@ function PasswordForm({ user, isAdmin = false }) {
     return (
         <Card className="flex-[1_1_400px] min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center'>
-                <CardTitle>Update {isAdmin ? 'User' : 'Your'} Password</CardTitle>
-                <CardDescription>Keep your account safe by updating {isAdmin ? 'user' : 'your'} password</CardDescription>
+                <CardTitle>{t(isAdmin ? "components.passwordFormCard.updateUserPassword" : "components.passwordFormCard.updateYourPassword")}</CardTitle>
+                <CardDescription>
+                    {t("components.passwordFormCard.description", { entity: isAdmin ? "user's" : 'your' })}
+                </CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
             <FormProvider {...passwordForm}>
@@ -52,28 +57,28 @@ function PasswordForm({ user, isAdmin = false }) {
                             name="oldPassword"
                             control={passwordForm.control}
                             rules={{
-                                required: "Password is required",
+                                required: t("components.passwordFormCard.oldPasswordRequired"),
                                 minLength: {
                                     value: 8,
-                                    message: "Password must be at least 8 characters long",
+                                    message: t("components.passwordFormCard.minLength"),
                                 },
                                 maxLength: {
                                     value: 30,
-                                    message: "Password must not exceed 30 characters",
+                                    message: t("components.passwordFormCard.maxLength"),
                                 },
                                 validate: {
                                     hasLowercase: (value) =>
                                         /[a-z]/.test(value) ||
-                                        "Password must include at least one lowercase letter",
+                                        t("components.passwordFormCard.hasLowercase"),
                                     hasUppercase: (value) =>
                                         /[A-Z]/.test(value) ||
-                                        "Password must include at least one uppercase letter",
+                                        t("components.passwordFormCard.hasUppercase"),
                                     hasNumber: (value) =>
                                         /[0-9]/.test(value) ||
-                                        "Password must include at least one number",
+                                        t("components.passwordFormCard.hasNumber"),
                                     hasSpecial: (value) =>
                                         /[!@#$%^&*]/.test(value) ||
-                                        "Password must include at least one special character (!@#$%^&*)",
+                                        t("components.passwordFormCard.hasSpecial"),
                                 },
                             }}
                             render={({ field }) => (
@@ -81,9 +86,9 @@ function PasswordForm({ user, isAdmin = false }) {
                                     className={isAdmin ? "hidden" : ""}
                                 >
                                     <div className="relative">
-                                        <InputLabel disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >Old Password</InputLabel>
+                                        <InputLabel disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >{t("components.passwordFormCard.oldPassword")}</InputLabel>
                                         {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
-                                            className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                            className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> :
                                             <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                     </div>
                                     <FormMessage />
@@ -94,36 +99,36 @@ function PasswordForm({ user, isAdmin = false }) {
                             name="password"
                             control={passwordForm.control}
                             rules={{
-                                required: "Password is required",
+                                required: t("components.passwordFormCard.newPasswordRequired"),
                                 minLength: {
                                     value: 8,
-                                    message: "Password must be at least 8 characters long",
+                                    message: t("components.passwordFormCard.minLength"),
                                 },
                                 maxLength: {
                                     value: 30,
-                                    message: "Password must not exceed 30 characters",
+                                    message: t("components.passwordFormCard.maxLength"),
                                 },
                                 validate: {
                                     hasLowercase: (value) =>
                                         /[a-z]/.test(value) ||
-                                        "Password must include at least one lowercase letter",
+                                        t("components.passwordFormCard.hasLowercase"),
                                     hasUppercase: (value) =>
                                         /[A-Z]/.test(value) ||
-                                        "Password must include at least one uppercase letter",
+                                        t("components.passwordFormCard.hasUppercase"),
                                     hasNumber: (value) =>
                                         /[0-9]/.test(value) ||
-                                        "Password must include at least one number",
+                                        t("components.passwordFormCard.hasNumber"),
                                     hasSpecial: (value) =>
                                         /[!@#$%^&*]/.test(value) ||
-                                        "Password must include at least one special character (!@#$%^&*)",
+                                        t("components.passwordFormCard.hasSpecial"),
                                 },
                             }}
                             render={({ field }) => (
                                 <FormItem>
                                     <div className="relative">
-                                        <InputLabel disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >New Password</InputLabel>
+                                        <InputLabel disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >{t("components.passwordFormCard.newPassword")}</InputLabel>
                                         {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
-                                            className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                            className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> :
                                             <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                     </div>
                                     <FormMessage />
@@ -135,17 +140,17 @@ function PasswordForm({ user, isAdmin = false }) {
                             name="confirmPassword"
                             control={passwordForm.control}
                             rules={{
-                                required: "Please confirm your password",
+                                required: t("components.passwordFormCard.confirmPasswordRequired"),
                                 validate: (value) =>
-                                    value === passwordForm.getValues("password") || "Passwords do not match",
+                                    value === passwordForm.getValues("password") || t("components.passwordFormCard.passwordsDoNotMatch"),
                             }}
                             render={({ field }) => (
                                 <FormItem>
                                     <div className="relative">
-                                        <InputLabel  disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >Confirm New Password</InputLabel>
+                                        <InputLabel disabled={isUpdatingPassword} {...field} placeholder=" " type={showPassword ? "text" : "password"} >{t("components.passwordFormCard.confirmPassword")}</InputLabel>
                                         {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
-                                            className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
-                                            <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
+                                            className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> :
+                                            <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3 "}`} />}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -154,14 +159,14 @@ function PasswordForm({ user, isAdmin = false }) {
 
                         <Separator className="mt-6" />
                         <div className="text-sm text-muted-foreground">
-                            <p className="font-medium mb-1">Password requirements:</p>
+                            <p className="font-medium mb-1">{t("components.passwordFormCard.requirementsTitle")}</p>
                             <ul className="list-disc list-inside space-y-1">
-                                <li>At least 8 characters</li>
-                                <li>No more than 30 characters</li>
-                                <li>At least one lowercase letter (a&ndash;z)</li>
-                                <li>At least one uppercase letter (A&ndash;Z)</li>
-                                <li>At least one number (0&ndash;9)</li>
-                                <li>At least one special character (!@#$%^&*)</li>
+                                <li>{t("components.passwordFormCard.minLength")}</li>
+                                <li>{t("components.passwordFormCard.maxLength")}</li>
+                                <li>{t("components.passwordFormCard.lowercase")}</li>
+                                <li>{t("components.passwordFormCard.uppercase")}</li>
+                                <li>{t("components.passwordFormCard.number")}</li>
+                                <li>{t("components.passwordFormCard.special")}</li>
                             </ul>
                         </div>
                         <Separator />
@@ -173,7 +178,7 @@ function PasswordForm({ user, isAdmin = false }) {
                             type="submit"
                             className="cursor-pointer w-full px-3 py-1"
                         >
-                            {isUpdatingPassword ? <Spinner /> : "Update Password"}
+                            {isUpdatingPassword ? <Spinner /> : t("components.passwordFormCard.button")}
                         </Button>
                     </CardFooter>
                 </form>

@@ -150,7 +150,7 @@ function Signup() {
                                         <div className="relative">
                                             <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >Password</InputLabel>
                                             {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
-                                                className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                                className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> :
                                                 <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                         </div>
                                         <FormMessage />

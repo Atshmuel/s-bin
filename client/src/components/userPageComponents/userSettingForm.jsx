@@ -15,9 +15,12 @@ import { AlertCircle } from "lucide-react";
 import { useUpdateUserSettings } from "@/hooks/users/useUpdateUserSettings";
 import { Spinner } from "../ui/spinner";
 import { useAppSide } from "@/contexts/AppSideProvider";
+import { useTranslation } from "react-i18next";
 
 function UserSettingForm({ user, isAdmin = false }) {
     const { toggleSide, isRight } = useAppSide()
+    const { t } = useTranslation();
+
     const { updateSettings, isUpdatingSettings } = useUpdateUserSettings()
 
     const { settingsError, isLoadingSettings, settings } = useUserSettings(user._id)
@@ -69,15 +72,15 @@ function UserSettingForm({ user, isAdmin = false }) {
     return (
         <Card className="min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center'>
-                <CardTitle className="mb-1">Preferences & Settings</CardTitle>
-                <CardDescription>Customize {isAdmin ? 'user' : 'your'} experience by updating {isAdmin ? 'user' : 'your'} settings</CardDescription>
+                <CardTitle className="mb-1">{t("components.userSettingsCard.title")}</CardTitle>
+                <CardDescription>{t("components.userSettingsCard.description", isAdmin ? { entity: t("user") } : { entity: t("your") })}</CardDescription>
             </CardHeader>
             <Separator className="mb-5" />
             {settingsError ?
                 <CardContent>
                     <div className="flex justify-center items-center gap-4">
                         <AlertCircle />
-                        <p>Failed to get {isAdmin ? 'user' : 'your'} settings, please try to reload the page in few seconds</p>
+                        <p>{t("components.userSettingsCard.settingsError", isAdmin ? { entity: t("user") } : { entity: t("your") })}</p>
                     </div>
                 </CardContent>
                 :
@@ -86,7 +89,7 @@ function UserSettingForm({ user, isAdmin = false }) {
                         <form onSubmit={userSettings.handleSubmit(handleUpdateSettings)} >
                             <CardContent className="overflow-auto max-h-[calc(100dvh-270px)] space-y-4">
                                 <div>
-                                    <h2 className='mb-6'>Interface Settings</h2>
+                                    <h2 className='mb-6'>{t("components.userSettingsCard.sectionOne.title")}</h2>
                                     <div className="space-y-4">
                                         <FormField
                                             name="isDark"
@@ -97,10 +100,10 @@ function UserSettingForm({ user, isAdmin = false }) {
                                                         <FormControl>
                                                             <Switch isRight={isRight} className="m-0" checked={field.value} onCheckedChange={field.onChange} />
                                                         </FormControl>
-                                                        <Label>Enable Dark Theme</Label>
+                                                        <Label>{t("components.userSettingsCard.sectionOne.fieldOne.label")}</Label>
                                                     </div>
                                                     <FormDescription>
-                                                        This will change the default theme for {isAdmin ? 'user' : 'your'} interface between light and dark mode.
+                                                        {t("components.userSettingsCard.sectionOne.fieldOne.description", isAdmin ? { entity: t("user") } : { entity: t("your") })}
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -110,7 +113,7 @@ function UserSettingForm({ user, isAdmin = false }) {
                                             control={userSettings.control}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <Label>Language Preference</Label>
+                                                    <Label>{t("components.userSettingsCard.sectionOne.fieldTwo.label")}</Label>
                                                     <FormControl>
                                                         <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
                                                             if (value) {
@@ -130,7 +133,7 @@ function UserSettingForm({ user, isAdmin = false }) {
                                 </div>
                                 <Separator />
                                 <div>
-                                    <h2 className='mb-6'>Notifications</h2>
+                                    <h2 className='mb-6'>{t("components.userSettingsCard.sectionTwo.title")}</h2>
                                     <div className="space-y-6">
                                         <FormField
                                             name="notifications.email"
@@ -140,7 +143,7 @@ function UserSettingForm({ user, isAdmin = false }) {
                                                     <FormControl>
                                                         <Switch isRight={isRight} className="m-0" checked={field.value} onCheckedChange={field.onChange} />
                                                     </FormControl>
-                                                    <Label>Enable Email Notifications</Label>
+                                                    <Label>{t("components.userSettingsCard.sectionTwo.fieldOne.label")}</Label>
                                                 </FormItem>
                                             )}
                                         />
@@ -149,20 +152,20 @@ function UserSettingForm({ user, isAdmin = false }) {
                                             control={userSettings.control}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <Label>Bin Health Alert</Label>
+                                                    <Label>{t("components.userSettingsCard.sectionTwo.fieldTwo.label")}</Label>
                                                     <FormControl>
-                                                        <ToggleGroup className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                        <ToggleGroup className={`mt-3 border-[0.1px] border-primary  rounded-md w-fit  ${isRight ? "" : "flex-row-reverse flex"}`} type="single" value={field.value} onValueChange={(value) => {
                                                             if (value) {
                                                                 field.onChange(value)
                                                             }
                                                         }}>
-                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="good">Good</ToggleGroupItem>
-                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">Warning</ToggleGroupItem>
-                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">Critical</ToggleGroupItem>
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="good">{t("levels.good")}</ToggleGroupItem>
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">{t("levels.warning")}</ToggleGroupItem>
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">{t("levels.critical")}</ToggleGroupItem>
                                                         </ToggleGroup>
                                                     </FormControl>
                                                     <FormDescription>
-                                                        Health level of the bin that {isAdmin ? 'user' : 'you'} want to get notified from.
+                                                        {t("components.userSettingsCard.sectionTwo.fieldTwo.description", isAdmin ? { entity: t("user") } : { entity: t("you") })}
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -174,13 +177,13 @@ function UserSettingForm({ user, isAdmin = false }) {
                                             render={({ field }) => (
                                                 <FormItem >
                                                     <div className="flex flex-col items-start gap-4">
-                                                        <Label>Bins Alert Level: <span>{field.value}</span></Label>
+                                                        <Label>{t("components.userSettingsCard.sectionTwo.fieldThree.label")}: <span>{field.value}</span></Label>
                                                         <FormControl>
                                                             <Slider className='w-[55%] m-0' min={10} max={100} step={5} value={[field.value]} onValueChange={(value) => field.onChange(value)} />
                                                         </FormControl>
                                                     </div>
                                                     <FormDescription>
-                                                        The fill percentage of the bin at which {isAdmin ? 'user' : 'you'} want to receive notifications.
+                                                        {t("components.userSettingsCard.sectionTwo.fieldThree.description", isAdmin ? { entity: t("user") } : { entity: t("you") })}
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -190,20 +193,20 @@ function UserSettingForm({ user, isAdmin = false }) {
                                             control={userSettings.control}
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <Label>Log Severity Alert</Label>
+                                                    <Label>{t("components.userSettingsCard.sectionTwo.fieldFour.label")}</Label>
                                                     <FormControl>
                                                         <ToggleGroup className="mt-3 border-[0.1px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
                                                             if (value) {
                                                                 field.onChange(value)
                                                             }
                                                         }}>
-                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="info">Info</ToggleGroupItem>
-                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">Warning</ToggleGroupItem>
-                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">Critical</ToggleGroupItem>
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="info">{t("severities.info")}</ToggleGroupItem>
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="warning">{t("severities.warning")}</ToggleGroupItem>
+                                                            <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="critical">{t("severities.critical")}</ToggleGroupItem>
                                                         </ToggleGroup>
                                                     </FormControl>
                                                     <FormDescription>
-                                                        Bin log severity that {isAdmin ? 'user' : 'you'} want to get notified from.
+                                                        {t("components.userSettingsCard.sectionTwo.fieldFour.description", isAdmin ? { entity: t("user") } : { entity: t("you") })}
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -214,14 +217,14 @@ function UserSettingForm({ user, isAdmin = false }) {
                                             render={({ field }) => (
                                                 <FormItem >
                                                     <div className="flex flex-col items-start gap-4">
-                                                        <Label>Maintenance Notification (days): <span>{field.value}</span></Label>
+                                                        <Label>{t("components.userSettingsCard.sectionTwo.fieldFive.label")}: <span>{field.value}</span></Label>
                                                         <FormControl>
                                                             <Slider className='w-[55%] m-0' min={7} max={60} step={1} value={[field.value]} onValueChange={(value) => field.onChange(value)} />
                                                         </FormControl>
 
                                                     </div>
                                                     <FormDescription>
-                                                        Days in advance to receive a maintenance alert.
+                                                        {t("components.userSettingsCard.sectionTwo.fieldFive.description")}
                                                     </FormDescription>
                                                 </FormItem>
                                             )}
@@ -236,7 +239,7 @@ function UserSettingForm({ user, isAdmin = false }) {
                                     type="submit"
                                     className="cursor-pointer w-full px-3 py-1"
                                 >
-                                    {isUpdatingSettings ? <Spinner /> : "Update"}
+                                    {isUpdatingSettings ? <Spinner /> : t("components.userSettingsCard.updateButton")}
                                 </Button>
                             </CardFooter>
                         </form>

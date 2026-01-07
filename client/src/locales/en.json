@@ -21,6 +21,9 @@
     "coordinates":"Coordinates",
     "zoom":"Zoom",
 "backToBin":"Back to Bin",
+"user":"User",
+"your":"Your",
+"you":"You",
   "roles":{
       "owner": "Owner",
       "admin": "Admin",
@@ -411,12 +414,25 @@
         "level":"Fill Level",
         "lastDays":"Last {{count}} Days"
       }
+    },
+    "userProfile":{
+      "isNotAdmin":"You do not have admin privileges to view this page.",
+      "failedToLoad":"Could not find the user you are looking for.",
+      "errorButton":"Back to users list"
     }
+
   },
   "confirmations":{
     "confirmationTitle":"Confirm Permanent Deletion",
     "confirmationDescription":"This action will permanently delete the bin. To confirm, type 'Delete' in the field below. This action cannot be undone.",
-    "typeDelete":"Type: 'Delete' to perform deletion"
+    "typeDelete":"Type: 'Delete' to perform deletion",
+    "confirmationDescriptionUser":"This action will permanently delete all user's bins.",
+    "confirmationDescriptionYour":"This action will permanently delete all your bins.",
+    "typeDeleteAll":"To confirm, type 'Delete All' in the field below. This action cannot be undone.",
+    "confirmationUserDeletion":"This action will permanently delete the user's account",
+    "confirmationAccountDeletion":"This action will permanently delete your account",
+    "confirmationUserName":"To confirm, type {{userName}} in the field below, This action cannot be undone.",
+    "typeUserName":"Type: '{{userName}}' to perform deletion"
   },
   "components":{
     "binCard":{
@@ -448,6 +464,90 @@
       "logSource":"Log Source",
       "errorCard":"Could not load log data.",
       "errorDescription":"The log information is currently unavailable. Please try again later."
-    }
+    },
+    "errorPage":{
+      "description":"Oops, it looks like the page you're looking for doesn't exist.",
+      "buttonText":"Go To Homepage"
+    },
+    "dangerZoneCard":{
+      "title":"Danger Zone",
+      "subTitle":"This section contains actions that will affect many other variables, Please act carefully.",
+      "deleteUserBins":"Delete all user bins",
+      "deleteYourBins":"Delete all your bins",
+      "deleteUserAccount":"Delete User account",
+      "deleteYourAccount":"Delete Your account",
+      "note":"Note",
+      "warning":"All actions above cannot be undone. Please keep that in mind."
+    },
+    "profileFormCard":{
+      "userProfile":"User Profile",
+      "myProfile":"My Profile",
+      "updateAsAdmin":"Update user personal information",
+      "updateAsUser":"Update your personal information",
+      "tooltip":"This tag shows the user’s status — whether they’re active, suspended, or waiting to be activated.",
+      "requiredName":"Name is required",
+      "emptyNameError":"Name cannot be empty or only spaces",
+      "fullNameError":"Please enter first and last name",
+      "fullNameTitle":"Full Name",
+      "requiredEmail":"Email is required",
+      "emptyEmailError":"Email cannot be empty or only spaces",
+      "invalidEmailError":"Invalid email address",
+      "emailTitle":"Email Address",
+      "updateButton":"Update"
+    },
+    "passwordFormCard":{
+      "updateUserPassword":"Update User Password",
+      "updateYourPassword":"Update Your Password",
+      "description":"Keep your account safe by updating {{entity}} password",
+      "requiredPassword":"Password is required",
+      "minLength":"Password must be at least 8 characters long",
+      "maxLength":"Password must not exceed 30 characters",
+      "lowercase":"Password must include at least one lowercase letter (a-z)",
+      "uppercase":"Password must include at least one uppercase letter (A-Z)",
+      "number":"Password must include at least one number (0-9)",
+      "special":"Password must include at least one special character (!@#$%^&*)",
+      "oldPassword":"Old Password",
+      "newPassword":"New Password",
+      "confirmPassword":"Confirm New Password",
+      "notMatch":"Passwords does not match",
+      "button":"Update Password",
+      "requirementsTitle":"Password Requirements"
+    },
+    "userSettingsCard":{
+      "title":"Preferences & Settings",
+      "description":"Customize {{entity}} experience by updating {{entity}} settings",
+      "settingsError":"Failed to get {{entity}} settings, please try to reload the page in few seconds",
+      "updateButton":"Update Settings",
+      "sectionOne":{
+        "title":"Interface Settings",
+        "fieldOne":{
+          "label":"Enable Dark Mode",
+          "description":"This will change the default theme for {{entity}} interface between light and dark mode."
+        },
+        "fieldTwo":{
+          "label":"Language Preference"
+        }
+      },
+      "sectionTwo":{
+        "title":"Notification Settings",
+        "fieldOne":{
+          "label":"Email Notifications"
+        },
+        "fieldTwo":{
+          "label":"Bin health alerts",
+          "description":"Health level of the bin that {{entity}} want to get notified from."
+        },"fieldThree":{
+          "label":"Fill level alerts",
+          "description":"Fill level of the bin that you want to get notified from."
+        },"fieldFour":{
+          "label":"Log severity alerts",
+          "description":"Bin log severity that you want to get notified from."
+        },"fieldFive":{
+          "label":"Maintenance reminders (days before)",
+          "description":"Number of days before the scheduled maintenance to get a reminder notification."
+        }
+      }
+    },
+    "userManagementCard":{}
   }
 }

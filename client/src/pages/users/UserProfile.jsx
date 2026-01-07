@@ -8,10 +8,12 @@ import { useMe } from "@/hooks/users/auth/useMe"
 import { useUser } from "@/hooks/users/useUser"
 import { useParams } from "react-router-dom"
 import ErrorPage from "../generals/ErrorPage"
+import { useTranslation } from "react-i18next"
 
 
 function UserProfile() {
     let { id } = useParams()
+    const { t } = useTranslation()
     const { isAdmin } = useMe()
 
     const { user, isLoadingUser, userError } = useUser(id)
@@ -22,11 +24,11 @@ function UserProfile() {
     }
 
     if (!isAdmin) {
-        return <ErrorPage code={403} description="You are not allowed to see this page" navTo="/users" buttonText="Back to users" />
+        return <ErrorPage code={403} description={t('pages.userProfile.isNotAdmin')} navTo="/users" buttonText={t('pages.userProfile.errorButton')} />
     }
 
     if (!isLoadingUser && userError) {
-        return <ErrorPage code={500} description="Could not find the user you'r looking for" navTo="/users" buttonText="Back to users" />
+        return <ErrorPage code={500} description={t('pages.userProfile.failedToLoad')} navTo="/users" buttonText={t('pages.userProfile.errorButton')} />
     }
 
 

@@ -15,9 +15,12 @@ import { useOrgManagers } from "@/hooks/users/useOrgManagers";
 import { useOrganizations } from "@/hooks/organizations/useOrganizations";
 import { Skeleton } from "../ui/skeleton";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
+import { useTranslation } from "react-i18next";
 
 function UserManagment({ user, isAdmin = false }) {
     const { me, isOwner } = useMe()
+    const { t } = useTranslation();
+
     const { updateRole, isUpdatingRole } = useUpdateUserRole()
     const { updateStatus, isUpdatingStatus } = useUpdateUserStatus()
     const { updateOrgAndManager, isUpdatingOrgAndManager } = useUpdateOrgAndManager()

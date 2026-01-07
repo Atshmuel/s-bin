@@ -21,6 +21,9 @@
     "coordinates":"קואורדינטות",
     "zoom":"זום",
 "backToBin":"חזרה לפח",
+"user":"משתמש",
+"your":"שלך",
+"you":"את/ה",
 
     "roles":{
        "owner": "בעלים",
@@ -417,13 +420,25 @@
         "level":"רמת מילוי",
         "lastDays":"{{count}} ימים אחרונים"
       }
+    },
+  "userProfile":{
+      "isNotAdmin":"אין לך הרשאות מנהל לצפייה בדף זה.",
+      "failedToLoad":"לא ניתן למצוא את המשתמש שאתה מחפש.",
+      "errorButton":"חזרה לרשימת המשתמשים"
     }
-    
   },
    "confirmations":{
     "confirmationTitle":"אשר מחיקה לצמיתות",
     "confirmationDescription":"פעולה זו תמחק לצמיתות את הפח, לאשר על ידי הקלדת 'מחק' בשדה למטה, פעולה זו אינה ניתנת לביטול.",
-    "typeDelete":"הקלד: 'מחק' כדי לבצע את המחיקה"
+    "typeDelete":"הקלד: 'מחק' כדי לבצע את המחיקה",
+    "confirmationDescriptionUser":"פעולה זו תמחק לצמיתות את כל הפחים של המשתמש.",
+    "confirmationDescriptionYour":"פעולה זו תמחק לצמיתות את כל הפחים שלך.",
+    "typeDeleteAllDesc":"כדי לאשר, הקלד 'מחק הכל' בשדה למטה. פעולה זו אינה ניתנת לביטול.",
+    "typeDeleteAll":"כדי לאשר הקלד 'מחק הכל'.",
+    "confirmationUserDeletion":"פעולה זו תמחק לצמיתות את חשבון המשתמש",
+    "confirmationAccountDeletion":"פעולה זו תמחק לצמיתות את החשבון שלך",
+    "confirmationUserName":"כדי לאשר, הקלד {{userName}} בשדה למטה, פעולה זו אינה ניתנת לביטול.",
+    "typeUserName":"הקלד: '{{userName}}' כדי לבצע את המחיקה"
   },
    "components":{
     "binCard":{
@@ -455,6 +470,90 @@
       "logSource":"מקור התיעוד",
       "errorCard":"לא ניתן לטעון את נתוני התיעוד.",
       "errorDescription":"המידע אודות התיעוד אינו זמין כרגע. אנא נסה שוב מאוחר יותר."
+    },
+    "errorPage":{
+      "description":"אופס, נראה שהדף שאתה מחפש לא קיים.",
+      "buttonText":"עבור לדף הבית"
+    },
+    "profileFormCard":{
+      "userProfile":"פרופיל משתמש",
+      "myProfile":"הפרופיל שלי",
+      "updateAsAdmin":"עדכן מידע אישי של משתמש",
+      "updateAsUser":"עדכן את המידע האישי שלך",
+      "tooltip":"תג זה מציג את מצב המשתמש — האם הוא פעיל, מושעה, חסום או ממתין לאישור.",
+      "requiredName":"שם נדרש",
+      "emptyNameError":"השם לא יכול להיות ריק או להכיל רק רווחים",
+      "fullNameError":"אנא הזן שם פרטי ושם משפחה",
+      "fullNameTitle":"שם מלא",
+      "requiredEmail":"אימייל נדרש",
+      "emptyEmailError":"האימייל לא יכול להיות ריק או להכיל רק רווחים",
+      "invalidEmailError":"כתובת אימייל לא חוקית",
+      "emailTitle":"כתובת אימייל",
+      "updateButton":"עדכן"
+    },
+    "dangerZoneCard":{
+      "title":"אזור מסוכן",
+      "subTitle":"קטע זה מכיל פעולות שישפיעו המון משתנים אחרים, אנא פעל בזהירות.",
+      "deleteUserBins":"מחק את כל הפחים של המשתמש",
+      "deleteYourBins":"מחק את כל הפחים שלך",
+      "deleteUserAccount":"מחק את חשבון המשתמש",
+      "deleteYourAccount":"מחק את החשבון שלך",
+      "note":"הערה",
+      "warning":"כל הפעולות שלמעלה אינן ניתנות לביטול. אנא זכור זאת."
+    },
+      "passwordFormCard":{
+      "updateUserPassword":"עדכן סיסמת משתמש",
+      "updateYourPassword":"עדכן את הסיסמה שלך",
+      "description":"שמור על חשבונך בטוח על ידי עדכון סיסמת {{entity}}",
+      "requiredPassword":"סיסמה נדרשת",
+      "minLength":"הסיסמה חייבת להיות באורך של לפחות 8 תווים",
+      "maxLength":"הסיסמה לא תעלה על 30 תווים",
+      "lowercase":"הסיסמה חייבת לכלול לפחות אות קטנה אחת (a-z)",
+      "uppercase":"הסיסמה חייבת לכלול לפחות אות גדולה אחת (A-Z)",
+      "number":"הסיסמה חייבת לכלול לפחות מספר אחד (0-9)",
+      "special":"הסיסמה חייבת לכלול לפחות תו מיוחד אחד (!@#$%^&*)",
+      "oldPassword":"סיסמה ישנה",
+      "newPassword":"סיסמה חדשה",
+      "confirmPassword":"אשר סיסמה חדשה",
+      "notMatch":"הסיסמאות אינן תואמות",
+      "button":"עדכן סיסמה",
+      "requirementsTitle":"דרישות סיסמה"
+    },
+    "userManagementCard":{},
+      "userSettingsCard":{
+      "title":"הגדרות והעדפות",
+      "description":"התאם את חוויית {{entity}} על ידי עדכון הגדרות {{entity}} האישיות והעדפות ההתראות.",
+      "settingsError":"לא ניתן לטעון את הגדרות {{entity}}, אנא נסה לטעון מחדש את הדף בעוד כמה שניות",
+      "updateButton":"עדכן הגדרות",
+      "sectionOne":{
+        "title":"הגדרות ממשק",
+        "fieldOne":{
+          "label":"הפעל מצב כהה",
+          "description":"הגדרה זו תאפשר לממשק המשתמש לעבור למצב כהה לנוחות צפייה משופרת בסביבות עם תאורה נמוכה."
+        },
+        "fieldTwo":{
+          "label":"העדפת שפה"
+        }
+      },
+      "sectionTwo":{
+        "title":"הגדרות התראות",
+        "fieldOne":{
+          "label":"התראות אימייל"
+        },
+        "fieldTwo":{
+          "label":"התראות מצב בריאות הפח",
+          "description":"רמת הבריאות של הפח ש{{entity}} רוצה לקבל התראה עליה."
+        },"fieldThree":{
+          "label":"התראות רמת מילוי הפח",
+          "description":"רמת המילוי של הפח ש{{entity}} רוצה לקבל התראה עליה."
+        },"fieldFour":{
+          "label":"התראות חומרת התיעוד",
+          "description":"חומרת התיעוד ש{{entity}} רוצה לקבל התראה עליה."
+        },"fieldFive":{
+          "label":"תזכורות תחזוקה (ימים לפני)",
+          "description":"מספר הימים לפני התחזוקה המתוכננת לקבלת התראה."
+        }
+      }
     }
   }
 }

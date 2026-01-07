@@ -127,7 +127,7 @@ function AddBin() {
 
                                         onChange={(e) => setPassword(e.target.value)} placeholder=" " type={showPassword && deviceConnected ? "text" : "password"} >{t("pages.addBin.stepTwo.wifiPassword")}</InputLabel>
                                     {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
-                                        className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                        className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> :
                                         <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                                 </div>
                             </CardContent>

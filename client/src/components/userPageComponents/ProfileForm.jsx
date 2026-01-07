@@ -10,9 +10,11 @@ import { Badge } from "../ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { useEffect } from "react";
 import { useUpdateUserInfo } from "@/hooks/users/useUpdateUser";
+import { useTranslation } from "react-i18next";
 
 function ProfileForm({ user, isAdmin = false }) {
     const { name, email, role, status } = user
+    const { t } = useTranslation();
     const { updateInfo, isUpdatingInfo } = useUpdateUserInfo()
 
     const profileForm = useForm({
@@ -51,21 +53,21 @@ function ProfileForm({ user, isAdmin = false }) {
     return (
         <Card className="min-w-[330px] max-w-[400px] h-fit">
             <CardHeader className='text-center flex flex-row justify-between relative'>
-                {profileForm.getValues('role').length ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('role').toLocaleLowerCase()}>{profileForm.getValues('role')}</Badge> : null}
+                {profileForm.getValues('role').length ? <Badge className="sticky top-14 m-0" variant={profileForm.getValues('role').toLocaleLowerCase()}>{t(`roles.${profileForm.getValues('role')}`)}</Badge> : null}
                 <div>
                     <Avatar className="mx-auto mb-5 h-20 w-20 text-2xl rounded-full">
                         <AvatarImage src={profileForm.getValues('avatar')} alt={profileForm.watch('name')} />
                         <AvatarFallback>{fallbackName}</AvatarFallback>
                     </Avatar>
-                    <CardTitle className="mb-1">{isAdmin ? 'User' : 'My'} Profile</CardTitle>
-                    <CardDescription>Update {isAdmin ? 'user' : 'your'} personal information</CardDescription>
+                    <CardTitle className="mb-1">{isAdmin ? t('components.profileFormCard.userProfile') : t('components.profileFormCard.myProfile')}</CardTitle>
+                    <CardDescription>{isAdmin ? t('components.profileFormCard.updateAsAdmin') : t('components.profileFormCard.updateAsUser')}</CardDescription>
                 </div>
                 <Tooltip>
                     <TooltipTrigger className="h-fit sticky top-14 m-0" asChild>
-                        {profileForm.getValues('status') ? <Badge variant={profileForm.getValues('status').toLocaleLowerCase()}>{profileForm.getValues('status')}</Badge> : null}
+                        {profileForm.getValues('status') ? <Badge variant={profileForm.getValues('status').toLocaleLowerCase()}>{t(`statuses.${profileForm.getValues('status')}`)}</Badge> : null}
                     </TooltipTrigger>
                     <TooltipContent side='bottom' >
-                        <p>This tag shows the user’s status — whether they’re active, suspended, or waiting to be activated.</p>
+                        <p>{t('components.profileFormCard.tooltip')}</p>
                     </TooltipContent>
                 </Tooltip>
             </CardHeader>
@@ -77,19 +79,19 @@ function ProfileForm({ user, isAdmin = false }) {
                             name="name"
                             control={profileForm.control}
                             rules={{
-                                required: "Name is required", validate: {
+                                required: t('components.profileFormCard.requiredName'), validate: {
                                     notEmpty: (value) =>
-                                        value.trim().length > 0 || "Name cannot be empty or only spaces",
+                                        value.trim().length > 0 || t('components.profileFormCard.emptyNameError'),
                                     fullName: (value) => {
                                         const parts = value.trim().split(/\s+/); // מפרק לפי רווחים
-                                        return parts.length >= 2 || "Please enter first and last name";
+                                        return parts.length >= 2 || t('components.profileFormCard.fullNameError');
                                     },
                                 }
                             }}
                             render={({ field }) => (
                                 <FormItem>
-                                    <Label>Full Name</Label>
-                                    <Input className="pb-2" {...field} placeholder="Full Name" type="text" />
+                                    <Label>{t('components.profileFormCard.fullNameTitle')}</Label>
+                                    <Input className="pb-2" {...field} placeholder={t('components.profileFormCard.fullNameTitle')} type="text" />
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -98,20 +100,20 @@ function ProfileForm({ user, isAdmin = false }) {
                             name="email"
                             control={profileForm.control}
                             rules={{
-                                required: "Email is required",
+                                required: t('components.profileFormCard.requiredEmail'),
                                 pattern: {
                                     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                    message: "Invalid email address",
+                                    message: t('components.profileFormCard.invalidEmailError'),
                                 },
                                 validate: {
                                     notEmpty: (value) =>
-                                        value.trim().length > 0 || "Email cannot be empty or only spaces",
+                                        value.trim().length > 0 || t('components.profileFormCard.emptyEmailError'),
                                 },
                             }}
                             render={({ field }) => (
                                 <FormItem>
-                                    <Label>Email Address</Label>
-                                    <Input className="pb-2" {...field} placeholder="Email Address" type="text" />
+                                    <Label>{t('components.profileFormCard.emailTitle')}</Label>
+                                    <Input className="pb-2" {...field} placeholder={t('components.profileFormCard.emailTitle')} type="text" />
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -124,7 +126,7 @@ function ProfileForm({ user, isAdmin = false }) {
                             type="submit"
                             className="cursor-pointer w-full px-3 py-1"
                         >
-                            Update
+                            {t('components.profileFormCard.updateButton')}
                         </Button>
                     </CardFooter>
                 </form>

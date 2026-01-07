@@ -112,7 +112,7 @@ function UserInputs({ form, isCreating }) {
                             <div className="relative">
                                 <InputLabel disabled={isCreating}{...field} placeholder=" " type={showPassword ? "text" : "password"} >{t("newEntity.userInputs.fields.password.label")}</InputLabel>
                                 {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
-                                    className={`absolute top-3${isRight ? 'right-3' : "left-3"}`} /> :
+                                    className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> :
                                     <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
                             </div>
                             <FormMessage />

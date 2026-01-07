@@ -446,9 +446,9 @@ export async function updateUserManagerAndOrg(req, res) {
 
 export async function getUser(req, res) {
     const { id } = req.params
-    const { role } = req.user
+    const { role, id: CurrUserId } = req.user
 
-    let query = { _id: new mongoose.Types.ObjectId(id) }
+    let query = { _id: new mongoose.Types.ObjectId(ROLE_LEVEL[role] >= ROLE_LEVEL['admin'] ? id : id) }
 
     try {
         const userData = await userModel.findOne(query, { passwordHash: 0, __v: 0 })
