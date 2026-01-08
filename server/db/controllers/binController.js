@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { binModel } from '../models/models.js'
-import { appendFilter, generateRandomToken } from '../../utils/helpers.js'
-import { deleteLogsForBins, getUserShared } from '../service/sharedService.js'
+import { appendFilter } from '../../utils/helpers.js'
+import { deleteLogsForBins } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
 

@@ -753,5 +753,42 @@
         }
     }
 }
-  }
+  },
+"toasts":{
+  "failedLoadBins":"טעינת הפחים נכשלה.",
+  "failedToDeleteBins":"מחיקת הפחים נכשלה.",
+  "binsDeletedSuccessfully":"הפחים נמחקו בהצלחה.",
+  "binDeletedSuccessfully":"הפח נמחק בהצלחה.",
+  "failedToDeleteBin":"מחיקת הפח נכשלה.",
+  "organizationCreatedSuccessfully":"הארגון נוצר בהצלחה.",
+  "failedToCreateOrganization":"יצירת הארגון נכשלה.",
+  "userCreatedSuccessfully":"המשתמש נוצר בהצלחה.",
+  "failedToCreateUser":"יצירת המשתמש נכשלה.",
+  "accountDeletedSuccessfully":"החשבון נמחק בהצלחה.",
+  "failedToDeleteAccount":"מחיקת החשבון נכשלה.",
+  "userDeletedSuccessfully":"המשתמש נמחק בהצלחה.",
+  "failedToDeleteUser":"מחיקת המשתמש נכשלה.",
+  "updatedInformationSuccessfully":"המידע עודכן בהצלחה.",
+  "failedToUpdateInformation":"עדכון המידע נכשל.",
+  "updatedPasswordSuccessfully":"הסיסמה עודכנה בהצלחה.",
+  "failedToUpdatePassword":"עדכון הסיסמה נכשל.",
+  "settingsUpdatedSuccessfully":"ההגדרות עודכנו בהצלחה.",
+  "failedToUpdateSettings":"עדכון ההגדרות נכשל.",
+  "updatedRoleSuccessfully":"התפקיד עודכן בהצלחה.",
+  "failedToUpdateRole":"עדכון התפקיד נכשל.",
+  "updatedStatusSuccessfully":"הסטטוס עודכן בהצלחה.",
+  "failedToUpdateStatus":"עדכון הסטטוס נכשל.",
+  "updatedOrgAndManagerSuccessfully":"הארגון והמנהל עודכנו בהצלחה.",
+  "failedToUpdateOrgAndManager":"עדכון הארגון והמנהל נכשל.",
+  "forgotPasswordEmailSent":"נשלח אימייל לשחזור סיסמה, אנא בדקו את תיבת הדואר.",
+  "failedToSendForgotPasswordEmail":"שליחת אימייל לשחזור סיסמה נכשלה, אנא נסו שוב.",
+  "verificationCodeInvalid":"קוד האימות אינו תקין, אנא נסו שוב.",
+  "verificationCodeValid":"קוד האימות תקין, כעת ניתן לאפס את הסיסמה.",
+  "loginSuccessfully":"ההתחברות בוצעה בהצלחה, מתבצעת הפניה...",
+  "failedToLogin":"ההתחברות נכשלה, אנא בדקו את פרטי ההתחברות ונסו שוב.",
+  "failedToLoadOverview":"טעינת סקירת ה-AI נכשלה.",
+  "failToLoadStatus":"טעינת סטטוס הסקירה נכשלה.",
+  "failToLoadTypes":"טעינת סוגי סקירת הלוגים נכשלה."
+}
+
 }

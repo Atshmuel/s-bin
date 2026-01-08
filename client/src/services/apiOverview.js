@@ -22,12 +22,6 @@ export async function getBinsStatusOverviews() {
 }
 
 export async function getAIOverviewStream() {
-    const useMock = true;
-    if (useMock) {
-        const resp = await fetch('../../public/data.json');
-        return await resp.json();
-    }
-
     const res = await fetch(`${SERVER_URL}/${OVERVIEW_EP}/ai-ov`, {
         method: "GET",
         credentials: "include",

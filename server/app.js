@@ -44,11 +44,11 @@ app.use("/api/overviews", overViewRouter);
 
 const main = async () => {
     try {
-        // initMqtt();
+        initMqtt();
         await mongoose.connect(`${DB_URL}`);
         // await import("./db/cron/cleanupOTP.js");
         // await import("./db/cron/cleanupActivationToken.js");
-        // setEmailServiceCredentials()
+        setEmailServiceCredentials()
         // await import("./db/cron/notifyCriticalBins.js");
         app.listen(SERVER_PORT, () => {
             console.log(mongoose.connection.readyState === 1 && `Connected to DB.`);

@@ -1,11 +1,13 @@
 import { getAllUserBins, getBinsInUserRadius } from "@/services/apiBins";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 
 export function useBins() {
     const [searchParams] = useSearchParams();
+    const { t } = useTranslation()
 
     let { radius, minLevel, maxLevel, health, coordinates } = Object.fromEntries([...searchParams]);
 
@@ -24,7 +26,7 @@ export function useBins() {
 
 
     if (!data && binsError) {
-        return toast.error(binsError.message || "Failed to load bins.");
+        return toast.error(binsError.message || t("toasts.failedLoadBins"));
     }
 
 

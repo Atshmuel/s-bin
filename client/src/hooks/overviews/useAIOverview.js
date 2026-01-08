@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAIOverviewStream } from '../../services/apiOverview';
 import { toast } from "sonner";
+import { useTranslation } from 'react-i18next';
 
 export function useAIOverview() {
+    const { t } = useTranslation()
     const {
         data,
         isPending: isLoadingAIOverview,
@@ -19,7 +21,7 @@ export function useAIOverview() {
 
 
     if (!data && aiOverviewError) {
-        return toast.error(aiOverviewError.message || "Failed to load overview status.");
+        return toast.error(aiOverviewError.message || t("toasts.failedToLoadOverview"));
     }
 
     const insights = data?.insights || []

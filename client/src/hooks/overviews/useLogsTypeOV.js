@@ -1,8 +1,11 @@
 import { getLogTypeOverviews } from "@/services/apiOverview";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 export function useLogsTypeOV() {
+    const { t } = useTranslation()
+
     const {
         data,
         isPending: isLoadingLogTypeOV,
@@ -14,7 +17,7 @@ export function useLogsTypeOV() {
 
 
     if (!data && logTypeOVError) {
-        return toast.error(logTypeOVError.message || "Failed to load logs type overviews.");
+        return toast.error(logTypeOVError.message || t('toasts.failToLoadTypes'));
     }
 
     const logTypes = data?.logsByTypes || []

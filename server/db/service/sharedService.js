@@ -304,7 +304,7 @@ export async function getAIOverview(req, res) {
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
-    const logs = await binLogModel.find(query).limit(150)
+    const logs = await binLogModel.find(query, { source: 0, message: 0, updatedAt: 0 }).limit(150)
 
     const { appLanguage } = await userSettingModel.findOne({ userId: id }).select('appLanguage -_id')
 

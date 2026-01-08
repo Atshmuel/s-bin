@@ -1,4 +1,4 @@
-import { getBinByMacAndKeyShared, getUserShared } from "../db/service/sharedService.js";
+import { getBinByMacAndKeyShared, getUserShared, organizationExist } from "../db/service/sharedService.js";
 import { appendFilter, checkPayloadFields, generateRandomToken } from '../utils/helpers.js'
 import { mqttClient } from './mqttClient.js'
 import { BIN_REGISTER_TOPIC, BIN_ACK_TOPIC, BIN_ACK_COMMAND } from "./mqttTopics.js";
@@ -34,12 +34,12 @@ export async function handleMqttMessage(topic, payload) {
     }
 }
 
-async function handleRegistration({ mac, userId, location, battery }) {
+async function handleRegistration({ mac, orgId, location, battery }) {
     try {
 
-        const existingUser = await getUserShared(userId);
-        if (!existingUser) {
-            console.log("User not found");
+        const orgExist = await organizationExist(orgId)
+        if (!orgExist) {
+            console.log("Organization not found");
             return;
         }
 
@@ -60,7 +60,7 @@ async function handleRegistration({ mac, userId, location, battery }) {
         const newBin = await binModel.create({
             binName,
             macAddress: mac,
-            ownerId: userId,
+            ownerId: orgId,
             deviceKey,
             location: {
                 type: "Point",

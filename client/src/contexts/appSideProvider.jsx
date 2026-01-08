@@ -18,7 +18,7 @@ function AppSideProvider({ children }) {
 
     }
 
-    //Temp for login page
+    // Set initial side based on browser language
     useEffect(() => {
         const browserLang =
             navigator.languages?.[0] || navigator.language || "en";
