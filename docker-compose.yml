@@ -7,6 +7,8 @@ services:
     restart: always
     env_file:
       - ./server/.env
+    ports:
+      - "3002:3002"
 
   client:
     image: shmuela/sbin-client:latest
