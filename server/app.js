@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
-dotenv.config({ path: path.resolve('../.env') });
+dotenv.config({ path: path.resolve('.env') });
 
 import express from "express";
 import mongoose from "mongoose";
@@ -18,7 +18,7 @@ import { organizationRouter } from './routers/organizationRouter.js';
 import { setEmailServiceCredentials } from './utils/mailService.js';
 import { initMqtt } from './mqtt/mqttClient.js';
 
-const { SERVER_PORT, DB_URL } = process.env
+const { SERVER_PORT, DB_URL, CLIENT_BASE_URL } = process.env
 
 const app = express();
 app.use(
@@ -26,6 +26,7 @@ app.use(
         origin: [
             "http://localhost:5173",
             "http://localhost:3000",
+            CLIENT_BASE_URL
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,

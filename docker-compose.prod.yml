@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  server:
+    build: ./server
+    container_name: sbin-server
+    restart: always
+    env_file:
+      - ./server/.env
+    # ports:
+    #   - "3002:3002" //allow access to server from outside, uncomment if needed
+
+  client:
+    build:
+      context: ./client
+      args:
+        VITE_API_URL: http://sbin-server:3002
+    container_name: sbin-client
+    restart: always
+    depends_on:
+      - server
+    ports:
+      - "80:80"

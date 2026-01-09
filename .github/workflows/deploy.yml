@@ -1,0 +1,80 @@
+name: CI/CD - Build & Deploy S-Bin
+
+on:
+  push:
+    branches:
+      - stage-main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # --------------------
+      # Build & Push SERVER
+      # --------------------
+      - name: Build & Push Server Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          push: true
+          platforms: linux/arm64
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/sbin-server:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/sbin-server:${{ github.sha }}
+
+      # --------------------
+      # Build & Push CLIENT
+      # --------------------
+      - name: Build & Push Client Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          push: true
+          platforms: linux/arm64
+          build-args: |
+            VITE_API_URL=http://${{ secrets.VM_PUBLIC_IP }}:3002
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/sbin-client:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/sbin-client:${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy on Oracle VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_PUBLIC_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/s-bin
+
+            echo "Logging into Docker Hub..."
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+
+            echo "Pulling latest images..."
+            docker compose pull
+
+            echo "Restarting containers..."
+            docker compose up -d --force-recreate
+
+            echo "Deployment completed successfully"
