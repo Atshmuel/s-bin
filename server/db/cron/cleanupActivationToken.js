@@ -3,6 +3,8 @@ import { userModel } from "../models/models.js"
 
 if (!global.activationTokenCronStarted) {// To prevent multi crons on activation token
     global.activationTokenCronStarted = true;
+    console.log("activationTokenCronStarted");
+
     cron.schedule('0 0 * * *', async () => {
         try {
             const now = new Date();

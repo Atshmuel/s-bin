@@ -198,7 +198,7 @@ function Dashboard() {
     }
         , {
         title: t('pages.dashboard.cards.avgFillLevel.title'),
-        count: data.averageFillLevel + "%",
+        count: data.averageFillLevel?.toFixed(2) + "%",
         description: t('pages.dashboard.cards.avgFillLevel.description'),
         badgeVariant: 'outline',
         icon: GaugeCircle

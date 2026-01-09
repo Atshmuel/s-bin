@@ -3,6 +3,7 @@ import { userModel } from "../models/models.js"
 
 if (!global.otpCronStarted) {// To prevent multi crons on OTPs
     global.otpCronStarted = true;
+    console.log("otpCronStarted");
     cron.schedule('*/5 * * * *', async () => {
         try {
             const now = new Date();

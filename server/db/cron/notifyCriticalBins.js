@@ -5,6 +5,7 @@ import { innerGetTemplateByTemplateId } from "../service/sharedService.js";
 
 if (!global.dailyBinsStatusCronStarted) {
     global.dailyBinsStatusCronStarted = true;
+    console.log("dailyBinsStatusCronStarted");
 
     cron.schedule("0 8 * * *", async () => {
         try {
