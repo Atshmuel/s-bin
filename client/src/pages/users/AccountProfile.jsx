@@ -1,6 +1,6 @@
 import DangerZone from "@/components/userPageComponents/DangerZone"
 import LoadingProfile from "@/components/userPageComponents/LoadingProfile"
-import PasswordForm from "@/components/userPageComponents/passwordForm"
+import PasswordForm from "@/components/userPageComponents/PasswordForm"
 import ProfileForm from "@/components/userPageComponents/ProfileForm"
 import UserSettingForm from "@/components/userPageComponents/UserSettingForm"
 import { useMe } from "@/hooks/users/auth/useMe"
