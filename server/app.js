@@ -25,7 +25,6 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            "http://localhost:3000",
             CLIENT_BASE_URL
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
