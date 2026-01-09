@@ -50,7 +50,7 @@ function UserManagment({ user, isAdmin = false }) {
     const { isDirty } = userManagment.formState;
 
     function handleUpdate(data) {
-        updateOrgAndManager({ userId: user._id, org: data.org || me.org, manager: data.manager })
+        user.org !== data.org ? updateOrgAndManager({ userId: user._id, org: data.org || me.org, manager: data.manager }) : null
         if (user._id === me.id) {
             toast.warning(t("components.userManagementCard.updateErrorSameUser"))
             return
