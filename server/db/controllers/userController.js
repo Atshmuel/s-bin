@@ -332,8 +332,8 @@ export async function updateUserNameOrEmail(req, res) {
     };
 
     const update = {};
-    if (name != null) update.name = name;
-    if (email != null) update.email = email;
+    if (name !== null) update.name = name;
+    if (email !== null) update.email = email.toLowerCase();
 
     try {
         const updatedUser = await userModel.findOneAndUpdate(filter, { $set: update }, { new: true }).select('-passwordHash -__v -accountVerification -role -email')

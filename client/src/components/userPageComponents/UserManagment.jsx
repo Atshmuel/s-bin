@@ -50,13 +50,13 @@ function UserManagment({ user, isAdmin = false }) {
     const { isDirty } = userManagment.formState;
 
     function handleUpdate(data) {
+        updateOrgAndManager({ userId: user._id, org: data.org || me.org, manager: data.manager })
         if (user._id === me.id) {
             toast.warning(t("components.userManagementCard.updateErrorSameUser"))
             return
         }
         user.role !== data.role ? updateRole({ role: data.role, id: user._id }) : null
         user.status !== data.status ? updateStatus({ status: data.status, id: user._id }) : null
-        updateOrgAndManager({ userId: user._id, org: data.org || me.org, manager: data.manager })
     }
 
     if (!isAdmin) {
@@ -89,7 +89,7 @@ function UserManagment({ user, isAdmin = false }) {
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">{t("roles.user")}</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">{t("roles.technician")}</ToggleGroupItem>
                                                 <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">{t("roles.admin")}</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">{t("roles.owner")}</ToggleGroupItem>
+                                                {isOwner && <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">{t("roles.owner")}</ToggleGroupItem>}
                                             </ToggleGroup>
                                         </FormControl>
                                         <FormDescription>
