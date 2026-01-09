@@ -32,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./server
-          file: Dockerfile
+          file: ./server/Dockerfile
           push: true
           platforms: linux/arm64
           tags: |
@@ -46,7 +46,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./client
-          file: Dockerfile
+          file: ./client/Dockerfile
           push: true
           platforms: linux/arm64
           build-args: |
