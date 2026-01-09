@@ -36,6 +36,8 @@ jobs:
           push: true
           platforms: linux/arm64
           provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/sbin-server:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/sbin-server:${{ github.sha }}
@@ -51,6 +53,8 @@ jobs:
           push: true
           platforms: linux/arm64
           provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             VITE_API_URL=http://${{ secrets.VM_PUBLIC_IP }}:3002
           tags: |
