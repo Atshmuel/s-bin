@@ -54,11 +54,11 @@ export async function deleteUserRefs(userId) {
         const userSetting = await userSettingModel.findOneAndDelete({ userId }, { session });
         if (!userSetting) throw new Error("User settings not found");
 
-        const bins = await binModel.find({ ownerId: userId }, '_id', { session })
-        const binIds = bins.map(b => b._id)
-        await binModel.deleteMany({ ownerId: userId }, { session });
+        // const bins = await binModel.find({ ownerId: userId }, '_id', { session })
+        // const binIds = bins.map(b => b._id)
+        // await binModel.deleteMany({ ownerId: userId }, { session });
 
-        await deleteLogsForBins(binIds, session)
+        // await deleteLogsForBins(binIds, session)
 
         await session.commitTransaction();
         return user;
