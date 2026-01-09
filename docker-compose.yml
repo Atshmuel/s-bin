@@ -2,14 +2,14 @@ version: "3.9"
 
 services:
   server:
-    image: ${DOCKERHUB_USERNAME}/sbin-server:latest
+    image: shmuela/sbin-server:latest
     container_name: sbin-server
     restart: always
     env_file:
       - ./server/.env
 
   client:
-    image: ${DOCKERHUB_USERNAME}/sbin-client:latest
+    image: shmuela/sbin-client:latest
     container_name: sbin-client
     restart: always
     depends_on:
