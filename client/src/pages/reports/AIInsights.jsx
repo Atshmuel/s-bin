@@ -5,7 +5,7 @@ import { Bot, ChevronLeft, Sparkles, Terminal } from "lucide-react";
 import { Skeleton } from "../../components/ui/skeleton"
 import { Typewriter } from '@/components/ai/TypeWriter';
 import { useTranslation } from 'react-i18next';
-import { useAppSide } from '@/contexts/appSideProvider';
+import { useAppSide } from '@/contexts/AppSideProvider';
 
 export default function AIInsights() {
     const { insights, isLoadingAIOverview, aiOverviewError } = useAIOverview();

@@ -4,7 +4,7 @@ import { Activity, CalendarClock, GaugeCircle, InfoIcon, Trash2 } from "lucide-r
 import { getVariant } from "@/utils/binHelpers"
 import EmptyCard from "@/components/EmptyCard"
 import { useTranslation } from "react-i18next"
-import { useAppSide } from "@/contexts/appSideProvider"
+import { useAppSide } from "@/contexts/AppSideProvider"
 
 function LogCard({ log, isLoading = true, ...props }) {
     const { t } = useTranslation()

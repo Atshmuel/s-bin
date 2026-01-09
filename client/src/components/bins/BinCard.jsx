@@ -15,7 +15,7 @@ import { useState } from "react"
 import InputLabel from "../InputLabel"
 import { useDeleteBin } from "@/hooks/bins/useDeleteBin"
 import { useTranslation } from "react-i18next"
-import { useAppSide } from "@/contexts/appSideProvider"
+import { useAppSide } from "@/contexts/AppSideProvider"
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
     const [deleteInput, setDeleteInput] = useState('')

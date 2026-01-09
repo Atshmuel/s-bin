@@ -6,7 +6,7 @@ import { getColor, getVariant } from "@/utils/binHelpers";
 import Battery from "../../components/bins/Battary"
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAppSide } from "@/contexts/appSideProvider";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 
 
