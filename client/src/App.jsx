@@ -84,7 +84,6 @@ function App() {
                 <Route path="verify" element={<AccountVerify />} />
               </Route>
               <Route path="support" element={<SupportPage />} />
-
               <Route path="*" element={<ErrorPage />} />
             </Routes>
           </BreadcrumbProvider>
