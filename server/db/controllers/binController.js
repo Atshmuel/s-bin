@@ -173,7 +173,7 @@ export async function updateBinDeviceKey(req, res) {
 
 export async function deleteBin(req, res) {
     const { id } = req.params;
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
 
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
@@ -211,7 +211,7 @@ export async function deleteBin(req, res) {
 
 export async function deleteBinsBatch(req, res) {
 
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
     const binIds = req.binIds
 
     let query = {}

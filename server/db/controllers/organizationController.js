@@ -24,3 +24,24 @@ export async function createOrganization(req, res) {
         return res.status(500).json({ message: error?.message || "Internal server error 'createOrganization'" });
     }
 }
+
+export async function removeOrganization(req, res) {
+    const { id } = req.params;
+    try {
+        const deletion = await organizationModel.findByIdAndDelete(id);
+        return res.status(201).json({ message: 'Organization removed successfully', deletion });
+    } catch (error) {
+        return res.status(500).json({ message: error?.message || "Internal server error 'removeOrganization'" });
+    }
+}
+
+export async function updateOrganization(req, res) {
+    const { id } = req.params;
+    const { name } = req.body;
+    try {
+        const updatedOrg = await organizationModel.findByIdAndUpdate(id, { name }, { new: true });
+        return res.status(201).json(updatedOrg);
+    } catch (error) {
+        return res.status(500).json({ message: error?.message || "Internal server error 'updateOrganization'" });
+    }
+}

@@ -24,7 +24,7 @@ const app = express();
 app.use(
     cors({
         origin: [
-            "http://localhost:5173",
+            "http://s-bins.duckdns.org",
             CLIENT_BASE_URL
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
