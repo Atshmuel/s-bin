@@ -41,7 +41,7 @@ export async function getBin(req, res) {
 }
 
 export async function getAllUserBins(req, res) {
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
     const { withLogs } = req.query
 
     let query = {}
@@ -72,7 +72,7 @@ export async function getAllUserBins(req, res) {
 }
 
 export async function getBinsByStatus(req, res) {
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
     const { level, health } = req.body
 
     let query = {}
@@ -89,7 +89,7 @@ export async function getBinsByStatus(req, res) {
 }
 
 export async function getBinsInUserRadius(req, res) {
-    const { id: ownerId, role } = req.user
+    const { org: ownerId, role } = req.user
     const { coordinates, radius, health, minLevel, maxLevel } = req.body
     if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
 
