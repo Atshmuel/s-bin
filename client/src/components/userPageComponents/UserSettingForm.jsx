@@ -16,6 +16,7 @@ import { useUpdateUserSettings } from "@/hooks/users/useUpdateUserSettings";
 import { Spinner } from "../ui/spinner";
 import { useAppSide } from "@/contexts/AppSideProvider";
 import { useTranslation } from "react-i18next";
+import { useDarkMode } from "@/contexts/darkModelContext";
 
 function UserSettingForm({ user, isAdmin = false }) {
     const { toggleSide, isRight } = useAppSide()
@@ -24,6 +25,7 @@ function UserSettingForm({ user, isAdmin = false }) {
     const { updateSettings, isUpdatingSettings } = useUpdateUserSettings()
 
     const { settingsError, isLoadingSettings, settings } = useUserSettings(user._id)
+    const { isDark, applyDarkMode } = useDarkMode()
     const userSettings = useForm({
         defaultValues: {
             isDark: true,
@@ -53,6 +55,14 @@ function UserSettingForm({ user, isAdmin = false }) {
 
     const { isDirty } = userSettings.formState;
 
+    useEffect(() => {
+        if (isDirty) return;
+        userSettings.setValue("isDark", isDark, {
+            shouldDirty: false,
+            shouldTouch: false,
+        });
+    }, [isDark, isDirty, userSettings]);
+
 
     function handleUpdateSettings(data) {
         const configToServerModel = {
@@ -63,9 +73,11 @@ function UserSettingForm({ user, isAdmin = false }) {
                 daysBeforeMaintenance: Array.isArray(data.alertLevel.daysBeforeMaintenance) ? data.alertLevel.daysBeforeMaintenance[0] : data.alertLevel.daysBeforeMaintenance
             }
         }
-        updateSettings({ configToServerModel, id: user._id })
 
-        toggleSide(data.appLanguage)
+        if (data.appLanguage !== settings.appLanguage)
+            toggleSide(data.appLanguage)
+
+        updateSettings({ configToServerModel, id: user._id }, { onSuccess: () => { applyDarkMode(data.isDark) } })
 
     }
 

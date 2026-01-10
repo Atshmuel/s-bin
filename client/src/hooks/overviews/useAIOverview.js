@@ -13,7 +13,6 @@ export function useAIOverview() {
         queryKey: ['aiOverview'],
         queryFn: getAIOverviewStream,
         enabled: true,
-        staleTime: 1000 * 60 * 30,
         gcTime: 1000 * 60 * 60,
         retry: false,
         refetchOnWindowFocus: false,

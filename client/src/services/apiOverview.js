@@ -1,4 +1,4 @@
-
+import { getAICache, setAICache } from '../utils/aiCache';
 import { OVERVIEW_EP, SERVER_URL } from "@/utils/constants";
 
 export async function getOverviews() {
@@ -22,12 +22,16 @@ export async function getBinsStatusOverviews() {
 }
 
 export async function getAIOverviewStream() {
+    const cached = getAICache()
+    if (cached) return cached
+
     const res = await fetch(`${SERVER_URL}/${OVERVIEW_EP}/ai-ov`, {
         method: "GET",
         credentials: "include",
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.message);
+    setAICache(data)
     return data;
 }
 export async function getLogTypeOverviews() {

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUserSettings } from "@/hooks/users/useUserSettings";
 import { useAppSide } from "@/contexts/AppSideProvider";
+import { useDarkMode } from "@/contexts/darkModelContext";
 
 
 
@@ -15,6 +16,7 @@ export default function ProtectedRoute({ children }) {
   const { isLoadingSettings, settings } = useUserSettings(me?.id)
   const { toggleSide, language } = useAppSide();
 
+  const { applyDarkMode } = useDarkMode()
 
   useEffect(() => {
     if (meError) {
@@ -24,12 +26,21 @@ export default function ProtectedRoute({ children }) {
   }, [meError, navigate]);
 
   useEffect(() => {
+
     if (settings?.appLanguage && language !== settings.appLanguage) {
       toggleSide(settings.appLanguage)
     }
 
+    applyDarkMode(settings?.isDark);
+
     document.documentElement.lang = language;
-  }, [settings, language, toggleSide]);
+  }, [settings, language, toggleSide, applyDarkMode]);
+
+
+
+
+
+
 
 
   if (isLoadingMe || (me && isLoadingSettings))

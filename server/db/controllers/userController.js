@@ -183,11 +183,11 @@ export async function loginUser(req, res) {
     const lowerCaseEmail = email.toLowerCase()
 
     try {
-        const user = await userModel.findOne({ email: lowerCaseEmail }).populate({ path: 'settingsId', select: 'isDark' });
+        const user = await userModel.findOne({ email: lowerCaseEmail })
 
         if (!user) return res.status(401).json({ message: 'Please verify your email or password' })
 
-        const { role, _id, passwordHash: dbPassword, settings, tokenVersion } = user
+        const { role, _id, passwordHash: dbPassword, tokenVersion } = user
         const isSamePassword = await comparePasswords(password, dbPassword)
         if (!isSamePassword) return res.status(401).json({ message: 'Unauthorized' })
 
@@ -198,13 +198,6 @@ export async function loginUser(req, res) {
             maxAge: 3 * 24 * 60 * 60 * 1000,
             sameSite: 'strict',
         })
-
-        res.cookie('isDark', settings?.isDark || 'light', {
-            httpOnly: false,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 3 * 24 * 60 * 60 * 1000,
-            sameSite: 'strict'
-        });
 
         res.status(200).json({ message: "Login successful" })
     } catch (error) {

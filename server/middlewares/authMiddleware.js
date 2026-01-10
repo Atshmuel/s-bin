@@ -86,8 +86,10 @@ export async function authTokenPromise(req, res) {
         req.user = {
             id: user._id.toString(),
             role: user.role,
+            email: user.email,
             name: user.name,
             status: user.status,
+            org: user.org ? user.org.toString() : null,
         }
         return true
     } catch (error) {
