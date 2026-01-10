@@ -82,8 +82,8 @@ function Login() {
                             name="password"
                             control={form.control}
                             rules={{
-                                required: t("pages.loginPage.validation.password.required"),
-                                minLength: { value: 8, message: t("pages.loginPage.validation.password.minLength") }
+                                required: t("pages.loginPage.passwordRequired"),
+                                minLength: { value: 8, message: t("pages.loginPage.minLength") }
                             }}
                             render={({ field }) => (
                                 <FormItem>

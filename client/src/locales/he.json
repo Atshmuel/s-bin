@@ -15,6 +15,7 @@
     "bin":"פח",
     "map":"מפה",
     "add":"הוספה",
+    "submit":"שלח",
     "logs":"תיעודים",
     "analytics":"אנליטיקות",
     "location":"מיקום",
@@ -181,15 +182,17 @@
         "managment":{
             "title":"ניהול",
             "subtitles":{
-                "bins":"פחים",
-                "users":"משתמשים"
+            "bins":"פחים",
+            "users":"משתמשים",
+            "organizations": "ארגונים"
             },
             "items":{
                 "binList":"רשימת פחים",
                 "addBin":"הוסף פח",
                 "map":"מפה",
                 "logs":"תיעודים",
-                "userList":"רשימת משתמשים"
+                "userList":"רשימת משתמשים",
+                "organizationList": "רשימת ארגונים"
             }
         },
         "general":{
@@ -528,14 +531,31 @@
     },
     "footer": {
       "alreadyHaveAccount": "כבר יש לך חשבון?",
-      "signIn": "התחבר"
+      "signin": "התחבר"
     },
     "toasts": {
       "success": "החשבון נוצר בהצלחה, אנא בדוק את האימייל שלך.",
       "errorDuplicate": "החשבון כבר קיים",
       "errorGeneric": "יצירת החשבון נכשלה, אנא נסה שוב בעוד מספר רגעים"
     }
-}
+    },"organizationsList": {
+      "title": "ארגונים",
+      "columns": {
+        "orgName": "שם הארגון",
+        "editOrgName": "עריכה",
+        "deleteOrg": "מחיקה"
+      },
+      "deletion": {
+        "confirmationTitle": "מחיקת ארגון",
+        "confirmationDescription": "פעולה זו אינה ניתנת לביטול. אנא אשר את המחיקה.",
+        "typeDelete": "הקלד \"מחק\" כדי לאשר"
+      },
+      "rename": {
+        "confirmationTitle": "שינוי שם ארגון",
+        "confirmationDescription": "הזן שם חדש עבור הארגון.",
+        "label": "שם ארגון חדש"
+      }
+    }
   },
    "confirmations":{
     "confirmationTitle":"אשר מחיקה לצמיתות",
@@ -788,7 +808,11 @@
   "failedToLogin":"ההתחברות נכשלה, אנא בדקו את פרטי ההתחברות ונסו שוב.",
   "failedToLoadOverview":"טעינת סקירת ה-AI נכשלה.",
   "failToLoadStatus":"טעינת סטטוס הסקירה נכשלה.",
-  "failToLoadTypes":"טעינת סוגי סקירת הלוגים נכשלה."
+  "failToLoadTypes":"טעינת סוגי סקירת הלוגים נכשלה.",
+    "orgDeletedSuccessfully": "הארגון נמחק בהצלחה",
+    "failedToDeleteOrg": "מחיקת הארגון נכשלה",
+    "updatedOrgNameSuccessfully": "שם הארגון עודכן בהצלחה",
+    "failedToUpdateOrgName": "עדכון שם הארגון נכשל"
 }
 
 }

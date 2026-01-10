@@ -4,6 +4,8 @@ import { appendFilter, UnionArraysById } from '../../utils/helpers.js'
 import { AI_INSTRUCTIONS } from "../../utils/constants.js";
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
+import { ca } from 'zod/v4/locales';
+import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
 //Bins
 export async function getBinShared(binId) {
@@ -43,6 +45,44 @@ export async function verifyBinOwner(binId, ownerId) {
     }
 }
 
+export async function deleteOrgRefs(orgId) {
+    const session = await mongoose.startSession();
+    try {
+        session.startTransaction();
+        //delete organization users and their settings
+        const orgUsrs = await userModel.find({ org: orgId }, '_id', { session })
+        orgUsrs?.forEach(async (user) => {
+            await deleteUserRefs(user._id);
+        });
+
+        //delete organization bins and their logs
+        const bins = await binModel.find({ ownerId: orgId }, '_id', { session })
+        await binModel.deleteMany({ ownerId: orgId }, { session });
+
+        //reset bin to pre-registered state
+        bins?.forEach((bin) => {
+            removeBinConfig(bin.macAddress);
+        })
+
+        const org = await organizationModel.findByIdAndDelete(orgId, { session });
+        if (!org) throw new Error("Organization not found");
+
+        //logs deletion blocked due to data collection for analysis
+        // const binIds = bins.map(b => b._id)
+        // await deleteLogsForBins(binIds, session)
+
+        await session.commitTransaction();
+        return org;
+    }
+    catch (error) {
+        await session.abortTransaction();
+        throw error;
+    }
+    finally {
+        session.endSession();
+    }
+}
+
 //Refs deletion
 export async function deleteUserRefs(userId) {
     const session = await mongoose.startSession();
@@ -53,12 +93,6 @@ export async function deleteUserRefs(userId) {
 
         const userSetting = await userSettingModel.findOneAndDelete({ userId }, { session });
         if (!userSetting) throw new Error("User settings not found");
-
-        // const bins = await binModel.find({ ownerId: userId }, '_id', { session })
-        // const binIds = bins.map(b => b._id)
-        // await binModel.deleteMany({ ownerId: userId }, { session });
-
-        // await deleteLogsForBins(binIds, session)
 
         await session.commitTransaction();
         return user;

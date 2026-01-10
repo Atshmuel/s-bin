@@ -74,6 +74,18 @@ export function AppSidebar({
           },
         ],
       },
+      {
+        title: t("sidebar.managment.subtitles.organizations"),
+        url: "/organizations",
+        icon: UserCircle2Icon,
+        isOwnerOnly: true,
+        items: [
+          {
+            title: t("sidebar.managment.items.organizationList"),
+            url: "",
+          },
+        ],
+      },
     ],
     general: [
       {

@@ -75,9 +75,9 @@ function Signup() {
                                 name="name"
                                 control={form.control}
                                 rules={{
-                                    required: t("pages.signupPage.validation.name.nameRequired"), validate: {
+                                    required: t("pages.signupPage.validation.nameRequired"), validate: {
                                         notEmpty: (value) =>
-                                            value.trim().length > 0 || t("pages.signupPage.validation.name.nameNotEmpty"),
+                                            value.trim().length > 0 || t("pages.signupPage.validation.nameNotEmpty"),
                                         fullName: (value) => {
                                             const parts = value.trim().split(/\s+/); // מפרק לפי רווחים
                                             return parts.length >= 2 || t("pages.signupPage.validation.fullNameCheck");
@@ -224,7 +224,7 @@ function Signup() {
                 {successfullyCreated ? null : <p className="w-full text-center text-sm text-muted-foreground p-0 m-0">
                     {t("pages.signupPage.footer.alreadyHaveAccount")}
                     <Button variant='link' className={'m-0 px-1'}>
-                        <NavLink to={'/login'}>{t("pages.signupPage.footer.signIn")}</NavLink>
+                        <NavLink to={'/login'}>{t("pages.signupPage.footer.signin")}</NavLink>
                     </Button>
                 </p>}
 

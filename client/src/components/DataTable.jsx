@@ -109,6 +109,7 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                                 {headerGroup.headers.map((header) => (
                                     <TableHead
                                         key={header.id}
+                                        style={{ width: header.getSize() }}
                                         onClick={hasData ? header.column.getToggleSortingHandler() : undefined}
                                         className={hasData ? "cursor-pointer" : ""}
                                     >
@@ -133,9 +134,13 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                         {hasData && !isLoading ? (
                             table.getRowModel().rows.map(row => (
 
-                                <TableRow key={row.id} className={'h-12'}>
+                                <TableRow
+
+                                    key={row.id} className={'h-12'}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell
+                                            style={{ width: cell.column.getSize() }}
+                                            key={cell.id}>
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext()

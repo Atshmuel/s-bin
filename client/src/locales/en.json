@@ -13,6 +13,7 @@
   "users": "Users",
   "bins":"Bins",
   "bin":"Bin",
+  "submit":"Submit",
     "add":"Add",
     "map":"Map",
     "logs":"Logs",
@@ -76,14 +77,16 @@
       "title": "Management",
       "subtitles": {
         "bins": "Bins",
-        "users": "Users"
+        "users": "Users",
+        "organizations": "Organizations"
       },
       "items": {
         "binList": "List of Bins",
         "addBin": "Add Bin",
         "map": "Map",
         "logs": "Logs",
-        "userList": "List of Users"
+        "userList": "List of Users",
+        "organizationList": "Organizations List"
       }
     },
     "general": {
@@ -485,50 +488,68 @@
       "verify":"Account verified, moving to login page...",
       "verificationFailed":"Account verification failed. Please try again."
     },
- "signupPage": {
-    "titles": {
-      "createAccount": "Create an account",
-      "accountCreated": "Account Created Successfully",
-      "createSubtitle": "Let's get started. Fill in the details below to create your account.",
-      "activateSubtitle": "Please check your email to activate your account",
-      "verifyBody": "Please verify your account via email"
+    "signupPage": {
+        "titles": {
+          "createAccount": "Create an account",
+          "accountCreated": "Account Created Successfully",
+          "createSubtitle": "Let's get started. Fill in the details below to create your account.",
+          "activateSubtitle": "Please check your email to activate your account",
+          "verifyBody": "Please verify your account via email"
+        },
+        "form": {
+          "fullName": "Full name",
+          "email": "Email address",
+          "password": "Password",
+          "confirmPassword": "Confirm Password",
+          "acceptTerms": "Accept terms and conditions",
+          "submitButton": "Sign up"
+        },
+        "validation": {
+          "nameRequired": "Name is required",
+          "nameNotEmpty": "Name cannot be empty or only spaces",
+          "fullNameCheck": "Please enter first and last name",
+          "emailRequired": "Email is required",
+          "emailInvalid": "Invalid email address",
+          "emailNotEmpty": "Email cannot be empty or only spaces",
+          "passwordRequired": "Password is required",
+          "passwordMin": "Password must be at least 8 characters long",
+          "passwordMax": "Password must not exceed 30 characters",
+          "passwordLower": "Password must include at least one lowercase letter",
+          "passwordUpper": "Password must include at least one uppercase letter",
+          "passwordNumber": "Password must include at least one number",
+          "passwordSpecial": "Password must include at least one special character (!@#$%^&*)",
+          "confirmPasswordRequired": "Please confirm your password",
+          "passwordsNoMatch": "Passwords do not match",
+          "termsRequired": "Accept terms is required"
+        },
+        "footer": {
+          "alreadyHaveAccount": "Already have account?",
+          "login": "Login"
+        },
+        "toasts": {
+          "success": "Account signed up successfully, please check your email.",
+          "errorDuplicate": "Account already exist",
+          "errorGeneric": "Failed to create your account, please try again in few moments"
+        }
     },
-    "form": {
-      "fullName": "Full name",
-      "email": "Email address",
-      "password": "Password",
-      "confirmPassword": "Confirm Password",
-      "acceptTerms": "Accept terms and conditions",
-      "submitButton": "Sign up"
-    },
-    "validation": {
-      "nameRequired": "Name is required",
-      "nameNotEmpty": "Name cannot be empty or only spaces",
-      "fullNameCheck": "Please enter first and last name",
-      "emailRequired": "Email is required",
-      "emailInvalid": "Invalid email address",
-      "emailNotEmpty": "Email cannot be empty or only spaces",
-      "passwordRequired": "Password is required",
-      "passwordMin": "Password must be at least 8 characters long",
-      "passwordMax": "Password must not exceed 30 characters",
-      "passwordLower": "Password must include at least one lowercase letter",
-      "passwordUpper": "Password must include at least one uppercase letter",
-      "passwordNumber": "Password must include at least one number",
-      "passwordSpecial": "Password must include at least one special character (!@#$%^&*)",
-      "confirmPasswordRequired": "Please confirm your password",
-      "passwordsNoMatch": "Passwords do not match",
-      "termsRequired": "Accept terms is required"
-    },
-    "footer": {
-      "alreadyHaveAccount": "Already have account?",
-      "login": "Login"
-    },
-    "toasts": {
-      "success": "Account signed up successfully, please check your email.",
-      "errorDuplicate": "Account already exist",
-      "errorGeneric": "Failed to create your account, please try again in few moments"
+    "organizationsList": {
+      "title": "Organizations",
+      "columns": {
+        "orgName": "Organization Name",
+        "editOrgName": "Edit",
+        "deleteOrg": "Delete"
+      },
+      "deletion": {
+        "confirmationTitle": "Delete Organization",
+        "confirmationDescription": "This action cannot be undone. Please confirm deletion.",
+        "typeDelete": "Type \"delete\" to confirm"
+      },
+      "rename": {
+        "confirmationTitle": "Rename Organization",
+        "confirmationDescription": "Enter a new name for the organization.",
+        "label": "New Organization Name"
+      }
     }
-}
   },
   "confirmations":{
     "confirmationTitle":"Confirm Permanent Deletion",
@@ -780,6 +801,10 @@
     "failedToLogin":"Failed to login, please check your credentials and try again.",
     "failedToLoadOverview":"Failed to load overview AI overview.",
     "failToLoadStatus":"Failed to load overview status",
-    "failToLoadTypes":"Failed to load logs type overviews."
+    "failToLoadTypes":"Failed to load logs type overviews.",
+     "orgDeletedSuccessfully": "Organization deleted successfully",
+    "failedToDeleteOrg": "Failed to delete organization",
+    "updatedOrgNameSuccessfully": "Organization name updated successfully",
+    "failedToUpdateOrgName": "Failed to update organization name"
   }
 }

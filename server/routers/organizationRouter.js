@@ -9,5 +9,5 @@ organizationRouter.use(authToken, (req, res, next) => { authRole([process.env.RO
 
 organizationRouter.get('/', getOrganizations);
 organizationRouter.post('/', validateBodyFields(['name']), createOrganization);
-organizationRouter.put('/:id', validateBodyFields(['name']), updateOrganization);
-organizationRouter.delete('/:id', validateParamExist, removeOrganization);
+organizationRouter.put('/:id', validateParamExist(), validateBodyFields(['name']), updateOrganization);
+organizationRouter.delete('/:id', validateParamExist(), removeOrganization);

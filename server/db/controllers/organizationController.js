@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import { organizationModel } from "../models/models.js";
+import { deleteOrgRefs } from "../service/sharedService.js";
 
 
 export async function getOrganizations(req, res) {
@@ -27,8 +29,12 @@ export async function createOrganization(req, res) {
 
 export async function removeOrganization(req, res) {
     const { id } = req.params;
+    const session = await mongoose.startSession();
     try {
-        const deletion = await organizationModel.findByIdAndDelete(id);
+        session.startTransaction();
+
+        const deletion = await deleteOrgRefs(id);
+
         return res.status(201).json({ message: 'Organization removed successfully', deletion });
     } catch (error) {
         return res.status(500).json({ message: error?.message || "Internal server error 'removeOrganization'" });

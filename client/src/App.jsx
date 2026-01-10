@@ -29,6 +29,7 @@ import AddBin from './pages/bins/AddBin';
 import { BreadcrumbProvider } from './contexts/breadcrumbsContext';
 import AccountVerify from './pages/auth/AccountVerify';
 import { AppSideProvider } from './contexts/AppSideProvider';
+import OrganizationsList from './pages/organizations/OrganizationsList';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -73,6 +74,9 @@ function App() {
                 </Route>
                 <Route path="account">
                   <Route path="" element={<AccountProfile />} />
+                </Route>
+                <Route path="organizations">
+                  <Route path='' element={<OrganizationsList />} />
                 </Route>
 
 
