@@ -42,7 +42,6 @@ function BinsList() {
             header: ({ table }) => {
                 const rows = table.options.data;
                 const allIds = rows.map(r => r._id);
-
                 const allChecked = binIds.length === allIds.length && allIds.length > 0;
                 const someChecked = binIds.length > 0 && binIds.length < allIds.length;
 
@@ -54,6 +53,7 @@ function BinsList() {
                     />
                 );
             },
+            size: 20,
             id: "Checkboxs",
             enableSorting: false,
             cell: ({ row }) => {

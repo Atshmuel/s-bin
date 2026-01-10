@@ -806,5 +806,11 @@
     "failedToDeleteOrg": "Failed to delete organization",
     "updatedOrgNameSuccessfully": "Organization name updated successfully",
     "failedToUpdateOrgName": "Failed to update organization name"
+  },
+  "notes":{
+    "create": "Create Note",
+    "createTitle": "Create a New Note",
+    "createDescription": "Write your note details below.",
+    "placeholder": "Type your note here..."
   }
 }

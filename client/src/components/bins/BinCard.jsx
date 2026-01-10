@@ -16,6 +16,7 @@ import InputLabel from "../InputLabel"
 import { useDeleteBin } from "@/hooks/bins/useDeleteBin"
 import { useTranslation } from "react-i18next"
 import { useAppSide } from "@/contexts/AppSideProvider"
+import { Textarea } from "../ui/textarea"
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
     const [deleteInput, setDeleteInput] = useState('')
@@ -137,11 +138,11 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                             )}
                         </CardContent>
                         {actions && (
-                            <CardFooter className="flex justify-center ">
+                            <CardFooter className={`flex justify-center ${isRight ? "" : "flex-row-reverse"} gap-2`}>
                                 <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
                                     <DialogTrigger asChild>
-                                        <Button className="cursor-pointer flex-1 py-6" variant='outline_destructive' size='sm'>{t('delete')}</Button>
-
+                                        <Button className="cursor-pointer flex-1 py-6" variant='outline_destructive' size='sm'>{t('delete')}
+                                        </Button>
                                     </DialogTrigger>
                                     <DialogContent>
                                         <DialogHeader>
@@ -159,6 +160,40 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button className="cursor-pointer flex-1 py-6" size="sm">
+                                            {t('notes.create')}
+                                        </Button>
+                                    </DialogTrigger>
+
+                                    <DialogContent className="sm:max-w-[425px]">
+                                        <DialogHeader>
+                                            <DialogTitle>{t('notes.createTitle')}</DialogTitle>
+                                            <DialogDescription>
+                                                {t('notes.createDescription')}
+                                            </DialogDescription>
+                                        </DialogHeader>
+
+                                        <Textarea
+                                            placeholder={t('notes.placeholder')}
+                                            className="min-h-[100px]"
+                                        />
+
+                                        <DialogFooter>
+                                            <DialogClose asChild>
+                                                <Button variant="outline">
+                                                    {t('cancel')}
+                                                </Button>
+                                            </DialogClose>
+
+                                            <Button type="submit">
+                                                {t('save')}
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+
                             </CardFooter>
                         )}
                     </>

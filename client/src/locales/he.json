@@ -813,6 +813,12 @@
     "failedToDeleteOrg": "מחיקת הארגון נכשלה",
     "updatedOrgNameSuccessfully": "שם הארגון עודכן בהצלחה",
     "failedToUpdateOrgName": "עדכון שם הארגון נכשל"
-}
+},
+"notes": {
+    "create": "צור הערה",
+    "createTitle": "יצירת הערה חדשה",
+    "createDescription": "הזן את פרטי ההערה למטה.",
+    "placeholder": "כתוב את ההערה כאן..."
+  }
 
 }
