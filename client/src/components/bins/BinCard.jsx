@@ -30,7 +30,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
     const { updateMaintenance, isUpdating } = useUpdateBinMaintenance()
 
     const { me } = useMe();
-    const isTechnician = me?.role === 'technician'
+    const isUser = me?.role === 'user'
 
     function handleCopyDeviceKey() {
         navigator.clipboard.writeText(bin?.deviceKey)
@@ -176,7 +176,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
-                                {isTechnician && (
+                                {!isUser && (
                                     <Dialog>
                                         <DialogTrigger asChild>
                                             <Button className="cursor-pointer flex-1 py-6" size="sm">
