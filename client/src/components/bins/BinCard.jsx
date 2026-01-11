@@ -137,7 +137,12 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                                 <Link to={`/user/${bin.maintenance.technicianId}`}><Button className={"p-0 m-0 h-fit"} variant={'link'}>{t('components.binCard.maintenance.seeProfile')}</Button></Link>
                                             </div>
                                             {bin.maintenance.notes && <div>
-                                                <span className="">{t('components.binCard.maintenance.techNote')}:</span>
+                                                <div className="flex justify-between items-baseline mb-1">
+                                                    <span className="">{t('components.binCard.maintenance.techNote')}:</span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {new Date(bin.maintenance.lastServiceAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short' })}
+                                                    </span>
+                                                </div>
                                                 <p className="mt-2 text-sm italic text-muted-foreground">
                                                     “{bin.maintenance?.notes}”
                                                 </p>
