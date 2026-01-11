@@ -17,6 +17,7 @@ import { useDeleteBin } from "@/hooks/bins/useDeleteBin"
 import { useTranslation } from "react-i18next"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { Textarea } from "../ui/textarea"
+import { useUpdateBinMaintenance } from "@/hooks/bins/useUpdateBin"
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
     const [deleteInput, setDeleteInput] = useState('')
@@ -24,9 +25,20 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
     const { t } = useTranslation()
     const { isRight } = useAppSide()
 
+    const [note, setNote] = useState('')
+    const { updateMaintenance, isUpdating } = useUpdateBinMaintenance()
+
     function handleCopyDeviceKey() {
         navigator.clipboard.writeText(bin?.deviceKey)
         toast.success('Copied device key to your clipboard!')
+    }
+
+    function handleSaveNote() {
+        if (!note.trim()) return;
+        updateMaintenance(
+            { id: bin._id, notes: note },
+            { onSuccess: () => setNote('') }
+        );
     }
 
     return (
@@ -178,18 +190,19 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                         <Textarea
                                             placeholder={t('notes.placeholder')}
                                             className="min-h-[100px]"
+                                            value={note}
+                                            onChange={(e) => setNote(e.target.value)}
                                         />
 
                                         <DialogFooter>
                                             <DialogClose asChild>
-                                                <Button variant="outline">
+                                                <Button variant="outline" disabled={isUpdating}>
                                                     {t('cancel')}
                                                 </Button>
                                             </DialogClose>
 
-                                            <Button type="submit">
-                                                {t('save')}
-                                            </Button>
+                                            <Button type="submit" disabled={isUpdating || !note.trim()} onClick={handleSaveNote}>
+                                                {isUpdating ? <Spinner /> : t('save')}                                            </Button>
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
