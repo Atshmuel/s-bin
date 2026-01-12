@@ -1,12 +1,8 @@
-#include <WiFi.h>
 #include <Preferences.h>
 #include <ArduinoJson.h>
 #include <PubSubClient.h>
 #include <TinyGPS++.h>
 
-#include "config.h"
-#include "sensors.h"
-#include "wifi.h" // הוספנו את הקובץ החדש
 
 // ----- אובייקטים גלובליים -----
 Preferences preferences;

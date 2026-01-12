@@ -1,11 +1,7 @@
-#ifndef WIFI_HANDLER_H
-#define WIFI_HANDLER_H
-
 #include <WiFi.h>
 #include <WebServer.h>
 #include <Preferences.h>
 #include <ArduinoJson.h>
-#include "Config.h"
 
 // ייבוא משתנים גלובליים מהקובץ הראשי
 extern Preferences preferences;
@@ -116,4 +112,3 @@ void handleWifiLoop() {
   server.handleClient();
 }
 
-#endif
