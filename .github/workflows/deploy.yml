@@ -56,7 +56,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-              VITE_API_URL=http://s-bins.duckdns.org/api
+              VITE_API_URL=https://s-bins.duckdns.org
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/sbin-client:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/sbin-client:${{ github.sha }}
