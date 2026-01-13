@@ -155,13 +155,13 @@ function BinsList() {
                 <Button variant='destructive' className={'cursor-pointer'}><Trash /> {t("delete")} {binIds.length} {t("bins")}</Button>
             </DialogTrigger>
             <DialogContent>
-                <DialogHeader>
+                <DialogHeader className="pt-6">
                     <DialogTitle>{t("pages.binsList.deletion.confirmationTitle")}</DialogTitle>
                     <DialogDescription>{t("pages.binsList.deletion.confirmationDescription")}</DialogDescription>
                 </DialogHeader>
                 <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
                     onChange={(e) => setDeleteInput(e.target.value)}>{t("pages.binsList.deletion.typeDelete")}</InputLabel>
-                <DialogFooter>
+                <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
                     <DialogClose asChild>
                         <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
                     </DialogClose>

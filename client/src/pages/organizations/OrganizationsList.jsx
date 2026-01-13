@@ -10,12 +10,14 @@ import { useTranslation } from "react-i18next";
 import { useDeleteOrg } from "@/hooks/organizations/useDeleteOrg";
 import { useUpdateOrgName } from "@/hooks/organizations/useUpdateOrg";
 import { useOrganizations } from "@/hooks/organizations/useOrganizations";
-
+import { useAppSide } from "@/contexts/AppSideProvider";
 function OrganizationsList() {
     const { t } = useTranslation();
     const { deleteOrgById, isDeleting } = useDeleteOrg();
     const { updateOrgName, isUpdatingOrgName } = useUpdateOrgName();
     const { data, isLoadingOrgs, orgsError } = useOrganizations()
+    const { side } = useAppSide()
+
 
     const columns = [
         {
@@ -49,14 +51,14 @@ function OrganizationsList() {
             <DialogTrigger asChild>
                 <Button variant='destructive' className={'cursor-pointer'}><Trash /> {t("delete")}</Button>
             </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
+            <DialogContent side={side}>
+                <DialogHeader className="pt-6">
                     <DialogTitle>{t("pages.organizationsList.deletion.confirmationTitle")}</DialogTitle>
                     <DialogDescription>{t("pages.organizationsList.deletion.confirmationDescription")}</DialogDescription>
                 </DialogHeader>
                 <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
                     onChange={(e) => setDeleteInput(e.target.value)}>{t("pages.organizationsList.deletion.typeDelete")}</InputLabel>
-                <DialogFooter>
+                <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
                     <DialogClose asChild>
                         <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
                     </DialogClose>
@@ -75,14 +77,14 @@ function OrganizationsList() {
             <DialogTrigger asChild>
                 <Button className={'cursor-pointer'}><Edit /> {t("edit")}</Button>
             </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
+            <DialogContent side={side}>
+                <DialogHeader className="pt-6">
                     <DialogTitle>{t("pages.organizationsList.rename.confirmationTitle")}</DialogTitle>
                     <DialogDescription>{t("pages.organizationsList.rename.confirmationDescription")}</DialogDescription>
                 </DialogHeader>
                 <InputLabel id='name' placeholder=" " type='text' value={renameInput}
                     onChange={(e) => setRenameInput(e.target.value)}>{t("pages.organizationsList.rename.label")}</InputLabel>
-                <DialogFooter>
+                <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
                     <DialogClose asChild>
                         <Button disabled={isUpdatingOrgName} className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
                     </DialogClose>

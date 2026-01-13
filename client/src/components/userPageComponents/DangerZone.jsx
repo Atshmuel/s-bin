@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next";
 
 function DangerZone({ user, isAdmin = false }) {
     const { id } = useParams()
-    const { isRight } = useAppSide()
+    const { isRight, side } = useAppSide()
     const { t } = useTranslation();
 
     const userName = user.name
@@ -44,7 +44,7 @@ function DangerZone({ user, isAdmin = false }) {
 
     return (
         <Card className={`min-w-[330px] max-w-[400px] h-fit`}>
-            <CardHeader className='text-center relative'>
+            <CardHeader className=' text-center relative'>
                 <CardTitle className='text-destructive font-extrabold'>{t("components.dangerZoneCard.title")}</CardTitle>
                 <CardDescription>{t("components.dangerZoneCard.subTitle")}</CardDescription>
             </CardHeader>
@@ -56,16 +56,16 @@ function DangerZone({ user, isAdmin = false }) {
                         <DialogTrigger asChild>
                             <Button disabled={isDeletingAccount || isDeleting || isDeletingBins} className="cursor-pointer" variant='outline_destructive' size='sm'>{isDeletingAccount || isDeleting || isDeletingBins ? <Spinner /> : t("delete")}</Button>
                         </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader isRight={isRight}>
+                        <DialogContent side={side}>
+                            <DialogHeader className="pt-6" isRight={isRight}>
                                 <DialogTitle>{t('confirmations.confirmationTitle')}</DialogTitle>
-                                <DialogDescription isRight={isRight}>{isAdmin ? t('confirmations.confirmationDescriptionUser') : t('confirmations.confirmationDescriptionYour')}
+                                <DialogDescription isRight={!isRight}>{isAdmin ? t('confirmations.confirmationDescriptionUser') : t('confirmations.confirmationDescriptionYour')}
                                     <br />
                                     {t('confirmations.typeDeleteAllDesc')}</DialogDescription>
                             </DialogHeader>
                             <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
                                 onChange={(e) => setDeleteInput(e.target.value)}>{t("confirmations.typeDeleteAll")}</InputLabel>
-                            <DialogFooter>
+                            <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
                                 <DialogClose asChild>
                                     <Button className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
                                 </DialogClose>
@@ -84,10 +84,10 @@ function DangerZone({ user, isAdmin = false }) {
                                 {isDeletingAccount || isDeleting || isDeletingBins ? <Spinner /> : t("delete")}
                             </Button>
                         </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader isRight={isRight}>
+                        <DialogContent side={side}>
+                            <DialogHeader className="pt-6" isRight={isRight}>
                                 <DialogTitle>{t('confirmations.confirmationTitle')}</DialogTitle>
-                                <DialogDescription isRight={isRight}>{isAdmin ? t('confirmations.confirmationDescriptionUser') : t('confirmations.confirmationDescriptionYour')}
+                                <DialogDescription isRight={!isRight}>{isAdmin ? t('confirmations.confirmationDescriptionUser') : t('confirmations.confirmationDescriptionYour')}
                                     <br />
                                     {t("confirmations.confirmationUserName", { userName })}</DialogDescription>
                             </DialogHeader>
@@ -95,7 +95,7 @@ function DangerZone({ user, isAdmin = false }) {
                                 onChange={(e) => setDeleteInput(e.target.value)}>
                                 {t("confirmations.typeUserName", { userName })}
                             </InputLabel>
-                            <DialogFooter>
+                            <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
                                 <DialogClose asChild>
                                     <Button className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
                                 </DialogClose>
