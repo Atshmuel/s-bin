@@ -32,7 +32,12 @@ void loadPreferences() {
 
 void preferencesSetup() {
   loadPreferences();
-  if(ssid != "" && password != "" && ownerId != "" && deviceKey != ""){
+  Serial.println("Loaded Preferences:");
+  Serial.println("SSID: " + ssid);
+  Serial.println("Password: " + password);
+  Serial.println("Owner ID: " + ownerId);
+  Serial.println("Device Key: " + deviceKey);
+  if(ssid != "" && password != "" && ownerId != ""){
     currentMode = NORMAL_MODE;
   } else {
     currentMode = SETUP_MODE;

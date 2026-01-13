@@ -1,7 +1,7 @@
 #include "globals.h"
 
 
-//should sand logs every 4 hours or if battery is low or fill level is high
+//should send logs every 4 hours or if battery is low or fill level is high
 unsigned long lastLogTime = 0;
 
 

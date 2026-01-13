@@ -298,6 +298,7 @@ void handleCaptivePortal() {
   server.send(302, "text/plain", "");
 }
 
+
 void setupServer(){
   server.on("/", HTTP_GET, handleRoot);
   
@@ -343,11 +344,16 @@ void setupServer(){
     String wifiPass = doc["wifi_password"];
     String owner = doc["ownerId"];
 
-    saveSetupData(wifiSsid, wifiPass, owner);
+ Serial.println("Received Data:");
+  Serial.println("SSID: " + wifiSsid);
+  Serial.println("Pass: " + wifiPass);
+  Serial.println("Owner: " + owner);
 
+    saveSetupData(wifiSsid, wifiPass, owner);
     server.send(200, "application/json", "{\"status\":\"saved\"}");
 
-    delay(1000);
+    server.close();
+    delay(3000);
 
     // מעבר למצב רגיל
     ESP.restart();
