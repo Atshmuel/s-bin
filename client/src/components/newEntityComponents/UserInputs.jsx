@@ -131,10 +131,10 @@ function UserInputs({ form, isCreating }) {
                                         field.onChange(value)
                                     }
                                 }}>
-                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">{t("newEntity.userInputs.fields.role.options.user")}</ToggleGroupItem>
-                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">{t("newEntity.userInputs.fields.role.options.technician")}</ToggleGroupItem>
-                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">{t("newEntity.userInputs.fields.role.options.admin")}</ToggleGroupItem>
-                                    {me.role === 'owner' ? <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">{t("newEntity.userInputs.fields.role.options.owner")}</ToggleGroupItem> : null}
+                                    <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">{t("newEntity.userInputs.fields.role.options.user")}</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">{t("newEntity.userInputs.fields.role.options.technician")}</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">{t("newEntity.userInputs.fields.role.options.admin")}</ToggleGroupItem>
+                                    {me.role === 'owner' ? <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">{t("newEntity.userInputs.fields.role.options.owner")}</ToggleGroupItem> : null}
                                 </ToggleGroup>
                             </FormControl>
                             <FormDescription>
@@ -150,15 +150,15 @@ function UserInputs({ form, isCreating }) {
                         <FormItem>
                             <Label>{t("newEntity.userInputs.fields.status.label")}</Label>
                             <FormControl>
-                                <ToggleGroup isRight={isRight} disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md " type="single" value={field.value} onValueChange={(value) => {
+                                <ToggleGroup isRight={isRight} disabled={isCreating} className="mt-3 border-[0.1px] border-primary rounded-md gap-0" type="single" value={field.value} onValueChange={(value) => {
                                     if (value) {
                                         field.onChange(value)
                                     }
                                 }}>
-                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="pending">{t("newEntity.userInputs.fields.status.options.pending")}</ToggleGroupItem>
-                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="active">{t("newEntity.userInputs.fields.status.options.active")}</ToggleGroupItem>
-                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="inactive">{t("newEntity.userInputs.fields.status.options.inactive")}</ToggleGroupItem>
-                                    <ToggleGroupItem className='w-full data-[state=on]:bg-primary data-[state=on]:text-accent' value="suspended">{t("newEntity.userInputs.fields.status.options.suspended")}</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm  data-[state=on]:bg-primary data-[state=on]:text-accent' value="pending">{t("newEntity.userInputs.fields.status.options.pending")}</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="active">{t("newEntity.userInputs.fields.status.options.active")}</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="inactive">{t("newEntity.userInputs.fields.status.options.inactive")}</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="suspended">{t("newEntity.userInputs.fields.status.options.suspended")}</ToggleGroupItem>
                                 </ToggleGroup>
                             </FormControl>
                             <FormDescription>

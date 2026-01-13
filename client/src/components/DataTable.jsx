@@ -58,9 +58,9 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 {title ? <h1 className="text-lg sm:text-2xl capitalize font-bold min-w-20 sm:min-w-72">{title}</h1> : null}
-                <div className={`flex items-center w-full ${title ? "justify-end gap-3" : "justify-between"} `}>
+                <div className={`flex flex-col sm:flex-row items-center w-full gap-3 ${title ? "md:justify-end" : "justify-between"} `}>
                     <Input
                         withIcon={true}
                         Icon={iconToShow}
@@ -73,32 +73,32 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                             setSearching("")
                         }}
                         disabled={isLoading || error}
-                        className="w-24 sm:w-48 relative"
+                        className="w-full sm:w-48 relative"
                     />
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button disabled={isLoading || error} variant="outline">
-                                {t("columns")} <IoMdArrowDropdown />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align={isRight ? "end" : "start"} className="max-h-60 overflow-y-auto">
-                            {table
-                                .getAllLeafColumns()
-                                .map(column => (
-                                    <DropdownMenuCheckboxItem
-                                        isRight={isRight}
-                                        key={column.id}
-                                        checked={column.getIsVisible()}
-                                        onCheckedChange={() => column.toggleVisibility()}
-                                    >
-                                        {column.id}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    {ActionButton ? <ActionButton /> : null}
-
+                    <div className="flex gap-3 w-full sm:w-auto justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button disabled={isLoading || error} variant="outline">
+                                    {t("columns")} <IoMdArrowDropdown />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align={isRight ? "end" : "start"} className="max-h-60 overflow-y-auto">
+                                {table
+                                    .getAllLeafColumns()
+                                    .map(column => (
+                                        <DropdownMenuCheckboxItem
+                                            isRight={isRight}
+                                            key={column.id}
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={() => column.toggleVisibility()}
+                                        >
+                                            {column.id}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        {ActionButton ? <ActionButton /> : null}
+                    </div>
                 </div>
             </div>
             <div className="rounded-md border">

@@ -17,6 +17,8 @@ import { useDeleteBin } from "@/hooks/bins/useDeleteBin"
 import { useTranslation } from "react-i18next"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { Textarea } from "../ui/textarea"
+import { useUpdateBinMaintenance } from "@/hooks/bins/useUpdateBin"
+import { useMe } from "@/hooks/users/auth/useMe";
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
     const [deleteInput, setDeleteInput] = useState('')
@@ -24,9 +26,23 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
     const { t } = useTranslation()
     const { isRight } = useAppSide()
 
+    const [note, setNote] = useState('')
+    const { updateMaintenance, isUpdating } = useUpdateBinMaintenance()
+
+    const { me } = useMe();
+    const isUser = me?.role === 'user'
+
     function handleCopyDeviceKey() {
         navigator.clipboard.writeText(bin?.deviceKey)
         toast.success('Copied device key to your clipboard!')
+    }
+
+    function handleSaveNote() {
+        if (!note.trim()) return;
+        updateMaintenance(
+            { id: bin._id, notes: note },
+            { onSuccess: () => setNote('') }
+        );
     }
 
     return (
@@ -121,7 +137,12 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                                 <Link to={`/user/${bin.maintenance.technicianId}`}><Button className={"p-0 m-0 h-fit"} variant={'link'}>{t('components.binCard.maintenance.seeProfile')}</Button></Link>
                                             </div>
                                             {bin.maintenance.notes && <div>
-                                                <span className="">{t('components.binCard.maintenance.techNote')}:</span>
+                                                <div className="flex justify-between items-baseline mb-1">
+                                                    <span className="">{t('components.binCard.maintenance.techNote')}:</span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {new Date(bin.maintenance.lastServiceAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short' })}
+                                                    </span>
+                                                </div>
                                                 <p className="mt-2 text-sm italic text-muted-foreground">
                                                     “{bin.maintenance?.notes}”
                                                 </p>
@@ -160,39 +181,42 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button className="cursor-pointer flex-1 py-6" size="sm">
-                                            {t('notes.create')}
-                                        </Button>
-                                    </DialogTrigger>
-
-                                    <DialogContent className="sm:max-w-[425px]">
-                                        <DialogHeader>
-                                            <DialogTitle>{t('notes.createTitle')}</DialogTitle>
-                                            <DialogDescription>
-                                                {t('notes.createDescription')}
-                                            </DialogDescription>
-                                        </DialogHeader>
-
-                                        <Textarea
-                                            placeholder={t('notes.placeholder')}
-                                            className="min-h-[100px]"
-                                        />
-
-                                        <DialogFooter>
-                                            <DialogClose asChild>
-                                                <Button variant="outline">
-                                                    {t('cancel')}
-                                                </Button>
-                                            </DialogClose>
-
-                                            <Button type="submit">
-                                                {t('save')}
+                                {!isUser && (
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button className="cursor-pointer flex-1 py-6" size="sm">
+                                                {t('notes.create')}
                                             </Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
+                                        </DialogTrigger>
+
+                                        <DialogContent className="sm:max-w-[425px]">
+                                            <DialogHeader>
+                                                <DialogTitle>{t('notes.createTitle')}</DialogTitle>
+                                                <DialogDescription>
+                                                    {t('notes.createDescription')}
+                                                </DialogDescription>
+                                            </DialogHeader>
+
+                                            <Textarea
+                                                placeholder={t('notes.placeholder')}
+                                                className="min-h-[100px]"
+                                                value={note}
+                                                onChange={(e) => setNote(e.target.value)}
+                                            />
+
+                                            <DialogFooter>
+                                                <DialogClose asChild>
+                                                    <Button variant="outline" disabled={isUpdating}>
+                                                        {t('cancel')}
+                                                    </Button>
+                                                </DialogClose>
+
+                                                <Button type="submit" disabled={isUpdating || !note.trim()} onClick={handleSaveNote}>
+                                                    {isUpdating ? <Spinner /> : t('save')}
+                                                </Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>)}
 
                             </CardFooter>
                         )}
