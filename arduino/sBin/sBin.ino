@@ -1,64 +1,50 @@
-#include <Preferences.h>
+#include "globals.h"
 
-#define SETUP_MODE 1
-#define RESET 2
-#define NORMAL_MODE 3
-//will be use to store ssid,password,ownerId,deviceKey
-Preferences preferences;
-
-
-//ssid will be sent from user on setup along with password (wifi name and wifi password),
-//ownerId (orgId),deviceKey (bin secret to access the server)
-//after first setup all of this should be stored in the esp for power loss
-String ssid, password, ownerId, deviceKey;
-
-//Bin esp mac id
-String DeviceMac;
-
-int currentMode = SETUP_MODE;
 
 //should sand logs every 4 hours or if battery is low or fill level is high
 unsigned long lastLogTime = 0;
 
-void preferencesSetup() {
-  preferences.begin("credentials", true);
-  ssid = preferences.getString("ssid", "");
-  password = preferences.getString("password", "");
-  ownerId = preferences.getString("ownerId", "");
-  deviceKey = preferences.getString("deviceKey", "");
-  preferences.end();
-
-  if(ssid != "" && password != "" && ownerId != "" && deviceKey != ""){
-    currentMode = NORMAL_MODE;
-  } else {
-    currentMode = SETUP_MODE;
-  }
-}
 
 void setup() {
   Serial.begin(115200);
-  delay(3000);
+  delay(6000);
   
   DeviceMac = getChipMac();
+  Serial.println("Device MAC: " + DeviceMac);
 
-  // preferencesSetup();
-  currentMode = NORMAL_MODE; 
+  preferencesSetup();
+
   if(currentMode == SETUP_MODE){
-    WifiSetUp();
+    WifiSetUp(); 
+    //start wifi in AP mode to get user credentials if ssid and password are stroed in preferences we can skip this step and go to normal mode
+    //Note this step will also start the web server to get user credentials and ownerId from user
   }
-  else if(currentMode == NORMAL_MODE){
+
+  if(currentMode == NORMAL_MODE){
     connectToWifi(ssid, password);
   }
+
+
 
 }
 
 void loop() {
+
   switch (currentMode)
   {
   case SETUP_MODE:
-    /* code */
+    Serial.println("In Setup Mode");
+    break;
+  case WIFI_CONFIG_MODE:
+    Serial.println("In Wifi Config Mode");
+  if (millis() - wifiTime >= 10) {
+    wifiTime = millis();
+    server.handleClient();
+  }
+
     break;
   case NORMAL_MODE:
+    
     /* code */
     break;
   case RESET:

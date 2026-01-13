@@ -1,3 +1,5 @@
+#include "globals.h"
+
 String getChipMac() {
   uint64_t mac64 = ESP.getEfuseMac();  
   uint8_t mac[6];
