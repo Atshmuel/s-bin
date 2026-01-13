@@ -21,6 +21,7 @@ PubSubClient mqttClient(espClient);
 
 // Web Server
 WebServer server(80);
+DNSServer dnsServer;
 long wifiTime = 0;
 
 

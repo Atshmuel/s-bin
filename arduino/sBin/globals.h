@@ -2,6 +2,7 @@
 
 #include <WiFi.h>
 #include <WebServer.h>
+#include <DNSServer.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>  
@@ -37,6 +38,28 @@ extern PubSubClient mqttClient;
 
 // ===== Web Server =====
 extern WebServer server;
+extern DNSServer dnsServer;
 extern long wifiTime;
+
+// ===== Function Prototypes =====
+// helpers.ino
+String getChipMac();
+void saveCredentials(String s, String p, String o, String k);
+
+// preferences.ino
+void clearPreferences();
+void saveDeviceKey(String key);
+void saveSetupData(String wifiSsid, String wifiPass, String owner);
+void loadPreferences();
+void preferencesSetup();
+
+// wifi.ino
+void WifiSetUp();
+void connectToWifi(String s, String p);
+
+// mqtt.ino
+void publishRegister();
+void mqttCallback(char* topic, byte* payload, unsigned int length);
+void publishLog(int level, int battery, String health);
 
 

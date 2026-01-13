@@ -36,12 +36,10 @@ void loop() {
     Serial.println("In Setup Mode");
     break;
   case WIFI_CONFIG_MODE:
-    Serial.println("In Wifi Config Mode");
-  if (millis() - wifiTime >= 10) {
-    wifiTime = millis();
+    // Process DNS requests (Captive Portal)
+    dnsServer.processNextRequest();
+    // Process HTTP requests
     server.handleClient();
-  }
-
     break;
   case NORMAL_MODE:
     
