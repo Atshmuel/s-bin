@@ -14,6 +14,7 @@ unsigned long registerStartTime = 0;
 void setup() {
   Serial.begin(115200);
   delay(5000);
+  // clearPreferences();
   
   DeviceMac = getChipMac();
   Serial.println("Device MAC: " + DeviceMac);
