@@ -24,7 +24,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
     const [deleteInput, setDeleteInput] = useState('')
     const { deleteBin, isDeleting } = useDeleteBin()
     const { t } = useTranslation()
-    const { isRight } = useAppSide()
+    const { isRight, side } = useAppSide()
 
     const [note, setNote] = useState('')
     const { updateMaintenance, isUpdating } = useUpdateBinMaintenance()
@@ -165,14 +165,14 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                         <Button className="cursor-pointer flex-1 py-6" variant='outline_destructive' size='sm'>{t('delete')}
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
+                                    <DialogContent side={side}>
+                                        <DialogHeader className="pt-6">
                                             <DialogTitle>{t('confirmations.confirmationTitle')}</DialogTitle>
                                             <DialogDescription>{t('confirmations.confirmationDescription')}</DialogDescription>
                                         </DialogHeader>
                                         <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
                                             onChange={(e) => setDeleteInput(e.target.value)}>{t('confirmations.typeDelete')}</InputLabel>
-                                        <DialogFooter>
+                                        <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
                                             <DialogClose asChild>
                                                 <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>{t('cancel')}</Button>
                                             </DialogClose>
@@ -189,8 +189,8 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                             </Button>
                                         </DialogTrigger>
 
-                                        <DialogContent className="sm:max-w-[425px]">
-                                            <DialogHeader>
+                                        <DialogContent side={side} className="sm:max-w-[425px]">
+                                            <DialogHeader className="pt-6">
                                                 <DialogTitle>{t('notes.createTitle')}</DialogTitle>
                                                 <DialogDescription>
                                                     {t('notes.createDescription')}
@@ -204,7 +204,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                                 onChange={(e) => setNote(e.target.value)}
                                             />
 
-                                            <DialogFooter>
+                                            <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
                                                 <DialogClose asChild>
                                                     <Button variant="outline" disabled={isUpdating}>
                                                         {t('cancel')}
