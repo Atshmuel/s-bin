@@ -7,9 +7,8 @@ const unsigned long LOG_INTERVAL = 14400000; // 4 hours in milliseconds
 const unsigned long CRITICAL_LOG_INTERVAL = 1800000; // 30 minutes
 const unsigned long REGISTER_INTERVAL = 10000; // 10 seconds
 unsigned long lastRegisterTime = 0;
-const unsigned long WIFI_TIMEOUT = 120000; // 2 minutes
+
 unsigned long wifiStartTime = 0;
-const unsigned long REGISTER_TIMEOUT = 120000; // 2 minutes
 unsigned long registerStartTime = 0;
 
 void setup() {
@@ -55,6 +54,19 @@ void loop() {
     break;
 
   case REGISTER_MODE:
+    // Handle Registration Timeout
+    if (registerStartTime == 0) {
+      registerStartTime = millis();
+    }
+    
+    if (millis() - registerStartTime > REGISTER_TIMEOUT) {
+      Serial.println("Registration timed out. Resetting to factory settings...");
+      clearPreferences();
+      // Delay to allow serial message to be sent
+      delay(1000); 
+      ESP.restart();
+    }
+
     // In register mode, we wait for the server to send us a key via MQTT ACK
     // We republish the registration request every few seconds until we get an ACK (handled in callback)
     if (millis() - lastRegisterTime > REGISTER_INTERVAL) {

@@ -552,9 +552,18 @@ void connectToWifi(String s, String p){
   Serial.println(s);
   WiFi.begin(s.c_str(), p.c_str());
 
-  while (WiFi.status() != WL_CONNECTED) {
+  unsigned long startAttemptTime = millis();
+
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT) {
     delay(500);
     Serial.print(".");
+  }
+
+  if(WiFi.status() != WL_CONNECTED){
+    Serial.println("\nWiFi Connection Failed! Resetting...");
+    clearPreferences();
+    delay(1000);
+    ESP.restart();
   }
 
   Serial.println("");

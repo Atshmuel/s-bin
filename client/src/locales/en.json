@@ -368,31 +368,49 @@
     },
     "addBin":{
       "toasts":{
-        "connected":"Connected to bin Wi-Fi. Proceeding to next step.",
-        "wifiDataSent":"Wi-Fi credentials sent to bin. Connecting to internet...",
-        "wifiDataFailed":"Failed to send Wi-Fi credentials to bin. Please try again.",
-        "cannotReachBin":"Cannot reach the bin. Ensure you are connected to the bin's Wi-Fi network."
+        "ownerIdCopied":"Owner ID copied to clipboard!",
+        "copyFailed":"Failed to copy to clipboard."
+      },
+      "navigation":{
+        "next":"Next",
+        "back":"Back"
       },
       "stepOne":{
-        "title":"Step 1: Power On & Connect to Bin Wi-Fi",
-        "description":"Make sure your new bin is powered on. The LED should be blinking slowly. Connect your phone/computer to the network: Bin-Setup-XXXX",
-        "attention":"Attention",
-        "keepNear":"Keep the bin near your device for setup.",
-        "autoContinue":"Once connected, the setup process will automatically continue",
-        "button": "Waiting for connection"
+        "title":"Step 1: Connect to Bin Wi-Fi",
+        "description":"Make sure your new bin is powered on. The LED should be blinking slowly.",
+        "instructions":"Follow these steps",
+        "step1":"Power on the bin and wait for the LED to blink slowly",
+        "step2":"On your phone/computer, go to Wi-Fi settings",
+        "step3":"Connect to the network named: Bin-XXXXX (where XXXXX is the bin's unique ID)",
+        "attention":"Note",
+        "captivePortalNote":"After connecting to the bin's Wi-Fi, a setup page will open automatically. If it doesn't, open your browser and go to: 192.168.4.1"
         },
         "stepTwo":{
-        "title":"Step 2: Wi-Fi Configuration",
-        "description":"Enter your Wi-Fi network and enter the password to connect the bin to the internet.",
-        "wifiNetwork":"Wi-Fi SSID (Wi-Fi Name)",
-        "wifiPassword":"Wi-Fi Password",
-        "button":"Connect to Wi-Fi",
-        "notConnected":"Device not connected. Please return to Step 1 and ensure you are connected to the bin's Wi-Fi."
+        "title":"Step 2: Copy Your Owner ID",
+        "description":"You will need to paste this ID in the bin's setup form to link it to your organization.",
+        "ownerIdLabel":"Your Owner ID",
+        "important":"Important",
+        "pasteNote":"Copy this ID and paste it in the 'Owner ID' field on the bin's setup page."
               },
         "stepThree":{
-        "title":"Step 3: Connected Successfully!",
-        "description":"Your bin is now connected to the internet.",
-        "descriptionTwo":"You can now place the bin in its designated location and start monitoring it through the application."
+        "title":"Step 3: Fill in the Setup Form",
+        "description":"On the bin's setup page, enter the following information:",
+        "formFields":"Required fields",
+        "field1":"Wi-Fi Network Name (SSID) - Your home/office Wi-Fi name",
+        "field2":"Wi-Fi Password - The password for your Wi-Fi network",
+        "field3":"Owner ID - Paste the ID you copied in the previous step",
+        "afterSubmit":"After submitting",
+        "afterSubmitNote":"The bin will disconnect from its setup network and connect to your Wi-Fi. It will then automatically register with our servers."
+      },
+      "stepFour":{
+        "title":"Setup Complete!",
+        "description":"You have completed all the setup steps.",
+        "whatHappensNow":"What happens now",
+        "process1":"The bin connects to your Wi-Fi network",
+        "process2":"The bin registers with our servers automatically",
+        "process3":"Within a few minutes, the bin will appear in your bins list",
+        "timeoutNote":"Connection Timeout",
+        "timeoutDescription":"If the bin fails to connect to Wi-Fi or register within 2 minutes, it will automatically reset and return to setup mode. You can then try again."
       }
     },
     "binDetails":{

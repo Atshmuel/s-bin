@@ -49,6 +49,10 @@ extern int fillLevel;
 extern int battery;
 extern String health;
 
+// ===== Timeouts =====
+#define WIFI_TIMEOUT 120000     // 2 minutes
+#define REGISTER_TIMEOUT 120000 // 2 minutes
+
 // ===== Function Prototypes =====
 // helpers.ino
 String getChipMac();
