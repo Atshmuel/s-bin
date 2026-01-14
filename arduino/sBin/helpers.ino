@@ -23,3 +23,18 @@ void saveCredentials(String s, String p, String o, String k) {
   preferences.putString("deviceKey", k);
   preferences.end();
 }
+
+void updateTelemetrySimulation() {
+  static unsigned long lastSimUpdate = 0;
+  const unsigned long SIM_INTERVAL = 60000; // 60 seconds
+
+  if (millis() - lastSimUpdate > SIM_INTERVAL) {
+    lastSimUpdate = millis();
+    
+    // Update simulated values
+    fillLevel = random(0, 101); // 0-100
+    battery = random(0, 101);   // 0-100
+    
+    Serial.println("Updated simulation -> Level: " + String(fillLevel) + "%, Battery: " + String(battery) + "%");
+  }
+}

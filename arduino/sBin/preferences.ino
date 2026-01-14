@@ -5,6 +5,7 @@ void clearPreferences() {
   preferences.begin("credentials", false);
   preferences.clear();
   preferences.end();
+  ESP.restart()
 }
 
 void saveDeviceKey(String key) {
@@ -38,7 +39,11 @@ void preferencesSetup() {
   Serial.println("Owner ID: " + ownerId);
   Serial.println("Device Key: " + deviceKey);
   if(ssid != "" && password != "" && ownerId != ""){
-    currentMode = NORMAL_MODE;
+    if (deviceKey != "") {
+      currentMode = NORMAL_MODE;
+    } else {
+      currentMode = REGISTER_MODE;
+    }
   } else {
     currentMode = SETUP_MODE;
   }

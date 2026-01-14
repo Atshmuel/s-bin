@@ -55,7 +55,8 @@ async function handleRegistration({ mac, orgId, location, battery }) {
         }
 
         const deviceKey = generateRandomToken();
-        const binName = `Bin-${mac.slice(-4)}-${Date.now().toString().slice(-4)}`;
+        // -5 to get last 5 chars for example: 1D:44:8E:A7:32:5D -> 32:5D date used for uniqueness validity
+        const binName = `Bin-${mac.slice(-5)}-${Date.now().toString().slice(-4)}`;
 
         const newBin = await binModel.create({
             binName,

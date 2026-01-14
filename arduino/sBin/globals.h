@@ -29,6 +29,7 @@ extern String DeviceMac;
 #define RESET 2
 #define NORMAL_MODE 3
 #define WIFI_CONFIG_MODE 4
+#define REGISTER_MODE 5
 
 extern int currentMode;
 
@@ -41,10 +42,18 @@ extern WebServer server;
 extern DNSServer dnsServer;
 extern long wifiTime;
 
+// ===== Telemetry =====
+extern float lat;
+extern float lng;
+extern int fillLevel;
+extern int battery;
+extern String health;
+
 // ===== Function Prototypes =====
 // helpers.ino
 String getChipMac();
 void saveCredentials(String s, String p, String o, String k);
+void updateTelemetrySimulation();
 
 // preferences.ino
 void clearPreferences();
@@ -58,6 +67,8 @@ void WifiSetUp();
 void connectToWifi(String s, String p);
 
 // mqtt.ino
+void setupMqttTopics();
+void connectMqtt();
 void publishRegister();
 void mqttCallback(char* topic, byte* payload, unsigned int length);
 void publishLog(int level, int battery, String health);
