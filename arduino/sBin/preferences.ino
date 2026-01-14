@@ -5,7 +5,7 @@ void clearPreferences() {
   preferences.begin("credentials", false);
   preferences.clear();
   preferences.end();
-  ESP.restart()
+  Serial.println("Preferences cleared.");
 }
 
 void saveDeviceKey(String key) {

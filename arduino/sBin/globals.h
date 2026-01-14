@@ -71,6 +71,7 @@ void setupMqttTopics();
 void connectMqtt();
 void publishRegister();
 void mqttCallback(char* topic, byte* payload, unsigned int length);
+void handleResetCommand();
 void publishLog(int level, int battery, String health);
 
 

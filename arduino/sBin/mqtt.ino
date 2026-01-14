@@ -81,9 +81,23 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   }
 
   if (t == COMMAND_TOPIC && doc["command"] == "reset") {
-    clearPreferences();
-    ESP.restart();
+    handleResetCommand();
   }
+}
+
+void handleResetCommand() {
+  Serial.println("Received reset command. Clearing preferences and restarting...");
+  
+  // Clear any retained variables if necessary (though restart handles globals)
+  ssid = "";
+  password = "";
+  ownerId = "";
+  deviceKey = "";
+  
+  clearPreferences();
+  
+  delay(1000);
+  ESP.restart();
 }
 
 void publishLog(int level, int battery, String health) {
