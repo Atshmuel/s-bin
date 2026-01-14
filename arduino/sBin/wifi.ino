@@ -526,7 +526,7 @@ void setupServer(){
 
 
 void WifiSetUp(){
-  binsWifiName.concat(DeviceMac.substring(12)); 
+  binsWifiName.concat(DeviceMac.substring(0, 5)); //use first 5 chars of mac address to make wifi name unique
   IPAddress localIp(192, 168, 4, 1);
   
   WiFi.softAPConfig(localIp, localIp, IPAddress(255, 255, 255, 0));

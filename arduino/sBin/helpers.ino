@@ -26,7 +26,7 @@ void saveCredentials(String s, String p, String o, String k) {
 
 void updateTelemetrySimulation() {
   static unsigned long lastSimUpdate = 0;
-  const unsigned long SIM_INTERVAL = 60000; // 60 seconds
+  const unsigned long SIM_INTERVAL = 1740000; // 29 minutes
 
   if (millis() - lastSimUpdate > SIM_INTERVAL) {
     lastSimUpdate = millis();
@@ -34,7 +34,19 @@ void updateTelemetrySimulation() {
     // Update simulated values
     fillLevel = random(0, 101); // 0-100
     battery = random(0, 101);   // 0-100
-    
-    Serial.println("Updated simulation -> Level: " + String(fillLevel) + "%, Battery: " + String(battery) + "%");
+
+     if(battery < 30 || fillLevel > 80){
+        Serial.println("Battery low, sending log immediately");
+        health = "critical";
+      }
+      if(battery >=30 && battery <= 65 && fillLevel >= 60 && fillLevel <=80){
+        health = "warning";
+      }
+
+      if(battery > 65 && fillLevel < 60){
+        health = "good";
+      }
+    Serial.println("Updated simulation -> Level: " + String(fillLevel) + "%, Battery: " + String(battery) + "%" + ", Health: " + health);
+
   }
 }
