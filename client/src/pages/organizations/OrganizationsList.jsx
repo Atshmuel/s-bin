@@ -1,7 +1,8 @@
 
 import DataTable from "../../components/DataTable"
-import { Edit, Trash } from "lucide-react";
+import { Edit, Trash, Copy } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import InputLabel from "@/components/InputLabel";
@@ -16,7 +17,7 @@ function OrganizationsList() {
     const { deleteOrgById, isDeleting } = useDeleteOrg();
     const { updateOrgName, isUpdatingOrgName } = useUpdateOrgName();
     const { data, isLoadingOrgs, orgsError } = useOrganizations()
-    const { side } = useAppSide()
+    const { isRight, side } = useAppSide()
 
 
     const columns = [
@@ -25,7 +26,26 @@ function OrganizationsList() {
             accessorKey: 'name',
             id: 'Org name',
             enableSorting: true,
+            size: 300,
+        },
+        {
+            header: t('pages.organizationsList.columns.orgId'),
+            accessorKey: '_id',
+            id: 'Org id',
+            enableSorting: true,
             size: 700,
+            cell: ({ row }) => (
+                <div
+                    className="flex items-center gap-2 cursor-copy active:scale-95 transition-transform w-fit"
+                    onClick={() => {
+                        navigator.clipboard.writeText(row.original._id)
+                        toast.success('Copied organization ID to clipboard!')
+                    }}
+                >
+                    <Copy size={16} />
+                    <span>{row.original._id}</span>
+                </div>
+            )
         },
         {
             header: t('pages.organizationsList.columns.editOrgName'),
@@ -52,9 +72,9 @@ function OrganizationsList() {
                 <Button variant='destructive' className={'cursor-pointer'}><Trash /> {t("delete")}</Button>
             </DialogTrigger>
             <DialogContent side={side}>
-                <DialogHeader className="pt-6">
+                <DialogHeader isRight={isRight} className="pt-6">
                     <DialogTitle>{t("pages.organizationsList.deletion.confirmationTitle")}</DialogTitle>
-                    <DialogDescription>{t("pages.organizationsList.deletion.confirmationDescription")}</DialogDescription>
+                    <DialogDescription isRight={!isRight}>{t("pages.organizationsList.deletion.confirmationDescription")}</DialogDescription>
                 </DialogHeader>
                 <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
                     onChange={(e) => setDeleteInput(e.target.value)}>{t("pages.organizationsList.deletion.typeDelete")}</InputLabel>
@@ -80,7 +100,7 @@ function OrganizationsList() {
             <DialogContent side={side}>
                 <DialogHeader className="pt-6">
                     <DialogTitle>{t("pages.organizationsList.rename.confirmationTitle")}</DialogTitle>
-                    <DialogDescription>{t("pages.organizationsList.rename.confirmationDescription")}</DialogDescription>
+                    <DialogDescription isRight={!isRight}>{t("pages.organizationsList.rename.confirmationDescription")}</DialogDescription>
                 </DialogHeader>
                 <InputLabel id='name' placeholder=" " type='text' value={renameInput}
                     onChange={(e) => setRenameInput(e.target.value)}>{t("pages.organizationsList.rename.label")}</InputLabel>

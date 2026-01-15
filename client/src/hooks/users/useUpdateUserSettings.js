@@ -12,7 +12,7 @@ export function useUpdateUserSettings() {
         mutationFn: ({ configToServerModel, id }) =>
             updateUserSettings(configToServerModel, id),
         onSuccess: () => {
-            toast.success(t('toasts.updatedSettingsSuccessfully'))
+            toast.success(t('toasts.settingsUpdatedSuccessfully'))
             queryClient.invalidateQueries({ queryKey: ["user-settings"] });
 
         },

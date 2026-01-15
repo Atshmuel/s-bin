@@ -13,7 +13,7 @@ export function useDeleteBinBatch() {
             queryClient.invalidateQueries({ queryKey: ["all-bins"] });
         },
         onError: (error) => {
-            toast.error(error.message || t("toasts.failedDeleteBins"))
+            toast.error(error.message || t("toasts.failedToDeleteBins"))
         },
     });
     return { deleteBins, isDeleting };

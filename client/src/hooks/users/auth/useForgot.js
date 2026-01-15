@@ -45,7 +45,7 @@ export function useUpdatePasswordByToken() {
     const { mutate: updatePassword, isPending: isUpdatingPassword } = useMutation({
         mutationFn: ({ password }) => resetUserPasswordByToken({ password }),
         onSuccess: (_, variables) => {
-            toast.success(t('toasts.passwordUpdatedSuccessfully'))
+            toast.success(t('toasts.updatedPasswordSuccessfully'))
             navigate(`/login${variables?.email ? '?email=' + variables?.email : ''}`, { replace: true })
         },
         onError: (error) => {

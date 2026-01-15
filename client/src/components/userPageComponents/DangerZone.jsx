@@ -59,9 +59,8 @@ function DangerZone({ user, isAdmin = false }) {
                         <DialogContent side={side}>
                             <DialogHeader className="pt-6" isRight={isRight}>
                                 <DialogTitle>{t('confirmations.confirmationTitle')}</DialogTitle>
-                                <DialogDescription isRight={!isRight}>{isAdmin ? t('confirmations.confirmationDescriptionUser') : t('confirmations.confirmationDescriptionYour')}
-                                    <br />
-                                    {t('confirmations.typeDeleteAllDesc')}</DialogDescription>
+                                <DialogDescription isRight={!isRight}>
+                                    {t('confirmations.typeDeleteAllDesc', { case: isAdmin ? "user's" : "your" })}</DialogDescription>
                             </DialogHeader>
                             <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
                                 onChange={(e) => setDeleteInput(e.target.value)}>{t("confirmations.typeDeleteAll")}</InputLabel>
@@ -69,7 +68,7 @@ function DangerZone({ user, isAdmin = false }) {
                                 <DialogClose asChild>
                                     <Button className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
                                 </DialogClose>
-                                <Button className="cursor-pointer" disabled={(deleteInput.toLowerCase() !== 'delete all' && deleteInput.toLowerCase() !== 'מחק הכל') || isDeletingBins || isDeleting || isDeletingAccount} variant='destructive' onClick={handleBinsDeletion}>{isDeleting || isDeletingBins || isDeletingAccount ? <Spinner /> : t("delete")}</Button>
+                                <Button className="cursor-pointer" disabled={(deleteInput.toLowerCase() !== t("confirmations.deleteAllConfirmWord").toLowerCase()) || isDeletingBins || isDeleting || isDeletingAccount} variant='destructive' onClick={handleBinsDeletion}>{isDeleting || isDeletingBins || isDeletingAccount ? <Spinner /> : t("delete")}</Button>
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>

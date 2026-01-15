@@ -24,7 +24,7 @@ function Terms({ title }) {
             <DialogContent side={side} className="max-w-[350px] sm:max-w-[700px] p-10">
                 <DialogHeader isRight={isRight} >
                     <DialogTitle>{t('components.terms.title')}</DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription isRight={!isRight}>
                         {t('components.terms.description')}
                     </DialogDescription>
                 </DialogHeader>

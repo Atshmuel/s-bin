@@ -37,6 +37,11 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
         toast.success('Copied device key to your clipboard!')
     }
 
+    function handleCopyOwnerId() {
+        navigator.clipboard.writeText(bin?.ownerId)
+        toast.success('Copied owner ID to your clipboard!')
+    }
+
     function handleSaveNote() {
         if (!note.trim()) return;
         updateMaintenance(
@@ -94,7 +99,15 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
 
                                 <div className="flex flex-row justify-between">
                                     <span className="font-medium">{t('components.binCard.ownerId')}:</span>
-                                    <span className="truncate max-w-[200px]">{bin.ownerId}</span>
+                                    <Tooltip>
+                                        <TooltipTrigger className="cursor-copy" asChild>
+                                            <div onClick={handleCopyOwnerId} className="flex gap-2 items-center max-w-[200px]">
+                                                <Copy size={16} className="shrink-0" />
+                                                <span className="truncate">{bin.ownerId}</span>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>{bin.ownerId}</TooltipContent>
+                                    </Tooltip>
                                 </div>
 
                                 <div className="flex flex-row justify-between">
@@ -166,9 +179,9 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent side={side}>
-                                        <DialogHeader className="pt-6">
+                                        <DialogHeader isRight={isRight} className="pt-6">
                                             <DialogTitle>{t('confirmations.confirmationTitle')}</DialogTitle>
-                                            <DialogDescription>{t('confirmations.confirmationDescription')}</DialogDescription>
+                                            <DialogDescription isRight={!isRight}>{t('confirmations.confirmationDescription')}</DialogDescription>
                                         </DialogHeader>
                                         <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
                                             onChange={(e) => setDeleteInput(e.target.value)}>{t('confirmations.typeDelete')}</InputLabel>
@@ -190,9 +203,9 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                         </DialogTrigger>
 
                                         <DialogContent side={side} className="sm:max-w-[425px]">
-                                            <DialogHeader className="pt-6">
+                                            <DialogHeader isRight={isRight} className="pt-6">
                                                 <DialogTitle>{t('notes.createTitle')}</DialogTitle>
-                                                <DialogDescription>
+                                                <DialogDescription isRight={!isRight}>
                                                     {t('notes.createDescription')}
                                                 </DialogDescription>
                                             </DialogHeader>

@@ -15,9 +15,11 @@ import InputLabel from "@/components/InputLabel";
 import { Spinner } from "@/components/ui/spinner";
 import { useDeleteBinBatch } from "@/hooks/bins/useDeleteAllBins";
 import { useTranslation } from "react-i18next";
+import { useAppSide } from "@/contexts/AppSideProvider";
 
 function BinsList() {
     const { t } = useTranslation();
+    const { isRight, side } = useAppSide();
     const { allBins, isLoadingBins, binsError } = useBins();
     const { deleteBins, isDeleting } = useDeleteBinBatch()
     const [binIds, setBinIds] = useState([]);
@@ -154,8 +156,8 @@ function BinsList() {
             <DialogTrigger asChild>
                 <Button variant='destructive' className={'cursor-pointer'}><Trash /> {t("delete")} {binIds.length} {t("bins")}</Button>
             </DialogTrigger>
-            <DialogContent>
-                <DialogHeader className="pt-6">
+            <DialogContent side={side}>
+                <DialogHeader isRight={isRight} className="pt-6">
                     <DialogTitle>{t("pages.binsList.deletion.confirmationTitle")}</DialogTitle>
                     <DialogDescription>{t("pages.binsList.deletion.confirmationDescription")}</DialogDescription>
                 </DialogHeader>
