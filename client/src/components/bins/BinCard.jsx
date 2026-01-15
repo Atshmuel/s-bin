@@ -6,6 +6,7 @@ import { Badge } from "../ui/badge"
 import { Link } from "react-router-dom"
 import { Separator } from "../ui/separator"
 import { toast } from "sonner"
+import { MobileTooltip } from "../ui/mobile-tooltip"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import Battery from "./Battary"
 import { Spinner } from "../ui/spinner"
@@ -87,44 +88,36 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
 
                                 <div className="flex flex-row justify-between">
                                     <span className="font-medium">{t('components.binCard.deviceKey')}:</span>
-                                    <Tooltip >
-                                        <TooltipTrigger className="cursor-copy" asChild>
-                                            <div onClick={handleCopyDeviceKey} className="flex gap-2">
-                                                <Copy size={18} />
-                                                ************
-                                            </div></TooltipTrigger>
-                                        <TooltipContent>{bin.deviceKey}</TooltipContent>
-                                    </Tooltip>
+                                    <MobileTooltip content={bin.deviceKey}>
+                                        <div onClick={handleCopyDeviceKey} className="flex gap-2 cursor-copy">
+                                            <Copy size={18} />
+                                            ************
+                                        </div>
+                                    </MobileTooltip>
                                 </div>
 
                                 <div className="flex flex-row justify-between">
                                     <span className="font-medium">{t('components.binCard.ownerId')}:</span>
-                                    <Tooltip>
-                                        <TooltipTrigger className="cursor-copy" asChild>
-                                            <div onClick={handleCopyOwnerId} className="flex gap-2 items-center max-w-[200px]">
-                                                <Copy size={16} className="shrink-0" />
-                                                <span className="truncate">{bin.ownerId}</span>
-                                            </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>{bin.ownerId}</TooltipContent>
-                                    </Tooltip>
+                                    <MobileTooltip content={bin.ownerId}>
+                                        <div onClick={handleCopyOwnerId} className="flex gap-2 items-center max-w-[200px] cursor-copy">
+                                            <Copy size={16} className="shrink-0" />
+                                            <span className="truncate">{bin.ownerId}</span>
+                                        </div>
+                                    </MobileTooltip>
                                 </div>
 
                                 <div className="flex flex-row justify-between">
                                     <span className="font-medium">{t('components.binCard.location')}:</span>
-                                    {handleLocationClick ? <Tooltip>
-                                        <TooltipTrigger asChild>
+                                    {handleLocationClick ?
+                                        <MobileTooltip content={t('components.binCard.locationTooltip')}>
                                             <div onClick={handleLocationClick} className="flex flex-row gap-2 cursor-pointer">
                                                 <MapPin size={18} />
                                                 <span>{bin.location.coordinates.join(", ")}</span>
                                             </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            {t('components.binCard.locationTooltip')}
-                                        </TooltipContent>
-                                    </Tooltip> : <div className="flex flex-row gap-2">
-                                        <span>{bin.location.coordinates.join(", ")}</span>
-                                    </div>}
+                                        </MobileTooltip>
+                                        : <div className="flex flex-row gap-2">
+                                            <span>{bin.location.coordinates.join(", ")}</span>
+                                        </div>}
                                 </div>
                             </div>
 

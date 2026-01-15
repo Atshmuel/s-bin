@@ -7,7 +7,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { MobileTooltip } from "../ui/mobile-tooltip";
 import { useEffect } from "react";
 import { useUpdateUserInfo } from "@/hooks/users/useUpdateUser";
 import { useTranslation } from "react-i18next";
@@ -62,14 +62,9 @@ function ProfileForm({ user, isAdmin = false }) {
                     <CardTitle className="mb-1">{isAdmin ? t('components.profileFormCard.userProfile') : t('components.profileFormCard.myProfile')}</CardTitle>
                     <CardDescription>{isAdmin ? t('components.profileFormCard.updateAsAdmin') : t('components.profileFormCard.updateAsUser')}</CardDescription>
                 </div>
-                <Tooltip>
-                    <TooltipTrigger className="h-fit sticky top-14 m-0" asChild>
-                        {profileForm.getValues('status') ? <Badge variant={profileForm.getValues('status').toLocaleLowerCase()}>{t(`statuses.${profileForm.getValues('status')}`)}</Badge> : null}
-                    </TooltipTrigger>
-                    <TooltipContent side='bottom' >
-                        <p>{t('components.profileFormCard.tooltip')}</p>
-                    </TooltipContent>
-                </Tooltip>
+                <MobileTooltip content={t('components.profileFormCard.tooltip')} side='bottom'>
+                    {profileForm.getValues('status') ? <Badge className="h-fit sticky top-14 m-0" variant={profileForm.getValues('status').toLocaleLowerCase()}>{t(`statuses.${profileForm.getValues('status')}`)}</Badge> : null}
+                </MobileTooltip>
             </CardHeader>
             <Separator className="mb-5" />
             <FormProvider {...profileForm}>

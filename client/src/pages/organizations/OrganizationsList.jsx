@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import InputLabel from "@/components/InputLabel";
 import { Spinner } from "@/components/ui/spinner";
+import { MobileTooltip } from "@/components/ui/mobile-tooltip";
 import { useTranslation } from "react-i18next";
 import { useDeleteOrg } from "@/hooks/organizations/useDeleteOrg";
 import { useUpdateOrgName } from "@/hooks/organizations/useUpdateOrg";
@@ -35,16 +36,18 @@ function OrganizationsList() {
             enableSorting: true,
             size: 700,
             cell: ({ row }) => (
-                <div
-                    className="flex items-center gap-2 cursor-copy active:scale-95 transition-transform w-fit"
-                    onClick={() => {
-                        navigator.clipboard.writeText(row.original._id)
-                        toast.success('Copied organization ID to clipboard!')
-                    }}
-                >
-                    <Copy size={16} />
-                    <span>{row.original._id}</span>
-                </div>
+                <MobileTooltip content={row.original._id}>
+                    <div
+                        className="flex items-center gap-2 cursor-copy active:scale-95 transition-transform w-fit"
+                        onClick={() => {
+                            navigator.clipboard.writeText(row.original._id)
+                            toast.success('Copied organization ID to clipboard!')
+                        }}
+                    >
+                        <Copy size={16} />
+                        <span>{row.original._id}</span>
+                    </div>
+                </MobileTooltip>
             )
         },
         {
