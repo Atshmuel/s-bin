@@ -34,18 +34,10 @@ void updateTelemetrySimulation() {
     // Update simulated values
     fillLevel = random(0, 101); // 0-100
     battery = random(0, 101);   // 0-100
-
-     if(battery < 30 || fillLevel > 80){
-        Serial.println("Battery low, sending log immediately");
-        health = "critical";
-      }
-      if(battery >=30 && battery <= 65 && fillLevel >= 60 && fillLevel <=80){
-        health = "warning";
-      }
-
-      if(battery > 65 && fillLevel < 60){
-        health = "good";
-      }
+    
+    int status = random(0, 3);   // 0-2
+    health = status == 0 ? "good" : status == 1 ? "warning" : "critical";
+   
     Serial.println("Updated simulation -> Level: " + String(fillLevel) + "%, Battery: " + String(battery) + "%" + ", Health: " + health);
 
   }

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useMe } from "@/hooks/users/auth/useMe"
-import { ArrowLeft, ArrowRight, Check, CircleCheck, Copy, Info, Wifi } from "lucide-react"
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, CircleCheck, Copy, Info, ListChecks, AlertTriangle, Wifi, WifiOff } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
@@ -52,12 +52,12 @@ function AddBin() {
         <div className="flex justify-center items-center">
             <Carousel allowDrag={false} setApi={setApi}>
                 <CarouselContent isRight={isRight} className="max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] p-1">
-                    {/* Step 1: Power on and connect to bin WiFi */}
+                    {/* Step 1: Preparation - Gather all information before starting */}
                     <CarouselItem key={1}>
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <Wifi className="h-5 w-5" />
+                                    <ListChecks className="h-5 w-5" />
                                     {t("pages.addBin.stepOne.title")}
                                 </CardTitle>
                                 <CardDescription>
@@ -65,41 +65,27 @@ function AddBin() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="bg-muted p-4 rounded-lg space-y-2">
-                                    <p className="font-medium">{t("pages.addBin.stepOne.instructions")}:</p>
-                                    <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
-                                        <li>{t("pages.addBin.stepOne.step1")}</li>
-                                        <li>{t("pages.addBin.stepOne.step2")}</li>
-                                        <li>{t("pages.addBin.stepOne.step3")}</li>
-                                    </ol>
-                                </div>
-                                <Alert>
-                                    <Info className="h-4 w-4" />
-                                    <AlertTitle className="text-sm font-medium">{t("pages.addBin.stepOne.attention")}</AlertTitle>
-                                    <AlertDescription className="text-sm">
-                                        {t("pages.addBin.stepOne.captivePortalNote")}
-                                    </AlertDescription>
-                                </Alert>
-                            </CardContent>
-                            <CardFooter className="flex justify-end">
-                                <Button onClick={handleNext}>
-                                    {t("pages.addBin.navigation.next")}
-                                    <NextIcon className="h-4 w-4" />
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    </CarouselItem>
-
-                    {/* Step 2: Copy Owner ID */}
-                    <CarouselItem key={2}>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t("pages.addBin.stepTwo.title")}</CardTitle>
-                                <CardDescription>{t("pages.addBin.stepTwo.description")}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
+                                {/* WiFi Credentials Section */}
                                 <div className="bg-muted p-4 rounded-lg space-y-3">
-                                    <p className="font-medium text-sm">{t("pages.addBin.stepTwo.ownerIdLabel")}:</p>
+                                    <p className="font-medium flex items-center gap-2">
+                                        <Wifi className="h-4 w-4" />
+                                        {t("pages.addBin.stepOne.wifiSection")}
+                                    </p>
+                                    <ul className="space-y-2 text-sm text-muted-foreground">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                                            <span>{t("pages.addBin.stepOne.wifiName")}</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                                            <span>{t("pages.addBin.stepOne.wifiPassword")}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                {/* Owner ID Section */}
+                                <div className="bg-muted p-4 rounded-lg space-y-3">
+                                    <p className="font-medium text-sm">{t("pages.addBin.stepOne.ownerIdLabel")}:</p>
                                     <div className="flex items-center gap-2">
                                         <code className="flex-1 bg-background p-3 rounded border text-sm font-mono break-all">
                                             {ownerId}
@@ -113,12 +99,61 @@ function AddBin() {
                                             {copiedOwnerId ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                                         </Button>
                                     </div>
+                                    <p className="text-xs text-muted-foreground">{t("pages.addBin.stepOne.ownerIdHint")}</p>
                                 </div>
+
                                 <Alert variant="destructive">
-                                    <Info className="h-4 w-4" />
-                                    <AlertTitle className="text-sm font-medium">{t("pages.addBin.stepTwo.important")}</AlertTitle>
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <AlertTitle className="text-sm font-medium">{t("pages.addBin.stepOne.important")}</AlertTitle>
                                     <AlertDescription className="text-sm">
-                                        {t("pages.addBin.stepTwo.pasteNote")}
+                                        {t("pages.addBin.stepOne.importantNote")}
+                                    </AlertDescription>
+                                </Alert>
+                            </CardContent>
+                            <CardFooter className="flex justify-end">
+                                <Button onClick={handleNext}>
+                                    {t("pages.addBin.navigation.ready")}
+                                    <NextIcon className="h-4 w-4" />
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </CarouselItem>
+
+                    {/* Step 2: Connect to Bin WiFi and Fill Form */}
+                    <CarouselItem key={2}>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Wifi className="h-5 w-5" />
+                                    {t("pages.addBin.stepTwo.title")}
+                                </CardTitle>
+                                <CardDescription>{t("pages.addBin.stepTwo.description")}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="bg-muted p-4 rounded-lg space-y-3">
+                                    <p className="font-medium">{t("pages.addBin.stepTwo.instructions")}:</p>
+                                    <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                                        <li>{t("pages.addBin.stepTwo.step1")}</li>
+                                        <li>{t("pages.addBin.stepTwo.step2")}</li>
+                                        <li>{t("pages.addBin.stepTwo.step3")}</li>
+                                        <li>{t("pages.addBin.stepTwo.step4")}</li>
+                                    </ol>
+                                </div>
+
+                                <div className="bg-primary/10 p-4 rounded-lg space-y-2">
+                                    <p className="font-medium text-primary">{t("pages.addBin.stepTwo.formFields")}:</p>
+                                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                        <li>{t("pages.addBin.stepTwo.field1")}</li>
+                                        <li>{t("pages.addBin.stepTwo.field2")}</li>
+                                        <li>{t("pages.addBin.stepTwo.field3")}</li>
+                                    </ul>
+                                </div>
+
+                                <Alert>
+                                    <Info className="h-4 w-4" />
+                                    <AlertTitle className="text-sm font-medium">{t("pages.addBin.stepTwo.captivePortalTitle")}</AlertTitle>
+                                    <AlertDescription className="text-sm">
+                                        {t("pages.addBin.stepTwo.captivePortalNote")}
                                     </AlertDescription>
                                 </Alert>
                             </CardContent>
@@ -128,34 +163,47 @@ function AddBin() {
                                     {t("pages.addBin.navigation.back")}
                                 </Button>
                                 <Button onClick={handleNext}>
-                                    {t("pages.addBin.navigation.next")}
+                                    {t("pages.addBin.navigation.formSubmitted")}
                                     <NextIcon className="h-4 w-4" />
                                 </Button>
                             </CardFooter>
                         </Card>
                     </CarouselItem>
 
-                    {/* Step 3: Fill in the form on the bin */}
+                    {/* Step 3: Wait for confirmation and return to local WiFi */}
                     <CarouselItem key={3}>
                         <Card>
                             <CardHeader>
-                                <CardTitle>{t("pages.addBin.stepThree.title")}</CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    <WifiOff className="h-5 w-5" />
+                                    {t("pages.addBin.stepThree.title")}
+                                </CardTitle>
                                 <CardDescription>{t("pages.addBin.stepThree.description")}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="bg-muted p-4 rounded-lg space-y-2">
-                                    <p className="font-medium">{t("pages.addBin.stepThree.formFields")}:</p>
-                                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                        <li>{t("pages.addBin.stepThree.field1")}</li>
-                                        <li>{t("pages.addBin.stepThree.field2")}</li>
-                                        <li>{t("pages.addBin.stepThree.field3")}</li>
-                                    </ul>
+                                <div className="bg-muted p-4 rounded-lg space-y-3">
+                                    <p className="font-medium">{t("pages.addBin.stepThree.whatHappens")}:</p>
+                                    <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                                        <li>{t("pages.addBin.stepThree.process1")}</li>
+                                        <li>{t("pages.addBin.stepThree.process2")}</li>
+                                        <li>{t("pages.addBin.stepThree.process3")}</li>
+                                        <li>{t("pages.addBin.stepThree.process4")}</li>
+                                    </ol>
                                 </div>
+
+                                <Alert variant="destructive">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <AlertTitle className="text-sm font-medium">{t("pages.addBin.stepThree.waitTitle")}</AlertTitle>
+                                    <AlertDescription className="text-sm">
+                                        {t("pages.addBin.stepThree.waitNote")}
+                                    </AlertDescription>
+                                </Alert>
+
                                 <Alert>
                                     <Info className="h-4 w-4" />
-                                    <AlertTitle className="text-sm font-medium">{t("pages.addBin.stepThree.afterSubmit")}</AlertTitle>
+                                    <AlertTitle className="text-sm font-medium">{t("pages.addBin.stepThree.timeoutTitle")}</AlertTitle>
                                     <AlertDescription className="text-sm">
-                                        {t("pages.addBin.stepThree.afterSubmitNote")}
+                                        {t("pages.addBin.stepThree.timeoutNote")}
                                     </AlertDescription>
                                 </Alert>
                             </CardContent>
@@ -165,14 +213,14 @@ function AddBin() {
                                     {t("pages.addBin.navigation.back")}
                                 </Button>
                                 <Button onClick={handleNext}>
-                                    {t("pages.addBin.navigation.next")}
+                                    {t("pages.addBin.navigation.windowClosed")}
                                     <NextIcon className="h-4 w-4" />
                                 </Button>
                             </CardFooter>
                         </Card>
                     </CarouselItem>
 
-                    {/* Step 4: Done */}
+                    {/* Step 4: Done - Return to local network */}
                     <CarouselItem key={4}>
                         <Card>
                             <CardHeader>
@@ -185,19 +233,20 @@ function AddBin() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="bg-primary/10 p-4 rounded-lg space-y-2">
-                                    <p className="font-medium text-primary">{t("pages.addBin.stepFour.whatHappensNow")}:</p>
-                                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                        <li>{t("pages.addBin.stepFour.process1")}</li>
-                                        <li>{t("pages.addBin.stepFour.process2")}</li>
-                                        <li>{t("pages.addBin.stepFour.process3")}</li>
-                                    </ul>
+                                <div className="bg-primary/10 p-4 rounded-lg space-y-3">
+                                    <p className="font-medium text-primary">{t("pages.addBin.stepFour.finalSteps")}:</p>
+                                    <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+                                        <li>{t("pages.addBin.stepFour.final1")}</li>
+                                        <li>{t("pages.addBin.stepFour.final2")}</li>
+                                        <li>{t("pages.addBin.stepFour.final3")}</li>
+                                    </ol>
                                 </div>
+
                                 <Alert>
                                     <Info className="h-4 w-4" />
-                                    <AlertTitle className="text-sm font-medium">{t("pages.addBin.stepFour.timeoutNote")}</AlertTitle>
+                                    <AlertTitle className="text-sm font-medium">{t("pages.addBin.stepFour.noteTitle")}</AlertTitle>
                                     <AlertDescription className="text-sm">
-                                        {t("pages.addBin.stepFour.timeoutDescription")}
+                                        {t("pages.addBin.stepFour.noteDescription")}
                                     </AlertDescription>
                                 </Alert>
                             </CardContent>

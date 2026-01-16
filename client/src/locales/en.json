@@ -373,44 +373,59 @@
       },
       "navigation":{
         "next":"Next",
-        "back":"Back"
+        "back":"Back",
+        "ready":"I'm Ready",
+        "formSubmitted":"I Submitted the Form",
+        "windowClosed":"Window Closed"
       },
       "stepOne":{
-        "title":"Step 1: Connect to Bin Wi-Fi",
-        "description":"Make sure your new bin is powered on. The LED should be blinking slowly.",
+        "title":"Step 1: Preparation",
+        "description":"Before starting, prepare all the information you'll need for the setup process.",
+        "wifiSection":"Wi-Fi Network Details",
+        "wifiName":"Write down your Wi-Fi network name (SSID) - Make sure it's exactly as it appears (uppercase/lowercase letters matter, no extra spaces)",
+        "wifiPassword":"Have your Wi-Fi password ready",
+        "ownerIdLabel":"Your Owner ID",
+        "ownerIdHint":"Click the copy button to copy this ID. You'll paste it in the bin's setup form.",
+        "important":"Important",
+        "importantNote":"The Wi-Fi name must be entered exactly as it appears in your network settings. Any difference in uppercase/lowercase letters or spaces will cause the connection to fail."
+      },
+      "stepTwo":{
+        "title":"Step 2: Connect & Configure",
+        "description":"Now connect to the bin's Wi-Fi network and enter the setup information.",
         "instructions":"Follow these steps",
         "step1":"Power on the bin and wait for the LED to blink slowly",
         "step2":"On your phone/computer, go to Wi-Fi settings",
         "step3":"Connect to the network named: Bin-XXXXX (where XXXXX is the bin's unique ID)",
-        "attention":"Note",
-        "captivePortalNote":"After connecting to the bin's Wi-Fi, a setup page will open automatically. If it doesn't, open your browser and go to: 192.168.4.1"
-        },
-        "stepTwo":{
-        "title":"Step 2: Copy Your Owner ID",
-        "description":"You will need to paste this ID in the bin's setup form to link it to your organization.",
-        "ownerIdLabel":"Your Owner ID",
-        "important":"Important",
-        "pasteNote":"Copy this ID and paste it in the 'Owner ID' field on the bin's setup page."
-              },
-        "stepThree":{
-        "title":"Step 3: Fill in the Setup Form",
-        "description":"On the bin's setup page, enter the following information:",
-        "formFields":"Required fields",
-        "field1":"Wi-Fi Network Name (SSID) - Your home/office Wi-Fi name",
-        "field2":"Wi-Fi Password - The password for your Wi-Fi network",
+        "step4":"A setup page will open automatically",
+        "formFields":"Fill in the setup form",
+        "field1":"Wi-Fi Network Name - Enter exactly as it appears in your settings",
+        "field2":"Wi-Fi Password - Your network password",
         "field3":"Owner ID - Paste the ID you copied in the previous step",
-        "afterSubmit":"After submitting",
-        "afterSubmitNote":"The bin will disconnect from its setup network and connect to your Wi-Fi. It will then automatically register with our servers."
+        "captivePortalTitle":"Page didn't open?",
+        "captivePortalNote":"If the setup page doesn't open automatically, open your browser and go to: 192.168.4.1"
+      },
+      "stepThree":{
+        "title":"Step 3: Wait for Confirmation",
+        "description":"After submitting the form, wait for the process to complete.",
+        "whatHappens":"What happens now",
+        "process1":"You'll see a success message: 'Settings saved successfully!'",
+        "process2":"The setup window will close automatically after a few seconds",
+        "process3":"The bin disconnects from setup mode and connects to your Wi-Fi",
+        "process4":"The bin registers with our servers automatically",
+        "waitTitle":"Don't switch networks yet!",
+        "waitNote":"Wait until you see the success message and the window closes on its own. Only then proceed to the next step.",
+        "timeoutTitle":"Connection Timeout",
+        "timeoutNote":"If the bin fails to connect to Wi-Fi or register within 2 minutes, it will automatically reset and return to setup mode. You can then try again from Step 2."
       },
       "stepFour":{
         "title":"Setup Complete!",
-        "description":"You have completed all the setup steps.",
-        "whatHappensNow":"What happens now",
-        "process1":"The bin connects to your Wi-Fi network",
-        "process2":"The bin registers with our servers automatically",
-        "process3":"Within a few minutes, the bin will appear in your bins list",
-        "timeoutNote":"Connection Timeout",
-        "timeoutDescription":"If the bin fails to connect to Wi-Fi or register within 2 minutes, it will automatically reset and return to setup mode. You can then try again."
+        "description":"The bin is now configured and connecting to your network.",
+        "finalSteps":"Final steps",
+        "final1":"Return to your regular Wi-Fi network (the bin's network will no longer be available)",
+        "final2":"Go to your bins list in the app",
+        "final3":"Within a few minutes, the new bin will appear in your list",
+        "noteTitle":"Not seeing the bin?",
+        "noteDescription":"If the bin doesn't appear within 5 minutes, try refreshing the page. If it still doesn't appear, the setup may have failed - repeat the process from Step 2."
       }
     },
     "binDetails":{
