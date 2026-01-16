@@ -110,6 +110,9 @@ async function handleDeviceLog(mac, { deviceKey, location, health, level, batter
     bin.status.level = level;
     bin.status.battery = battery;
     bin.location.coordinates = location;
+    if (message) {
+        bin.maintenance.notes = `Last updated via MQTT on ${new Date().toLocaleString()}, message: ${message}`;
+    }
     await bin.save();
 
     console.log("Updated log for", mac);
