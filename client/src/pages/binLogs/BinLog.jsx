@@ -50,7 +50,7 @@ function BinLog() {
                             <Badge className={`absolute top-3.5 right-0`} variant={getVariant(bin.status.health)}>{t(`levels.${bin.status.health}`)}</Badge>
                             <div className={`font-bold text-lg flex items-center gap-3 h-11 ${isRight ? "" : "flex-row-reverse"}`}>
                                 <span>{bin.binName}</span>
-                                <Battery level={bin.status.level} />
+                                <Battery level={bin.status.battery} />
                             </div>
                             <div className={`flex flex-col ${isRight ? "" : "text-right"}`}>
                                 <p className="!my-1">{t("fillLevel")}: <span className={`font-semibold`}>{bin.status.level}%</span></p>

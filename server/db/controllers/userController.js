@@ -456,9 +456,10 @@ export async function getUser(req, res) {
     }
 }
 export async function getAllUsers(req, res) {
-    const { role } = req.user
+    const { role, org } = req.user
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'role', { $ne: process.env.ROLE_OWNER })
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'org', new mongoose.Types.ObjectId(org))
 
     try {
         const users = await userModel.find(query, { passwordHash: 0, __v: 0 })
