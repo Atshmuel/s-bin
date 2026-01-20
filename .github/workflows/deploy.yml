@@ -3,7 +3,7 @@ name: CI/CD - Build & Deploy S-Bin
 on:
   push:
     branches:
-      - stage-main
+      - master-main
 
 jobs:
   build:
