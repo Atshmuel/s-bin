@@ -12,6 +12,11 @@ String deviceKey = "";
 // Device
 String DeviceMac = "";
 
+//ultrasonic sensor
+Ultrasonic ultrasonic(TRIG_PIN, ECHO_PIN);
+long microsec = 0;
+float distance = 0.0;
+
 // Mode
 int currentMode = SETUP_MODE;
 

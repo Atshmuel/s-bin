@@ -1,4 +1,5 @@
 #include "globals.h"
+#include "Ultrasonic.h"
 
 
 //should send logs every 4 hours or if battery is low or fill level is high
@@ -11,11 +12,11 @@ unsigned long lastRegisterTime = 0;
 unsigned long wifiStartTime = 0;
 unsigned long registerStartTime = 0;
 
+
 void setup() {
   Serial.begin(115200);
   delay(5000);
   // clearPreferences();
-  
   DeviceMac = getChipMac();
   Serial.println("Device MAC: " + DeviceMac);
 
@@ -31,6 +32,7 @@ void setup() {
   if(currentMode == REGISTER_MODE || currentMode == NORMAL_MODE){
     connectToWifi(ssid, password);
   }
+  
 }
 
 void loop() {
@@ -91,6 +93,17 @@ void loop() {
       publishLog(fillLevel, battery, health);
       lastLogTime = millis();
     }
+    // Measure distance using ultrasonic sensor
+     microsec = ultrasonic.timing();
+    
+    // convert time to distance in cm
+     distance = ultrasonic.convert(microsec, Ultrasonic::CM);
+     Serial.print("Distance: ");
+     Serial.print(distance);
+     Serial.println(" cm");
+    
+    delay(200);
+  
     break;
 
   case RESET:
