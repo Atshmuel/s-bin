@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react"
+import { Menu, PanelLeftIcon } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -225,6 +225,7 @@ function SidebarTrigger({
   onClick,
   ...props
 }) {
+  const isMobile = useIsMobile()
   const { toggleSidebar } = useSidebar()
 
   return (
@@ -239,7 +240,7 @@ function SidebarTrigger({
         toggleSidebar()
       }}
       {...props}>
-      <PanelLeftIcon />
+      {isMobile ? <Menu /> : <PanelLeftIcon />}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );
@@ -441,8 +442,11 @@ function SidebarMenuItem({
   className,
   ...props
 }) {
+  const { toggleSidebar, isMobile } = useSidebar()
+
   return (
     <li
+      onClick={isMobile ? toggleSidebar : null}
       data-slot="sidebar-menu-item"
       data-sidebar="menu-item"
       className={cn("group/menu-item relative", className)}
@@ -617,8 +621,11 @@ function SidebarMenuSubItem({
   className,
   ...props
 }) {
+  const { toggleSidebar, isMobile } = useSidebar()
+
   return (
     <li
+      onClick={isMobile ? toggleSidebar : null}
       data-slot="sidebar-menu-sub-item"
       data-sidebar="menu-sub-item"
       className={cn("group/menu-sub-item relative", className)}

@@ -38,7 +38,7 @@ void preferencesSetup() {
   Serial.println("Password: " + password);
   Serial.println("Owner ID: " + ownerId);
   Serial.println("Device Key: " + deviceKey);
-  if(ssid != "" && password != "" && ownerId != ""){
+  if(ssid != "" && ownerId != ""){
     if (deviceKey != "") {
       currentMode = NORMAL_MODE;
     } else {

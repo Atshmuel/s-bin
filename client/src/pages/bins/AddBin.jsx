@@ -64,7 +64,7 @@ function AddBin() {
                     </AlertDescription>
                 </Alert>
                 <Carousel allowDrag={false} setApi={setApi}>
-                    <CarouselContent isRight={isRight} className="max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px] p-1">
+                    <CarouselContent isRight={isRight} className="max-w-[370px] sm:max-w-[470px] md:max-w-[570px] lg:max-w-[720px] p-1">
                         {/* Step 1: Preparation - Gather all information before starting */}
                         <CarouselItem key={1}>
                             <Card>

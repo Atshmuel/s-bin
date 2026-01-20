@@ -2,12 +2,8 @@
 
 import * as React from "react"
 import {
-  BarChart3,
   ChartSplineIcon,
-  Code2,
-  HelpCircleIcon,
   LayoutDashboardIcon,
-  Settings2,
   Trash2Icon,
   UserCircle2Icon,
 } from "lucide-react"
