@@ -294,7 +294,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         </div>
         
         <div class='form-group'>
-          <input type='password' id='wifi_password' name='wifi_password' placeholder=' ' required>
+          <input type='password' id='wifi_password' name='wifi_password' placeholder=' '>
           <label for='wifi_password' data-i18n='password'>WiFi Password</label>
         </div>
         
