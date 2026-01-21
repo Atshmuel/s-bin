@@ -2,12 +2,14 @@ import { Badge } from "@/components/ui/badge";
 import DataTable from "../../components/DataTable"
 import { Link } from "react-router-dom";
 import { useUsers } from "@/hooks/users/useUsers";
+import { useOrganizations } from "@/hooks/organizations/useOrganizations";
 import { LinkIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 
 function UsersList() {
     const { users: usersList, isLoadingUsers, usersError } = useUsers()
+    const { data: organizations } = useOrganizations();
     const { t } = useTranslation()
     const columns = [
         {
@@ -16,6 +18,22 @@ function UsersList() {
             cell: ({ row }) => {
                 const role = row.original.role
                 return <Badge variant={role}>{t(`roles.${role}`)}</Badge>
+            }
+        },
+        {
+            header: 'organization',
+            accessorKey: 'org',
+            cell: ({ row }) => {
+                const orgId = row.original.org;
+                const org = organizations?.find(o => o._id === orgId);
+                return (
+                    <Link className="flex gap-2 items-center capitalize"
+                        to={`/organizations?id=${orgId}`}
+                    >
+                        <LinkIcon size={14} /> <span >{org ? org.name : 'Unknown'}</span>
+                    </Link>
+
+                );
             }
         },
         {

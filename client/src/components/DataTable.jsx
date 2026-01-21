@@ -7,7 +7,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import {
     Table,
@@ -29,12 +29,18 @@ import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
 
 
-export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null }) {
+export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null, initialSearch = "" }) {
     const { t } = useTranslation()
 
     const { isRight } = useAppSide()
     const [sorting, setSorting] = useState(sortingBy ?? [])
-    const [searching, setSearching] = useState("")
+    const [searching, setSearching] = useState(initialSearch)
+
+    useEffect(() => {
+        if (initialSearch) {
+            setSearching(initialSearch)
+        }
+    }, [initialSearch])
 
     const table = useReactTable({
         data,

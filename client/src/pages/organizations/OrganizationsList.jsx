@@ -12,12 +12,15 @@ import { useTranslation } from "react-i18next";
 import { useDeleteOrg } from "@/hooks/organizations/useDeleteOrg";
 import { useUpdateOrgName } from "@/hooks/organizations/useUpdateOrg";
 import { useOrganizations } from "@/hooks/organizations/useOrganizations";
+import { useSearchParams } from "react-router-dom";
 import { useAppSide } from "@/contexts/AppSideProvider";
 function OrganizationsList() {
     const { t } = useTranslation();
     const { deleteOrgById, isDeleting } = useDeleteOrg();
     const { updateOrgName, isUpdatingOrgName } = useUpdateOrgName();
     const { data, isLoadingOrgs, orgsError } = useOrganizations()
+    const [searchParams] = useSearchParams();
+    const searchId = searchParams.get('id') || '';
     const { isRight, side } = useAppSide()
 
 
@@ -122,7 +125,7 @@ function OrganizationsList() {
 
     return (
         <div className="sm:p-10">
-            <DataTable columns={columns} data={data ?? []} isLoading={isLoadingOrgs} error={orgsError} title={t('pages.organizationsList.title')} />
+            <DataTable columns={columns} data={data ?? []} isLoading={isLoadingOrgs} error={orgsError} title={t('pages.organizationsList.title')} initialSearch={searchId} />
         </div>
     )
 }
