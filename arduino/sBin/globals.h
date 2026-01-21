@@ -33,6 +33,15 @@ extern String DeviceMac;
 
 extern int currentMode;
 
+// ===== Ultrasonic Pins =====
+#define TRIG_PIN 4
+#define ECHO_PIN 5
+
+extern Ultrasonic ultrasonic;
+extern long microsec;
+extern float distance;
+
+
 // ===== Network / MQTT =====
 extern WiFiClient espClient;
 extern PubSubClient mqttClient;
