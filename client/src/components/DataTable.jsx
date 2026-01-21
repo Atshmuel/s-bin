@@ -60,7 +60,7 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
         <div className="space-y-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 {title ? <h1 className="text-lg sm:text-2xl capitalize font-bold min-w-20 sm:min-w-72">{title}</h1> : null}
-                <div className={`flex flex-col sm:flex-row items-center w-full gap-3 ${title ? "md:justify-end" : "justify-between"} `}>
+                <div className={`flex items-center w-full gap-3 ${title ? "md:justify-end" : "justify-between"} `}>
                     <Input
                         withIcon={true}
                         Icon={iconToShow}
@@ -73,13 +73,16 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                             setSearching("")
                         }}
                         disabled={isLoading || error}
-                        className="w-full sm:w-48 relative"
+                        className="w-30 sm:w-48 relative"
                     />
-                    <div className="flex gap-3 w-full sm:w-auto justify-end">
+                    <div className="flex gap-1.5 w-full sm:w-auto justify-end">
+                        {ActionButton ? <ActionButton /> : null}
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button disabled={isLoading || error} variant="outline">
-                                    {t("columns")} <IoMdArrowDropdown />
+                                    <span>{t("columns")}</span>
+                                    <IoMdArrowDropdown />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align={isRight ? "end" : "start"} className="max-h-60 overflow-y-auto">
@@ -97,7 +100,6 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                                     ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        {ActionButton ? <ActionButton /> : null}
                     </div>
                 </div>
             </div>
@@ -187,6 +189,6 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                     {t("globalTable.next")}
                 </Button>
             </div>
-        </div>
+        </div >
     )
 }
