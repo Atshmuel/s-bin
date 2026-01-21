@@ -224,7 +224,7 @@ function Signup() {
                 {successfullyCreated ? null : <p className="w-full text-center text-sm text-muted-foreground p-0 m-0">
                     {t("pages.signupPage.footer.alreadyHaveAccount")}
                     <Button variant='link' className={'m-0 px-1'}>
-                        <NavLink to={'/login'}>{t("pages.signupPage.footer.signin")}</NavLink>
+                        <NavLink to={'/login'}>{t("pages.signupPage.footer.login")}</NavLink>
                     </Button>
                 </p>}
 
