@@ -185,7 +185,7 @@ function BinsList() {
 
     return (
         <div className="sm:p-10">
-            <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title={t('pages.binsList.title')} ActionButton={true || allBins?.length && binIds?.length ? ActionButton : null} />
+            <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title={t('pages.binsList.title')} ActionButton={allBins?.length && binIds?.length ? ActionButton : null} />
         </div>
     )
 }
