@@ -442,11 +442,9 @@ function SidebarMenuItem({
   className,
   ...props
 }) {
-  const { toggleSidebar, isMobile } = useSidebar()
 
   return (
     <li
-      onClick={isMobile ? toggleSidebar : null}
       data-slot="sidebar-menu-item"
       data-sidebar="menu-item"
       className={cn("group/menu-item relative", className)}
@@ -621,8 +619,7 @@ function SidebarMenuSubItem({
   className,
   ...props
 }) {
-  const { toggleSidebar, isMobile } = useSidebar()
-
+  const { isMobile, toggleSidebar } = useSidebar()
   return (
     <li
       onClick={isMobile ? toggleSidebar : null}
