@@ -1,0 +1,59 @@
+import mqtt from "mqtt";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import path from "path";
+import { getAllBinsForMqtt } from "../db/service/sharedService.js";
+
+dotenv.config({ path: path.resolve("../.env") });
+
+await mongoose.connect(process.env.DB_URL);
+console.log("Connected to DB for MQTT test");
+
+const client = mqtt.connect("mqtt://broker.hivemq.com:1883", {
+    protocolVersion: 4
+});
+
+const randomInt = (min, max) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+
+const randomHealth = () => {
+    const r = Math.random();
+    if (r < 0.75) return "good";
+    if (r < 0.9) return "warning";
+    return "critical";
+};
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+client.on("connect", async () => {
+    const bins = await getAllBinsForMqtt();
+
+    if (!bins.length) {
+        console.error("No bins found in DB");
+        process.exit(1);
+    }
+
+    console.log("start");
+
+    for (let i = 0; i < 100; i++) {
+        const bin = bins[randomInt(0, bins.length - 1)];
+
+        const payload = {
+            location: bin.location.coordinates,
+            health: randomHealth(),
+            level: randomInt(0, 100),
+            battery: randomInt(0, 100),
+            deviceKey: bin.deviceKey
+        };
+
+        const topic = `bins/${bin.macAddress}/update/log`;
+
+        client.publish(topic, JSON.stringify(payload));
+        console.log(`Published to ${topic}`, payload);
+
+        await sleep(200);
+    }
+
+    client.end();
+    mongoose.disconnect();
+});
