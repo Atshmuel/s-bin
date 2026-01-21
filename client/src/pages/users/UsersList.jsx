@@ -68,21 +68,22 @@ function UsersList() {
     ]
 
     const orgColumn = {
-            header: 'organization',
-            accessorKey: 'org',
-            cell: ({ row }) => {
-                const orgId = row.original.org;
-                const org = organizations?.find(o => o._id === orgId);
-                return (
-                    <Link className="flex gap-2 items-center capitalize"
-                        to={`/organizations?id=${orgId}`}
-                    >
-                        <LinkIcon size={14} /> <span >{org ? org.name : 'Unknown'}</span>
-                    </Link>
+        header: 'organization',
+        accessorKey: 'org',
+        cell: ({ row }) => {
+            const orgId = row.original.org;
+            const org = organizations?.find(o => o._id === orgId);
+            return (
+                <Link className="flex gap-2 items-center capitalize"
+                    to={`/organizations?id=${orgId}`}
+                >
+                    <span className={`${!org ? 'capitalize text-muted-foreground/50' : ''}`} >{org ?
+                        (<><LinkIcon size={14} className="inline mr-1" /> {org.name}</>) : 'N/A'}</span>
+                </Link>
 
-                );
-            },
-        }
+            );
+        },
+    }
     if (isOwner) {
         columns.splice(1, 0, orgColumn);
     }
