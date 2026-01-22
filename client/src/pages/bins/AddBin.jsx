@@ -8,9 +8,10 @@ import { ArrowLeft, ArrowRight, Check, CheckCircle2, CircleCheck, Copy, Info, Li
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
+import ErrorPage from "../generals/ErrorPage"
 
 function AddBin() {
-    const { me } = useMe()
+    const { me, isOwner } = useMe()
     const { isRight } = useAppSide();
     const { t } = useTranslation();
 
@@ -19,7 +20,9 @@ function AddBin() {
     const [copiedOwnerId, setCopiedOwnerId] = useState(false);
 
     const totalSteps = 4;
-    const ownerId = me?.org ?? me?.id ?? "";
+    const ownerId = me?.org ?? null
+
+
 
     const handleCopyOwnerId = async () => {
         if (!ownerId) {
@@ -53,8 +56,8 @@ function AddBin() {
     const NextIcon = isRight ? ArrowRight : ArrowLeft;
     const PrevIcon = isRight ? ArrowLeft : ArrowRight;
 
-    return (
-        <div className="flex justify-center items-center">
+    return ownerId || isOwner ?
+        <div className="flex justify-center items-center" >
             <div className="w-full max-w-[350px] sm:max-w-[450px] md:max-w-[550px] lg:max-w-[700px]">
                 <Alert className="mb-3">
                     <Info className="h-4 w-4" />
@@ -322,7 +325,13 @@ function AddBin() {
                 </Carousel>
             </div>
         </div>
-    )
+        : <ErrorPage
+            code={t("pages.addBin.noOrganization.code")}
+            description={t("pages.addBin.noOrganization.description")}
+            buttonText={t("pages.addBin.noOrganization.buttonText")}
+            navTo="/" />
+
+
 }
 
 export default AddBin

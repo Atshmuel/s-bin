@@ -451,6 +451,11 @@
         "troubleshoot1":"Double‑check the Wi‑Fi name (SSID) and password you entered.",
         "troubleshoot2":"Make sure you're back on your regular Wi‑Fi/mobile data (not Bin-XXXXX).",
         "troubleshoot3":"Try the setup again from Step 2 (the bin may have reset to setup mode)."
+      },
+      "noOrganization": {
+        "code": "No Organizational Affiliation",
+        "description": "You do not have an organization associated with your account. Please join an organization or contact technical support to create one.",
+        "buttonText": "Back to Dashboard"
       }
     },
     "binDetails":{
