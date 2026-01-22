@@ -21,6 +21,11 @@ void saveSetupData(String wifiSsid, String wifiPass, String owner) {
   preferences.putString("ownerId", owner);
   preferences.end();
 }
+void saveBinDepth(int depth) {
+preferences.begin("credentials", false);
+  preferences.putInt("binDepth", depth);
+  preferences.end();
+}
 
 void loadPreferences() {
   preferences.begin("credentials", true);
@@ -28,6 +33,7 @@ void loadPreferences() {
   password = preferences.getString("password", "");
   ownerId = preferences.getString("ownerId", "");
   deviceKey = preferences.getString("deviceKey", "");
+  binDepth = preferences.getInt("binDepth", 0);
   preferences.end();
 }
 
@@ -38,9 +44,14 @@ void preferencesSetup() {
   Serial.println("Password: " + password);
   Serial.println("Owner ID: " + ownerId);
   Serial.println("Device Key: " + deviceKey);
+  Serial.println("Bin Depth: " + String(binDepth));
   if(ssid != "" && ownerId != ""){
     if (deviceKey != "") {
-      currentMode = NORMAL_MODE;
+      if (binDepth == 0) {
+        currentMode = CALIBRATION_MODE;
+      } else {
+        currentMode = NORMAL_MODE;
+      }
     } else {
       currentMode = REGISTER_MODE;
     }

@@ -4,12 +4,17 @@
 #include <WebServer.h>
 #include <DNSServer.h>
 #include <PubSubClient.h>
-#include <ArduinoJson.h>
+#include <ArduinoJson.h>  
 #include <Preferences.h>  
+#include "Ultrasonic.h"
+
 
 // ===== Preferences =====
 //will be use to store ssid,password,ownerId,deviceKey
 extern Preferences preferences;
+
+// ===== Bin Settings =====
+extern int binDepth;
 
 // ===== Credentials =====
 //ssid will be sent from user on setup along with password (wifi name and wifi password),
@@ -30,6 +35,7 @@ extern String DeviceMac;
 #define NORMAL_MODE 3
 #define WIFI_CONFIG_MODE 4
 #define REGISTER_MODE 5
+#define CALIBRATION_MODE 6
 
 extern int currentMode;
 
@@ -72,6 +78,7 @@ void updateTelemetrySimulation();
 void clearPreferences();
 void saveDeviceKey(String key);
 void saveSetupData(String wifiSsid, String wifiPass, String owner);
+void saveBinDepth(int depth);
 void loadPreferences();
 void preferencesSetup();
 
@@ -86,5 +93,10 @@ void publishRegister();
 void mqttCallback(char* topic, byte* payload, unsigned int length);
 void handleResetCommand();
 void publishLog(int level, int battery, String health);
+
+// ultrasonic.ino
+void calibrateSensor();
+int getFillLevel();
+
 
 

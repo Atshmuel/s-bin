@@ -5,6 +5,7 @@
 //should send logs every 4 hours or if battery is low or fill level is high
 unsigned long lastLogTime = 0;
 const unsigned long LOG_INTERVAL = 14400000; // 4 hours in milliseconds
+const unsigned long URGENT_LOG_INTERVAL = 3600000;  // 1 hour in milliseconds
 const unsigned long CRITICAL_LOG_INTERVAL = 1800000; // 30 minutes
 const unsigned long REGISTER_INTERVAL = 10000; // 10 seconds
 unsigned long lastRegisterTime = 0;
@@ -29,14 +30,14 @@ void setup() {
     //Note this step will also start the web server to get user credentials and ownerId from user
   }
 
-  if(currentMode == REGISTER_MODE || currentMode == NORMAL_MODE){
+  if(currentMode == REGISTER_MODE || currentMode == NORMAL_MODE || currentMode == CALIBRATION_MODE){
     connectToWifi(ssid, password);
   }
   
 }
 
 void loop() {
-  if (currentMode == REGISTER_MODE || currentMode == NORMAL_MODE) {
+  if (currentMode == REGISTER_MODE || currentMode == NORMAL_MODE || currentMode == CALIBRATION_MODE) {
     if (!mqttClient.connected()) {
       connectMqtt();
     }
@@ -79,12 +80,21 @@ void loop() {
     }
     break;
 
+  case CALIBRATION_MODE:
+    // Perform sensor calibration
+    calibrateSensor(); 
+    currentMode = NORMAL_MODE;
+    // reset log timer to send first log immediately after calibration
+    lastLogTime = millis() - NORMAL_LOG_INTERVAL; 
+    break;
+
   case NORMAL_MODE:
     // Update simulation values
-    updateTelemetrySimulation();
+    // updateTelemetrySimulation();
+    fillLevel = getFillLevel();
 
     // Normal operation: send logs periodically
-    if (millis() - lastLogTime > LOG_INTERVAL || (health == "critical" && millis() - lastLogTime > CRITICAL_LOG_INTERVAL)) {
+    if (millis() - lastLogTime > LOG_INTERVAL || (health == "critical" && millis() - lastLogTime > CRITICAL_LOG_INTERVAL) ||(fillLevel >= 80 && millis() - lastLogTime > URGENT_LOG_INTERVAL)) {
       Serial.println("Sending periodic log...");
       // Simulate level/battery for now or read from sensors
       // int fillLevel = readUltrasonic(); 
@@ -93,16 +103,8 @@ void loop() {
       publishLog(fillLevel, battery, health);
       lastLogTime = millis();
     }
-    // Measure distance using ultrasonic sensor
-     microsec = ultrasonic.timing();
     
-    // convert time to distance in cm
-     distance = ultrasonic.convert(microsec, Ultrasonic::CM);
-     Serial.print("Distance: ");
-     Serial.print(distance);
-     Serial.println(" cm");
-    
-    delay(200);
+    delay(1000);
   
     break;
 

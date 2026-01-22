@@ -35,5 +35,6 @@ long wifiTime = 0;
 float lat = 32.705433;
 float lng = 35.254444;
 int fillLevel = 0;
+int binDepth = 0;
 int battery = 100;
 String health = "good";

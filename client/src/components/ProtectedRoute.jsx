@@ -10,13 +10,14 @@ import { useDarkMode } from "@/contexts/darkModelContext";
 
 
 
-export default function ProtectedRoute({ children }) {
+export default function ProtectedRoute({ children, roles=[] }) {
   const navigate = useNavigate();
   const { me, meError, isLoadingMe } = useMe();
   const { isLoadingSettings, settings } = useUserSettings(me?.id)
   const { toggleSide, language } = useAppSide();
 
   const { applyDarkMode } = useDarkMode()
+
 
   useEffect(() => {
     if (meError) {
@@ -40,15 +41,18 @@ export default function ProtectedRoute({ children }) {
 
 
 
-
-
-
   if (isLoadingMe || (me && isLoadingSettings))
     return (
       <main className="w-full h-dvh flex justify-center items-center">
         <Spinner className={'size-24'} />
       </main>
     );
+
+
+  if (roles.length && !roles.includes(me.role)) {
+    return navigate('/error', { replace: true });
+  }
+
 
   if (me) {
     return children

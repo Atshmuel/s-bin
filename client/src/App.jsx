@@ -75,7 +75,7 @@ function App() {
                 <Route path="account">
                   <Route path="" element={<AccountProfile />} />
                 </Route>
-                <Route path="organizations">
+                <Route path="organizations" element={<ProtectedRoute roles={['owner']} />}>
                   <Route path='' element={<OrganizationsList />} />
                 </Route>
 
