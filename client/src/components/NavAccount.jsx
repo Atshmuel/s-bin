@@ -72,10 +72,10 @@ export function NavAccount({
                 </Avatar>
                 <div className={`grid flex-1  text-sm leading-tight ${isRight ? 'text-left' : 'text-right'}`}>
                   <div className={`flex ${isRight ? '' : 'flex-row-reverse'}  items-center justify-between`}>
-                    <span className="truncate font-semibold capitalize mr-2">{account.name}</span>
+                    <span className={`truncate font-semibold capitalize ${isRight ? 'mr-2' : 'ml-2'}`}>{account.name}</span>
                     <Badge variant={account.role}>{t(`roles.${account.role}`)}</Badge>
                   </div>
-                  <span className="truncate text-xs">{account.email}</span>
+                  <span className="truncate text-xs mt-2">{account.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

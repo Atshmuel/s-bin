@@ -442,3 +442,27 @@ export async function getLogTypes(req, res) {
         return res.status(500).json({ message: 'Failed to count bins by status' })
     }
 }
+
+
+
+
+//For testing purposes only
+export async function getAllBinsForMqtt() {
+    try {
+        const bins = await binModel.find({}).select('macAddress deviceKey location -_id');
+        return bins;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+export async function getAllOrgsForMqtt() {
+    try {
+        const orgs = await organizationModel.find({}).select('_id');
+        return orgs;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}

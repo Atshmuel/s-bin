@@ -154,7 +154,14 @@ function BinsList() {
 
         return <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
             <DialogTrigger asChild>
-                <Button variant='destructive' className={'cursor-pointer'}><Trash /> {t("delete")} {binIds.length} {t("bins")}</Button>
+                <Button variant='destructive' className={'cursor-pointer'}>
+                    <Trash />
+                    <div className="flex gap-1">
+                        <span className="hidden sm:block">{t("delete")}</span>
+                        <span>{binIds.length}</span>
+                        <span className="hidden sm:block">{t("bins")}</span>
+                    </div>
+                </Button>
             </DialogTrigger>
             <DialogContent side={side}>
                 <DialogHeader isRight={isRight} className="pt-6">
