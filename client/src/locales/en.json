@@ -329,7 +329,7 @@
         "email":"Email",
         "role":"Role",
         "accountStatus":"Account Status",
-        "orgnization":"Organization",
+        "organization":"Organization",
         "manager":"Manager"
       },
       "viewManager":"View Manager",

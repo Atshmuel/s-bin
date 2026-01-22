@@ -4,7 +4,7 @@ import {
 } from '@tanstack/react-query'
 import 'leaflet/dist/leaflet.css';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import { DarkModeProvider } from './contexts/darkModelContext';
@@ -68,14 +68,21 @@ function App() {
                   </Route>
                 </Route>
 
-                <Route path='users'>
+
+                <Route path='users' element={
+                  <ProtectedRoute roles={['admin', 'owner']}>
+                    <Outlet />
+                  </ProtectedRoute>
+                }>
                   <Route path='' element={<UsersList />} />
                   <Route path=':id' element={<UserProfile />} />
                 </Route>
                 <Route path="account">
                   <Route path="" element={<AccountProfile />} />
                 </Route>
-                <Route path="organizations" element={<ProtectedRoute roles={['owner']} />}>
+                <Route path="organizations" element={<ProtectedRoute roles={['owner']}>
+                  <Outlet />
+                </ProtectedRoute>}>
                   <Route path='' element={<OrganizationsList />} />
                 </Route>
 

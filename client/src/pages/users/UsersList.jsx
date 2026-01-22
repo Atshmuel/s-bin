@@ -68,7 +68,7 @@ function UsersList() {
     ]
 
     const orgColumn = {
-        header: 'organization',
+        header: t('pages.userList.columns.organization'),
         accessorKey: 'org',
         cell: ({ row }) => {
             const orgId = row.original.org;

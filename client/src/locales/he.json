@@ -328,7 +328,7 @@
         "email":"אימייל",
         "role":"תפקיד",
         "accountStatus":"מצב חשבון",
-        "orgnization":"ארגון",
+        "organization":"ארגון",
         "manager":"מנהל"
       },
       "viewManager":"הצג מנהל",
