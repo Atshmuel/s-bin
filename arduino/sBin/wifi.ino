@@ -324,7 +324,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         owner: 'Organization ID',
         save: 'Save & Start Calibration',
         device: 'Device ID:',
-        statusSuccess: 'Settings saved successfully! Device will restart and calibrate for 20 seconds. Please keep the bin empty...',
+        statusSuccess: 'Settings saved successfully! Device restarting...',
         statusError: 'Saving Error',
         errorPrefix: 'Error: '
       },
@@ -336,7 +336,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         owner: 'מזהה ארגון',
         save: 'שמור והתחל כיול',
         device: 'מזהה מכשיר:',
-        statusSuccess: 'ההגדרות נשמרו בהצלחה! המכשיר יופעל מחדש ויבצע כיול של 20 שניות. נא להשאיר את הפח ריק וסגור ...',
+        statusSuccess: 'ההגדרות נשמרו בהצלחה! המכשיר יופעל מחדש...',
         statusError: 'שגיאה בשמירה',
         errorPrefix: 'שגיאה: '
       }

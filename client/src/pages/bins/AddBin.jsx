@@ -292,7 +292,6 @@ function AddBin() {
                                         <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
                                             <li>{t("pages.addBin.stepFour.final1")}</li>
                                             <li>{t("pages.addBin.stepFour.final2")}</li>
-                                            <li>{t("pages.addBin.stepFour.final3")}</li>
                                         </ol>
                                     </div>
 
@@ -309,7 +308,6 @@ function AddBin() {
                                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                                             <li>{t("pages.addBin.stepFour.troubleshoot1")}</li>
                                             <li>{t("pages.addBin.stepFour.troubleshoot2")}</li>
-                                            <li>{t("pages.addBin.stepFour.troubleshoot3")}</li>
                                         </ul>
                                     </div>
                                 </CardContent>

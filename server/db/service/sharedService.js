@@ -151,6 +151,45 @@ export async function organizationExist(org) {
     }
 }
 
+export async function getOrgAdmins(orgs) {
+    try {
+        if (!Array.isArray(orgs) || orgs.length === 0)
+            throw new Error('orgs must be a non-empty array')
+
+        const users = await userModel.aggregate([
+            {
+                $match: {
+                    org: { $in: orgs },
+                }
+            },
+            {
+                $lookup: {
+                    from: "usersettings",
+                    localField: "settingsId",
+                    foreignField: "_id",
+                    as: "settingsData"
+                }
+            },
+            {
+                $match: {
+                    "settingsData.notifications.email": true
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    name: 1,
+                    email: 1
+                }
+            }
+        ]);
+        return users;
+    } catch (error) {
+        console.error(error)
+        return [];
+    }
+}
+
 //overview
 export async function getAllBins(req, res, next) {
     const { org: ownerId, role } = req.user;

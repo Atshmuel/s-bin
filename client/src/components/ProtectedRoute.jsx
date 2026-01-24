@@ -10,7 +10,7 @@ import { useDarkMode } from "@/contexts/darkModelContext";
 
 
 
-export default function ProtectedRoute({ children, roles=[] }) {
+export default function ProtectedRoute({ children, roles = [] }) {
   const navigate = useNavigate();
   const { me, meError, isLoadingMe } = useMe();
   const { isLoadingSettings, settings } = useUserSettings(me?.id)
@@ -56,6 +56,5 @@ export default function ProtectedRoute({ children, roles=[] }) {
 
   if (me) {
     return children
-
   }
 }
