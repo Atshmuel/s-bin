@@ -1,5 +1,5 @@
 #include "globals.h"
-#include "Ultrasonic.h"
+
 
 
 //should send logs every 4 hours or if battery is low or fill level is high
@@ -17,6 +17,9 @@ unsigned long registerStartTime = 0;
 void setup() {
   Serial.begin(115200);
   delay(5000);
+
+  gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RXD2, TXD2);
+
   // clearPreferences();
   DeviceMac = getChipMac();
   Serial.println("Device MAC: " + DeviceMac);
@@ -26,8 +29,8 @@ void setup() {
 
   if(currentMode == SETUP_MODE){
     WifiSetUp(); 
-    //start wifi in AP mode to get user credentials if ssid and password are stroed in preferences we can skip this step and go to normal mode
-    //Note this step will also start the web server to get user credentials and ownerId from user
+  //start wifi in AP mode to get user credentials if ssid and password are stroed in preferences we can skip this step and go to normal mode
+  //Note this step will also start the web server to get user credentials and ownerId from user
   }
 
   if(currentMode == REGISTER_MODE || currentMode == NORMAL_MODE || currentMode == CALIBRATION_MODE){
@@ -48,6 +51,16 @@ void loop() {
   {
   case SETUP_MODE:
     Serial.println("In Setup Mode");
+    while (gpsSerial.available() > 0)
+      if (gps.encode(gpsSerial.read()))
+      displayLocationInfo();
+
+    if (millis() > 5000 && gps.charsProcessed() < 10) {
+      Serial.println(F("No GPS detected: check wiring."));
+      while(true);
+  }
+    delay(1000);
+
     break;
 
   case WIFI_CONFIG_MODE:
@@ -85,7 +98,7 @@ void loop() {
     calibrateSensor(); 
     currentMode = NORMAL_MODE;
     // reset log timer to send first log immediately after calibration
-    lastLogTime = millis() - NORMAL_LOG_INTERVAL; 
+    lastLogTime = millis() - LOG_INTERVAL; 
     break;
 
   case NORMAL_MODE:
