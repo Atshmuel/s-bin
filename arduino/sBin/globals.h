@@ -7,6 +7,8 @@
 #include <ArduinoJson.h>  
 #include <Preferences.h>  
 #include "Ultrasonic.h"
+#include <TinyGPSPlus.h>
+
 
 
 // ===== Preferences =====
@@ -47,6 +49,13 @@ extern Ultrasonic ultrasonic;
 extern long microsec;
 extern float distance;
 
+// ===== GPS =====
+extern TinyGPSPlus gps;
+#define RXD2 16
+#define TXD2 17
+#define GPS_BAUD 9600
+#define gpsSerial Serial2
+
 
 // ===== Network / MQTT =====
 extern WiFiClient espClient;
@@ -81,6 +90,7 @@ void saveSetupData(String wifiSsid, String wifiPass, String owner);
 void saveBinDepth(int depth);
 void loadPreferences();
 void preferencesSetup();
+void saveLocation(float latitude, float longitude);
 
 // wifi.ino
 void WifiSetUp();
@@ -97,6 +107,10 @@ void publishLog(int level, int battery, String health);
 // ultrasonic.ino
 void calibrateSensor();
 int getFillLevel();
+
+// gps.ino
+void displayLocationInfo();
+void updateGPS();
 
 
 

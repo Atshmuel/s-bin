@@ -17,6 +17,9 @@ Ultrasonic ultrasonic(TRIG_PIN, ECHO_PIN);
 long microsec = 0;
 float distance = 0.0;
 
+//gps
+TinyGPSPlus gps;
+
 // Mode
 int currentMode = SETUP_MODE;
 
@@ -29,11 +32,9 @@ WebServer server(80);
 DNSServer dnsServer;
 long wifiTime = 0;
 
-
-
 // Telemetry
-float lat = 32.705433;
-float lng = 35.254444;
+float lat = 0.0;
+float lng = 0.0;
 int fillLevel = 0;
 int binDepth = 0;
 int battery = 100;

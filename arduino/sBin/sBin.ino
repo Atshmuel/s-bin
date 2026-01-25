@@ -1,5 +1,5 @@
 #include "globals.h"
-#include "Ultrasonic.h"
+
 
 
 //should send logs every 4 hours or if battery is low or fill level is high
@@ -17,17 +17,16 @@ unsigned long registerStartTime = 0;
 void setup() {
   Serial.begin(115200);
   delay(5000);
+  gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RXD2, TXD2);
   // clearPreferences();
   DeviceMac = getChipMac();
   Serial.println("Device MAC: " + DeviceMac);
-
   preferencesSetup();
   setupMqttTopics(); // Initialize topics with correct MAC
-
   if(currentMode == SETUP_MODE){
     WifiSetUp(); 
-    //start wifi in AP mode to get user credentials if ssid and password are stroed in preferences we can skip this step and go to normal mode
-    //Note this step will also start the web server to get user credentials and ownerId from user
+  //start wifi in AP mode to get user credentials if ssid and password are stroed in preferences we can skip this step and go to normal mode
+  //Note this step will also start the web server to get user credentials and ownerId from user
   }
 
   if(currentMode == REGISTER_MODE || currentMode == NORMAL_MODE || currentMode == CALIBRATION_MODE){
@@ -47,7 +46,6 @@ void loop() {
   switch (currentMode)
   {
   case SETUP_MODE:
-    Serial.println("In Setup Mode");
     break;
 
   case WIFI_CONFIG_MODE:
@@ -62,7 +60,6 @@ void loop() {
     if (registerStartTime == 0) {
       registerStartTime = millis();
     }
-    
     if (millis() - registerStartTime > REGISTER_TIMEOUT) {
       Serial.println("Registration timed out. Resetting to factory settings...");
       clearPreferences();
@@ -70,7 +67,6 @@ void loop() {
       delay(1000); 
       ESP.restart();
     }
-
     // In register mode, we wait for the server to send us a key via MQTT ACK
     // We republish the registration request every few seconds until we get an ACK (handled in callback)
     if (millis() - lastRegisterTime > REGISTER_INTERVAL) {
@@ -85,31 +81,26 @@ void loop() {
     calibrateSensor(); 
     currentMode = NORMAL_MODE;
     // reset log timer to send first log immediately after calibration
-    lastLogTime = millis() - NORMAL_LOG_INTERVAL; 
+    lastLogTime = millis() - LOG_INTERVAL; 
     break;
 
   case NORMAL_MODE:
-    // Update simulation values
-    // updateTelemetrySimulation();
     fillLevel = getFillLevel();
-
+    updateGPS();
     // Normal operation: send logs periodically
     if (millis() - lastLogTime > LOG_INTERVAL || (health == "critical" && millis() - lastLogTime > CRITICAL_LOG_INTERVAL) ||(fillLevel >= 80 && millis() - lastLogTime > URGENT_LOG_INTERVAL)) {
       Serial.println("Sending periodic log...");
-      // Simulate level/battery for now or read from sensors
-      // int fillLevel = readUltrasonic(); 
-      // int bat = readBattery();
-      
+      battery = random(0, 101);
+      if (fillLevel >= 80 || battery <= 20) {
+        health = "critical";
+      } else if ((fillLevel >= 50 && fillLevel < 80) || (battery <= 50 && battery > 20)) {
+        health = "warning";
+      } else {
+        health = "good";
+      }
       publishLog(fillLevel, battery, health);
       lastLogTime = millis();
     }
-    
-    delay(1000);
-  
-    break;
-
-  case RESET:
-    /* code */
     break;
   default:
     break;
