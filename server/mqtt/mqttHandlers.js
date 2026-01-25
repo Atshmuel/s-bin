@@ -90,13 +90,13 @@ async function handleDeviceLog(mac, { deviceKey, location, health, level, batter
 
     let severity = 'info';
     let message = null;
-    if (health === 'warning' || (level <= 60 && level > 80) || (battery <= 50 && battery > 30)) {
+
+    if (health === 'warning') {
         severity = 'warning';
         message = 'Check soon and schedule maintenance.';
     }
-    if (health === 'critical' || level >= 80 || battery <= 30) {
+    if (health === 'critical') {
         severity = 'critical';
-
         message = 'Immediate attention required, notify maintenance team.';
     };
 
