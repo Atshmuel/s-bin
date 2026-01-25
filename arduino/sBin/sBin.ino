@@ -87,10 +87,7 @@ void loop() {
   case NORMAL_MODE:
     fillLevel = getFillLevel();
     updateGPS();
-    // Normal operation: send logs periodically
-    if (millis() - lastLogTime > LOG_INTERVAL || (health == "critical" && millis() - lastLogTime > CRITICAL_LOG_INTERVAL) ||(fillLevel >= 80 && millis() - lastLogTime > URGENT_LOG_INTERVAL)) {
-      Serial.println("Sending periodic log...");
-      battery = random(0, 101);
+     battery = random(0, 101);
       if (fillLevel >= 80 || battery <= 20) {
         health = "critical";
       } else if ((fillLevel >= 50 && fillLevel < 80) || (battery <= 50 && battery > 20)) {
@@ -98,6 +95,10 @@ void loop() {
       } else {
         health = "good";
       }
+    // Normal operation: send logs periodically
+    if (millis() - lastLogTime > LOG_INTERVAL || (health == "critical" && millis() - lastLogTime > CRITICAL_LOG_INTERVAL) ||(fillLevel >= 80 && millis() - lastLogTime > URGENT_LOG_INTERVAL)) {
+      Serial.println("Sending periodic log...");
+     
       publishLog(fillLevel, battery, health);
       lastLogTime = millis();
     }
