@@ -134,8 +134,8 @@ async function handleDeviceMaintenance(mac, { deviceKey, location, health, level
 }
 
 
-export function removeBinConfig(mac) {
-    mqttClient.publish(`${BIN_ACK_COMMAND}/${mac}`, JSON.stringify({
+export function removeBinConfig(macId) {
+    mqttClient.publish(`${BIN_ACK_COMMAND}/${macId}`, JSON.stringify({
         command: "reset",
         reason: "removed_by_user"
     }));

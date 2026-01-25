@@ -252,3 +252,16 @@ export async function deleteBinsBatch(req, res) {
         session.endSession();
     }
 }
+
+export function removeBinConfigViaMAC(req, res) {
+    const { macId } = req.params;
+
+    try {
+        removeBinConfig(macId);
+        return res.status(200).json({ message: 'Bin configuration removed successfully' });
+    } catch (error) {
+        console.error("Failed to remove bin configuration:", error);
+        return res.status(500).json({ message: "Failed to remove bin configuration", error: error.message });
+    }
+
+}

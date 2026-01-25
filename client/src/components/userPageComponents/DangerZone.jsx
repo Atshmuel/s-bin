@@ -24,15 +24,15 @@ function DangerZone({ user, isAdmin = false }) {
     const { deleteUser, isDeleting } = useDeleteUser()
     const { deleteUserAccount, isDeleting: isDeletingAccount } = useDeleteAccount()
     const { deleteBins, isDeleting: isDeletingBins } = useDeleteBinBatch()
-    const { allBins } = useBins()
+    // const { allBins } = useBins()
 
-    function handleBinsDeletion() {
-        const binIds = allBins.filter(b => {
-            return b.ownerId === id || b.ownerId === user._id
-        }).map(b => b._id)
+    // function handleBinsDeletion() {
+    //     const binIds = allBins.filter(b => {
+    //         return b.ownerId === id || b.ownerId === user._id
+    //     }).map(b => b._id)
 
-        deleteBins({ binIds })
-    }
+    //     deleteBins({ binIds })
+    // }
 
     function handleAccountDeletion() {
         if (isAdmin && !id) {
@@ -50,7 +50,7 @@ function DangerZone({ user, isAdmin = false }) {
             </CardHeader>
             <Separator className="mb-5" />
             <CardContent className="overflow-auto max-h-[60vh] space-y-4 pb-4">
-                <div className="flex justify-between">
+                {/* <div className="flex justify-between">
                     <Label>{isAdmin ? t("components.dangerZoneCard.deleteUserBins") : t("components.dangerZoneCard.deleteYourBins")}</Label>
                     <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
                         <DialogTrigger asChild>
@@ -72,7 +72,7 @@ function DangerZone({ user, isAdmin = false }) {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
-                </div>
+                </div> */}
                 <div className="flex justify-between">
                     <Label>
                         {isAdmin ? t('components.dangerZoneCard.deleteUserAccount') : t('components.dangerZoneCard.deleteYourAccount')}

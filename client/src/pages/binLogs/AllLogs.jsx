@@ -86,7 +86,7 @@ function AllLogs() {
     ]
     return (
         <div>
-            <DataTable columns={columns} data={allLogs ?? []} isLoading={isLoadingLogs} error={logsError} title='all logs' />
+            <DataTable columns={columns} data={allLogs ?? []} isLoading={isLoadingLogs} error={logsError} title={t('pages.logList.title')} />
         </div >
     )
 }

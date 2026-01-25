@@ -24,6 +24,7 @@ import NewEntitySheet from "./newEntityComponents/NewEntitySheet"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
+import RemoveBin from "./bins/RemoveBin"
 
 
 
@@ -31,6 +32,11 @@ export function AppSidebar({
   ...props
 }) {
   const { t } = useTranslation()
+  const { state } = useSidebar()
+  const { me, isAdmin, isOwner } = useMe()
+  const { opSide, isRight } = useAppSide()
+
+  const isExpanded = state === 'expanded'
 
   const data = {
     listItems: [
@@ -97,11 +103,8 @@ export function AppSidebar({
     ],
   }
 
-  const { state } = useSidebar()
-  const { me, isAdmin } = useMe()
-  const { opSide, isRight } = useAppSide()
 
-  const isExpanded = state === 'expanded'
+
 
   return (
     <Sidebar side={opSide} collapsible="icon" {...props}>
@@ -113,6 +116,7 @@ export function AppSidebar({
         <NavGeneral general={data.general} />
       </SidebarContent>
       <SidebarFooter>
+        {isOwner ? <RemoveBin /> : null}
         {isAdmin ? <NewEntitySheet isExpanded={isExpanded} /> : null}
         <NavAccount isRight={isRight} account={{ ...me, avater: '/avatars/shadcn.jpg' }} />
       </SidebarFooter>

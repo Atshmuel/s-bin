@@ -226,13 +226,13 @@ function Analytics() {
                                                             <tspan
                                                                 x={viewBox.cx}
                                                                 y={viewBox.cy}
-                                                                className="fill-foreground text-3xl font-bold"
+                                                                className="fill-foreground text-2xl font-bold"
                                                             >
                                                                 {binsCount.total.toLocaleString()}
                                                             </tspan>
                                                             <tspan
                                                                 x={viewBox.cx}
-                                                                y={(viewBox.cy || 0) + 24}
+                                                                y={(viewBox.cy || 0) + 20}
                                                                 className="fill-muted-foreground"
                                                             >
                                                                 {t("bins")}

@@ -83,3 +83,14 @@ export async function deleteBinById({ id }) {
     if (!res.ok) throw new Error(data?.message);
     return data;
 }
+
+
+export async function deleteBinViaMac(macId) {
+    const res = await fetch(`${SERVER_URL}/${BINS_EP}/mac/${macId}`, {
+        method: "DELETE",
+        credentials: "include",
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}

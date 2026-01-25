@@ -628,8 +628,11 @@
     "confirmationUserName":"To confirm, type {{userName}} in the field below, This action cannot be undone.",
     "typeUserName":"Type: '{{userName}}' to perform deletion",
     "deleteConfirmWord": "delete",
-    "deleteAllConfirmWord": "delete all"
+    "deleteAllConfirmWord": "delete all",
+    "deleteViaMac":"This action will permanently delete the bin via its MAC address.",
+    "typeMacAddress":"Type the bin's MAC address to confirm deletion."
   },
+  "deleteViaMacButton":"Delete via MAC",
   "components":{
     "binCard":{
        "lastUpdated":"Last Updated",

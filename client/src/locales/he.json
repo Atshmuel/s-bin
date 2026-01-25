@@ -628,8 +628,12 @@
     "confirmationUserName":"כדי לאשר, הקלד {{userName}} בשדה למטה, פעולה זו אינה ניתנת לביטול.",
     "typeUserName":"הקלד: '{{userName}}' כדי לבצע את המחיקה",
     "deleteConfirmWord": "מחק",
-    "deleteAllConfirmWord": "מחק הכל"
+    "deleteAllConfirmWord": "מחק הכל",
+     "deleteViaMac":"פעולה זו תמחק לצמיתות את הפח באמצעות כתובת ה-MAC שלו.",
+        "typeMacAddress":"הקלד את כתובת ה-MAC של הפח כדי לאשר את המחיקה"
   },
+    "deleteViaMacButton":"מחק באמצעות MAC",
+
    "components":{
     "binCard":{
        "lastUpdated":"עודכן לאחרונה",

@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { authToken, authRole } from "../middlewares/authMiddleware.js";
 import { validateBodyFields, validateParamExist, validateRequestBodyBinIds } from "../middlewares/validationMiddleware.js";
-import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinMaintenance } from "../db/controllers/binController.js";
+import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC } from "../db/controllers/binController.js";
+import { removeBinConfig } from "../mqtt/mqttHandlers.js";
 
 export const binRouter = Router();
 
@@ -27,9 +28,10 @@ binRouter.delete('/', (req, res, next) => {
 binRouter.delete('/:id', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, validateParamExist(), deleteBin) //delete bin by id
-
-
-
+//delete bin by mac and remove config
+binRouter.delete('/mac/:macId', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER])(req, res, next)
+}, validateParamExist('macId', false), removeBinConfigViaMAC)
 
 
 

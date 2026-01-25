@@ -106,7 +106,7 @@ function UserManagment({ user, isAdmin = false }) {
                                     <FormItem>
                                         <Label>{t("components.userManagementCard.statusField.label")}</Label>
                                         <FormControl>
-                                            <ToggleGroup disabled={isUpdatingStatus} className="mt-3 border-[0.1px] border-primary  rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                            <ToggleGroup disabled={isUpdatingStatus} className="mt-3 border-[0.1px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
                                                 if (value) {
                                                     field.onChange(value)
                                                 }
