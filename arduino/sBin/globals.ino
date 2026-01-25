@@ -33,8 +33,8 @@ DNSServer dnsServer;
 long wifiTime = 0;
 
 // Telemetry
-float lat = 32.705433;
-float lng = 35.254444;
+float lat = 0.0;
+float lng = 0.0;
 int fillLevel = 0;
 int binDepth = 0;
 int battery = 100;

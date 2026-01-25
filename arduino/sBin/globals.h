@@ -90,6 +90,7 @@ void saveSetupData(String wifiSsid, String wifiPass, String owner);
 void saveBinDepth(int depth);
 void loadPreferences();
 void preferencesSetup();
+void saveLocation(float latitude, float longitude);
 
 // wifi.ino
 void WifiSetUp();
@@ -109,6 +110,7 @@ int getFillLevel();
 
 // gps.ino
 void displayLocationInfo();
+void updateGPS();
 
 
 

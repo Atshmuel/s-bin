@@ -26,6 +26,13 @@ preferences.begin("credentials", false);
   preferences.putInt("binDepth", depth);
   preferences.end();
 }
+void saveLocation(float l_lat, float l_lng) {
+  preferences.begin("credentials", false);
+  preferences.putFloat("lat", l_lat);
+  preferences.putFloat("lng", l_lng);
+  preferences.end();
+  Serial.println("Location saved to preferences.");
+}
 
 void loadPreferences() {
   preferences.begin("credentials", true);
@@ -34,6 +41,8 @@ void loadPreferences() {
   ownerId = preferences.getString("ownerId", "");
   deviceKey = preferences.getString("deviceKey", "");
   binDepth = preferences.getInt("binDepth", 0);
+  lat = preferences.getFloat("lat", 0.0);
+  lng = preferences.getFloat("lng", 0.0);
   preferences.end();
 }
 
@@ -45,6 +54,8 @@ void preferencesSetup() {
   Serial.println("Owner ID: " + ownerId);
   Serial.println("Device Key: " + deviceKey);
   Serial.println("Bin Depth: " + String(binDepth));
+  Serial.println("Latitude: " + String(lat, 6));
+  Serial.println("Longitude: " +  String(lng, 6));
   if(ssid != "" && ownerId != ""){
     if (deviceKey != "") {
       if (binDepth == 0) {

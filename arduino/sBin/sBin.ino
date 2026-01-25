@@ -4,9 +4,9 @@
 
 //should send logs every 4 hours or if battery is low or fill level is high
 unsigned long lastLogTime = 0;
-const unsigned long LOG_INTERVAL = 14400000; // 4 hours in milliseconds
-const unsigned long URGENT_LOG_INTERVAL = 3600000;  // 1 hour in milliseconds
-const unsigned long CRITICAL_LOG_INTERVAL = 1800000; // 30 minutes
+const unsigned long LOG_INTERVAL = 20000; // 4 hours in milliseconds
+const unsigned long URGENT_LOG_INTERVAL = 200000;  // 1 hour in milliseconds
+const unsigned long CRITICAL_LOG_INTERVAL = 2000000; // 30 minutes
 const unsigned long REGISTER_INTERVAL = 10000; // 10 seconds
 unsigned long lastRegisterTime = 0;
 
@@ -50,17 +50,6 @@ void loop() {
   switch (currentMode)
   {
   case SETUP_MODE:
-    Serial.println("In Setup Mode");
-    while (gpsSerial.available() > 0)
-      if (gps.encode(gpsSerial.read()))
-      displayLocationInfo();
-
-    if (millis() > 5000 && gps.charsProcessed() < 10) {
-      Serial.println(F("No GPS detected: check wiring."));
-      while(true);
-  }
-    delay(1000);
-
     break;
 
   case WIFI_CONFIG_MODE:
@@ -105,6 +94,7 @@ void loop() {
     // Update simulation values
     // updateTelemetrySimulation();
     fillLevel = getFillLevel();
+    updateGPS();
 
     // Normal operation: send logs periodically
     if (millis() - lastLogTime > LOG_INTERVAL || (health == "critical" && millis() - lastLogTime > CRITICAL_LOG_INTERVAL) ||(fillLevel >= 80 && millis() - lastLogTime > URGENT_LOG_INTERVAL)) {
