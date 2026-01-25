@@ -85,7 +85,7 @@ function UsersList() {
         },
     }
     if (isOwner) {
-        columns.splice(1, 0, orgColumn);
+        columns.push(orgColumn);
     }
 
     return (
