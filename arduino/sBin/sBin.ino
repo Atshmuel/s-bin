@@ -4,9 +4,9 @@
 
 //should send logs every 4 hours or if battery is low or fill level is high
 unsigned long lastLogTime = 0;
-const unsigned long LOG_INTERVAL = 20000; // 4 hours in milliseconds
-const unsigned long URGENT_LOG_INTERVAL = 200000;  // 1 hour in milliseconds
-const unsigned long CRITICAL_LOG_INTERVAL = 2000000; // 30 minutes
+const unsigned long LOG_INTERVAL = 14400000; // 4 hours in milliseconds
+const unsigned long URGENT_LOG_INTERVAL = 3600000;  // 1 hour in milliseconds
+const unsigned long CRITICAL_LOG_INTERVAL = 1800000; // 30 minutes
 const unsigned long REGISTER_INTERVAL = 10000; // 10 seconds
 unsigned long lastRegisterTime = 0;
 
@@ -17,16 +17,12 @@ unsigned long registerStartTime = 0;
 void setup() {
   Serial.begin(115200);
   delay(5000);
-
   gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RXD2, TXD2);
-
   // clearPreferences();
   DeviceMac = getChipMac();
   Serial.println("Device MAC: " + DeviceMac);
-
   preferencesSetup();
   setupMqttTopics(); // Initialize topics with correct MAC
-
   if(currentMode == SETUP_MODE){
     WifiSetUp(); 
   //start wifi in AP mode to get user credentials if ssid and password are stroed in preferences we can skip this step and go to normal mode
@@ -64,7 +60,6 @@ void loop() {
     if (registerStartTime == 0) {
       registerStartTime = millis();
     }
-    
     if (millis() - registerStartTime > REGISTER_TIMEOUT) {
       Serial.println("Registration timed out. Resetting to factory settings...");
       clearPreferences();
@@ -72,7 +67,6 @@ void loop() {
       delay(1000); 
       ESP.restart();
     }
-
     // In register mode, we wait for the server to send us a key via MQTT ACK
     // We republish the registration request every few seconds until we get an ACK (handled in callback)
     if (millis() - lastRegisterTime > REGISTER_INTERVAL) {
@@ -91,28 +85,22 @@ void loop() {
     break;
 
   case NORMAL_MODE:
-    // Update simulation values
-    // updateTelemetrySimulation();
     fillLevel = getFillLevel();
     updateGPS();
-
     // Normal operation: send logs periodically
     if (millis() - lastLogTime > LOG_INTERVAL || (health == "critical" && millis() - lastLogTime > CRITICAL_LOG_INTERVAL) ||(fillLevel >= 80 && millis() - lastLogTime > URGENT_LOG_INTERVAL)) {
       Serial.println("Sending periodic log...");
-      // Simulate level/battery for now or read from sensors
-      // int fillLevel = readUltrasonic(); 
-      // int bat = readBattery();
-      
+      battery = random(0, 101);
+      if (fillLevel >= 80 || battery <= 20) {
+        health = "critical";
+      } else if ((fillLevel >= 50 && fillLevel < 80) || (battery <= 50 && battery > 20)) {
+        health = "warning";
+      } else {
+        health = "good";
+      }
       publishLog(fillLevel, battery, health);
       lastLogTime = millis();
     }
-    
-    delay(1000);
-  
-    break;
-
-  case RESET:
-    /* code */
     break;
   default:
     break;

@@ -4,7 +4,6 @@
 unsigned long lastGpsStatusTime = 0;
 const unsigned long GPS_STATUS_INTERVAL = 5000; // Print status every 5 seconds
 
-// פונקציה לעדכון המשתנים הגלובליים מה-GPS
 void updateGPS() {
   // Read and process all available GPS data
   while (gpsSerial.available() > 0) {
@@ -18,7 +17,7 @@ void updateGPS() {
           lat = newLat;
           lng = newLng;
           displayLocationInfo();
-          saveLocation(lat, lng); // שמירת המיקום בזיכרון
+          saveLocation(lat, lng); 
         }
       }
     }
@@ -27,7 +26,6 @@ void updateGPS() {
   // Print GPS status periodically for debugging
   if (millis() - lastGpsStatusTime > GPS_STATUS_INTERVAL) {
     lastGpsStatusTime = millis();
-    
     Serial.println(F("--- GPS Status ---"));
     Serial.print(F("Chars processed: ")); Serial.println(gps.charsProcessed());
     Serial.print(F("Sentences with fix: ")); Serial.println(gps.sentencesWithFix());
@@ -46,8 +44,6 @@ void updateGPS() {
 }
 
 void displayLocationInfo() {
-
-
   if (gps.location.isValid()) {
     Serial.println(F("--- GPS Location Update ---"));
     Serial.print("Lat: "); Serial.println(lat, 6);
@@ -57,32 +53,4 @@ void displayLocationInfo() {
   }else {
     Serial.println(F("Waiting for GPS Fix..."));
   }
-
-
-  // Serial.println(F("-------------------------------------"));
-  // Serial.println("\n Location Info:");
-
-  // Serial.print("Latitude:  ");
-  // Serial.print(gps.location.lat(), 6);
-  // Serial.print(" ");
-  // Serial.println(gps.location.rawLat().negative ? "S" : "N");
-
-  // Serial.print("Longitude: ");
-  // Serial.print(gps.location.lng(), 6);
-  // Serial.print(" ");
-  // Serial.println(gps.location.rawLng().negative ? "W" : "E");
-
-  // Serial.print("Fix Quality: ");
-  // Serial.println(gps.location.isValid() ? "Valid" : "Invalid");
-
-  // Serial.print("Satellites: ");
-  // Serial.println(gps.satellites.value());
-
-
-  // Serial.print("Speed:      ");
-  // Serial.print(gps.speed.kmph());
-  // Serial.println(" km/h");
-
-  // Serial.println(F("-------------------------------------"));
-  //   delay(1000);
 }
