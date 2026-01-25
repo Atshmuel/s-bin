@@ -21,6 +21,7 @@ export function getAICache() {
 }
 
 export function setAICache(data) {
+    if (!data?.insights?.length) return
     localStorage.setItem(
         CACHE_KEY,
         JSON.stringify({
