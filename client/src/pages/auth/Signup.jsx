@@ -67,7 +67,7 @@ function Signup() {
             </CardHeader>
             <CardContent>
 
-                {successfullyCreated ? <><PartyPopper /> {t("pages.signupPage.titles.verifyBody")}</> :
+                {successfullyCreated ? <div className="flex gap-2"><PartyPopper /> {t("pages.signupPage.titles.verifyBody")}</div> :
                     <FormProvider {...form}>
 
                         <form onSubmit={form.handleSubmit((data) => handleSignup(data))} className="space-y-4">
