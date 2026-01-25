@@ -68,8 +68,8 @@ export async function deleteOrgRefs(orgId) {
         if (!org) throw new Error("Organization not found");
 
         //logs deletion blocked due to data collection for analysis
-        // const binIds = bins.map(b => b._id)
-        // await deleteLogsForBins(binIds, session)
+        const binIds = bins.map(b => b._id)
+        await deleteLogsForBins(binIds, session)
 
         await session.commitTransaction();
         return org;
