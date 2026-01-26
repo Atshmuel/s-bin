@@ -18,14 +18,15 @@ import { organizationRouter } from './routers/organizationRouter.js';
 import { setEmailServiceCredentials } from './utils/mailService.js';
 import { initMqtt } from './mqtt/mqttClient.js';
 
-const { SERVER_PORT, DB_URL, CLIENT_BASE_URL } = process.env
+const { SERVER_PORT, DB_URL, CLIENT_BASE_URL, CLIENT_BASE_URL_PROD, CLIENT_BASE_URL_3 } = process.env
 
 const app = express();
 app.use(
     cors({
         origin: [
-            "http://s-bins.duckdns.org",
-            CLIENT_BASE_URL
+            CLIENT_BASE_URL,
+            CLIENT_BASE_URL_PROD,
+            CLIENT_BASE_URL_3
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,

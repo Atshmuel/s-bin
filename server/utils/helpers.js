@@ -15,7 +15,7 @@ export async function generateOTP(expiryMinutes = 5, length = 6) {
 
 export function generateVerificationLink(token) {
     if (!token) return null
-    return `${process.env.CLIENT_BASE_URL}/user/verify?token=${token}`
+    return `${process.env.CLIENT_BASE_URL_PROD}/user/verify?token=${token}`
 }
 
 export async function hashPassword(password, rounds = 10) {
