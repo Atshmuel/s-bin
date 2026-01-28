@@ -401,10 +401,9 @@ export async function getAIOverview(req, res) {
         process.env.GEMINI_API_THIRD_KEY,
         process.env.GEMINI_API_FOURTH_KEY
     ].filter(Boolean);
+
     for (let i = 0; i < apiKeys.length; i++) {
         try {
-
-
             const aiModel = new GoogleGenAI({ apiKey: apiKeys[i] })
             const modelResponse = await aiModel.models.generateContent({
                 model: 'gemini-2.5-flash',
@@ -422,10 +421,9 @@ export async function getAIOverview(req, res) {
 
         } catch (error) {
             lastError = error;
-            const isQuotaError = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('quota');
 
-            if (isQuotaError && i < apiKeys.length - 1) {
-                console.warn(`API Key ${i + 1} failed (Quota). Trying next key...`);
+            if (i < apiKeys.length - 1) {
+                console.warn(`API Key ${i + 1} failed. Trying next key...`, lastError);
                 continue;
             }
             break;
@@ -433,6 +431,7 @@ export async function getAIOverview(req, res) {
     }
     res.status(500).json({ message: lastError?.message || 'Error in getAIOverview' })
 }
+
 export async function getLogTypes(req, res) {
     const { role, org: ownerId } = req.user
     const thirtyDaysAgo = new Date();
