@@ -723,6 +723,7 @@
     },
   "userManagementCard":{
       "updateErrorSameUser":"לא ניתן לעדכן את התפקיד או הסטטוס של המשתמש הנוכחי.",
+      "updateErrorSelfManager": "לא ניתן להקצות את עצמך כמנהל לעצמך.",
       "title":"ניהול משתמש",
       "description":"ניהול תפקיד המשתמש, סטטוס החשבון והקצאת הארגון",
       "roleField":{

@@ -432,9 +432,18 @@ export async function updateUserStatus(req, res) {
     }
 }
 export async function updateUserManagerAndOrg(req, res) {
-    //need to implement
-
-    return res.status(200).json({ message: 'Done' })
+    const { role } = req.user
+    const { id: userId } = req.params
+    const { org, manager } = req.body
+    try {
+        let query = appendFilter({}, role === process.env.ROLE_OWNER, 'org', new mongoose.Types.ObjectId(org))
+        query = appendFilter(query, (role === process.env.ROLE_ADMIN || role === process.env.ROLE_OWNER) && manager, 'manager', new mongoose.Types.ObjectId(manager))
+        const updated = await userModel.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(userId) }, { $set: query }, { new: true });
+        if (!updated) throw new Error('User not found or not allowed to update')
+        return res.status(200).json({ message: 'Updated successfully' });
+    } catch (error) {
+        return res.status(500).json({ message: error?.message || error })
+    }
 }
 
 export async function getUser(req, res) {

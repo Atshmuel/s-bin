@@ -757,6 +757,7 @@
     },
     "userManagementCard":{
       "updateErrorSameUser":"You cannot change your own role or status.",
+      "updateErrorSelfManager":"You cannot assign yourself as your own manager.",
       "title":"User Management",
       "description":"Manage user's role and account status and organization assignment",
       "roleField":{

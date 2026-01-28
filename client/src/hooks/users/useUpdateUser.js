@@ -76,9 +76,11 @@ export function useUpdateOrgAndManager() {
     const queryClient = useQueryClient();
     const { mutate: updateOrgAndManager, isPending: isUpdatingOrgAndManager } = useMutation({
         mutationFn: updateUserOrgAndManager,
-        onSuccess: () => (_, variables) => {
+        onSuccess: (_, variables) => {
             toast.success(t('toasts.updatedOrgAndManagerSuccessfully'))
-            queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
+            queryClient.invalidateQueries({ queryKey: ["user", variables.userId] });
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+
         },
         onError: (error) => {
             toast.error(error.message || t('toasts.failedToUpdateOrgAndManager'))

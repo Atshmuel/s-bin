@@ -29,7 +29,7 @@ function UserManagment({ user, isAdmin = false }) {
         defaultValues: {
             status: user.status,
             role: user.role,
-            org: user.org || me.org,
+            org: user?.org || me.org,
             manager: user.manager
         }
     })
@@ -37,7 +37,7 @@ function UserManagment({ user, isAdmin = false }) {
         userManagment.reset({
             status: user.status,
             role: user.role,
-            org: user.org || me.org,
+            org: user?.org || me.org,
             manager: user.manager
         });
     }, [user, userManagment]);
@@ -50,7 +50,12 @@ function UserManagment({ user, isAdmin = false }) {
     const { isDirty } = userManagment.formState;
 
     function handleUpdate(data) {
-        user.org !== data.org ? updateOrgAndManager({ userId: user._id, org: data.org || me.org, manager: data.manager }) : null
+
+        if (data.manager === user._id) {
+            toast.error(t("components.userManagementCard.updateErrorSelfManager"))
+            return
+        }
+        updateOrgAndManager({ userId: user._id, org: data.org || me.org, manager: data.manager })
         if (user._id === me.id) {
             toast.warning(t("components.userManagementCard.updateErrorSameUser"))
             return
