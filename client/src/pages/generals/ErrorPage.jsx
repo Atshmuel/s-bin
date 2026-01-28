@@ -13,9 +13,9 @@ function ErrorPage({
     return (
         <div className="flex justify-center items-center h-screen ">
             <div className="text-center space-y-6">
-                <div>
-                    <h3 className="text-7xl text-primary">{code}</h3>
-                    <p className="text-lg">
+                <div className="space-y-2">
+                    <h3 className="text-2xl lg:text-7xl text-primary">{code}</h3>
+                    <p className="text-md lg:text-xl">
                         {description ?? t('components.errorPage.description')}
                     </p>
                 </div>
