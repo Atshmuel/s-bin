@@ -256,7 +256,7 @@ function Dashboard() {
                         {t('pages.dashboard.titles.binOverview.description')}
                     </p>
                 </div>
-                <div className="space-y-4 lg:space-y-0 lg:flex lg:flex-row lg:flex-wrap gap-6">
+                <div className="space-y-4 lg:space-y-0 lg:flex lg:flex-row lg:flex-wrap gap-3">
                     <Card className='flex-1'>
                         <CardHeader>
                             <h3 className="text-xl md:text-2xl"></h3>

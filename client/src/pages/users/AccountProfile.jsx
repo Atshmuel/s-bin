@@ -27,7 +27,7 @@ function AccountProfile() {
                 <ProfileForm user={user} isAdmin={isAdmin} />
                 <DangerZone user={user} isAdmin={isAdmin} />
             </div>
-            <UserSettingForm user={user} isAdmin={isAdmin} />
+            <UserSettingForm user={user} isAdmin={isAdmin} isSelf={true} />
             <PasswordForm user={user} />
         </div>
     )

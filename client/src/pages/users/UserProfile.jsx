@@ -43,7 +43,7 @@ function UserProfile() {
                 <PasswordForm user={user} isAdmin={isAdmin} />
                 <UserManagment user={user} isAdmin={isAdmin} />
             </div>
-            <UserSettingForm user={user} isAdmin={isAdmin} />
+            <UserSettingForm user={user} isAdmin={isAdmin} isSelf={false} />
         </div>
     )
 }

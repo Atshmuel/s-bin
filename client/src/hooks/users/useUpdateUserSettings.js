@@ -11,9 +11,10 @@ export function useUpdateUserSettings() {
     const { mutate: updateSettings, isPending: isUpdatingSettings } = useMutation({
         mutationFn: ({ configToServerModel, id }) =>
             updateUserSettings(configToServerModel, id),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             toast.success(t('toasts.settingsUpdatedSuccessfully'))
-            queryClient.invalidateQueries({ queryKey: ["user-settings"] });
+            if (variables?.isSelf)
+                queryClient.invalidateQueries({ queryKey: ["user-settings"] });
 
         },
         onError: (error) => {

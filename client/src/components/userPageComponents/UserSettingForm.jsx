@@ -18,7 +18,7 @@ import { useAppSide } from "@/contexts/AppSideProvider";
 import { useTranslation } from "react-i18next";
 import { useDarkMode } from "@/contexts/darkModelContext";
 
-function UserSettingForm({ user, isAdmin = false }) {
+function UserSettingForm({ user, isAdmin = false, isSelf = true }) {
     const { toggleSide, isRight } = useAppSide()
     const { t } = useTranslation();
 
@@ -74,11 +74,16 @@ function UserSettingForm({ user, isAdmin = false }) {
             }
         }
 
-        if (data.appLanguage !== settings.appLanguage)
+        if (data.appLanguage !== settings.appLanguage && isSelf) {
             toggleSide(data.appLanguage)
 
-        updateSettings({ configToServerModel, id: user._id }, { onSuccess: () => { applyDarkMode(data.isDark) } })
-
+            updateSettings({ configToServerModel, id: user._id },
+                { onSuccess: () => { applyDarkMode(data.isDark) } })
+        }
+        else {
+            updateSettings({ configToServerModel, id: user._id },
+                { onSuccess: () => { applyDarkMode(data.isDark) } })
+        }
     }
 
     return (
