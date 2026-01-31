@@ -637,7 +637,7 @@
     "binCard":{
        "lastUpdated":"Last Updated",
        "fillLevel":"Fill Level",
-       "deviceKey":"Device Key",
+       "deviceKey":"Device Access Key",
        "ownerId":"Owner ID",
        "location":"Location",
        "locationTooltip":"Click to locate the bin on the map",

@@ -638,7 +638,7 @@
     "binCard":{
        "lastUpdated":"עודכן לאחרונה",
        "fillLevel":"רמת מילוי",
-       "deviceKey":"מפתח הצפנה של המכשיר",
+       "deviceKey":"מפתח הגישה של המכשיר",
        "ownerId":"מזהה בעלים",
        "location":"מיקום",
        "locationTooltip":"לחץ כדי לאתר את הפח על המפה",
