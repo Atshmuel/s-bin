@@ -35,23 +35,23 @@ client.on("connect", async () => {
 
     console.log("start");
 
-    for (let i = 0; i < 100; i++) {
-        const bin = bins[randomInt(0, bins.length - 1)];
+    for (let bin of bins) {
+        for (let i = 0; i < 2; i++) {
+            const payload = {
+                location: bin.location.coordinates,
+                health: randomHealth(),
+                level: randomInt(0, 100),
+                battery: 100 - i * 2,
+                deviceKey: bin.deviceKey
+            };
 
-        const payload = {
-            location: bin.location.coordinates,
-            health: randomHealth(),
-            level: randomInt(0, 100),
-            battery: randomInt(0, 100),
-            deviceKey: bin.deviceKey
-        };
+            const topic = `bins/${bin.macAddress}/update/log`;
 
-        const topic = `bins/${bin.macAddress}/update/log`;
+            client.publish(topic, JSON.stringify(payload));
+            console.log(`Published to ${topic}`, payload);
 
-        client.publish(topic, JSON.stringify(payload));
-        console.log(`Published to ${topic}`, payload);
-
-        await sleep(200);
+            await sleep(200);
+        }
     }
 
     client.end();
