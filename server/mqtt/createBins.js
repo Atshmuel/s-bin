@@ -15,7 +15,7 @@ const client = mqtt.connect("mqtt://broker.hivemq.com:1883", {
 });
 
 const REGISTER_TOPIC = "bins/register";
-const BINS_COUNT = 30;
+const BINS_COUNT = 2;
 
 // helpers
 const sleep = ms => new Promise(r => setTimeout(r, ms));

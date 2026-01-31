@@ -16,10 +16,9 @@ const client = mqtt.connect("mqtt://broker.hivemq.com:1883", {
 const randomInt = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
 
-const randomHealth = () => {
-    const r = Math.random();
-    if (r < 0.75) return "good";
-    if (r < 0.9) return "warning";
+const randomHealth = (level) => {
+    if (level < 60) return "good";
+    if (level < 75 && level >= 60) return "warning";
     return "critical";
 };
 
@@ -37,10 +36,11 @@ client.on("connect", async () => {
 
     for (let bin of bins) {
         for (let i = 0; i < 2; i++) {
+            const level = randomInt(0, 100);
             const payload = {
                 location: bin.location.coordinates,
-                health: randomHealth(),
-                level: randomInt(0, 100),
+                health: randomHealth(level),
+                level: level,
                 battery: 100 - i * 2,
                 deviceKey: bin.deviceKey
             };

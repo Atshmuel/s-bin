@@ -1,7 +1,7 @@
 import { getVariant } from "@/utils/binHelpers"
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "../ui/card"
 import { Button } from "../ui/button"
-import { Copy, Info, MapPin, Trash2, Wrench } from "lucide-react"
+import { Copy, Info, MapPin, Pencil, Trash2, Wrench, Check, X } from "lucide-react"
 import { Badge } from "../ui/badge"
 import { Link } from "react-router-dom"
 import { Separator } from "../ui/separator"
@@ -12,13 +12,13 @@ import Battery from "./Battary"
 import { Spinner } from "../ui/spinner"
 import EmptyCard from "../EmptyCard"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import InputLabel from "../InputLabel"
 import { useDeleteBin } from "@/hooks/bins/useDeleteBin"
 import { useTranslation } from "react-i18next"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { Textarea } from "../ui/textarea"
-import { useUpdateBinMaintenance } from "@/hooks/bins/useUpdateBin"
+import { useUpdateBinMaintenance, useUpdateBinName } from "@/hooks/bins/useUpdateBin"
 import { useMe } from "@/hooks/users/auth/useMe";
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
@@ -29,6 +29,11 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
 
     const [note, setNote] = useState('')
     const { updateMaintenance, isUpdating } = useUpdateBinMaintenance()
+
+    const [isEditingName, setIsEditingName] = useState(false)
+    const [editedName, setEditedName] = useState('')
+    const { updateName, isUpdating: isUpdatingName } = useUpdateBinName()
+    const nameInputRef = useRef(null)
 
     const { me } = useMe();
     const isUser = me?.role === 'user'
@@ -51,6 +56,42 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
         );
     }
 
+    function handleStartEditName() {
+        setEditedName(bin.binName)
+        setIsEditingName(true)
+    }
+
+    function handleCancelEditName() {
+        setIsEditingName(false)
+        setEditedName('')
+    }
+
+    function handleSaveName() {
+        if (!editedName.trim() || editedName === bin.binName) {
+            handleCancelEditName()
+            return
+        }
+        updateName(
+            { id: bin._id, name: editedName.trim() },
+            { onSuccess: () => setIsEditingName(false) }
+        )
+    }
+
+    function handleNameKeyDown(e) {
+        if (e.key === 'Enter') {
+            handleSaveName()
+        } else if (e.key === 'Escape') {
+            handleCancelEditName()
+        }
+    }
+
+    useEffect(() => {
+        if (isEditingName && nameInputRef.current) {
+            nameInputRef.current.focus()
+            nameInputRef.current.select()
+        }
+    }, [isEditingName])
+
     return (
         <Card {...props}>
             {isLoading ?
@@ -62,17 +103,57 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                         <CardHeader>
                             <CardTitle className="flex justify-between items-center">
                                 <div className="flex gap-3">
-                                    <h3 className="flex items-center gap-2">
-                                        <Trash2 size={20} />
-                                        <span>{bin.binName}</span>
-                                    </h3>
-
-                                    <Battery level={bin.status.battery} />
+                                    {isEditingName ? (
+                                        <div className="flex items-center gap-2">
+                                            <Trash2 size={20} />
+                                            <input
+                                                ref={nameInputRef}
+                                                type="text"
+                                                value={editedName}
+                                                onChange={(e) => setEditedName(e.target.value.slice(0, 25))}
+                                                onKeyDown={handleNameKeyDown}
+                                                className="border rounded px-2 py-1 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary"
+                                                maxLength={25}
+                                                disabled={isUpdatingName}
+                                            />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-4 w-4"
+                                                onClick={handleSaveName}
+                                                disabled={isUpdatingName}
+                                            >
+                                                {isUpdatingName ? <Spinner className="size-4" /> : <Check size={16} className="text-green-600" />}
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-4 w-4"
+                                                onClick={handleCancelEditName}
+                                                disabled={isUpdatingName}
+                                            >
+                                                <X size={16} className="text-red-600" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <MobileTooltip content={t('components.binCard.clickToEditName')}>
+                                            <h3
+                                                className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
+                                                onClick={handleStartEditName}
+                                            >
+                                                <Trash2 size={20} />
+                                                <span>{bin.binName}</span>
+                                                <Pencil size={14} className="text-muted-foreground" />
+                                            </h3>
+                                        </MobileTooltip>
+                                    )}
                                 </div>
-
-                                <Badge variant={getVariant(bin.status.health)}>
-                                    {t(`levels.${bin.status.health}`)}
-                                </Badge>
+                                <div className="flex flex-row justify-center items-center gap-3">
+                                    <Battery level={bin.status.battery} />
+                                    <Badge variant={getVariant(bin.status.health)}>
+                                        {t(`levels.${bin.status.health}`)}
+                                    </Badge>
+                                </div>
                             </CardTitle>
                             <CardDescription>
                                 {t('lastUpdated')}: {new Date(bin.status.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL')}

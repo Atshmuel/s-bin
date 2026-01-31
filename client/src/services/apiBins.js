@@ -61,6 +61,19 @@ export async function updateBinMaintenance({ id, notes }) {
     return data;
 }
 
+export async function updateBinName({ id, name }) {
+    const res = await fetch(`${SERVER_URL}/${BINS_EP}/name/${id}`, {
+        method: "PATCH",
+        mode: "cors",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}
+
 export async function deleteBinsBatch({ binIds = [] }) {
     const res = await fetch(`${SERVER_URL}/${BINS_EP}`, {
         method: "DELETE",

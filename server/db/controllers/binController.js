@@ -127,6 +127,26 @@ export async function getBinsInUserRadius(req, res) {
     }
 }
 
+export async function updateBinName(req, res) {
+    const { id } = req.params
+    const { org: ownerId, role } = req.user
+    const { name } = req.body
+
+    let filter = {}
+    filter = appendFilter(filter, true, '_id', id)
+    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+
+    try {
+        const updatedBin = await binModel.findOneAndUpdate(filter, { $set: { binName: name } }, { new: true, runValidators: true }).select('-macAddress')
+
+        if (!updatedBin) return res.status(404).json({ message: "Bin not found or not owned by you." });
+
+        res.status(200).json({ bin: updatedBin })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
+}
+
 export async function updateBinMaintenance(req, res) {
     const { id } = req.params
     const { id: technicianId } = req.user

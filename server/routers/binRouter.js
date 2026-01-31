@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authToken, authRole } from "../middlewares/authMiddleware.js";
 import { validateBodyFields, validateParamExist, validateRequestBodyBinIds } from "../middlewares/validationMiddleware.js";
-import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC } from "../db/controllers/binController.js";
+import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName } from "../db/controllers/binController.js";
 import { removeBinConfig } from "../mqtt/mqttHandlers.js";
 
 export const binRouter = Router();
@@ -19,6 +19,9 @@ binRouter.post('/radius', validateBodyFields(['coordinates', 'radius'], ['health
 binRouter.patch('/maintenance/:id', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN, process.env.ROLE_TECHNICIAN])(req, res, next) //update bin maintenance by id
 }, validateParamExist(), validateBodyFields(['notes']), updateBinMaintenance)
+binRouter.patch('/name/:id', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next) //update bin name by id
+}, validateParamExist(), validateBodyFields(['name']), updateBinName)
 
 
 //deletes

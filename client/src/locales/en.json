@@ -641,6 +641,7 @@
        "ownerId":"Owner ID",
        "location":"Location",
        "locationTooltip":"Click to locate the bin on the map",
+       "clickToEditName":"Click to edit the bin name",
        "maintenance":{
         "title":"Maintenance",
         "lastService":"Last Service",
@@ -884,7 +885,12 @@
     "orgDeletedSuccessfully": "Organization deleted successfully",
     "failedToDeleteOrg": "Failed to delete organization",
     "updatedOrgNameSuccessfully": "Organization name updated successfully",
-    "failedToUpdateOrgName": "Failed to update organization name"
+    "failedToUpdateOrgName": "Failed to update organization name",
+    "maintenanceUpdatedSuccessfully": "Maintenance note saved successfully!",
+    "failedToUpdateMaintenance": "Failed to update bin maintenance note",
+    "binNameUpdatedSuccessfully": "Bin name updated successfully",
+    "failedToUpdateBinName": "Failed to update bin name"
+
   },
   "dashboard": "Dashboard",
   "users": "Users",

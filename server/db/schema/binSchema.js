@@ -4,8 +4,6 @@ export const binSchema = new mongoose.Schema({
     binName: {
         type: String,
         required: true,
-        unique: true,
-        immutable: true,
     },
     deviceKey: {
         type: String,
