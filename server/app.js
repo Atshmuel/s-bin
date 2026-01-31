@@ -26,7 +26,8 @@ app.use(
         origin: [
             CLIENT_BASE_URL,
             CLIENT_BASE_URL_PROD,
-            CLIENT_BASE_URL_3
+            CLIENT_BASE_URL_3,
+            // "http://localhost:5173"
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,
@@ -47,6 +48,7 @@ const main = async () => {
     try {
         initMqtt();
         await mongoose.connect(`${DB_URL}`);
+        await import("./db/cron/generateBinLogs.js");
         await import("./db/cron/cleanupOTP.js");
         await import("./db/cron/cleanupActivationToken.js");
         setEmailServiceCredentials()

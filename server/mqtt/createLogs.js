@@ -32,7 +32,6 @@ client.on("connect", async () => {
         process.exit(1);
     }
 
-    console.log("start");
 
     for (let bin of bins) {
         for (let i = 0; i < 2; i++) {
