@@ -27,7 +27,7 @@ app.use(
             CLIENT_BASE_URL,
             CLIENT_BASE_URL_PROD,
             CLIENT_BASE_URL_3,
-            "http://localhost:5173"
+            // "http://localhost:5173"
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,
@@ -46,13 +46,13 @@ app.use("/api/overviews", overViewRouter);
 
 const main = async () => {
     try {
-        // initMqtt();
+        initMqtt();
         await mongoose.connect(`${DB_URL}`);
-        // await import("./db/cron/generateBinLogs.js");
-        // await import("./db/cron/cleanupOTP.js");
-        // await import("./db/cron/cleanupActivationToken.js");
-        // setEmailServiceCredentials()
-        // await import("./db/cron/notifyCriticalBins.js");
+        await import("./db/cron/generateBinLogs.js");
+        await import("./db/cron/cleanupOTP.js");
+        await import("./db/cron/cleanupActivationToken.js");
+        setEmailServiceCredentials()
+        await import("./db/cron/notifyCriticalBins.js");
         app.listen(SERVER_PORT, () => {
             console.log(mongoose.connection.readyState === 1 && `Connected to DB.`);
             console.log(`Listening on port ${SERVER_PORT}`);
