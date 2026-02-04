@@ -7,7 +7,7 @@ import { getAllOrgsForMqtt } from "../db/service/sharedService.js";
 dotenv.config({ path: path.resolve("../.env") });
 
 await mongoose.connect(process.env.DB_URL);
-console.log("Connected to DB for MQTT test");
+console.log("Connected to DB for MQTT test ");
 
 
 const client = mqtt.connect("mqtt://broker.hivemq.com:1883", {
