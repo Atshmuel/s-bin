@@ -40,6 +40,10 @@ async function generateLogsForAllBins() {
             const message = getMessageFromHealth(health);
             const battery = Math.max(0, bin.status.battery - randomInt(0, 2));
 
+            if (battery === 0) {
+                bin.status.battery = 100
+            }; // Simulate battery replacement
+
             // Create log entry
             const logData = {
                 binId: bin._id,
@@ -83,8 +87,8 @@ if (!global.generateBinLogsCronStarted) {
     global.generateBinLogsCronStarted = true;
     console.log("[Cron] generateBinLogs cron started - runs every hour");
 
-    // Run every hour at minute 0
-    cron.schedule("0 * * * *", async () => {
+    // UPDATED: Runs every 4 hours (at minute 0 of hours 0, 4, 8, 12, etc.)
+    cron.schedule("0 */4 * * *", async () => {
         console.log(`[Cron] Running generateBinLogs at ${new Date().toLocaleString()}`);
         await generateLogsForAllBins();
     });
