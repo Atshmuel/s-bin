@@ -30,3 +30,7 @@ export function setAICache(data) {
         })
     )
 }
+
+export function clearAICache() {
+    localStorage.removeItem(CACHE_KEY)
+}

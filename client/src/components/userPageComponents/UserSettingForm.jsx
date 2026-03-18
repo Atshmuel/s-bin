@@ -17,6 +17,7 @@ import { Spinner } from "../ui/spinner";
 import { useAppSide } from "@/contexts/AppSideProvider";
 import { useTranslation } from "react-i18next";
 import { useDarkMode } from "@/contexts/darkModelContext";
+import { clearAICache } from "@/utils/aiCache";
 
 function UserSettingForm({ user, isAdmin = false, isSelf }) {
     const { toggleSide, isRight } = useAppSide()
@@ -78,6 +79,7 @@ function UserSettingForm({ user, isAdmin = false, isSelf }) {
         updateSettings({ configToServerModel, id: user._id, isSelf })
         if (data.appLanguage !== settings.appLanguage && isSelf) {
             toggleSide(data.appLanguage)
+            clearAICache();
         }
         if (data.isDark !== isDark && isSelf) {
             applyDarkMode(data.isDark)

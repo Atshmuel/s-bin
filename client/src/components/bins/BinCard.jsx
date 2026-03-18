@@ -142,8 +142,8 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                                 onClick={handleStartEditName}
                                             >
                                                 <Trash2 size={20} />
-                                                <span>{bin.binName}</span>
-                                                <Pencil size={14} className="text-muted-foreground" />
+                                                <span className="truncate max-w-40 md:max-w-65">{bin.binName}</span>
+                                                <Pencil size={14} className="text-muted-foreground " />
                                             </h3>
                                         </MobileTooltip>
                                     )}
