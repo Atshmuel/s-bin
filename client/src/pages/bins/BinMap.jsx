@@ -4,8 +4,8 @@ import { useBins } from "@/hooks/bins/useBins";
 import { getColor } from "@/utils/binHelpers";
 import { useSearchParams } from "react-router-dom";
 import BinPopupCard from "@/components/map/BinPopupCard";
-
-
+import { Polyline } from "react-leaflet";
+import polyline from "@mapbox/polyline";
 
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
     const { allBins, isLoadingBins } = useBins()
@@ -17,11 +17,13 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
 
     const binId = searchParams.get("binId")
     const zoomFromUrl = Number(searchParams.get("zoom"))
+    const route = searchParams.get("route")
     const locationFromUrl = searchParams.get("coordinates")?.split(",").map(Number)
 
-    if (binId) {
+    if (binId)
         binsToUse = binsToUse.filter(bin => bin._id === binId)
-    }
+
+    const routeCoordinates = route ? polyline.decode(route) : [];
 
     return (
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
@@ -29,6 +31,13 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                 {binsToUse?.map((bin) => (
                     <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status.level)} popup={<BinPopupCard bin={bin} />} />
                 ))}
+                <Polyline positions={routeCoordinates}
+                    pathOptions={{
+                        color: "#3b82f6",
+                        weight: 5,
+                        opacity: 0.6,
+                        lineJoin: 'round'
+                    }} />
             </MapComponent>
         </div >
     )

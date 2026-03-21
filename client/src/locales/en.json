@@ -6,7 +6,8 @@
   "profile": "User Profile",
   "language": "Language",
   "help": "Help",
-  "search": "Search",
+  "filter": "Filter Bins",
+  "route": "Find Route",
   "notifications": "Notifications",
   "messages": "Messages",
   "dashboard": "Dashboard",
@@ -209,8 +210,14 @@
         "binRadius":"Bins within radius of",
         "fillLevel":"Fill level between",
         "healthStatus":"Bin health status",
-        "meters":"meters",
+        "kilometers":"kilometers",
         "clearFilters":"Clear filters"
+      },
+      "route":{
+        "type":"Route Type",
+        "maintenance":"Maintenance",
+        "collection":"Collection",
+        "byFoot":"Walking Route"
       },
       "locations":{
         "myLocation":"My Location",
@@ -849,6 +856,8 @@
   },
   "toasts": {
     "failedLoadBins": "Failed to load bins.",
+    "failedToGetRoutes": "Could not find a route, try adjusting your filters or location.",
+    "routeCalculated": "Route calculated! Total distance: {{distance}} kilometers.",
     "failedToDeleteBins": "Failed to delete bins.",
     "binsDeletedSuccessfully": "Bins deleted successfully.",
     "binDeletedSuccessfully": "Bin deleted successfully.",

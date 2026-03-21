@@ -3,7 +3,7 @@ import { FormControl, FormField, FormItem } from "../ui/form"
 import { Label } from "../ui/label"
 import { Slider } from "../ui/slider"
 import { Button } from "../ui/button"
-import { MapPin, MenuSquare, Search, X, XCircle } from "lucide-react"
+import { Filter, MapPin, MenuSquare, Route, RouteIcon, Search, X, XCircle } from "lucide-react"
 import { useState } from "react"
 import { Marker, Popup, useMapEvent } from "react-leaflet"
 import { Switch } from "../ui/switch"
@@ -15,16 +15,21 @@ import { toast } from "sonner"
 import { useSearchParams } from "react-router-dom"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
+import { getBestRoute } from "@/services/apiBins"
+import { Spinner } from "../ui/spinner"
 
 function MapLegend({ legendForm = false }) {
     const isMobile = useIsMobile();
     const { isRight } = useAppSide()
     const { t } = useTranslation()
+    const [isLoading, setIsLoading] = useState(false);
     const { flyEnabled, setFlyEnabled, tile, setTile, isOpen, setIsOpen } = useMapSettings()
     const [searchParams, setSearchParams] = useSearchParams()
-    let { radius, minLevel, maxLevel, health } = Object.fromEntries([...searchParams]);
+    let { radius, minLevel, maxLevel, health, route, type, byFoot } = Object.fromEntries([...searchParams]);
 
-    const [isFilterd, setIsFiltered] = useState(searchParams.size > 0);
+
+    const [isFilterd, setIsFiltered] = useState((radius || minLevel || maxLevel || health) && !route ? true : false);
+    const [isRouted, setIsRouted] = useState(route ? true : false);
 
 
     const mapp = useMapEvent({
@@ -36,9 +41,11 @@ function MapLegend({ legendForm = false }) {
 
     const mapConfig = useForm({
         defaultValues: {
-            radius: radius ? [radius] : [50],
+            radius: radius ? [radius] : [5],
             level: minLevel && maxLevel ? [minLevel, maxLevel] : [0, 100],
             health: health ?? 'all',
+            type: type ?? 'collection',
+            byFoot: byFoot ?? false
         }
     })
 
@@ -78,7 +85,8 @@ function MapLegend({ legendForm = false }) {
         }
     }
 
-    function onSubmit(data) {
+    function onSearchSubmit(data) {
+        clearRoute()
         setSearchParams({
             radius: data.radius[0],
             minLevel: data.level[0],
@@ -90,11 +98,45 @@ function MapLegend({ legendForm = false }) {
             zoom: mapp.getZoom()
         })
         setIsFiltered(true);
+        setIsRouted(false);
+    }
+
+    async function handleRouteClick(data) {
+        setIsLoading(true);
+        clearFilters()
+        const coordinates = userMarker
+            ? userMarker.lat + ',' + userMarker.lng
+            : mapp.getCenter().lat + ',' + mapp.getCenter().lng
+        const radius = +data.radius[0];
+        const type = data.type;
+        const byFoot = data.byFoot;
+        setSearchParams({ coordinates, radius, type, byFoot })
+
+        const response = await getBestRoute({ coordinates, radius, type, byFoot })
+        setIsLoading(false);
+
+        if (!response.route || response.route.length === 0) {
+            clearRoute();
+            toast.error(t("toasts.failedToGetRoutes"))
+            return;
+        }
+        setSearchParams({ route: response.route.geometry, zoom: 17, coordinates: response.binsData[0].location.coordinates.join(',') })
+
+        toast.success(t("toasts.routeCalculated", { distance: (response.route.distance / 1000).toFixed(2) }));
+
+        setIsFiltered(false)
+        setIsRouted(true);
+
     }
 
     function clearFilters() {
         setSearchParams({})
         setIsFiltered(false);
+    }
+
+    function clearRoute() {
+        setSearchParams({})
+        setIsRouted(false);
     }
 
 
@@ -103,7 +145,7 @@ function MapLegend({ legendForm = false }) {
             <div className="self-end" onClick={() => setIsOpen(open => !open)}>{isOpen ? <X /> : <MenuSquare />}</div>
             <div className={`flex flex-col space-y-4 overflow-hidden transition-all duration-1000 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'opacity-0 max-h-0'}`}>
                 {legendForm ? <FormProvider {...mapConfig}>
-                    <form className="flex flex-col space-y-4 mb-4 justify-between items-center" onSubmit={mapConfig.handleSubmit(onSubmit)}>
+                    <form className="flex flex-col space-y-4 mb-4 justify-between items-center">
                         <div className="flex flex-col gap-4">
                             <FormField
                                 name="radius"
@@ -112,10 +154,10 @@ function MapLegend({ legendForm = false }) {
                                     <FormItem >
                                         <div>
                                             <Label>{t('mapLegend.search.binRadius')}: <span>{field.value}</span>
-                                                <span>{t('mapLegend.search.meters')}</span>
+                                                <span>{t('mapLegend.search.kilometers')}</span>
                                             </Label>
                                             <FormControl>
-                                                <Slider className='w-full mt-4' min={1} max={1000} step={5} value={[field.value]} onValueChange={(value) => field.onChange(value)} onPointerDown={() => mapp.dragging.disable()}
+                                                <Slider className='w-full mt-4' min={1} max={100} step={1} value={[field.value]} onValueChange={(value) => field.onChange(value)} onPointerDown={() => mapp.dragging.disable()}
                                                     onPointerUp={() => mapp.dragging.enable()} />
                                             </FormControl>
                                         </div>
@@ -152,29 +194,86 @@ function MapLegend({ legendForm = false }) {
                                     <FormItem>
                                         <Label>{t('mapLegend.search.healthStatus')}</Label>
                                         <FormControl>
-                                            <ToggleGroup isRight={isRight} className="mt-3 border-[0.1px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                            <ToggleGroup isRight={isRight} className="mt-3 border-[0.1px] border-primary rounded-md" type="single" value={field.value} onValueChange={(value) => {
                                                 if (value) {
                                                     field.onChange(value)
                                                 }
                                             }}>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-br-none rounded-tr-none' value="good">{t('levels.good')}</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-none' value="warning">{t('levels.warning')}</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-none' value="critical">{t('levels.critical')}</ToggleGroupItem>
-                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-bl-none rounded-tl-none' value="all">{t('levels.all')}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded w-full' value="good">{t('levels.good')}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-none w-full' value="warning">{t('levels.warning')}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-none w-full' value="critical">{t('levels.critical')}</ToggleGroupItem>
+                                                <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded w-full' value="all">{t('levels.all')}</ToggleGroupItem>
                                             </ToggleGroup>
                                         </FormControl>
                                     </FormItem>
                                 )}
                             />
+                            <div className="flex space-x-1 items-center justify-center text-center">
+                                <FormField
+                                    name="type"
+                                    control={mapConfig.control}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <Label>{t('mapLegend.route.type')}</Label>
+                                            <FormControl>
+                                                <ToggleGroup isRight={isRight} className="mt-2 border-[0.1px] border-primary rounded-md w-fit" type="single" value={field.value} onValueChange={(value) => {
+                                                    if (value) {
+                                                        field.onChange(value)
+                                                    }
+                                                }}>
+                                                    <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded-br-none text-sm rounded-tr-none' value="maintenance">{t('mapLegend.route.maintenance')}</ToggleGroupItem>
+                                                    <ToggleGroupItem className='data-[state=on]:bg-primary data-[state=on]:text-accent rounded' value="collection">{t('mapLegend.route.collection')}</ToggleGroupItem>
+                                                </ToggleGroup>
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    name="byFoot"
+                                    control={mapConfig.control}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <Label className={'text-xs md:text-sm'} htmlFor="byFoot">{t("mapLegend.route.byFoot")}</Label>
+                                            <FormControl>
+                                                <Switch isRight={isRight} checked={field.value} id='byFoot'
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         </div>
 
                         <div className="w-full flex flex-rowitems-center justify-between px-1">
-                            <Button className={`cursor-pointer ${isRight ? "" : "flex-row-reverse"} ${isFilterd ? 'w-9/12' : 'w-full'}`} type="submit"><Search />
-                                <span>{t("search")}</span></Button>
+                            <Button className={`cursor-pointer ${isRight ? "" : "flex-row-reverse"} ${isFilterd ? 'w-9/12' : 'w-full'}`} type="button" onClick={mapConfig.handleSubmit(onSearchSubmit)}><Filter />
+                                <span>{t("filter")}</span></Button>
                             {isFilterd ?
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button onClick={clearFilters} className="cursor-pointer" variant={'destructive'} ><XCircle /></Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side={isMobile ? "top" : "bottom"} className='z-400'>
+                                        <p>{t("mapLegend.search.clearFilters")}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+
+                                : null}
+                        </div>
+                        <div className="w-full flex flex-row items-center justify-between px-1">
+                            <Button className={`cursor-pointer ${isRight ? "" : "flex-row-reverse"} ${isRouted ? 'w-9/12' : 'w-full'}`} type="button" onClick={mapConfig.handleSubmit(handleRouteClick)}>
+                                {isLoading ? <Spinner /> :
+                                    <>
+                                        <RouteIcon />
+                                        <span>{t("route")}</span>
+                                    </>
+                                }
+                            </Button>
+                            {isRouted ?
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button onClick={clearRoute} className="cursor-pointer" variant={'destructive'} ><XCircle /></Button>
                                     </TooltipTrigger>
                                     <TooltipContent side={isMobile ? "top" : "bottom"} className='z-400'>
                                         <p>{t("mapLegend.search.clearFilters")}</p>

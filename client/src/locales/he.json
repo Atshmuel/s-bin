@@ -7,7 +7,8 @@
     "profile": "פרופיל משתמש",
     "language": "שפה",
     "help": "עזרה",
-    "search": "חיפוש",
+    "filter": "סינון פחים",
+    "route": "חשב מסלול",
     "notifications": "התראות",
     "messages": "הודעות",
     "dashboard": "לוח בקרה",
@@ -210,6 +211,13 @@
         "healthStatus":"מצב בריאות הפחים",
         "meters":"מטרים",
         "clearFilters":"נקה מסננים"
+      },
+            "route":{
+        "type":"סוג מסלול",
+        "maintenance":"תחזוקה",
+        "collection":"איסוף",
+        "byFoot":"מסלול רגלי"
+
       },
       "locations":{
         "myLocation":"המיקום שלי",
@@ -850,6 +858,8 @@
   },
   "toasts": {
     "failedLoadBins": "טעינת הפחים נכשלה.",
+    "failedToGetRoutes": "לא נמצא מסלול מתאים, נסה שוב על ידי שינוי פרמטרים או הוספת פחים נוספים.",
+    "routeCalculated": "מסלול חושב בהצלחה, אורך המסלול הוא {{distance}} קילומטרים.",
     "failedToDeleteBins": "מחיקת הפחים נכשלה.",
     "binsDeletedSuccessfully": "הפחים נמחקו בהצלחה.",
     "binDeletedSuccessfully": "הפח נמחק בהצלחה.",
