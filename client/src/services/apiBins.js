@@ -26,9 +26,23 @@ export async function getBinsInUserRadius({ coordinates, radius, health = null, 
         mode: "cors",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coordinates, radius, health, minLevel, maxLevel }),
+        body: JSON.stringify({ coordinates, radius: +radius * 1000, health, minLevel, maxLevel }),
     });
     const data = await res.json();
+    if (!res.ok) throw new Error(data?.message);
+    return data;
+}
+
+export async function getBestRoute({ coordinates, radius, type, byFoot }) {
+    const res = await fetch(`${SERVER_URL}/${BINS_EP}/route`, {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coordinates: coordinates.split(',').map(Number), radius: +radius * 1000, type, byFoot }),
+    });
+    const data = await res.json();
+
     if (!res.ok) throw new Error(data?.message);
     return data;
 }

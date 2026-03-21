@@ -127,6 +127,86 @@ export async function getBinsInUserRadius(req, res) {
     }
 }
 
+export async function getRouteBins(req, res) {
+    const { org: ownerId, role } = req.user
+    const { coordinates, radius, type, limit, byFoot } = req.body
+    if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
+
+    if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
+
+    let query = {};
+    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = appendFilter(query, type === 'maintenance', 'status.health', { $in: ['critical'] })
+    query = appendFilter(query, type === 'collection', 'status.level', { $gte: 70 })
+
+
+    try {
+        let binsData = await binModel.aggregate(
+            [
+                {
+                    $geoNear: {
+                        near: { type: "Point", coordinates },
+                        distanceField: "distance",
+                        spherical: true,
+                        maxDistance: radius,
+                        query,
+                    },
+                },
+                { $limit: limit || 100 },
+                { $project: { _id: 1, location: 1, status: 1 } }
+            ]
+        )
+
+        if (binsData.length === 0)
+            return res.status(200).json({ route: [], message: "No bins found in the specified radius matching the criteria" });
+
+        let jobs = binsData.map((bin, i) => {
+            return {
+                id: i,
+                location: [bin.location.coordinates[1], bin.location.coordinates[0]],
+                service: type === 'maintenance' ? 1800 : 120, //assuming 30 mins for maintenance and 2 mins for collection per bin, can be adjusted based on real data in the future
+                description: bin._id.toString()
+            }
+        });
+
+        const routeRequestBody = {
+            jobs,
+            vehicles: [
+                {
+                    id: 1,
+                    profile: byFoot ? 'foot-walking' : type === 'collection' ? 'driving-hgv' : 'driving-car',
+                    start: [coordinates[1], coordinates[0]],
+                }],
+            options: {
+                g: true
+            }
+        }
+
+        const response = await fetch(`${process.env.ROUTE_OPTIMIZATION_API_URL}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': process.env.ORS_KEY
+            },
+            body: JSON.stringify(routeRequestBody)
+        })
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            console.error("ORS API Error:", responseData);
+            return res.status(400).json({
+                message: "Failed to optimize route",
+                details: responseData
+            });
+        }
+
+        res.status(200).json({ route: responseData.routes[0], binsData })
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error })
+    }
+}
+
 export async function updateBinName(req, res) {
     const { id } = req.params
     const { org: ownerId, role } = req.user
@@ -168,27 +248,27 @@ export async function updateBinMaintenance(req, res) {
 export async function updateBinName(req,res){
 // if we want to allow updating device name we can implement this function in the future but need to keep in mind to send the new name to the device for it to update its config
 }
-
+ 
 export async function updateBinDeviceKey(req, res) {
     // if will be used in the future we need to send the new key to the device for it to update its config
     const { id } = req.params
     const { id: ownerId, role } = req.user
-
+ 
     let filter = {}
     filter = appendFilter(filter, true, '_id', id)
     filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
-
+ 
     try {
         const { deviceKey } = await binModel.findOneAndUpdate(filter, { $set: { deviceKey: generateRandomToken() } }, { new: true, runValidators: true }).select('deviceKey -_id')
-
+ 
         if (!deviceKey) return res.status(404).json({ message: "Bin not found or not owned by you." });
-
+ 
         res.status(200).json({ deviceKey })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
     }
 }
-
+ 
 */
 
 export async function deleteBin(req, res) {
