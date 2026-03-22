@@ -1,7 +1,7 @@
 import { LOGS_EP, SERVER_URL } from "@/utils/constants";
 
-export async function getAllLogs() {
-    const res = await fetch(`${SERVER_URL}/${LOGS_EP}`, {
+export async function getAllLogs(page = 1, limit = 10) {
+    const res = await fetch(`${SERVER_URL}/${LOGS_EP}?page=${page}&limit=${limit}`, {
         method: "GET",
         credentials: "include",
     });
