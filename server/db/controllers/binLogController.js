@@ -62,9 +62,12 @@ export async function getBinLogs(req, res) {
 
 export async function getAllLogs(req, res) {
     const { org: ownerId, role } = req.user
-    const page = parseInt(req.query.page) || 0;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = Number(req.query.page) || 0;
+    const limit = Number(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+
+    const searchRaw = req.query.search;
+    const search = (searchRaw !== undefined && searchRaw !== "") ? Number(searchRaw) : NaN;
 
     const pipeline = [
         {
@@ -82,6 +85,14 @@ export async function getAllLogs(req, res) {
         pipeline.push({
             $match: {
                 'bin.ownerId': new mongoose.Types.ObjectId(ownerId),
+            },
+        });
+    }
+
+    if (!isNaN(search)) {
+        pipeline.push({
+            $match: {
+                'newLevel': search,
             },
         });
     }

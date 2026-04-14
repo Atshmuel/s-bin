@@ -28,13 +28,22 @@ import { Search, X } from "lucide-react"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
 
-export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null, initialSearch = "", manualPagination = false, pageCount = -1, pagination, onPaginationChange }) {
+export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null, initialSearch = "", manualPagination = false, pageCount, pagination, onPaginationChange, manualFiltering = false, onSearchChange }) {
     const { t } = useTranslation()
 
     const { isRight } = useAppSide()
     const [sorting, setSorting] = useState(sortingBy ?? [])
     const [searching, setSearching] = useState(initialSearch)
 
+    useEffect(() => {
+        if (onSearchChange) {
+            const delayDebounceFn = setTimeout(() => {
+                onSearchChange(searching)
+            }, 500)
+
+            return () => clearTimeout(delayDebounceFn)
+        }
+    }, [searching, onSearchChange])
 
     useEffect(() => {
         if (initialSearch) {
@@ -54,7 +63,8 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
         onGlobalFilterChange: setSearching,
         ...(onPaginationChange ? { onPaginationChange } : {}),
         manualPagination: manualPagination,
-        pageCount: pageCount,
+        manualFiltering: manualFiltering,
+        pageCount: manualPagination ? pageCount : undefined,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),

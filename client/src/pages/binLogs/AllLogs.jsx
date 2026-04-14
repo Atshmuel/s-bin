@@ -7,7 +7,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { LinkIcon } from "lucide-react";
 import { useLogs } from "@/hooks/bins/binLogs/useBinLogs";
 import { useTranslation } from "react-i18next";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 function AllLogs() {
     const { t } = useTranslation();
@@ -16,6 +16,7 @@ function AllLogs() {
     const pageFromUrl = parseInt(searchParams.get("page")) || 1;
 
     const [pagination, setPagination] = useState({ pageIndex: pageFromUrl - 1, pageSize: 10 })
+    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         const newPage = pagination.pageIndex + 1;
@@ -27,10 +28,21 @@ function AllLogs() {
         }
     }, [pagination.pageIndex, pageFromUrl, setSearchParams]);
 
-    const { allLogs, totalLogs, isLoadingLogs, logsError } = useLogs(pagination.pageIndex + 1, pagination.pageSize)
+    const handleSearchChange = useCallback((newSearch) => {
+        if (newSearch === searchTerm) return;
+
+        setSearchTerm(newSearch);
+        setPagination(prev => ({ ...prev, pageIndex: 0 }));
+        setSearchParams(prev => {
+            prev.set("page", "1");
+            return prev;
+        });
+    }, [searchTerm, setSearchParams]);
+
+    const { allLogs, totalLogs, isLoadingLogs, logsError } = useLogs(pagination.pageIndex + 1, pagination.pageSize, searchTerm)
 
     const pageCount = useMemo(() => {
-        return totalLogs ? Math.ceil(totalLogs / pagination.pageSize) : -1
+        return totalLogs ? Math.ceil(totalLogs / pagination.pageSize) : 0
     }, [totalLogs, pagination.pageSize])
 
     const columns = [
@@ -108,7 +120,7 @@ function AllLogs() {
     ]
     return (
         <div>
-            <DataTable columns={columns} data={allLogs ?? []} isLoading={isLoadingLogs} error={logsError} title={t('pages.logList.title')} manualPagination={true} pageCount={pageCount} pagination={pagination} onPaginationChange={setPagination} />
+            <DataTable columns={columns} data={allLogs ?? []} isLoading={isLoadingLogs} error={logsError} title={t('pages.logList.title')} manualPagination={true} pageCount={pageCount} pagination={pagination} onPaginationChange={setPagination} manualFiltering={true} onSearchChange={handleSearchChange} />
         </div >
     )
 }
