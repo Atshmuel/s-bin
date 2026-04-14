@@ -1,8 +1,8 @@
 import { BINS_EP, SERVER_URL } from "@/utils/constants";
 
 //get bins
-export async function getAllUserBins() {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/all`, {
+export async function getAllUserBins(page = 1, limit = 10, search = "") {
+    const res = await fetch(`${SERVER_URL}/${BINS_EP}/all?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, {
         method: "GET",
         credentials: "include",
     });

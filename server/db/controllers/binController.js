@@ -42,11 +42,18 @@ export async function getBin(req, res) {
 
 export async function getAllUserBins(req, res) {
     const { org: ownerId, role } = req.user
-    const { withLogs } = req.query
+    const { withLogs, page, limit, search } = req.query
+
+    const pageNum = Number(page) || 1;
+    const limitNum = Number(limit) || 10;
+    const skip = (pageNum - 1) * limitNum;
 
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
+    if (search) {
+        query.binName = { $regex: search, $options: 'i' };
+    }
     const pipeline = [
         { $match: query },
         { $project: { macAddress: 0 } }
@@ -64,8 +71,22 @@ export async function getAllUserBins(req, res) {
     }
 
     try {
-        const binsData = await binModel.aggregate(pipeline);
-        res.status(200).json({ binsData: binsData || [] })
+
+        const facetedPipeline = [
+            ...pipeline,
+            {
+                $facet: {
+                    total: [{ $count: "total" }],
+                    data: [{ $skip: skip }, { $limit: limitNum }]
+                }
+            }
+        ];
+
+        const results = await binModel.aggregate(facetedPipeline);
+        const binsData = results[0].data || [];
+        const total = results[0].total[0]?.total || 0;
+
+        res.status(200).json({ binsData: binsData || [], total: total })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
     }
