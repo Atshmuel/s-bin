@@ -54,7 +54,7 @@ const main = async () => {
         setEmailServiceCredentials()
         await import("./db/cron/notifyCriticalBins.js");
         app.listen(SERVER_PORT, () => {
-            console.log(mongoose.connection.readyState === 1 && `Connected to DB.`);
+            console.log(mongoose.connection.readyState === 1 && `Connected to DB..`);
             console.log(`Listening on port ${SERVER_PORT}`);
         });
     } catch (error) {
