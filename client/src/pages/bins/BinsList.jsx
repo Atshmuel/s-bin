@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import DataTable from "../../components/DataTable"
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import Battery from "../../components/bins/Battary";
 import { LinkIcon, MapPin, Trash } from "lucide-react";
@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/too
 import { useBins } from "@/hooks/bins/useBins";
 import { getVariant } from "@/utils/binHelpers";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import InputLabel from "@/components/InputLabel";
@@ -20,10 +20,42 @@ import { useAppSide } from "@/contexts/AppSideProvider";
 function BinsList() {
     const { t } = useTranslation();
     const { isRight, side } = useAppSide();
-    const { allBins, isLoadingBins, binsError } = useBins();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const pageFromUrl = parseInt(searchParams.get("page")) || 1;
+    const [pagination, setPagination] = useState({ pageIndex: pageFromUrl - 1, pageSize: 10 });
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const { allBins, totalBins, isLoadingBins, binsError } = useBins(pagination.pageIndex + 1,
+        pagination.pageSize,
+        searchTerm);
+
     const { deleteBins, isDeleting } = useDeleteBinBatch()
     const [binIds, setBinIds] = useState([]);
 
+    useEffect(() => {
+        const newPage = pagination.pageIndex + 1;
+        if (pageFromUrl !== newPage) {
+            setSearchParams((prev) => {
+                prev.set("page", newPage.toString());
+                return prev;
+            });
+        }
+    }, [pagination.pageIndex, pageFromUrl, setSearchParams]);
+
+    const handleSearchChange = useCallback((newSearch) => {
+        if (newSearch === searchTerm) return;
+        setSearchTerm(newSearch);
+        setPagination(prev => ({ ...prev, pageIndex: 0 }));
+        setSearchParams(prev => {
+            prev.set("page", "1");
+            return prev;
+        });
+    }, [searchTerm, setSearchParams]);
+
+    const pageCount = useMemo(() => {
+        return totalBins ? Math.ceil(totalBins / pagination.pageSize) : 0;
+    }, [totalBins, pagination.pageSize]);
 
     const toggleOne = (id, checked) => {
         setBinIds(prev =>
@@ -185,7 +217,8 @@ function BinsList() {
 
     return (
         <div className="sm:p-10">
-            <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title={t('pages.binsList.title')} ActionButton={allBins?.length && binIds?.length ? ActionButton : null} />
+            <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title={t('pages.binsList.title')} manualPagination={true} manualFiltering={true} pageCount={pageCount} pagination={pagination} onPaginationChange={setPagination}
+                onSearchChange={handleSearchChange} ActionButton={allBins?.length && binIds?.length ? ActionButton : null} />
         </div>
     )
 }

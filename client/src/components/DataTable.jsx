@@ -27,17 +27,23 @@ import EmptyTable from "./EmptyTable"
 import { Search, X } from "lucide-react"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
-import { useSearchParams } from "react-router-dom"
 
-
-export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null, initialSearch = "" }) {
+export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null, initialSearch = "", manualPagination = false, pageCount, pagination, onPaginationChange, manualFiltering = false, onSearchChange }) {
     const { t } = useTranslation()
 
     const { isRight } = useAppSide()
     const [sorting, setSorting] = useState(sortingBy ?? [])
     const [searching, setSearching] = useState(initialSearch)
-    const [searchParams, setSearchParams] = useSearchParams()
 
+    useEffect(() => {
+        if (onSearchChange) {
+            const delayDebounceFn = setTimeout(() => {
+                onSearchChange(searching)
+            }, 500)
+
+            return () => clearTimeout(delayDebounceFn)
+        }
+    }, [searching, onSearchChange])
 
     useEffect(() => {
         if (initialSearch) {
@@ -51,30 +57,23 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
         state: {
             sorting,
             globalFilter: searching,
+            ...(pagination ? { pagination } : {})
         },
         onSortingChange: setSorting,
         onGlobalFilterChange: setSearching,
+        ...(onPaginationChange ? { onPaginationChange } : {}),
+        manualPagination: manualPagination,
+        manualFiltering: manualFiltering,
+        pageCount: manualPagination ? pageCount : undefined,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        initialState: { pagination: { pageSize: maxLength, pageIndex: Number(searchParams.get("page")) || 0 } },
+        initialState: { pagination: { pageSize: maxLength } },
     })
     const hasData = table.getRowModel().rows.length
 
     const iconToShow = searching ? X : Search
-
-    const handlePreviousPage = () => {
-        table.previousPage()
-        const newPageIndex = table.getState().pagination.pageIndex - 1
-        setSearchParams({ ...Object.fromEntries([...searchParams]), page: newPageIndex })
-    }
-
-    const handleNextPage = () => {
-        table.nextPage()
-        const newPageIndex = table.getState().pagination.pageIndex + 1
-        setSearchParams({ ...Object.fromEntries([...searchParams]), page: newPageIndex })
-    }
 
 
     return (
@@ -189,12 +188,12 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
             <div className={`flex justify-between`}>
                 <Button
                     variant="outline"
-                    onClick={handlePreviousPage}
+                    onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
                 >
                     {t("globalTable.previous")}
                 </Button>
-                {table.getPageCount() ?
+                {table.getPageCount() > 0 ?
                     <div className={`flex gap-1`}>
                         <span>{table.getState().pagination.pageIndex + 1}</span>
                         <span> {t("globalTable.tablePage")} </span>
@@ -204,7 +203,7 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
 
                 <Button
                     variant="outline"
-                    onClick={handleNextPage}
+                    onClick={() => table.nextPage()}
                     disabled={!table.getCanNextPage()}
                 >
                     {t("globalTable.next")}

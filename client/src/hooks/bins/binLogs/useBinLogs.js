@@ -2,16 +2,17 @@ import { getAllLogs } from "@/services/apiLogs";
 import { useQuery } from "@tanstack/react-query";
 
 
-export function useLogs() {
+export function useLogs(page = 1, limit = 10, search = "") {
     const { data, isPending: isLoadingLogs, error: logsError } = useQuery({
-        queryKey: ['all-logs'],
-        queryFn: getAllLogs,
+        queryKey: ['all-logs', page, limit, search],
+        queryFn: () => getAllLogs(page, limit, search),
         refetchInterval: 3000,
         refetchIntervalInBackground: true,
     })
 
 
     const allLogs = data?.logs
+    const totalLogs = data?.total
 
-    return { allLogs, isLoadingLogs, logsError }
+    return { allLogs, totalLogs, isLoadingLogs, logsError }
 }

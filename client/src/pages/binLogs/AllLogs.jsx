@@ -3,14 +3,48 @@ import { Badge } from "@/components/ui/badge";
 import Battery from "@/components/bins/Battary";
 import { format } from "date-fns";
 import { getVariant } from "@/utils/binHelpers";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { LinkIcon } from "lucide-react";
 import { useLogs } from "@/hooks/bins/binLogs/useBinLogs";
 import { useTranslation } from "react-i18next";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 function AllLogs() {
     const { t } = useTranslation();
-    const { allLogs, isLoadingLogs, logsError } = useLogs()
+    const [searchParams, setSearchParams] = useSearchParams()
+
+    const pageFromUrl = parseInt(searchParams.get("page")) || 1;
+
+    const [pagination, setPagination] = useState({ pageIndex: pageFromUrl - 1, pageSize: 10 })
+    const [searchTerm, setSearchTerm] = useState("");
+
+    useEffect(() => {
+        const newPage = pagination.pageIndex + 1;
+        if (pageFromUrl !== newPage) {
+            setSearchParams((prev) => {
+                prev.set("page", newPage.toString());
+                return prev;
+            });
+        }
+    }, [pagination.pageIndex, pageFromUrl, setSearchParams]);
+
+    const handleSearchChange = useCallback((newSearch) => {
+        if (newSearch === searchTerm) return;
+
+        setSearchTerm(newSearch);
+        setPagination(prev => ({ ...prev, pageIndex: 0 }));
+        setSearchParams(prev => {
+            prev.set("page", "1");
+            return prev;
+        });
+    }, [searchTerm, setSearchParams]);
+
+    const { allLogs, totalLogs, isLoadingLogs, logsError } = useLogs(pagination.pageIndex + 1, pagination.pageSize, searchTerm)
+
+    const pageCount = useMemo(() => {
+        return totalLogs ? Math.ceil(totalLogs / pagination.pageSize) : 0
+    }, [totalLogs, pagination.pageSize])
+
     const columns = [
         {
             header: t('pages.logList.columns.createAt'),
@@ -86,7 +120,7 @@ function AllLogs() {
     ]
     return (
         <div>
-            <DataTable columns={columns} data={allLogs ?? []} isLoading={isLoadingLogs} error={logsError} title={t('pages.logList.title')} />
+            <DataTable columns={columns} data={allLogs ?? []} isLoading={isLoadingLogs} error={logsError} title={t('pages.logList.title')} manualPagination={true} pageCount={pageCount} pagination={pagination} onPaginationChange={setPagination} manualFiltering={true} onSearchChange={handleSearchChange} />
         </div >
     )
 }
