@@ -5,7 +5,7 @@
 //should send logs every 1 minute or if battery is low or fill level is high
 unsigned long lastLogTime = 0;
 const unsigned long LOG_INTERVAL = 5000; // 10 minutes in milliseconds
-const unsigned long URGENT_LOG_INTERVAL = 99900000;  // 5 minutes in milliseconds
+const unsigned long URGENT_LOG_INTERVAL = 1000;  // 1 minute in milliseconds
 const unsigned long CRITICAL_LOG_INTERVAL = 9999000; // 1 minute in milliseconds
 const unsigned long REGISTER_INTERVAL = 10000; // 10 seconds
 unsigned long lastRegisterTime = 0;

@@ -375,14 +375,13 @@ export async function getBinsStatusOV(req, res) {
 export async function getAIOverview(req, res) {
     const { id, role, org: ownerId } = req.user
     let query = {}
-    let binNames = {}
+    let userBins = {}
 
     if (role !== process.env.ROLE_OWNER) {
-        const userBins = await binModel.find({
+        userBins = await binModel.find({
             ownerId: new mongoose.Types.ObjectId(ownerId)
         }).select('_id binName');
 
-        binNames = await userBins.map(bin => ({ id: bin._id.toString(), name: bin.binName }))
         const binIds = userBins.map(bin => bin._id);
 
         query = { binId: { $in: binIds } };
@@ -419,7 +418,7 @@ export async function getAIOverview(req, res) {
             const aiModel = new GoogleGenAI({ apiKey: apiKeys[i] })
             const modelResponse = await aiModel.models.generateContent({
                 model: 'gemini-2.5-flash',
-                contents: intstuction + JSON.stringify(logs) + JSON.stringify(binNames),
+                contents: intstuction + JSON.stringify(logs) + JSON.stringify(userBins),
                 config: {
                     responseMimeType: 'application/json',
                     responseJsonSchema: feedBackScheme.toJSONSchema(),
