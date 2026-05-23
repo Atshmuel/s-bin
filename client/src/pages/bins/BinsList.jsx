@@ -16,9 +16,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { useDeleteBinBatch } from "@/hooks/bins/useDeleteAllBins";
 import { useTranslation } from "react-i18next";
 import { useAppSide } from "@/contexts/AppSideProvider";
+import { useMe } from "@/hooks/users/auth/useMe";
 
 function BinsList() {
     const { t } = useTranslation();
+    const { isAdmin } = useMe();
     const { isRight, side } = useAppSide();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -71,37 +73,8 @@ function BinsList() {
         }
     };
 
+
     const columns = [
-        {
-            header: ({ table }) => {
-                const rows = table.options.data;
-                const allIds = rows.map(r => r._id);
-                const allChecked = binIds.length === allIds.length && allIds.length > 0;
-                const someChecked = binIds.length > 0 && binIds.length < allIds.length;
-
-                return (
-                    <Checkbox
-                        checked={allChecked}
-                        indeterminate={someChecked ? true : undefined}
-                        onCheckedChange={(checked) => toggleAll(rows, !!checked)}
-                    />
-                );
-            },
-            size: 20,
-            id: "Checkboxs",
-            enableSorting: false,
-            cell: ({ row }) => {
-                const id = row.original._id;
-                const isChecked = binIds.includes(id);
-
-                return (
-                    <Checkbox
-                        checked={isChecked}
-                        onCheckedChange={(checked) => toggleOne(id, !!checked)}
-                    />
-                );
-            }
-        },
         {
             header: t('pages.binsList.columns.binName'),
             accessorKey: 'binName',
@@ -180,6 +153,39 @@ function BinsList() {
             },
         },
     ]
+
+    if (isAdmin) {
+        columns.unshift({
+            header: ({ table }) => {
+                const rows = table.options.data;
+                const allIds = rows.map(r => r._id);
+                const allChecked = binIds.length === allIds.length && allIds.length > 0;
+                const someChecked = binIds.length > 0 && binIds.length < allIds.length;
+
+                return (
+                    <Checkbox
+                        checked={allChecked}
+                        indeterminate={someChecked ? true : undefined}
+                        onCheckedChange={(checked) => toggleAll(rows, !!checked)}
+                    />
+                );
+            },
+            size: 20,
+            id: "Checkboxs",
+            enableSorting: false,
+            cell: ({ row }) => {
+                const id = row.original._id;
+                const isChecked = binIds.includes(id);
+
+                return (
+                    <Checkbox
+                        checked={isChecked}
+                        onCheckedChange={(checked) => toggleOne(id, !!checked)}
+                    />
+                );
+            }
+        })
+    }
 
     function ActionButton() {
         const [deleteInput, setDeleteInput] = useState('')

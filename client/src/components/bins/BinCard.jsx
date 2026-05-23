@@ -35,7 +35,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
     const { updateName, isUpdating: isUpdatingName } = useUpdateBinName()
     const nameInputRef = useRef(null)
 
-    const { me } = useMe();
+    const { me, isAdmin } = useMe();
     const isUser = me?.role === 'user'
 
     function handleCopyDeviceKey() {
@@ -103,50 +103,58 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                         <CardHeader>
                             <CardTitle className="flex justify-between items-center">
                                 <div className="flex gap-3">
-                                    {isEditingName ? (
-                                        <div className="flex items-center gap-2">
-                                            <Trash2 size={20} />
-                                            <input
-                                                ref={nameInputRef}
-                                                type="text"
-                                                value={editedName}
-                                                onChange={(e) => setEditedName(e.target.value.slice(0, 25))}
-                                                onKeyDown={handleNameKeyDown}
-                                                className="border rounded px-2 py-1 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary"
-                                                maxLength={25}
-                                                disabled={isUpdatingName}
-                                            />
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-4 w-4"
-                                                onClick={handleSaveName}
-                                                disabled={isUpdatingName}
-                                            >
-                                                {isUpdatingName ? <Spinner className="size-4" /> : <Check size={16} className="text-green-600" />}
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-4 w-4"
-                                                onClick={handleCancelEditName}
-                                                disabled={isUpdatingName}
-                                            >
-                                                <X size={16} className="text-red-600" />
-                                            </Button>
-                                        </div>
-                                    ) : (
-                                        <MobileTooltip content={t('components.binCard.clickToEditName')}>
-                                            <h3
-                                                className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
-                                                onClick={handleStartEditName}
-                                            >
+                                    {isAdmin ?
+                                        isEditingName ? (
+                                            <div className="flex items-center gap-2">
                                                 <Trash2 size={20} />
-                                                <span className="truncate max-w-40 md:max-w-65">{bin.binName}</span>
-                                                <Pencil size={14} className="text-muted-foreground " />
-                                            </h3>
-                                        </MobileTooltip>
-                                    )}
+                                                <input
+                                                    ref={nameInputRef}
+                                                    type="text"
+                                                    value={editedName}
+                                                    onChange={(e) => setEditedName(e.target.value.slice(0, 25))}
+                                                    onKeyDown={handleNameKeyDown}
+                                                    className="border rounded px-2 py-1 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    maxLength={25}
+                                                    disabled={isUpdatingName}
+                                                />
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-4 w-4"
+                                                    onClick={handleSaveName}
+                                                    disabled={isUpdatingName}
+                                                >
+                                                    {isUpdatingName ? <Spinner className="size-4" /> : <Check size={16} className="text-green-600" />}
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-4 w-4"
+                                                    onClick={handleCancelEditName}
+                                                    disabled={isUpdatingName}
+                                                >
+                                                    <X size={16} className="text-red-600" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <MobileTooltip content={t('components.binCard.clickToEditName')}>
+                                                <h3
+                                                    className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
+                                                    onClick={handleStartEditName}
+                                                >
+                                                    <Trash2 size={20} />
+                                                    <span className="truncate max-w-40 md:max-w-65">{bin.binName}</span>
+                                                    <Pencil size={14} className="text-muted-foreground " />
+                                                </h3>
+                                            </MobileTooltip>
+                                        ) :
+                                        <h3
+                                            className="flex items-center gap-2"
+                                            onClick={handleStartEditName}
+                                        >
+                                            <Trash2 size={20} />
+                                            <span className="truncate max-w-40 md:max-w-65">{bin.binName}</span>
+                                        </h3>}
                                 </div>
                                 <div className="flex flex-row justify-center items-center gap-3">
                                     <Battery level={bin.status.battery} />
@@ -247,27 +255,30 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                         </CardContent>
                         {actions && (
                             <CardFooter className={`flex justify-center ${isRight ? "" : "flex-row-reverse"} gap-2`}>
-                                <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
-                                    <DialogTrigger asChild>
-                                        <Button className="cursor-pointer flex-1 py-6" variant='outline_destructive' size='sm'>{t('delete')}
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent side={side}>
-                                        <DialogHeader isRight={isRight} className="pt-6">
-                                            <DialogTitle>{t('confirmations.confirmationTitle')}</DialogTitle>
-                                            <DialogDescription isRight={!isRight}>{t('confirmations.confirmationDescription')}</DialogDescription>
-                                        </DialogHeader>
-                                        <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
-                                            onChange={(e) => setDeleteInput(e.target.value)}>{t('confirmations.typeDelete')}</InputLabel>
-                                        <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
-                                            <DialogClose asChild>
-                                                <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>{t('cancel')}</Button>
-                                            </DialogClose>
-                                            <Button className="cursor-pointer" disabled={(deleteInput.toLowerCase() !== 'delete' && deleteInput.toLowerCase() !== 'מחק') || isDeleting} variant='destructive' onClick={() => deleteBin({ id: bin._id })
-                                            }>{isDeleting ? <Spinner /> : t('delete')}</Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
+                                {isAdmin &&
+                                    (<Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
+                                        <DialogTrigger asChild>
+                                            <Button className="cursor-pointer flex-1 py-6" variant='outline_destructive' size='sm'>{t('delete')}
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent side={side}>
+                                            <DialogHeader isRight={isRight} className="pt-6">
+                                                <DialogTitle>{t('confirmations.confirmationTitle')}</DialogTitle>
+                                                <DialogDescription isRight={!isRight}>{t('confirmations.confirmationDescription')}</DialogDescription>
+                                            </DialogHeader>
+                                            <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
+                                                onChange={(e) => setDeleteInput(e.target.value)}>{t('confirmations.typeDelete')}</InputLabel>
+                                            <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
+                                                <DialogClose asChild>
+                                                    <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>{t('cancel')}</Button>
+                                                </DialogClose>
+                                                <Button className="cursor-pointer" disabled={(deleteInput.toLowerCase() !== 'delete' && deleteInput.toLowerCase() !== 'מחק') || isDeleting} variant='destructive' onClick={() => deleteBin({ id: bin._id })
+                                                }>{isDeleting ? <Spinner /> : t('delete')}</Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>)
+                                }
+
                                 {!isUser && (
                                     <Dialog>
                                         <DialogTrigger asChild>
