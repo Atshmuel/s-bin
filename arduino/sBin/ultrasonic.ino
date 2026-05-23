@@ -37,7 +37,8 @@ void calibrateSensor() {
 int getFillLevel() {
   long microsec = ultrasonic.timing();
   float currentDist = ultrasonic.convert(microsec, Ultrasonic::CM);
-  
+  Serial.print("Measured Distance: ");
+  Serial.printl(currentDist);
   if (currentDist <= 0 || currentDist > 400) return fillLevel; 
   
   distance = currentDist; 
@@ -49,12 +50,15 @@ int getFillLevel() {
   // the distance we've traveled from the bottom of the bin upwards (approximately)
   // the smaller currentDist is, the more full the bin is
   float fillAmount = binDepth - currentDist; 
-
+Serial.print("Fill Amount: ");
+Serial.println(fillAmount);
   // normalization to percentage relative to the effective range
   // if fillAmount is 0 (empty bin), the result is 0%.
   // if currentDist reached fullThreshold, then fillAmount equals effectiveRange and the result is 100%.
   int percentage = (int)((fillAmount / effectiveRange) * 100);
-  
+  Serial.print("Calculated Fill Level: ");
+  Serial.print(percentage);
+  Serial.println("%");
   // clamp percentage between 0 and 100
   if (percentage > 100) percentage = 100;
   if (percentage < 0) percentage = 0;

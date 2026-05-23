@@ -70,7 +70,7 @@ extern long wifiTime;
 extern float lat;
 extern float lng;
 extern int fillLevel;
-extern int battery;
+extern float battery;
 extern String health;
 
 // ===== Timeouts =====

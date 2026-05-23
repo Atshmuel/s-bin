@@ -37,5 +37,5 @@ float lat = 0.0;
 float lng = 0.0;
 int fillLevel = 0;
 int binDepth = 0;
-int battery = 100;
+float battery = 100;
 String health = "good";

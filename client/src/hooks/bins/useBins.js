@@ -21,7 +21,8 @@ export function useBins() {
                 return getAllUserBins()
             }
         },
-        refetchInterval: 60000,
+        refetchInterval: 3000,
+        refetchIntervalInBackground: true,
     })
 
 

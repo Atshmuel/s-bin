@@ -2,13 +2,17 @@
 
 
 
-//should send logs every 4 hours or if battery is low or fill level is high
+//should send logs every 1 minute or if battery is low or fill level is high
 unsigned long lastLogTime = 0;
-const unsigned long LOG_INTERVAL = 14400000; // 4 hours in milliseconds
-const unsigned long URGENT_LOG_INTERVAL = 3600000;  // 1 hour in milliseconds
-const unsigned long CRITICAL_LOG_INTERVAL = 1800000; // 30 minutes
+const unsigned long LOG_INTERVAL = 600000; // 10 minutes in milliseconds
+const unsigned long URGENT_LOG_INTERVAL = 300000;  // 5 minutes in milliseconds
+const unsigned long CRITICAL_LOG_INTERVAL = 60000; // 1 minute in milliseconds
 const unsigned long REGISTER_INTERVAL = 10000; // 10 seconds
 unsigned long lastRegisterTime = 0;
+
+static unsigned long lastBatteryDrop = 0;
+const unsigned long DROP_INTERVAL = 300000; // 5 minutes in milliseconds
+
 
 unsigned long wifiStartTime = 0;
 unsigned long registerStartTime = 0;
@@ -87,7 +91,13 @@ void loop() {
   case NORMAL_MODE:
     fillLevel = getFillLevel();
     updateGPS();
-     battery = random(0, 101);
+    //Simulate battery drain over time (for testing purposes)
+    if (millis() - lastBatteryDrop > DROP_INTERVAL) {
+      if (battery > 0) {
+          battery -=0.005; 
+      }
+      lastBatteryDrop = millis();
+    }
       if (fillLevel >= 80 || battery <= 20) {
         health = "critical";
       } else if ((fillLevel >= 50 && fillLevel < 80) || (battery <= 50 && battery > 20)) {

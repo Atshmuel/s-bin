@@ -6,6 +6,8 @@ export function useLogs() {
     const { data, isPending: isLoadingLogs, error: logsError } = useQuery({
         queryKey: ['all-logs'],
         queryFn: getAllLogs,
+        refetchInterval: 3000,
+        refetchIntervalInBackground: true,
     })
 
 

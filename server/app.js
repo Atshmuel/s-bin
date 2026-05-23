@@ -48,7 +48,7 @@ const main = async () => {
     try {
         initMqtt();
         await mongoose.connect(`${DB_URL}`);
-        await import("./db/cron/generateBinLogs.js");
+        // await import("./db/cron/generateBinLogs.js");
         await import("./db/cron/cleanupOTP.js");
         await import("./db/cron/cleanupActivationToken.js");
         setEmailServiceCredentials()
