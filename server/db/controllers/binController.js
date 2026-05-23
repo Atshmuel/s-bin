@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { binModel } from '../models/models.js'
 import { appendFilter } from '../../utils/helpers.js'
-import { deleteLogsForBins } from '../service/sharedService.js'
+import { deleteLogsForBins, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
 
@@ -253,14 +253,14 @@ export async function updateBinMaintenance(req, res) {
     const { id: technicianId } = req.user
     const { notes } = req.body
     try {
-        const bin = await binModel.findById(id)
-        if (!bin) return res.status(404).json({ message: 'Bin not found' });
-
-        await bin.recordService(notes, technicianId);
-        return res.json({ message: 'Service recorded', maintenance: bin.maintenance });
+        const success = await updateMaintenance(id, notes, technicianId)
+        if (!success) {
+            return res.status(404).json({ message: 'Bin not found' });
+        }
+        return res.json({ message: 'Service recorded' });
 
     } catch (error) {
-        console.error(err);
+        console.error(error);
         return res.status(500).json({ message: 'Server error' });
     }
 }

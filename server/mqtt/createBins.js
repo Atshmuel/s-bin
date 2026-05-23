@@ -48,11 +48,12 @@ function isPointInPolygon(point, vs) {
 
 function getRandomPointInPolygon() {
     const polygon = [
-        { lat: 32.705884, lng: 35.5914657 },
-        { lat: 32.706081, lng: 35.5932467 },
-        { lat: 32.705266, lng: 35.5936867 },
-        { lat: 32.704785, lng: 35.5916887 }
+        { lat: 32.7767, lng: 35.0215 },
+        { lat: 32.7798, lng: 35.0285 },
+        { lat: 32.7735, lng: 35.0330 },
+        { lat: 32.7705, lng: 35.0240 }
     ];
+
     let minLat = polygon[0].lat;
     let maxLat = polygon[0].lat;
     let minLng = polygon[0].lng;

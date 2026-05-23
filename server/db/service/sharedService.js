@@ -375,9 +375,21 @@ export async function getBinsStatusOV(req, res) {
 export async function getAIOverview(req, res) {
     const { id, role, org: ownerId } = req.user
     let query = {}
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    let binNames = {}
+
+    if (role !== process.env.ROLE_OWNER) {
+        const userBins = await binModel.find({
+            ownerId: new mongoose.Types.ObjectId(ownerId)
+        }).select('_id binName');
+
+        binNames = await userBins.map(bin => ({ id: bin._id.toString(), name: bin.binName }))
+        const binIds = userBins.map(bin => bin._id);
+
+        query = { binId: { $in: binIds } };
+    }
 
     const logs = await binLogModel.find(query, { source: 0, message: 0, updatedAt: 0 }).limit(250)
+
     if (logs.length === 0) {
         return res.status(200).json({ insights: [] });
     }
@@ -407,7 +419,7 @@ export async function getAIOverview(req, res) {
             const aiModel = new GoogleGenAI({ apiKey: apiKeys[i] })
             const modelResponse = await aiModel.models.generateContent({
                 model: 'gemini-2.5-flash',
-                contents: intstuction + JSON.stringify(logs),
+                contents: intstuction + JSON.stringify(logs) + JSON.stringify(binNames),
                 config: {
                     responseMimeType: 'application/json',
                     responseJsonSchema: feedBackScheme.toJSONSchema(),
@@ -439,7 +451,16 @@ export async function getLogTypes(req, res) {
     let query = {
         createdAt: { $gt: thirtyDaysAgo }
     }
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+
+    if (role !== process.env.ROLE_OWNER) {
+        const userBins = await binModel.find({
+            ownerId: new mongoose.Types.ObjectId(ownerId)
+        }).select('_id');
+
+        const binIds = userBins.map(bin => bin._id);
+
+        query = { binId: { $in: binIds } };
+    }
 
     try {
         const logsByTypes = await binLogModel.aggregate([
@@ -481,7 +502,32 @@ export async function getLogTypes(req, res) {
     }
 }
 
+//logs
+export async function updateMaintenance(id, notes, technicianId) {
+    try {
+        const bin = await binModel.findById(id)
+        if (!bin) return false;
 
+        await bin.recordService(notes, technicianId);
+        await binLogModel.create({
+            binId: bin._id,
+            type: 'maintenance',
+            message: `${notes} - TechID:${technicianId}`,
+            ownerId: bin.ownerId,
+            battery: bin.status.battery,
+            health: bin.status.health,
+            newLevel: bin.status.level,
+            oldLevel: bin.status.level,
+            source: 'manual',
+            severity: 'info'
+        })
+
+        return true;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
 
 
 //For testing purposes only
