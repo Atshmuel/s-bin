@@ -387,7 +387,7 @@ export async function getAIOverview(req, res) {
         query = { binId: { $in: binIds } };
     }
 
-    const logs = await binLogModel.find(query, { source: 0, message: 0, updatedAt: 0 }).limit(250)
+    const logs = await binLogModel.find(query, { updatedAt: 0 }).limit(250)
 
     if (logs.length === 0) {
         return res.status(200).json({ insights: [] });
