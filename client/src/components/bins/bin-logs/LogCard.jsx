@@ -50,6 +50,15 @@ function LogCard({ log, isLoading = true, ...props }) {
 
                             <div className="flex justify-between">
                                 <span className="font-medium flex items-center gap-2">
+                                    <Activity size={16} /> {t("components.logCard.weight")}:
+                                </span>
+                                <span>
+                                    {typeof log.weight === 'number' ? `${log.weight.toFixed(1)} ` : '0 '} {t("units.kg")}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between">
+                                <span className="font-medium flex items-center gap-2">
                                     <Activity size={16} /> {t("healthStatus")}:
                                 </span>
                                 <Badge variant={getVariant(log.health)}>{t("levels." + log.health)}</Badge>

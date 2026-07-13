@@ -27,7 +27,7 @@ app.use(
             CLIENT_BASE_URL,
             CLIENT_BASE_URL_PROD,
             CLIENT_BASE_URL_3,
-            // "http://localhost:5173"
+            "http://localhost:5173"
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,

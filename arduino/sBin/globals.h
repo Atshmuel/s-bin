@@ -8,6 +8,8 @@
 #include <Preferences.h>  
 #include "Ultrasonic.h"
 #include <TinyGPSPlus.h>
+#include <HX711_ADC.h>
+
 
 
 
@@ -73,6 +75,10 @@ extern int fillLevel;
 extern float battery;
 extern String health;
 
+// ===== Weight =====
+extern float currentWeight;
+extern float lastReportedWeight;
+
 // ===== Timeouts =====
 #define WIFI_TIMEOUT 120000     // 2 minutes
 #define REGISTER_TIMEOUT 120000 // 2 minutes
@@ -112,5 +118,9 @@ int getFillLevel();
 void displayLocationInfo();
 void updateGPS();
 
+
+// scale.ino
+void scaleSetup();
+void scaleLoop();
 
 

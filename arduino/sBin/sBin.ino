@@ -35,6 +35,7 @@ void setup() {
 
   if(currentMode == REGISTER_MODE || currentMode == NORMAL_MODE || currentMode == CALIBRATION_MODE){
     connectToWifi(ssid, password);
+    scaleSetup(); // Initialize the scale
   }
   
 }
@@ -91,6 +92,7 @@ void loop() {
   case NORMAL_MODE:
     fillLevel = getFillLevel();
     updateGPS();
+    scaleLoop(); // Call the scale loop to update weight readings
     //Simulate battery drain over time (for testing purposes)
     if (millis() - lastBatteryDrop > DROP_INTERVAL) {
       if (battery > 0) {
@@ -109,7 +111,7 @@ void loop() {
     if (millis() - lastLogTime > LOG_INTERVAL || (health == "critical" && millis() - lastLogTime > CRITICAL_LOG_INTERVAL) ||(fillLevel >= 80 && millis() - lastLogTime > URGENT_LOG_INTERVAL)) {
       Serial.println("Sending periodic log...");
      
-      publishLog(fillLevel, battery, health);
+      publishLog(fillLevel, battery, health,currentWeight);
       lastLogTime = millis();
     }
     break;

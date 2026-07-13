@@ -32,6 +32,7 @@ export const binSchema = new mongoose.Schema({
             default: "good"
         },
         level: { type: Number, default: 0, required: true },
+        weight: { type: Number, default: 0, required: true },
         battery: { type: Number, default: 0, required: true },
         updatedAt: { type: Date, default: Date.now }
     },

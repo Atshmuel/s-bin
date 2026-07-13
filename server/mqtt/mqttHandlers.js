@@ -18,7 +18,7 @@ export async function handleMqttMessage(topic, payload) {
 
     const mac = parts[1];
     const field = parts[3];
-
+    console.log(`Received message for bin ${mac} on field ${field}:`, payload);
     switch (field) {
         case "log":
             await handleDeviceLog(mac, payload);
@@ -82,8 +82,8 @@ async function handleRegistration({ mac, orgId, location, battery }) {
     }
 }
 
-async function handleDeviceLog(mac, { deviceKey, location, health, level, battery }) {
-    if (!checkPayloadFields({ location, health, level, battery })) return;
+async function handleDeviceLog(mac, { deviceKey, location, health, level, battery, weight }) {
+    if (!checkPayloadFields({ location, health, level, battery, weight })) return;
 
     const bin = await getBinByMacAndKeyShared(mac, deviceKey);
     if (!bin) return;
@@ -100,7 +100,9 @@ async function handleDeviceLog(mac, { deviceKey, location, health, level, batter
         message = 'Immediate attention required, notify maintenance team.';
     };
 
-    let query = { binId: bin._id, location, health, oldLevel: bin.status.level, newLevel: level, battery, severity, type: 'log', source: 'sensor' }
+    weight = weight <= 0 ? 0 : weight / 1000; // Ensure weight is not negative, convert grams to kilograms
+
+    let query = { binId: bin._id, location, health, oldLevel: bin.status.level, newLevel: level, battery, severity, type: 'log', source: 'sensor', weight };
     query = appendFilter(query, message, 'message', message);
 
     await binLogModel.create(query);
@@ -109,6 +111,7 @@ async function handleDeviceLog(mac, { deviceKey, location, health, level, batter
     bin.status.health = health;
     bin.status.level = level;
     bin.status.battery = battery;
+    bin.status.weight = weight;
     bin.location.coordinates = location;
     if (message) {
         bin.maintenance.notes = `Last updated via MQTT on ${new Date().toLocaleString()}, message: ${message}`;

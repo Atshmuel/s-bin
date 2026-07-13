@@ -22,6 +22,10 @@
     "location":"Location",
     "coordinates":"Coordinates",
     "zoom":"Zoom",
+    "units":{
+        "kg":"kg",
+        "km":"km"
+    },
 "backToBin":"Back to Bin",
 "user":"User",
 "your":"Your",
@@ -667,6 +671,7 @@
       "binId":"Bin ID",
       "maintenance":"Maintenance",
       "healthStatus":"Health Status",
+      "weight":"Weight",
       "timestamp":"Timestamp",
       "logSource":"Log Source",
       "errorCard":"Could not load log data.",

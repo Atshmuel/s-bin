@@ -45,7 +45,7 @@ function BinLog() {
             </div>
             <div ref={mapContainerRef} className="rounded-2xl overflow-hidden h-[450px]">
                 <MapComponent zoom={14} center={bin.location.coordinates} legend={true} >
-                    <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status.level)} popup={<BinPopupCard bin={bin} />} />
+                    <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status)} popup={<BinPopupCard bin={bin} />} />
                 </MapComponent>
             </div>
         </div>

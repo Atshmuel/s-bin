@@ -29,7 +29,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
             <MapComponent center={locationFromUrl ? locationFromUrl : center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} isLoading={isLoadingBins} >
                 {binsToUse?.map((bin) => (
-                    <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status.level)} popup={<BinPopupCard bin={bin} />} />
+                    <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status)} popup={<BinPopupCard bin={bin} />} />
                 ))}
                 <Polyline positions={routeCoordinates}
                     pathOptions={{

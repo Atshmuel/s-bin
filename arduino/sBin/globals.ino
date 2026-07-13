@@ -39,3 +39,7 @@ int fillLevel = 0;
 int binDepth = 0;
 float battery = 100;
 String health = "good";
+
+//Weight
+float currentWeight = 0.0;
+float lastReportedWeight = 0.0; // Variable to store the last reported weight

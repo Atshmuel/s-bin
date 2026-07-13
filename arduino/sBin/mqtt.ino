@@ -100,12 +100,13 @@ void handleResetCommand() {
   ESP.restart();
 }
 
-void publishLog(int level, int battery, String health) {
+void publishLog(int level, int battery, String health,float weight) {
   StaticJsonDocument<256> doc;
   doc["deviceKey"] = deviceKey;
   doc["level"] = level;
   doc["battery"] = battery;
   doc["health"] = health;
+  doc["weight"] = weight;
   doc["location"][0] = lat;
   doc["location"][1] = lng;
 

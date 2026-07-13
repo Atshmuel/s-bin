@@ -20,6 +20,7 @@ export const binLogSchema = new mongoose.Schema({
     oldLevel: Number,
     newLevel: { type: Number, required: true },
     battery: { type: Number, required: true },
+    weight: { type: Number, required: true },
     health: {
         type: String,
         enum: ["good", "warning", "critical"],

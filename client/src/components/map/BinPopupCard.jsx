@@ -21,6 +21,7 @@ function BinPopupCard({ bin }) {
             </div>
             <div className={`flex flex-col ${isRight ? "" : "text-right"}`}>
                 <p className="!my-1">{t("fillLevel")}: <span className={`font-semibold`}>{bin.status.level}%</span></p>
+                <p className="!my-1">{t("components.logCard.weight")} : <span className={`font-semibold`}>{typeof bin.status.weight === 'number' ? `${bin.status.weight.toFixed(1)} ` : '0 '} {t("units.kg")}</span></p>
                 <p className="!my-1">{t("lastUpdated")}: {new Date(bin.status.updatedAt).toLocaleString(isRight ? "en-US" : "he-IL")}</p>
                 <Link to={`/bins/${bin._id}`} className="w-fit self-end underline !text-primary font-extrabold">{t("viewBin")}</Link>
             </div>

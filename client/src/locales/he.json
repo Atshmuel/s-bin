@@ -22,6 +22,10 @@
     "location":"מיקום",
     "coordinates":"קואורדינטות",
     "zoom":"זום",
+        "units":{
+        "kg":"ק״ג",
+        "km":"ק״מ"
+    },
 "backToBin":"חזרה לפח",
 "user":"משתמש",
 "your":"שלך",
@@ -669,6 +673,7 @@
       "binId":"מזהה פח",
       "maintenance":"תחזוקה",
       "healthStatus":"מצב בריאות",
+      "weight":"משקל",
       "timestamp":"חותמת זמן",
       "logSource":"מקור התיעוד",
       "errorCard":"לא ניתן לטעון את נתוני התיעוד.",
