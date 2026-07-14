@@ -126,6 +126,14 @@ function BinsList() {
             }
         },
         {
+            header: t('components.logCard.weight'),
+            accessorKey: 'Weight',
+            cell: ({ row }) => {
+                const weight = row.original.status?.weight;
+                return typeof weight === 'number' ? `${weight}` : '-';
+            },
+        },
+        {
             header: t('pages.binsList.columns.healthStatus'),
             accessorKey: 'Health',
             cell: ({ row }) => {

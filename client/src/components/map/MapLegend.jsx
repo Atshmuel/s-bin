@@ -27,6 +27,17 @@ function MapLegend({ legendForm = false }) {
     const [searchParams, setSearchParams] = useSearchParams()
     let { radius, minLevel, maxLevel, health, route, type, byFoot } = Object.fromEntries([...searchParams]);
 
+    const parseBooleanParam = (value) => {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+            const normalizedValue = value.trim().toLowerCase();
+            if (normalizedValue === 'true') return true;
+            if (normalizedValue === 'false') return false;
+        }
+        return false;
+    };
+
+    const parsedByFoot = parseBooleanParam(byFoot);
 
     const [isFilterd, setIsFiltered] = useState((radius || minLevel || maxLevel || health) && !route ? true : false);
     const [isRouted, setIsRouted] = useState(route ? true : false);
@@ -45,7 +56,7 @@ function MapLegend({ legendForm = false }) {
             level: minLevel && maxLevel ? [minLevel, maxLevel] : [0, 100],
             health: health ?? 'all',
             type: type ?? 'collection',
-            byFoot: byFoot ?? false
+            byFoot: parsedByFoot
         }
     })
 
@@ -109,8 +120,8 @@ function MapLegend({ legendForm = false }) {
             : mapp.getCenter().lat + ',' + mapp.getCenter().lng
         const radius = +data.radius[0];
         const type = data.type;
-        const byFoot = data.byFoot;
-        setSearchParams({ coordinates, radius, type, byFoot })
+        const byFoot = Boolean(data.byFoot);
+        setSearchParams({ coordinates, radius, type, byFoot: byFoot ? 'true' : 'false' })
 
         const response = await getBestRoute({ coordinates, radius, type, byFoot })
         setIsLoading(false);

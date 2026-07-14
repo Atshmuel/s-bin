@@ -4,7 +4,7 @@
 
 //should send logs every 1 minute or if battery is low or fill level is high
 unsigned long lastLogTime = 0;
-const unsigned long LOG_INTERVAL = 5000; // 10 minutes in milliseconds
+const unsigned long LOG_INTERVAL = 5000; // 5 sec in milliseconds
 const unsigned long URGENT_LOG_INTERVAL = 1000;  // 1 minute in milliseconds
 const unsigned long CRITICAL_LOG_INTERVAL = 9999000; // 1 minute in milliseconds
 const unsigned long REGISTER_INTERVAL = 10000; // 10 seconds
@@ -108,7 +108,7 @@ void loop() {
         health = "good";
       }
     // Normal operation: send logs periodically
-    if (millis() - lastLogTime > LOG_INTERVAL || (health == "critical" && millis() - lastLogTime > CRITICAL_LOG_INTERVAL) ||(fillLevel >= 80 && millis() - lastLogTime > URGENT_LOG_INTERVAL)) {
+    if (millis() - lastLogTime > LOG_INTERVAL) {
       Serial.println("Sending periodic log...");
      
       publishLog(fillLevel, battery, health,currentWeight);

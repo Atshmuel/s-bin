@@ -155,6 +155,18 @@ export async function getRouteBins(req, res) {
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
 
+    const parseBooleanParam = (value) => {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+            const normalizedValue = value.trim().toLowerCase();
+            if (normalizedValue === 'true') return true;
+            if (normalizedValue === 'false') return false;
+        }
+        return false;
+    };
+
+    const useWalkingRoute = parseBooleanParam(byFoot);
+
     let query = {};
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, type === 'maintenance', 'status.health', { $in: ['critical'] })
@@ -195,7 +207,7 @@ export async function getRouteBins(req, res) {
             vehicles: [
                 {
                     id: 1,
-                    profile: byFoot ? 'foot-walking' : type === 'collection' ? 'driving-hgv' : 'driving-car',
+                    profile: useWalkingRoute ? 'foot-walking' : type === 'collection' ? 'driving-hgv' : 'driving-car',
                     start: [coordinates[1], coordinates[0]],
                 }],
             options: {

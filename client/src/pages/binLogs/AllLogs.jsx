@@ -76,6 +76,14 @@ function AllLogs() {
             }
         },
         {
+            header: t('components.logCard.weight'),
+            id: 'Weight',
+            accessorKey: 'weight',
+            cell: ({ row }) => {
+                return row.original.weight ?? '-'
+            }
+        },
+        {
             header: t('pages.logList.columns.batteryLevel'),
             accessorKey: 'Battery',
             cell: ({ row }) => {

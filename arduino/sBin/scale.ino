@@ -8,7 +8,7 @@ HX711_ADC LoadCell(HX711_dout, HX711_sck);
 
 //Factor for kilogram conversion.
 const float CALIBRATION_FACTOR = 1.0; 
-const float WEIGHT_THRESHOLD = 10.0; 
+const float WEIGHT_THRESHOLD = 4.0; 
 
 
 unsigned long t = 0;
@@ -53,11 +53,8 @@ void scaleLoop() {
     if (millis() > t + serialPrintInterval) {
       currentWeight = LoadCell.getData();
       
-      // 1. בדיקה האם יש עלייה של מעל 10 ק"ג מהמשקל האחרון שדווח
+      // 1. בדיקה האם יש עלייה של מעל 4 ק"ג מהמשקל האחרון שדווח
       if (currentWeight - lastReportedWeight >= WEIGHT_THRESHOLD) {
-        Serial.print("Update: Weight increased! Current Weight: ");
-        Serial.println(currentWeight);
-        
         // מעדכנים את נקודת הייחוס למשקל החדש
         lastReportedWeight = currentWeight; 
       }
@@ -65,9 +62,6 @@ void scaleLoop() {
       // אם המשקל צנח ביותר מ-2 קילו, נאפס את נקודת הייחוס שלנו כלפי מטה
       // כדי שהמערכת תהיה מוכנה לזהות את 10 הק"ג הבאים שייזרקו פנימה.
       else if (currentWeight < lastReportedWeight - 2.0) {
-        Serial.print("Notice: Weight dropped. New baseline: ");
-        Serial.println(currentWeight);
-        
         lastReportedWeight = currentWeight;
       }
       

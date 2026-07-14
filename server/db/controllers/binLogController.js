@@ -52,7 +52,7 @@ export async function getBinLogs(req, res) {
         return res.status(403).json({ message: 'This bin is not owned by you' })
 
     try {
-        const logs = await binLogModel.find(query, { __v: 0, updatedAt: 0, binId: 0 });
+        const logs = await binLogModel.find(query, { __v: 0, updatedAt: 0, binId: 0 }).sort({ createdAt: -1 });
         res.status(201).json({ logs },)
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
@@ -101,6 +101,10 @@ export async function getAllLogs(req, res) {
         $project: {
             bin: 0
         },
+    });
+
+    pipeline.push({
+        $sort: { createdAt: -1 }
     });
 
     try {

@@ -58,6 +58,13 @@ function BinDetails() {
             accessorKey: 'newLevel',
         },
         {
+            header: t("components.logCard.weight"),
+            accessorKey: 'weight',
+            cell: ({ row }) => {
+                return row.original.weight ?? '-'
+            }
+        },
+        {
             header: t("pages.binDetails.logsTable.columns.healthStatus"),
             accessorKey: 'health',
             cell: ({ row }) => {
