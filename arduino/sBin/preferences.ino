@@ -54,8 +54,8 @@ void preferencesSetup() {
   Serial.println("Owner ID: " + ownerId);
   Serial.println("Device Key: " + deviceKey);
   Serial.println("Bin Depth: " + String(binDepth));
-  Serial.println("Latitude: " + String(lat, 6));
-  Serial.println("Longitude: " +  String(lng, 6));
+  Serial.println("Latitude: " + String(lat));
+  Serial.println("Longitude: " +  String(lng));
   if(ssid != "" && ownerId != ""){
     if (deviceKey != "") {
       if (binDepth == 0) {
