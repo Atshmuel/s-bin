@@ -5,8 +5,14 @@ services:
     restart: always
     env_file:
       - ./server/.env
-    ports:
-      - "3002:3002"
+    environment:
+      # Required for `secure` cookies. Never set in .env, so all auth cookies
+      # were being issued without the Secure flag in production.
+      - NODE_ENV=production
+    # Reachable only over the internal compose network, as `sbin-server:3002`.
+    # Publishing it exposed the API over plain HTTP, bypassing nginx TLS.
+    expose:
+      - "3002"
 
   client:
     image: shmuela/sbin-client:latest

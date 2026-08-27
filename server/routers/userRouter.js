@@ -3,23 +3,24 @@ import { authRole, authToken, resetToken } from '../middlewares/authMiddleware.j
 import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, forgotPassword, verifyRecoveryCode, updateUserForgotenPassword, verifyNewUser, updateUserNameOrEmail, updateUserPassword, updateUserRole, updateUserStatus, deleteAccount, createUserAsAdmin, getUserManagers, getUserManagersByOrgId, updateUserManagerAndOrg } from "../db/controllers/userController.js";
 import { validateBodyFields, validateParamExist } from "../middlewares/validationMiddleware.js";
 import { getSettingsByUserId, updateUserSettings } from "../db/controllers/userSettingsController.js";
+import { authLimiter } from "../middlewares/rateLimiters.js";
 export const userRouter = Router();
 export const userSettingsRouter = Router({ mergeParams: true });
 userRouter.use('/:id/settings', authToken, validateParamExist(), userSettingsRouter);
 
 
 //REGISTER
-userRouter.post('/register', validateBodyFields(['email', 'password', 'name']), createUser)
-userRouter.get('/register/verify/:token', validateParamExist('token', false), verifyNewUser)
+userRouter.post('/register', authLimiter, validateBodyFields(['email', 'password', 'name']), createUser)
+userRouter.get('/register/verify/:token', authLimiter, validateParamExist('token', false), verifyNewUser)
 
 //LOGIN AND LOGOUT
-userRouter.post('/login', validateBodyFields(['email', 'password']), loginUser)
+userRouter.post('/login', authLimiter, validateBodyFields(['email', 'password']), loginUser)
 userRouter.post('/logout', authToken, logoutUser)
 
 //FORGET
-userRouter.post('/forgot', validateBodyFields(['email']), forgotPassword)
-userRouter.post('/verify-recovery-code', validateBodyFields(['code', 'email']), verifyRecoveryCode)
-userRouter.post('/reset', resetToken, validateBodyFields(['password']), updateUserForgotenPassword)
+userRouter.post('/forgot', authLimiter, validateBodyFields(['email']), forgotPassword)
+userRouter.post('/verify-recovery-code', authLimiter, validateBodyFields(['code', 'email']), verifyRecoveryCode)
+userRouter.post('/reset', authLimiter, resetToken, validateBodyFields(['password']), updateUserForgotenPassword)
 
 
 

@@ -7,6 +7,23 @@ import { v4 as uuidv4 } from 'uuid'
 import { ROLE_LEVEL } from '../../utils/constants.js'
 import mongoose from 'mongoose'
 
+/** Failed OTP guesses allowed before the code is discarded entirely. */
+const MAX_OTP_ATTEMPTS = 5
+
+/**
+ * Projection for every user document that leaves the API.
+ *
+ * `recoveryCode` and `accountVerification` MUST stay excluded: they hold the
+ * live password-reset OTP and the account-activation token. Returning them
+ * turns any user read into an account-takeover primitive.
+ */
+const SAFE_USER_PROJECTION = {
+    passwordHash: 0,
+    __v: 0,
+    recoveryCode: 0,
+    accountVerification: 0,
+}
+
 
 export async function createUser(req, res) {
     const { email, password, name } = req.body
@@ -256,19 +273,44 @@ export async function forgotPassword(req, res) {
 
 export async function verifyRecoveryCode(req, res) {
     const { code, email } = req.body
+    // Uniform message for every failure mode: a wrong code, an expired code and
+    // an unknown address must be indistinguishable, otherwise this endpoint
+    // doubles as an account-enumeration oracle.
+    const INVALID = 'Invalid or expired code'
+
     try {
         if (!code) return res.status(400).json({ message: 'Code is mandatory' })
         const { error } = emailSchema.validate(email ?? '')
-        if (error) throw new Error(error.message);
+        if (error) return res.status(400).json({ message: error.message });
 
         const lowerCaseEmail = email.toLowerCase()
         const user = await userModel.findOne({ email: lowerCaseEmail })
 
-        if (!user) return res.status(400).json({ message: `Could not find email ${email}, Please verify you email` })
+        if (!user) return res.status(400).json({ message: INVALID })
 
-        if (user.recoveryCode?.otp !== code) return res.status(400).json({ message: 'Wrong OTP code provided' })
+        const recovery = user.recoveryCode
+        // Expiry was previously never checked here — it was only enforced by the
+        // cleanupOTP cron every 5 minutes, so a 5-minute code stayed valid for 10.
+        if (!recovery?.otp || !recovery?.expiresAt || recovery.expiresAt <= new Date()) {
+            return res.status(400).json({ message: INVALID })
+        }
 
-        const resetPasswordToken = generateToken({ email, reset: true }, '5m')
+        if ((recovery.attempts ?? 0) >= MAX_OTP_ATTEMPTS) {
+            await userModel.updateOne({ _id: user._id }, { $unset: { recoveryCode: "" } })
+            return res.status(429).json({ message: 'Too many invalid attempts, please request a new code' })
+        }
+
+        if (recovery.otp !== code) {
+            await userModel.updateOne({ _id: user._id }, { $inc: { 'recoveryCode.attempts': 1 } })
+            return res.status(400).json({ message: INVALID })
+        }
+
+        // Burn the code on success so it is strictly single-use.
+        await userModel.updateOne({ _id: user._id }, { $unset: { recoveryCode: "" } })
+
+        // Must carry the normalised address: emails are stored lowercased, and
+        // updateUserForgotenPassword looks the user up by this exact value.
+        const resetPasswordToken = generateToken({ email: lowerCaseEmail, reset: true }, '5m')
         res.cookie('resetToken', resetPasswordToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -278,7 +320,8 @@ export async function verifyRecoveryCode(req, res) {
 
         res.status(200).json({ message: 'Valid OTP' })
     } catch (error) {
-        res.status(500).json({ message: 'Faild to verify the OTP' })
+        console.error('Failed to verify the OTP:', error);
+        res.status(500).json({ message: 'Failed to verify the OTP' })
     }
 }
 
@@ -298,8 +341,10 @@ export async function updateUserForgotenPassword(req, res) {
             $inc: { tokenVersion: 1 },
             $unset: { recoveryCode: "" }
         }
+        // Was `if (!update)` — the request body object, which is always truthy,
+        // so a reset that matched no user silently reported success.
         const updated = await userModel.findOneAndUpdate({ email }, update)
-        if (!update) throw new Error("Faild update the user's password");
+        if (!updated) throw new Error("Failed to update the user's password");
 
         res.cookie('resetToken', '', {
             httpOnly: true,
@@ -329,7 +374,7 @@ export async function updateUserNameOrEmail(req, res) {
     if (email !== null) update.email = email.toLowerCase();
 
     try {
-        const updatedUser = await userModel.findOneAndUpdate(filter, { $set: update }, { new: true }).select('-passwordHash -__v -accountVerification -role -email')
+        const updatedUser = await userModel.findOneAndUpdate(filter, { $set: update }, { new: true }).select('-passwordHash -__v -accountVerification -recoveryCode -role -email')
         if (!updatedUser)
             return res.status(403).json({ message: "Not allowed to update this user" });
 
@@ -390,7 +435,7 @@ export async function updateUserRole(req, res) {
             $and: [
                 { _id: id }, { role: { $ne: process.env.ROLE_OWNER } }
             ]
-        }, { $set: { role }, $inc: { tokenVersion: 1 } }, { new: true }).select('-passwordHash -__v -accountVerification')
+        }, { $set: { role }, $inc: { tokenVersion: 1 } }, { new: true }).select('-passwordHash -__v -accountVerification -recoveryCode')
         if (!updatedUser)
             return res.status(403).json({ message: "Not allowed to update this user's role" });
 
@@ -422,7 +467,7 @@ export async function updateUserStatus(req, res) {
 
     try {
         const updatedUser = await userModel.findOneAndUpdate(
-            query, { $set: { status } }, { new: true }).select('-passwordHash -__v -accountVerification')
+            query, { $set: { status } }, { new: true }).select('-passwordHash -__v -accountVerification -recoveryCode')
         if (!updatedUser)
             return res.status(403).json({ message: "Not allowed to update this user" });
 
@@ -448,15 +493,24 @@ export async function updateUserManagerAndOrg(req, res) {
 
 export async function getUser(req, res) {
     const { id } = req.params
-    const { role, id: CurrUserId } = req.user
+    const { role, id: currUserId, org } = req.user
 
-    let query = { _id: new mongoose.Types.ObjectId(ROLE_LEVEL[role] >= ROLE_LEVEL['admin'] ? id : id) }
+    const query = { _id: new mongoose.Types.ObjectId(id) }
+
+    // Previously `ROLE_LEVEL[role] >= ROLE_LEVEL['admin'] ? id : id` — both
+    // branches were the same id, so there was no scoping at all and any
+    // authenticated user could read any user in any organization.
+    const isSelf = id === currUserId
+    if (role !== process.env.ROLE_OWNER && !isSelf) {
+        if (!org) return res.status(403).json({ message: "Forbidden" });
+        query.org = new mongoose.Types.ObjectId(org)
+    }
 
     try {
-        const userData = await userModel.findOne(query, { passwordHash: 0, __v: 0 })
+        const userData = await userModel.findOne(query, SAFE_USER_PROJECTION)
 
         if (!userData) return res.status(404).json({ message: "User not found." });
-        if (userData && ROLE_LEVEL[role] < ROLE_LEVEL[userData.role]) {
+        if (!isSelf && ROLE_LEVEL[role] < ROLE_LEVEL[userData.role]) {
             return res.status(403).json({ message: "Forbidden" });
         }
         res.status(200).json({ userData })
@@ -471,7 +525,7 @@ export async function getAllUsers(req, res) {
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'org', new mongoose.Types.ObjectId(org))
 
     try {
-        const users = await userModel.find(query, { passwordHash: 0, __v: 0 })
+        const users = await userModel.find(query, SAFE_USER_PROJECTION)
         res.status(200).json({ users: users || [] })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })

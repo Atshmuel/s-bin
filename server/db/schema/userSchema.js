@@ -14,7 +14,10 @@ export const userSchema = new mongoose.Schema({
             otp: String,
             expiresAt: Date,
             resetToken: String,
-            tokenExpiresAt: Date
+            tokenExpiresAt: Date,
+            // Failed verification attempts. Capped in verifyRecoveryCode so that
+            // rotating IPs cannot brute-force the 6-digit code.
+            attempts: { type: Number, default: 0 }
         },
         required: false,
         default: undefined
