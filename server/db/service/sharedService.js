@@ -207,7 +207,10 @@ export async function getAllBins(req, res, next) {
 
 export async function getAlmostFullBins(req, res, next) {
     const { org: ownerId, role } = req.user;
-    let filter = { "status.level": { $gte: 80 } }
+    let filter = {
+        "status.level": { $gte: 80 },
+        "status.levelValid": { $ne: false }
+    }
 
     filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
@@ -228,6 +231,7 @@ export async function getAvgFillLevel(req, res, next) {
     if (role !== process.env.ROLE_OWNER) {
         aggregation.push({ $match: { ownerId: new mongoose.Types.ObjectId(ownerId) } })
     }
+    aggregation.push({ $match: { "status.levelValid": { $ne: false } } })
     aggregation.push({ $group: { _id: null, avgLevel: { $avg: "$status.level" } } })
     try {
         const avg = await binModel.aggregate(aggregation)

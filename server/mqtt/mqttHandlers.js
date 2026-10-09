@@ -3,6 +3,7 @@ import { appendFilter, checkPayloadFields, generateRandomToken } from '../utils/
 import { mqttClient } from './mqttClient.js'
 import { BIN_REGISTER_TOPIC, BIN_ACK_TOPIC, BIN_ACK_COMMAND } from "./mqttTopics.js";
 import { binLogModel, binModel } from "../db/models/models.js";
+import { getNextReportSchedule } from "../utils/deviceSchedule.js";
 
 export async function handleMqttMessage(topic, payload) {
     if (topic === BIN_REGISTER_TOPIC) {
@@ -49,10 +50,16 @@ async function handleRegistration({ mac, orgId, location, battery }) {
             return;
         }
 
-        if (!Array.isArray(location) || location.length !== 2 || typeof battery !== 'number' || battery < 0 || battery > 100) {
+        if (!Array.isArray(location) || location.length !== 2 ||
+            typeof location[0] !== "number" || !Number.isFinite(location[0]) ||
+            typeof location[1] !== "number" || !Number.isFinite(location[1]) ||
+            location[0] < -90 || location[0] > 90 ||
+            location[1] < -180 || location[1] > 180 ||
+            typeof battery !== 'number' || battery < 0 || battery > 100) {
             console.log("Invalid location or battery data");
             return;
         }
+        const { timeZone, nextWakeEpoch } = getNextReportSchedule(location);
 
         const deviceKey = generateRandomToken();
         // 0,5 to get first 5 chars for example: 1D:44:8E:A7:32:5D -> 1D:44 date used for uniqueness validity
@@ -67,6 +74,7 @@ async function handleRegistration({ mac, orgId, location, battery }) {
                 type: "Point",
                 coordinates: location || [0, 0],
             },
+            timezone: timeZone,
             status: {
                 battery: battery
             }
@@ -75,44 +83,63 @@ async function handleRegistration({ mac, orgId, location, battery }) {
         console.log("Registered new bin via MQTT:", newBin);
         mqttClient.publish(
             `${BIN_ACK_TOPIC}/${mac}`,
-            JSON.stringify({ status: "registered", deviceKey }) // send deviceKey back to device for future authentication
+            JSON.stringify({ status: "registered", deviceKey, timeZone, nextWakeEpoch })
         );
     } catch (error) {
         console.error("Error registering bin via MQTT:", error);
     }
 }
 
-async function handleDeviceLog(mac, { deviceKey, location, health, level, battery, weight }) {
-    if (!checkPayloadFields({ location, health, level, battery, weight })) return;
+async function handleDeviceLog(mac, { deviceKey, location, health, level, sensorOk, battery, weight, message: healthMessage }) {
+    if (!checkPayloadFields({ location, health, level, sensorOk, battery, weight, message: healthMessage })) return;
 
     const bin = await getBinByMacAndKeyShared(mac, deviceKey);
     if (!bin) return;
+    const { timeZone, nextWakeEpoch } = getNextReportSchedule(location);
 
-    let severity = 'info';
-    let message = null;
-
-    if (health === 'warning') {
-        severity = 'warning';
-        message = 'Check soon and schedule maintenance.';
-    }
-    if (health === 'critical') {
-        severity = 'critical';
-        message = 'Immediate attention required, notify maintenance team.';
-    };
+    const severity = level >= 80 || battery <= 20 || health === 'critical'
+        ? 'critical'
+        : level >= 50 || battery <= 50 || health === 'warning'
+            ? 'warning'
+            : 'info';
+    const messages = [];
+    if (sensorOk !== false && level >= 80) messages.push('Bin fill level is critical.');
+    else if (sensorOk !== false && level >= 50) messages.push('Bin fill level requires attention.');
+    if (battery <= 20) messages.push('Battery level is critical.');
+    else if (battery <= 50) messages.push('Battery level is low.');
+    if (healthMessage) messages.push(healthMessage);
+    const message = messages.length > 0 ? messages.join(' ') : null;
 
     weight = weight <= 0 ? 0 : weight / 1000; // Ensure weight is not negative, convert grams to kilograms
 
-    let query = { binId: bin._id, location, health, oldLevel: bin.status.level, newLevel: level, battery, severity, type: 'log', source: 'sensor', weight };
+    const levelIsValid = sensorOk !== false;
+    let query = {
+        binId: bin._id,
+        location,
+        health,
+        oldLevel: bin.status.level,
+        newLevel: levelIsValid ? level : null,
+        battery,
+        severity,
+        type: 'log',
+        source: 'sensor',
+        weight
+    };
     query = appendFilter(query, message, 'message', message);
 
     await binLogModel.create(query);
 
     bin.status.updatedAt = new Date();
     bin.status.health = health;
-    bin.status.level = level;
+    bin.status.healthMessage = healthMessage || "";
+    bin.status.levelValid = levelIsValid;
+    if (levelIsValid) {
+        bin.status.level = level;
+    }
     bin.status.battery = battery;
     bin.status.weight = weight;
     bin.location.coordinates = location;
+    bin.timezone = timeZone;
     if (message) {
         bin.maintenance.notes = `Last updated via MQTT on ${new Date().toLocaleString()}, message: ${message}`;
     }
@@ -121,7 +148,7 @@ async function handleDeviceLog(mac, { deviceKey, location, health, level, batter
     console.log("Updated log for", mac);
     mqttClient.publish(
         `${BIN_ACK_TOPIC}/${mac}`,
-        JSON.stringify({ status: "Log updated for ", mac })
+        JSON.stringify({ status: "Log updated", mac, timeZone, nextWakeEpoch })
     );
 }
 
@@ -143,4 +170,3 @@ export function removeBinConfig(macId) {
         reason: "removed_by_user"
     }));
 }
-

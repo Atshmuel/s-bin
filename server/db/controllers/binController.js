@@ -98,7 +98,10 @@ export async function getBinsByStatus(req, res) {
 
     let query = {}
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
-    query = appendFilter(query, level && typeof level === 'number', 'status.level', { $gt: level })
+    if (level && typeof level === 'number') {
+        query['status.level'] = { $gt: level }
+        query['status.levelValid'] = { $ne: false }
+    }
     query = appendFilter(query, health && Array.isArray(health), 'status.health', { $in: health })
 
     try {
@@ -124,6 +127,7 @@ export async function getBinsInUserRadius(req, res) {
             $gte: minLevel !== undefined ? Number(minLevel) : 0,
             $lte: maxLevel !== undefined ? Number(maxLevel) : 100
         };
+        query['status.levelValid'] = { $ne: false }
     }
 
     try {
@@ -170,7 +174,10 @@ export async function getRouteBins(req, res) {
     let query = {};
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, type === 'maintenance', 'status.health', { $in: ['critical'] })
-    query = appendFilter(query, type === 'collection', 'status.level', { $gte: 70 })
+    if (type === 'collection') {
+        query['status.level'] = { $gte: 70 }
+        query['status.levelValid'] = { $ne: false }
+    }
 
 
     try {

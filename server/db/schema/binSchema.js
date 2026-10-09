@@ -31,6 +31,8 @@ export const binSchema = new mongoose.Schema({
             enum: ["good", "warning", "critical"],
             default: "good"
         },
+        healthMessage: { type: String, default: "" },
+        levelValid: { type: Boolean, default: true },
         level: { type: Number, default: 0, required: true },
         weight: { type: Number, default: 0, required: true },
         battery: { type: Number, default: 0, required: true },
@@ -40,6 +42,10 @@ export const binSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Organization",
         required: true
+    },
+    timezone: {
+        type: String,
+        default: null,
     },
     maintenance: {
         lastServiceAt: { type: Date, default: Date.now },

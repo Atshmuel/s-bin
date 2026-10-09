@@ -4,22 +4,10 @@ import { binModel, binLogModel } from "../models/models.js";
 const randomInt = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
 
-const getHealthFromLevel = (level) => {
-    if (level < 60) return "good";
-    if (level < 75) return "warning";
-    return "critical";
-};
-
-const getSeverityFromHealth = (health) => {
-    if (health === "critical") return "critical";
-    if (health === "warning") return "warning";
+const getSeverity = (level, battery, health) => {
+    if (level >= 80 || battery <= 20 || health === "critical") return "critical";
+    if (level >= 50 || battery <= 50 || health === "warning") return "warning";
     return "info";
-};
-
-const getMessageFromHealth = (health) => {
-    if (health === "critical") return "Immediate attention required, notify maintenance team.";
-    if (health === "warning") return "Check soon and schedule maintenance.";
-    return null;
 };
 
 async function generateLogsForAllBins() {
@@ -35,10 +23,17 @@ async function generateLogsForAllBins() {
 
         for (const bin of bins) {
             const level = randomInt(0, 100);
-            const health = getHealthFromLevel(level);
-            const severity = getSeverityFromHealth(health);
-            const message = getMessageFromHealth(health);
             const battery = Math.max(0, bin.status.battery - randomInt(0, 2));
+            const health = bin.status.health || "good";
+            const severity = getSeverity(level, battery, health);
+            const messageParts = [];
+            if (level >= 80) messageParts.push("Bin fill level is critical.");
+            else if (level >= 50) messageParts.push("Bin fill level requires attention.");
+            if (battery <= 20) messageParts.push("Battery level is critical.");
+            else if (battery <= 50) messageParts.push("Battery level is low.");
+            if (health === "critical") messageParts.push("Device health is critical.");
+            else if (health === "warning") messageParts.push("Device health requires attention.");
+            const message = messageParts.length > 0 ? messageParts.join(" ") : null;
 
             if (battery === 0) {
                 bin.status.battery = 100
