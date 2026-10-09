@@ -185,7 +185,7 @@ void loop() {
     }
 
     Serial.println(reportSent ? "✅ Reporting cycle completed." : "⚠️ Reporting cycle ended without a telemetry report.");
-    constexpr unsigned long INSTRUCTION_CHECK_TIMEOUT_MS = 10000UL;
+    constexpr unsigned long INSTRUCTION_CHECK_TIMEOUT_MS = 5000UL;
     if (deviceKey.length() > 0) {
         processPendingInstructions(INSTRUCTION_CHECK_TIMEOUT_MS);
     }
