@@ -4,6 +4,7 @@ import { Activity, CalendarClock, GaugeCircle, InfoIcon, Trash2 } from "lucide-r
 import EmptyCard from "@/components/EmptyCard"
 import { useTranslation } from "react-i18next"
 import { useAppSide } from "@/contexts/AppSideProvider"
+import { formatSleepDuration } from "@/utils/helpers"
 
 function LogCard({ log, isLoading = true, ...props }) {
     const { t } = useTranslation()
@@ -75,7 +76,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                             {log.sleepDurationSeconds != null && (
                                 <div className="flex justify-between">
                                     <span className="font-medium">{t("deepSleepDuration")}:</span>
-                                    <span>{log.sleepDurationSeconds / 60} {t("units.minutes")}</span>
+                                    <span>{formatSleepDuration(log.sleepDurationSeconds, t)}</span>
                                 </div>
                             )}
 

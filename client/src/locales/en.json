@@ -26,7 +26,8 @@
         "kg":"kg",
         "km":"km",
         "seconds":"seconds",
-        "minutes":"min"
+        "minutes":"min",
+        "hours":"h"
     },
     "deepSleepDuration":"Deep Sleep duration",
 "backToBin":"Back to Bin",

@@ -26,7 +26,8 @@
         "kg":"ק״ג",
         "km":"ק״מ",
         "seconds":"שניות",
-        "minutes":"דק׳"
+        "minutes":"דק׳",
+        "hours":"שעות"
     },
  "deepSleepDuration":"משך השינה העמוקה",
 "backToBin":"חזרה לפח",

@@ -19,6 +19,7 @@ import { useAppSide } from "@/contexts/AppSideProvider"
 import { Textarea } from "../ui/textarea"
 import { useUpdateBinMaintenance, useUpdateBinName } from "@/hooks/bins/useUpdateBin"
 import { useMe } from "@/hooks/users/auth/useMe";
+import { formatSleepDuration } from "@/utils/helpers";
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
     const [deleteInput, setDeleteInput] = useState('')
@@ -175,7 +176,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 <div className="flex flex-row justify-between">
                                     <span className="font-medium">{t('deepSleepDuration')}:</span>
                                     <span>{bin.status.deepSleepSeconds
-                                        ? `${bin.status.deepSleepSeconds / 60} ${t('units.minutes')}`
+                                        ? formatSleepDuration(bin.status.deepSleepSeconds, t)
                                         : '-'}</span>
                                 </div>
 
