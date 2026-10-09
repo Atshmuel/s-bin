@@ -4,6 +4,7 @@ namespace {
 constexpr time_t MIN_VALID_EPOCH = 1735689600;
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 constexpr time_t GPS_REFRESH_INTERVAL_SECONDS = 31LL * 24 * 60 * 60;
+constexpr uint32_t FALLBACK_SLEEP_SECONDS = 60;
 }
 
 bool isSystemClockValid() {
@@ -101,19 +102,38 @@ void saveLastKnownLocation() {
 }
 
 void enterDeepSleepUntilNextReport() {
-    if (!isSystemClockValid() || nextWakeEpoch <= static_cast<uint64_t>(time(nullptr))) {
-        Serial.println("❌ No valid future server wake time; keeping device awake.");
-        return;
+    const bool clockValid = isSystemClockValid();
+    const uint64_t now = clockValid ? static_cast<uint64_t>(time(nullptr)) : 0;
+    uint64_t wakeEpoch = nextWakeEpoch;
+    uint64_t sleepSeconds = 0;
+
+    if (clockValid && wakeEpoch > now) {
+        sleepSeconds = wakeEpoch - now;
+    } else {
+        sleepSeconds = scheduledSleepDurationSeconds > 0
+            ? scheduledSleepDurationSeconds
+            : FALLBACK_SLEEP_SECONDS;
+        if (clockValid) {
+            wakeEpoch = now + sleepSeconds;
+            nextWakeEpoch = wakeEpoch;
+            preferences.begin("credentials", false);
+            preferences.putULong64("nextWake", nextWakeEpoch);
+            preferences.end();
+        }
+        Serial.printf(
+            "⚠️ No future server wake time; using local %llu-second sleep before retrying.\n",
+            static_cast<unsigned long long>(sleepSeconds)
+        );
     }
 
-    const uint64_t sleepSeconds = nextWakeEpoch - static_cast<uint64_t>(time(nullptr));
     if (Serial) {
         Serial.printf(
-            "🛠️ USB Serial Monitor is connected; waiting %llu seconds until the next server-scheduled report.\n",
+            "🛠️ USB Serial Monitor is connected; waiting %llu seconds until the next report attempt.\n",
             static_cast<unsigned long long>(sleepSeconds)
         );
         Serial.flush();
-        while (static_cast<uint64_t>(time(nullptr)) < nextWakeEpoch) {
+        const unsigned long waitStartedAt = millis();
+        while (millis() - waitStartedAt < sleepSeconds * 1000ULL) {
             delay(1000);
         }
         return;
@@ -124,7 +144,7 @@ void enterDeepSleepUntilNextReport() {
     }
 
     Serial.printf(
-        "💤 Deep sleep until server-scheduled report in %llu seconds.\n",
+        "💤 Deep sleep for %llu seconds before the next report attempt.\n",
         static_cast<unsigned long long>(sleepSeconds)
     );
 
