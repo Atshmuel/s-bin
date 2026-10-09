@@ -13,7 +13,7 @@ export function getColor(levelOrStatus, type = 'fill') {
         if (statusObj && typeof statusObj.weight === 'number') {
             const MAX_WEIGHT = 250 // kg — heuristic upper bound for normalization
             const weightPercent = Math.min(100, Math.max(0, (statusObj.weight / MAX_WEIGHT) * 100))
-            // Combine level and weightPercent — level more important than weight
+            // Combine level and weightPercent — level more important than weight.
             const combined = Math.round(level * 0.6 + weightPercent * 0.4)
             level = combined
         }
