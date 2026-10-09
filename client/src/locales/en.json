@@ -25,7 +25,8 @@
     "units":{
         "kg":"kg",
         "km":"km",
-        "seconds":"seconds"
+        "seconds":"seconds",
+        "minutes":"min"
     },
     "deepSleepDuration":"Deep Sleep duration",
 "backToBin":"Back to Bin",

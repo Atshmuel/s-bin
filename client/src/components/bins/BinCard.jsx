@@ -175,7 +175,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 <div className="flex flex-row justify-between">
                                     <span className="font-medium">{t('deepSleepDuration')}:</span>
                                     <span>{bin.status.deepSleepSeconds
-                                        ? `${bin.status.deepSleepSeconds} ${t('units.seconds')}`
+                                        ? `${bin.status.deepSleepSeconds / 60} ${t('units.minutes')}`
                                         : '-'}</span>
                                 </div>
 
