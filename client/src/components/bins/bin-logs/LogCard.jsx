@@ -72,6 +72,13 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 </span>
                             </div>
 
+                            {log.sleepDurationSeconds != null && (
+                                <div className="flex justify-between">
+                                    <span className="font-medium">{t("deepSleepDuration")}:</span>
+                                    <span>{log.sleepDurationSeconds} {t("units.seconds")}</span>
+                                </div>
+                            )}
+
                             {log.message &&
                                 <div className="space-y-1">
                                     <span className="font-medium">{t("components.logCard.message")}:</span>

@@ -173,6 +173,13 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 </div>
 
                                 <div className="flex flex-row justify-between">
+                                    <span className="font-medium">{t('deepSleepDuration')}:</span>
+                                    <span>{bin.status.deepSleepSeconds
+                                        ? `${bin.status.deepSleepSeconds} ${t('units.seconds')}`
+                                        : '-'}</span>
+                                </div>
+
+                                <div className="flex flex-row justify-between">
                                     <span className="font-medium">{t('components.binCard.deviceKey')}:</span>
                                     <MobileTooltip content={bin.deviceKey}>
                                         <div onClick={handleCopyDeviceKey} className="flex gap-2 cursor-copy">
