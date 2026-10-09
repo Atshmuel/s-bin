@@ -133,10 +133,19 @@ void enterDeepSleepUntilNextReport() {
         );
         Serial.flush();
         const unsigned long waitStartedAt = millis();
-        while (millis() - waitStartedAt < sleepSeconds * 1000ULL) {
-            delay(1000);
+        const uint64_t requestedWaitMs = sleepSeconds * 1000ULL;
+        while (Serial && millis() - waitStartedAt < requestedWaitMs) {
+            delay(100);
         }
-        return;
+        if (Serial) {
+            return;
+        }
+
+        const uint64_t elapsedSeconds = (millis() - waitStartedAt) / 1000ULL;
+        if (elapsedSeconds >= sleepSeconds) {
+            return;
+        }
+        sleepSeconds -= elapsedSeconds;
     }
 
     if (modem.testAT(1000) && !modem.poweroff()) {
