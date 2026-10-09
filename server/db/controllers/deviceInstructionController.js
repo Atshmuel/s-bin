@@ -3,10 +3,14 @@ import { deviceInstructionModel } from "../models/models.js";
 import { getBinShared } from "../service/sharedService.js";
 
 const MAX_AWAKE_EXTENSION_SECONDS = 3600;
-const supportedInstructionTypes = new Set(["report_now", "stay_awake"]);
+const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin"]);
 
 function isValidInstructionPayload(type, payload) {
     if (type === "report_now") {
+        return Object.keys(payload).length === 0;
+    }
+
+    if (type === "calibrate_empty_bin") {
         return Object.keys(payload).length === 0;
     }
 
@@ -30,7 +34,9 @@ export async function enqueueDeviceInstruction(req, res) {
     if (!isValidInstructionPayload(type, payload)) {
         const message = type === "report_now"
             ? "report_now does not accept a payload."
-            : "stay_awake requires durationSeconds between 1 and 3600.";
+            : type === "stay_awake"
+                ? "stay_awake requires durationSeconds between 1 and 3600."
+                : `${type} does not accept a payload.`;
         return res.status(400).json({ message });
     }
 

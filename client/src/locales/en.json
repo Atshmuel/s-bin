@@ -280,9 +280,13 @@
       "cancel":"Cancel",
       "requestQueued":"Instruction added to the queue.",
       "requestCancelled":"Pending instruction cancelled.",
+      "calibrationConfirmationTitle":"Confirm empty-bin calibration",
+      "calibrationConfirmationDescription":"The bin must be empty and the sensor path unobstructed for about 20 seconds. The device will recalibrate its empty reference and publish a fresh reading.",
+      "confirmCalibration":"Queue calibration",
       "types":{
         "report_now":"Request an immediate report",
-        "stay_awake":"Extend awake time"
+        "stay_awake":"Extend awake time",
+        "calibrate_empty_bin":"Recalibrate empty-bin reference"
       },
       "statuses":{
         "pending":"Pending",

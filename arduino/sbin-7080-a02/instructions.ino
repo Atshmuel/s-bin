@@ -78,6 +78,28 @@ uint32_t processInstruction(const DeviceInstruction& instruction) {
             );
         }
         saveCachedInstructionResult(instruction.id, status, result);
+    } else if (instruction.type == "calibrate_empty_bin") {
+        Serial.printf("📏 Starting empty-bin calibration for instruction %s.\n",
+                      instruction.id.c_str());
+        if (!calibrateBinDepth()) {
+            status = "failed";
+            result = "empty_bin_calibration_failed";
+        } else {
+            status = "completed";
+            result = "empty_depth_mm_" + String(binDepthMm);
+
+            int distanceMm = getDistanceMm();
+            bool sensorOk = distanceMm > 0 && calculateFillLevel(distanceMm) >= 0;
+            uint16_t batteryMillivolts = readBatteryMillivolts();
+            bool pmuOk = pmuAvailable && batteryMillivolts > 0;
+            int batteryPercent = readBatteryPercent();
+            String health = updateDeviceHealth(sensorOk, pmuOk, false, true);
+            String healthMessage = getDeviceHealthMessage(distanceMm);
+            if (!publishTelemetry(distanceMm, batteryPercent, health, healthMessage)) {
+                Serial.println("⚠️ Calibration succeeded, but the refreshed telemetry could not be published.");
+            }
+        }
+        saveCachedInstructionResult(instruction.id, status, result);
     } else {
         Serial.printf("⚠️ Unsupported instruction type: %s.\n", instruction.type.c_str());
         status = "failed";

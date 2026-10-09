@@ -279,9 +279,13 @@
       "cancel":"ביטול",
       "requestQueued":"ההנחיה נוספה לתור.",
       "requestCancelled":"ההנחיה הממתינה בוטלה.",
+      "calibrationConfirmationTitle":"אישור כיול כשהפח ריק",
+      "calibrationConfirmationDescription":"יש לוודא שהפח ריק ונתיב החיישן פנוי למשך כ־20 שניות. המכשיר יכייל מחדש את נקודת הייחוס של פח ריק וישלח מדידה עדכנית.",
+      "confirmCalibration":"הוסף כיול לתור",
       "types":{
         "report_now":"בקשת דיווח מיידי",
-        "stay_awake":"הארכת זמן הערות"
+        "stay_awake":"הארכת זמן הערות",
+        "calibrate_empty_bin":"כיול מחדש של פח ריק"
       },
       "statuses":{
         "pending":"ממתינה",

@@ -4,6 +4,16 @@ import { LoaderCircle, Send, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +40,7 @@ import {
     getDeviceInstructions,
 } from "@/services/apiDeviceInstructions";
 
-const instructionTypes = ["report_now", "stay_awake"];
+const instructionTypes = ["report_now", "stay_awake", "calibrate_empty_bin"];
 
 function InstructionTesting() {
     const { t } = useTranslation();
@@ -38,6 +48,13 @@ function InstructionTesting() {
     const [binId, setBinId] = useState("");
     const [instructionType, setInstructionType] = useState(instructionTypes[0]);
     const [durationMinutes, setDurationMinutes] = useState("5");
+    const [showCalibrationConfirmation, setShowCalibrationConfirmation] = useState(false);
+
+    const enqueueSelectedInstruction = () => enqueueMutation.mutate({
+        binId,
+        type: instructionType,
+        durationMinutes: Number(durationMinutes),
+    });
 
     const binsQuery = useQuery({
         queryKey: ["instruction-test-bins"],
@@ -177,11 +194,13 @@ function InstructionTesting() {
                                     Number(durationMinutes) < 1 ||
                                     Number(durationMinutes) > 60))
                         }
-                        onClick={() => enqueueMutation.mutate({
-                            binId,
-                            type: instructionType,
-                            durationMinutes: Number(durationMinutes),
-                        })}
+                        onClick={() => {
+                            if (instructionType === "calibrate_empty_bin") {
+                                setShowCalibrationConfirmation(true);
+                            } else {
+                                enqueueSelectedInstruction();
+                            }
+                        }}
                     >
                         {enqueueMutation.isPending
                             ? <LoaderCircle className="animate-spin" />
@@ -190,6 +209,36 @@ function InstructionTesting() {
                     </Button>
                 </CardContent>
             </Card>
+
+            <AlertDialog
+                open={showCalibrationConfirmation}
+                onOpenChange={setShowCalibrationConfirmation}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {t("pages.instructionTesting.calibrationConfirmationTitle")}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t("pages.instructionTesting.calibrationConfirmationDescription")}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>
+                            {t("cancel")}
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(event) => {
+                                event.preventDefault();
+                                setShowCalibrationConfirmation(false);
+                                enqueueSelectedInstruction();
+                            }}
+                        >
+                            {t("pages.instructionTesting.confirmCalibration")}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <Card>
                 <CardHeader>
