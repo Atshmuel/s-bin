@@ -36,9 +36,10 @@ void saveCachedInstructionResult(
     preferences.end();
 }
 
-void processInstruction(const DeviceInstruction& instruction) {
+uint32_t processInstruction(const DeviceInstruction& instruction) {
     String status;
     String result;
+    uint32_t awakeExtensionSeconds = 0;
     if (loadCachedInstructionResult(instruction.id, status, result)) {
         Serial.printf("↩️ Re-sending saved result for instruction %s.\n", instruction.id.c_str());
     } else if (instruction.type == "report_now") {
@@ -62,6 +63,21 @@ void processInstruction(const DeviceInstruction& instruction) {
             result = "additional_report_publish_failed";
         }
         saveCachedInstructionResult(instruction.id, status, result);
+    } else if (instruction.type == "stay_awake") {
+        if (instruction.durationSeconds == 0 ||
+            instruction.durationSeconds > MAX_AWAKE_EXTENSION_SECONDS) {
+            status = "failed";
+            result = "invalid_awake_extension_duration";
+        } else {
+            status = "completed";
+            awakeExtensionSeconds = instruction.durationSeconds;
+            result = "awake_window_extended";
+            Serial.printf(
+                "⏱️ Staying awake for an additional %lu seconds.\n",
+                static_cast<unsigned long>(awakeExtensionSeconds)
+            );
+        }
+        saveCachedInstructionResult(instruction.id, status, result);
     } else {
         Serial.printf("⚠️ Unsupported instruction type: %s.\n", instruction.type.c_str());
         status = "failed";
@@ -73,19 +89,50 @@ void processInstruction(const DeviceInstruction& instruction) {
         Serial.printf("⚠️ Instruction %s remains pending on the server until its result is received.\n",
                       instruction.id.c_str());
     }
+    return awakeExtensionSeconds;
 }
 }
 
 void processPendingInstructions(unsigned long timeoutMs) {
-    const unsigned long deadline = millis() + timeoutMs;
+    unsigned long deadline = millis() + timeoutMs;
+    bool extendedAwakeWindow = false;
     while (static_cast<long>(deadline - millis()) > 0) {
         const unsigned long remaining = deadline - millis();
-        if (!requestInstructionCheck(remaining)) {
-            return;
+        const unsigned long checkTimeoutMs = extendedAwakeWindow
+            ? min(remaining, 5000UL)
+            : remaining;
+        if (!requestInstructionCheck(checkTimeoutMs)) {
+            if (!extendedAwakeWindow) {
+                return;
+            }
+
+            maintainCellularConnection();
+            maintainMqttConnection();
+            const unsigned long retryWaitMs = min(deadline - millis(), 1000UL);
+            const unsigned long waitStartedAt = millis();
+            while (millis() - waitStartedAt < retryWaitMs) {
+                mqttClient.loop();
+                delay(50);
+            }
+            continue;
         }
         if (instructionCheckAllowsSleep) {
-            Serial.println("✅ No pending instructions; device may return to sleep.");
-            return;
+            if (!extendedAwakeWindow) {
+                Serial.println("✅ No pending instructions; device may return to sleep.");
+                return;
+            }
+
+            const unsigned long pollDelayMs = min(remaining, 5000UL);
+            Serial.printf(
+                "⏳ No pending instructions; checking again in %lu seconds.\n",
+                pollDelayMs / 1000
+            );
+            const unsigned long waitStartedAt = millis();
+            while (millis() - waitStartedAt < pollDelayMs) {
+                mqttClient.loop();
+                delay(50);
+            }
+            continue;
         }
         if (pendingInstructionCount == 0) {
             Serial.println("⚠️ Server response had no executable instruction; using the sleep fallback.");
@@ -97,7 +144,12 @@ void processPendingInstructions(unsigned long timeoutMs) {
                 Serial.println("⚠️ Instruction processing window expired; remaining instructions stay queued.");
                 return;
             }
-            processInstruction(pendingInstructions[i]);
+            const uint32_t extensionSeconds = processInstruction(pendingInstructions[i]);
+            if (extensionSeconds > 0) {
+                deadline = max(deadline, millis()) +
+                           static_cast<unsigned long>(extensionSeconds) * 1000UL;
+                extendedAwakeWindow = true;
+            }
         }
     }
     Serial.println("⚠️ Instruction processing window expired; returning to sleep.");

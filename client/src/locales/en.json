@@ -24,8 +24,10 @@
     "zoom":"Zoom",
     "units":{
         "kg":"kg",
-        "km":"km"
+        "km":"km",
+        "seconds":"seconds"
     },
+    "deepSleepDuration":"Deep Sleep duration",
 "backToBin":"Back to Bin",
 "user":"User",
 "your":"Your",
@@ -102,6 +104,7 @@
         "addBin": "Add Bin",
         "map": "Map",
         "logs": "Logs",
+        "instructionTesting": "Test Device Instructions",
         "userList": "List of Users",
         "organizationList": "Organizations List"
       }
@@ -254,6 +257,40 @@
   },
     
   "pages":{
+    "instructionTesting":{
+      "title":"Device Instruction Testing",
+      "description":"Temporarily test queued instructions for a selected bin. The device receives them when it next checks in over MQTT.",
+      "sendTitle":"Send a test instruction",
+      "sendDescription":"Choose a bin and enqueue an instruction for its device.",
+      "bin":"Bin",
+      "selectBin":"Select a bin",
+      "instruction":"Instruction",
+      "send":"Queue instruction",
+      "duration":"Additional awake time (minutes)",
+      "durationLimit":"Choose 1 to 60 minutes. Only the selected bin stays awake.",
+      "durationValue":"Additional awake time: {{count}} minutes",
+      "queueTitle":"Instruction queue",
+      "queueDescription":"The queue refreshes automatically every few seconds.",
+      "selectBinToView":"Select a bin to view its instruction queue.",
+      "emptyQueue":"No instructions found for this bin.",
+      "status":"Status",
+      "createdAt":"Created",
+      "result":"Result",
+      "actions":"Actions",
+      "cancel":"Cancel",
+      "requestQueued":"Instruction added to the queue.",
+      "requestCancelled":"Pending instruction cancelled.",
+      "types":{
+        "report_now":"Request an immediate report",
+        "stay_awake":"Extend awake time"
+      },
+      "statuses":{
+        "pending":"Pending",
+        "completed":"Completed",
+        "failed":"Failed",
+        "cancelled":"Cancelled"
+      }
+    },
     "dashboard":{
       "titles":{
         "quickOverview":{

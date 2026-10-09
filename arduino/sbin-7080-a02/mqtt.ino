@@ -182,6 +182,9 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
         doc["level"] = level;
     }
     doc["battery"] = batteryPercent;
+    if (scheduledSleepDurationSeconds > 0) {
+        doc["sleepDurationSeconds"] = scheduledSleepDurationSeconds;
+    }
     doc["health"] = health;
     doc["weight"] = 0;
     doc["location"][0] = latitude;
@@ -254,6 +257,12 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
                 Serial.println("⚠️ Server sent an invalid or expired nextWakeEpoch.");
             }
         }
+        if (doc["sleepDurationSeconds"].is<uint32_t>()) {
+            scheduledSleepDurationSeconds = doc["sleepDurationSeconds"].as<uint32_t>();
+            preferences.begin("credentials", false);
+            preferences.putUInt("sleepDuration", scheduledSleepDurationSeconds);
+            preferences.end();
+        }
         if (doc["status"] == "instruction_check" &&
             doc["canSleep"].is<bool>()) {
             instructionCheckAllowsSleep = doc["canSleep"].as<bool>();
@@ -269,6 +278,9 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
                 }
                 pendingInstructions[pendingInstructionCount].id = instruction["id"].as<String>();
                 pendingInstructions[pendingInstructionCount].type = instruction["type"].as<String>();
+                JsonVariantConst durationSeconds = instruction["payload"]["durationSeconds"];
+                pendingInstructions[pendingInstructionCount].durationSeconds =
+                    durationSeconds.is<uint32_t>() ? durationSeconds.as<uint32_t>() : 0;
                 if (pendingInstructions[pendingInstructionCount].id.length() == 0 ||
                     pendingInstructions[pendingInstructionCount].type.length() == 0) {
                     instructionResponseValid = false;

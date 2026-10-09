@@ -41,10 +41,12 @@
 #define SENSOR_TXD_PIN 43
 
 constexpr uint8_t MAX_PENDING_INSTRUCTIONS = 2;
+constexpr uint32_t MAX_AWAKE_EXTENSION_SECONDS = 3600;
 
 struct DeviceInstruction {
     String id;
     String type;
+    uint32_t durationSeconds = 0;
 };
 
 extern const char apn[];
@@ -75,6 +77,7 @@ extern uint8_t gpsFailureCycles;
 extern time_t lastGpsAttemptEpoch;
 extern time_t lastGpsUpdateEpoch;
 extern uint64_t nextWakeEpoch;
+extern uint32_t scheduledSleepDurationSeconds;
 extern uint32_t scheduleAckCounter;
 extern uint32_t instructionCheckCounter;
 extern bool instructionCheckAllowsSleep;

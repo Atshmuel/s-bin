@@ -2,7 +2,20 @@ import mongoose from "mongoose";
 import { deviceInstructionModel } from "../models/models.js";
 import { getBinShared } from "../service/sharedService.js";
 
-const supportedInstructionTypes = new Set(["report_now"]);
+const MAX_AWAKE_EXTENSION_SECONDS = 3600;
+const supportedInstructionTypes = new Set(["report_now", "stay_awake"]);
+
+function isValidInstructionPayload(type, payload) {
+    if (type === "report_now") {
+        return Object.keys(payload).length === 0;
+    }
+
+    return type === "stay_awake" &&
+        Object.keys(payload).length === 1 &&
+        Number.isInteger(payload.durationSeconds) &&
+        payload.durationSeconds >= 1 &&
+        payload.durationSeconds <= MAX_AWAKE_EXTENSION_SECONDS;
+}
 
 export async function enqueueDeviceInstruction(req, res) {
     const { type, payload = {} } = req.body ?? {};
@@ -14,8 +27,11 @@ export async function enqueueDeviceInstruction(req, res) {
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
         return res.status(400).json({ message: "Instruction payload must be a JSON object." });
     }
-    if (Object.keys(payload).length > 0) {
-        return res.status(400).json({ message: "report_now does not accept a payload." });
+    if (!isValidInstructionPayload(type, payload)) {
+        const message = type === "report_now"
+            ? "report_now does not accept a payload."
+            : "stay_awake requires durationSeconds between 1 and 3600.";
+        return res.status(400).json({ message });
     }
 
     const serializedPayload = JSON.stringify(payload);

@@ -24,8 +24,10 @@
     "zoom":"זום",
         "units":{
         "kg":"ק״ג",
-        "km":"ק״מ"
+        "km":"ק״מ",
+        "seconds":"שניות"
     },
+ "deepSleepDuration":"משך השינה העמוקה",
 "backToBin":"חזרה לפח",
 "user":"משתמש",
 "your":"שלך",
@@ -202,6 +204,7 @@
                 "addBin":"הוסף פח",
                 "map":"מפה",
                 "logs":"תיעודים",
+                "instructionTesting":"בדיקת הנחיות למכשיר",
                 "userList":"רשימת משתמשים",
                 "organizationList": "רשימת ארגונים"
             }
@@ -253,6 +256,40 @@
 
   },
   "pages":{
+    "instructionTesting":{
+      "title":"בדיקת הנחיות למכשיר",
+      "description":"דף זמני לבדיקה ושליחה של הנחיות לפח. המכשיר יקבל אותן בבדיקת ה־MQTT הבאה שלו.",
+      "sendTitle":"שליחת הנחיית בדיקה",
+      "sendDescription":"בחר פח והוסף הנחיה לתור של המכשיר שלו.",
+      "bin":"פח",
+      "selectBin":"בחר פח",
+      "instruction":"הנחיה",
+      "send":"הוסף לתור",
+      "duration":"זמן ערות נוסף (בדקות)",
+      "durationLimit":"בחר בין דקה אחת ל־60 דקות. רק הפח שנבחר יישאר ער.",
+      "durationValue":"זמן ערות נוסף: {{count}} דקות",
+      "queueTitle":"תור ההנחיות",
+      "queueDescription":"התור מתעדכן אוטומטית מדי כמה שניות.",
+      "selectBinToView":"בחר פח כדי לצפות בתור ההנחיות שלו.",
+      "emptyQueue":"לא נמצאו הנחיות עבור הפח הזה.",
+      "status":"סטטוס",
+      "createdAt":"נוצרה",
+      "result":"תוצאה",
+      "actions":"פעולות",
+      "cancel":"ביטול",
+      "requestQueued":"ההנחיה נוספה לתור.",
+      "requestCancelled":"ההנחיה הממתינה בוטלה.",
+      "types":{
+        "report_now":"בקשת דיווח מיידי",
+        "stay_awake":"הארכת זמן הערות"
+      },
+      "statuses":{
+        "pending":"ממתינה",
+        "completed":"הושלמה",
+        "failed":"נכשלה",
+        "cancelled":"בוטלה"
+      }
+    },
     "dashboard":{
        "titles":{
         "quickOverview":{
