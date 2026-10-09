@@ -97,11 +97,10 @@ export async function getAllLogs(req, res) {
         });
     }
 
-    pipeline.push({
-        $project: {
-            bin: 0
-        },
-    });
+    pipeline.push(
+        { $addFields: { binName: '$bin.binName' } },
+        { $project: { bin: 0 } }
+    );
 
     pipeline.push({
         $sort: { createdAt: -1 }

@@ -48,6 +48,16 @@ function AllLogs() {
 
     const columns = [
         {
+            header: t('pages.logList.columns.binName'),
+            accessorKey: 'binName',
+            cell: ({ row }) => (
+                <Link className="flex gap-2 items-center"
+                    to={`/bins/${row.original.binId}`}>
+                    <LinkIcon size={14} /> <span>{row.original.binName}</span>
+                </Link>
+            ),
+        },
+        {
             header: t('pages.logList.columns.createAt'),
             accessorKey: 'Created At',
             cell: ({ row }) => {

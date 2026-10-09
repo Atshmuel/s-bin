@@ -328,6 +328,7 @@
     "logList":{
       "title":"All Logs",
       "columns":{
+        "binName":"Bin Name",
         "createAt":"Created At",
         "severity":"Severity",
         "fillLevel":"Fill Level",

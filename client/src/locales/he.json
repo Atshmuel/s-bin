@@ -328,6 +328,7 @@
     "logList":{
       "title":"כל התיעודים",
       "columns":{
+        "binName":"שם הפח",
         "createAt":"נוצר בתאריך",
         "severity":"חומרה",
         "fillLevel":"רמת מילוי",
