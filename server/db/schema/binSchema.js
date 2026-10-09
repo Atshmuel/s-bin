@@ -36,6 +36,7 @@ export const binSchema = new mongoose.Schema({
         level: { type: Number, default: 0, required: true },
         weight: { type: Number, default: 0, required: true },
         battery: { type: Number, default: 0, required: true },
+        deepSleepSeconds: { type: Number, min: 1, max: 86400, default: null },
         updatedAt: { type: Date, default: Date.now }
     },
     ownerId: {

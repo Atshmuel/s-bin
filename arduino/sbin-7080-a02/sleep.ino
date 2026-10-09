@@ -4,7 +4,6 @@ namespace {
 constexpr time_t MIN_VALID_EPOCH = 1735689600;
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 constexpr time_t GPS_REFRESH_INTERVAL_SECONDS = 31LL * 24 * 60 * 60;
-constexpr uint64_t DEEP_SLEEP_TEST_SECONDS = 60;
 }
 
 bool isSystemClockValid() {
@@ -102,22 +101,21 @@ void saveLastKnownLocation() {
 }
 
 void enterDeepSleepUntilNextReport() {
-    if (Serial) {
-        Serial.println("🛠️ USB Serial Monitor is connected; skipping Deep Sleep for debugging.");
-        Serial.println("The next sensor/report cycle will start in 30 seconds.");
-        Serial.flush();
-        delay(DEEP_SLEEP_TEST_SECONDS * 1000ULL);
+    if (!isSystemClockValid() || nextWakeEpoch <= static_cast<uint64_t>(time(nullptr))) {
+        Serial.println("❌ No valid future server wake time; keeping device awake.");
         return;
     }
 
+    const uint64_t sleepSeconds = nextWakeEpoch - static_cast<uint64_t>(time(nullptr));
     if (Serial) {
-    Serial.println("🛠️ USB Serial Monitor is connected; skipping Deep Sleep...");
-    delay(30000);
-    return; // <-- מונע Deep Sleep!
-    }
-
-    if (!isSystemClockValid()) {
-        Serial.println("❌ Valid clock unavailable; keeping device awake to preserve fixed report times.");
+        Serial.printf(
+            "🛠️ USB Serial Monitor is connected; waiting %llu seconds until the next server-scheduled report.\n",
+            static_cast<unsigned long long>(sleepSeconds)
+        );
+        Serial.flush();
+        while (static_cast<uint64_t>(time(nullptr)) < nextWakeEpoch) {
+            delay(1000);
+        }
         return;
     }
 
@@ -125,9 +123,11 @@ void enterDeepSleepUntilNextReport() {
         Serial.println("⚠️ Modem did not confirm power-off before ESP32 deep sleep.");
     }
 
-    Serial.printf("🧪 Deep sleep test: sleeping for %llu seconds.\n",
-                  static_cast<unsigned long long>(DEEP_SLEEP_TEST_SECONDS));
+    Serial.printf(
+        "💤 Deep sleep until server-scheduled report in %llu seconds.\n",
+        static_cast<unsigned long long>(sleepSeconds)
+    );
 
-    esp_sleep_enable_timer_wakeup(DEEP_SLEEP_TEST_SECONDS * MICROSECONDS_PER_SECOND);
+    esp_sleep_enable_timer_wakeup(sleepSeconds * MICROSECONDS_PER_SECOND);
     esp_deep_sleep_start();
 }

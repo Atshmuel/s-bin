@@ -66,7 +66,16 @@ export function appendFilter(baseQuery, condition, field, value) {
     return condition ? { ...baseQuery, [field]: value } : baseQuery
 }
 
-export function checkPayloadFields({ location, health, level, sensorOk, battery, weight, message }) {
+export function checkPayloadFields({
+    location,
+    health,
+    level,
+    sensorOk,
+    battery,
+    weight,
+    message,
+    sleepDurationSeconds,
+}) {
     const valid = ["good", "warning", "critical"];
     if (
         !Array.isArray(location) ||
@@ -90,6 +99,9 @@ export function checkPayloadFields({ location, health, level, sensorOk, battery,
     if (typeof battery !== "number" || battery < 0 || battery > 100) return false
     if (typeof weight !== "number") return false
     if (message !== undefined && (typeof message !== "string" || message.length > 256)) return false
+    if (sleepDurationSeconds !== undefined &&
+        (!Number.isInteger(sleepDurationSeconds) ||
+            sleepDurationSeconds < 1 || sleepDurationSeconds > 86400)) return false
 
     return true;
 }

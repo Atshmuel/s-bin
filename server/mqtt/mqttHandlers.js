@@ -66,7 +66,7 @@ async function handleRegistration({ mac, orgId, location, battery }) {
             console.log("Invalid location or battery data");
             return;
         }
-        const { timeZone, nextWakeEpoch } = getNextReportSchedule(location);
+        const { timeZone, nextWakeEpoch, sleepDurationSeconds } = getNextReportSchedule(location);
 
         const deviceKey = generateRandomToken();
         // 0,5 to get first 5 chars for example: 1D:44:8E:A7:32:5D -> 1D:44 date used for uniqueness validity
@@ -90,19 +90,45 @@ async function handleRegistration({ mac, orgId, location, battery }) {
         console.log("Registered new bin via MQTT:", newBin);
         mqttClient.publish(
             `${BIN_ACK_TOPIC}/${mac}`,
-            JSON.stringify({ status: "registered", deviceKey, timeZone, nextWakeEpoch })
+            JSON.stringify({
+                status: "registered",
+                deviceKey,
+                timeZone,
+                nextWakeEpoch,
+                sleepDurationSeconds,
+            })
         );
     } catch (error) {
         console.error("Error registering bin via MQTT:", error);
     }
 }
 
-async function handleDeviceLog(mac, { deviceKey, location, health, level, sensorOk, battery, weight, message: healthMessage }) {
-    if (!checkPayloadFields({ location, health, level, sensorOk, battery, weight, message: healthMessage })) return;
+async function handleDeviceLog(mac, {
+    deviceKey,
+    location,
+    health,
+    level,
+    sensorOk,
+    battery,
+    weight,
+    message: healthMessage,
+    sleepDurationSeconds,
+}) {
+    if (!checkPayloadFields({
+        location,
+        health,
+        level,
+        sensorOk,
+        battery,
+        weight,
+        message: healthMessage,
+        sleepDurationSeconds,
+    })) return;
 
     const bin = await getBinByMacAndKeyShared(mac, deviceKey);
     if (!bin) return;
-    const { timeZone, nextWakeEpoch } = getNextReportSchedule(location);
+    const { timeZone, nextWakeEpoch, sleepDurationSeconds: scheduledSleepDurationSeconds } =
+        getNextReportSchedule(location);
 
     const severity = level >= 80 || battery <= 20 || health === 'critical'
         ? 'critical'
@@ -127,6 +153,7 @@ async function handleDeviceLog(mac, { deviceKey, location, health, level, sensor
         oldLevel: bin.status.level,
         newLevel: levelIsValid ? level : null,
         battery,
+        ...(sleepDurationSeconds === undefined ? {} : { sleepDurationSeconds }),
         severity,
         type: 'log',
         source: 'sensor',
@@ -144,6 +171,9 @@ async function handleDeviceLog(mac, { deviceKey, location, health, level, sensor
         bin.status.level = level;
     }
     bin.status.battery = battery;
+    if (sleepDurationSeconds !== undefined) {
+        bin.status.deepSleepSeconds = sleepDurationSeconds;
+    }
     bin.status.weight = weight;
     bin.location.coordinates = location;
     bin.timezone = timeZone;
@@ -155,7 +185,13 @@ async function handleDeviceLog(mac, { deviceKey, location, health, level, sensor
     console.log("Updated log for", mac);
     mqttClient.publish(
         `${BIN_ACK_TOPIC}/${mac}`,
-        JSON.stringify({ status: "Log updated", mac, timeZone, nextWakeEpoch })
+        JSON.stringify({
+            status: "Log updated",
+            mac,
+            timeZone,
+            nextWakeEpoch,
+            sleepDurationSeconds: scheduledSleepDurationSeconds,
+        })
     );
 }
 
@@ -184,10 +220,15 @@ async function handleInstructionCheck(mac, { deviceKey }) {
         payload
     }));
 
+    const { timeZone, nextWakeEpoch, sleepDurationSeconds } =
+        getNextReportSchedule(bin.location.coordinates);
     const response = JSON.stringify({
         status: "instruction_check",
         canSleep: instructions.length === 0,
-        instructions
+        instructions,
+        timeZone,
+        nextWakeEpoch,
+        sleepDurationSeconds,
     });
     mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, response, { qos: 1 }, async error => {
         if (error) {

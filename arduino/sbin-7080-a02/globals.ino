@@ -28,6 +28,7 @@ RTC_DATA_ATTR uint8_t pmuFailureCycles = 0;
 RTC_DATA_ATTR uint8_t gpsFailureCycles = 0;
 time_t lastGpsAttemptEpoch = 0;
 RTC_DATA_ATTR uint64_t nextWakeEpoch = 0;
+RTC_DATA_ATTR uint32_t scheduledSleepDurationSeconds = 0;
 RTC_DATA_ATTR uint32_t scheduleAckCounter = 0;
 uint32_t instructionCheckCounter = 0;
 bool instructionCheckAllowsSleep = false;
