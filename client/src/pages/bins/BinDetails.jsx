@@ -3,6 +3,7 @@ import DataTable from "@/components/DataTable"
 import Battery from "../../components/bins/Battary"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import HealthBadge from "@/components/bins/HealthBadge"
 import { format } from "date-fns"
 import { getVariant } from "@/utils/binHelpers"
 import { useBin } from "@/hooks/bins/useBin"
@@ -56,6 +57,9 @@ function BinDetails() {
         {
             header: t("pages.binDetails.logsTable.columns.fillLevel"),
             accessorKey: 'newLevel',
+            cell: ({ row }) => row.original.newLevel == null
+                ? t("sensorUnavailable")
+                : `${row.original.newLevel}%`,
         },
         {
             header: t("components.logCard.weight"),
@@ -68,11 +72,11 @@ function BinDetails() {
             header: t("pages.binDetails.logsTable.columns.healthStatus"),
             accessorKey: 'health',
             cell: ({ row }) => {
-                const health = row.original.health;
                 return (
-                    <Badge variant={getVariant(health)} >
-                        {t(`levels.${health}`)}
-                    </Badge>
+                    <HealthBadge
+                        health={row.original.health}
+                        message={row.original.message}
+                    />
                 );
             },
         },

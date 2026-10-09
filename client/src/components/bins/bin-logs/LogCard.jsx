@@ -1,7 +1,6 @@
-import { Badge } from "@/components/ui/badge"
+import HealthBadge from "@/components/bins/HealthBadge"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../ui/card"
 import { Activity, CalendarClock, GaugeCircle, InfoIcon, Trash2 } from "lucide-react"
-import { getVariant } from "@/utils/binHelpers"
 import EmptyCard from "@/components/EmptyCard"
 import { useTranslation } from "react-i18next"
 import { useAppSide } from "@/contexts/AppSideProvider"
@@ -44,7 +43,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                                     <GaugeCircle size={16} /> {t("fillLevel")}:
                                 </span>
                                 <span>
-                                    {log.oldLevel}% → <b>{log.newLevel}%</b>
+                                    {log.oldLevel}% → <b>{log.newLevel == null ? t("sensorUnavailable") : `${log.newLevel}%`}</b>
                                 </span>
                             </div>
 
@@ -61,7 +60,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 <span className="font-medium flex items-center gap-2">
                                     <Activity size={16} /> {t("healthStatus")}:
                                 </span>
-                                <Badge variant={getVariant(log.health)}>{t("levels." + log.health)}</Badge>
+                                <HealthBadge health={log.health} message={log.message} />
                             </div>
 
                             <div className="flex justify-between">
@@ -72,6 +71,13 @@ function LogCard({ log, isLoading = true, ...props }) {
                                     {new Date(log.createdAt).toLocaleTimeString(isRight ? "en-US" : "he-IL", { hour: "2-digit", minute: "2-digit" })}
                                 </span>
                             </div>
+
+                            {log.message &&
+                                <div className="space-y-1">
+                                    <span className="font-medium">{t("components.logCard.message")}:</span>
+                                    <p>{log.message}</p>
+                                </div>
+                            }
 
                             <div className="flex justify-between">
                                 <span className="font-medium">{t("components.logCard.logSource")}:</span>

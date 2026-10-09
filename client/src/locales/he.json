@@ -42,6 +42,13 @@
         "good":"טוב",
         "all":"הכל"
     },  
+    "sensorUnavailable":"לא זמין",
+    "healthTooltip":{
+        "critical":"זוהתה תקלה קריטית בחומרה או באחד הרכיבים.",
+        "warning":"המכשיר דיווח על תקלה בחומרה או באחד הרכיבים.",
+        "good":"לא דווחו כרגע תקלות במכשיר.",
+        "detailsUnavailable":"לא התקבל פירוט אבחון."
+    },
     "severities":{
       "critical":"קריטי",
       "warning":"אזהרה",
@@ -674,6 +681,7 @@
       "maintenance":"תחזוקה",
       "healthStatus":"מצב בריאות",
       "weight":"משקל",
+      "message":"פרטים",
       "timestamp":"חותמת זמן",
       "logSource":"מקור התיעוד",
       "errorCard":"לא ניתן לטעון את נתוני התיעוד.",

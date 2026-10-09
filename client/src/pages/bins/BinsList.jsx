@@ -1,12 +1,11 @@
 import { format } from "date-fns";
 import DataTable from "../../components/DataTable"
 import { Link, useSearchParams } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
+import HealthBadge from "@/components/bins/HealthBadge";
 import Battery from "../../components/bins/Battary";
 import { LinkIcon, MapPin, Trash } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
 import { useBins } from "@/hooks/bins/useBins";
-import { getVariant } from "@/utils/binHelpers";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -122,7 +121,9 @@ function BinsList() {
             id: 'Fill level',
             accessorKey: 'status.level',
             cell: ({ row }) => {
-                return `${row.original.status.level}%`
+                return row.original.status.levelValid === false
+                    ? t('sensorUnavailable')
+                    : `${row.original.status.level}%`;
             }
         },
         {
@@ -137,12 +138,11 @@ function BinsList() {
             header: t('pages.binsList.columns.healthStatus'),
             accessorKey: 'Health',
             cell: ({ row }) => {
-                const health = row.original.status.health;
                 return (
-                    <Badge variant={getVariant(health)}
-                    >
-                        {t(`levels.${health}`)}
-                    </Badge>
+                    <HealthBadge
+                        health={row.original.status.health}
+                        message={row.original.status.healthMessage}
+                    />
                 );
             },
         },

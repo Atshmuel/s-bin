@@ -1,5 +1,6 @@
 import DataTable from "@/components/DataTable"
 import { Badge } from "@/components/ui/badge";
+import HealthBadge from "@/components/bins/HealthBadge";
 import Battery from "@/components/bins/Battary";
 import { format } from "date-fns";
 import { getVariant } from "@/utils/binHelpers";
@@ -72,7 +73,9 @@ function AllLogs() {
             id: 'Fill level',
             accessorKey: 'newLevel',
             cell: ({ row }) => {
-                return `${row.original.newLevel}%`
+                return row.original.newLevel == null
+                    ? t('sensorUnavailable')
+                    : `${row.original.newLevel}%`;
             }
         },
         {
@@ -94,12 +97,11 @@ function AllLogs() {
             header: t('pages.logList.columns.healthStatus'),
             id: 'Health',
             cell: ({ row }) => {
-                const health = row.original.health;
                 return (
-                    <Badge variant={getVariant(health)}
-                    >
-                        {t(`levels.${health.toLowerCase()}`)}
-                    </Badge>
+                    <HealthBadge
+                        health={row.original.health}
+                        message={row.original.message}
+                    />
                 );
             },
         },

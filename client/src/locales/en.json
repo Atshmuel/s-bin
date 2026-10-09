@@ -42,6 +42,13 @@
         "good":"Good",
         "all":"All"
     },
+        "sensorUnavailable":"Unavailable",
+        "healthTooltip":{
+            "critical":"The device has a critical hardware or component issue.",
+            "warning":"The device reported a hardware or component issue.",
+            "good":"No current device issues reported.",
+            "detailsUnavailable":"No diagnostic details were reported."
+        },
     "severities":{
       "critical":"Critical",
       "warning":"Warning",
@@ -672,6 +679,7 @@
       "maintenance":"Maintenance",
       "healthStatus":"Health Status",
       "weight":"Weight",
+      "message":"Details",
       "timestamp":"Timestamp",
       "logSource":"Log Source",
       "errorCard":"Could not load log data.",

@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge"
+import HealthBadge from "@/components/bins/HealthBadge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { CircleAlert, GaugeCircle, InfoIcon, LinkIcon, Trash2 } from "lucide-react"
 import BinMap from "../bins/BinMap"
@@ -38,7 +39,9 @@ function Dashboard() {
             accessorKey: 'status.level',
             id: 'Fill level',
             cell: ({ row }) => {
-                return row.original.status.level + '%'
+                return row.original.status.levelValid === false
+                    ? t('sensorUnavailable')
+                    : `${row.original.status.level}%`;
             }
         },
         {
@@ -46,13 +49,11 @@ function Dashboard() {
             accessorKey: 'status.health',
             id: 'Health',
             cell: ({ row }) => {
-                const health = row.original.status.health;
-                const variant = health === 'warning' ? 'pending' : health === 'critical' ? 'suspended' : 'default';
                 return (
-                    <Badge variant={variant}
-                    >
-                        {t(`levels.${health}`)}
-                    </Badge>
+                    <HealthBadge
+                        health={row.original.status.health}
+                        message={row.original.status.healthMessage}
+                    />
                 );
             },
 

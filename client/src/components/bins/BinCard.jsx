@@ -1,8 +1,7 @@
-import { getVariant } from "@/utils/binHelpers"
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "../ui/card"
 import { Button } from "../ui/button"
 import { Copy, Info, MapPin, Pencil, Trash2, Wrench, Check, X } from "lucide-react"
-import { Badge } from "../ui/badge"
+import HealthBadge from "./HealthBadge"
 import { Link } from "react-router-dom"
 import { Separator } from "../ui/separator"
 import { toast } from "sonner"
@@ -158,9 +157,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 </div>
                                 <div className="flex flex-row justify-center items-center gap-3">
                                     <Battery level={bin.status.battery} />
-                                    <Badge variant={getVariant(bin.status.health)}>
-                                        {t(`levels.${bin.status.health}`)}
-                                    </Badge>
+                                    <HealthBadge health={bin.status.health} message={bin.status.healthMessage} />
                                 </div>
                             </CardTitle>
                             <CardDescription>
@@ -172,7 +169,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
 
                                 <div className="flex flex-row justify-between">
                                     <span className="font-medium">{t('fillLevel')}:</span>
-                                    <span>{bin.status.level}%</span>
+                                    <span>{bin.status.levelValid === false ? t('sensorUnavailable') : `${bin.status.level}%`}</span>
                                 </div>
 
                                 <div className="flex flex-row justify-between">
