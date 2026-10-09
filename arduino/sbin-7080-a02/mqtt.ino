@@ -14,7 +14,6 @@ String instructionCheckTopic;
 String logTopic;
 unsigned long lastMqttAttemptAt = 0;
 unsigned long lastRegistrationAt = 0;
-uint8_t receivedInstructionCount = 0;
 }
 
 void setupMqtt() {
@@ -86,10 +85,10 @@ void publishRegistration(int batteryPercent) {
     Serial.println("Registration published: " + String(payload));
 }
 
-void requestInstructionCheck(unsigned long timeoutMs) {
+bool requestInstructionCheck(unsigned long timeoutMs) {
     if (!mqttClient.connected() || deviceKey.length() == 0) {
         Serial.println("⚠️ Cannot check for server instructions; using the sleep fallback.");
-        return;
+        return false;
     }
 
     StaticJsonDocument<128> doc;
@@ -99,7 +98,7 @@ void requestInstructionCheck(unsigned long timeoutMs) {
     if (payloadLength == 0 ||
         !mqttClient.publish(instructionCheckTopic.c_str(), payload, false)) {
         Serial.println("⚠️ Could not request server instructions; using the sleep fallback.");
-        return;
+        return false;
     }
 
     const uint32_t previousCheckCount = instructionCheckCounter;
@@ -115,19 +114,57 @@ void requestInstructionCheck(unsigned long timeoutMs) {
 
     if (instructionCheckCounter == previousCheckCount) {
         Serial.println("⚠️ No instruction response before timeout; returning to sleep.");
-        return;
+        return false;
     }
-    if (!instructionCheckAllowsSleep) {
-        Serial.println("⏳ Server returned pending instructions; keeping the modem online for the remaining fallback window.");
-        while (millis() - waitStartedAt < timeoutMs) {
-            mqttClient.loop();
-            delay(50);
-        }
-        Serial.println("⚠️ Instruction execution is not implemented yet; returning to sleep with instructions still queued.");
-        return;
+    if (!instructionResponseValid) {
+        Serial.println("⚠️ Server instruction response was invalid; using the sleep fallback.");
+        return false;
     }
 
-    Serial.println("✅ Server confirmed there are no pending instructions; returning to sleep.");
+    return true;
+}
+
+bool publishInstructionResult(
+    const String& instructionId,
+    const String& status,
+    const String& result
+) {
+    if (!mqttClient.connected() || deviceKey.length() == 0) {
+        Serial.println("⚠️ Cannot report instruction result; instruction will be retried.");
+        return false;
+    }
+
+    StaticJsonDocument<320> doc;
+    doc["deviceKey"] = deviceKey;
+    doc["instructionId"] = instructionId;
+    doc["status"] = status;
+    doc["result"] = result;
+
+    char payload[384];
+    size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
+    if (payloadLength == 0 || !mqttClient.publish(
+            ("bins/" + DeviceMac + "/update/instruction-result").c_str(),
+            payload,
+            false)) {
+        Serial.println("⚠️ Failed to publish instruction result; instruction will be retried.");
+        return false;
+    }
+
+    waitingInstructionResultId = instructionId;
+    const uint32_t previousAckCount = instructionResultAckCounter;
+    unsigned long waitStartedAt = millis();
+    while (instructionResultAckCounter == previousAckCount &&
+           millis() - waitStartedAt < 2000UL) {
+        mqttClient.loop();
+        delay(50);
+    }
+    waitingInstructionResultId = "";
+
+    if (instructionResultAckCounter == previousAckCount) {
+        Serial.println("⚠️ No server confirmation for instruction result; it will be retried.");
+        return false;
+    }
+    return true;
 }
 
 bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, const String& healthMessage) {
@@ -221,14 +258,40 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             doc["canSleep"].is<bool>()) {
             instructionCheckAllowsSleep = doc["canSleep"].as<bool>();
             JsonArrayConst instructions = doc["instructions"].as<JsonArrayConst>();
-            receivedInstructionCount = static_cast<uint8_t>(instructions.size());
+            pendingInstructionCount = 0;
+            instructionResponseValid = instructions.size() <= MAX_PENDING_INSTRUCTIONS;
+            for (JsonObjectConst instruction : instructions) {
+                if (pendingInstructionCount >= MAX_PENDING_INSTRUCTIONS ||
+                    !instruction["id"].is<const char*>() ||
+                    !instruction["type"].is<const char*>()) {
+                    instructionResponseValid = false;
+                    break;
+                }
+                pendingInstructions[pendingInstructionCount].id = instruction["id"].as<String>();
+                pendingInstructions[pendingInstructionCount].type = instruction["type"].as<String>();
+                if (pendingInstructions[pendingInstructionCount].id.length() == 0 ||
+                    pendingInstructions[pendingInstructionCount].type.length() == 0) {
+                    instructionResponseValid = false;
+                    break;
+                }
+                pendingInstructionCount++;
+            }
+            instructionResponseValid =
+                instructionResponseValid &&
+                instructionCheckAllowsSleep == (pendingInstructionCount == 0);
             instructionCheckCounter++;
-            if (receivedInstructionCount > 0) {
+            if (pendingInstructionCount > 0) {
                 Serial.printf(
-                    "📥 Server returned %u pending instruction(s); execution will be added in a later update.\n",
-                    receivedInstructionCount
+                    "📥 Server returned %u pending instruction(s).\n",
+                    pendingInstructionCount
                 );
             }
+        }
+        if (doc["status"] == "instruction_result" &&
+            doc["accepted"] == true &&
+            doc["instructionId"].is<const char*>() &&
+            waitingInstructionResultId == doc["instructionId"].as<String>()) {
+            instructionResultAckCounter++;
         }
         return;
     }

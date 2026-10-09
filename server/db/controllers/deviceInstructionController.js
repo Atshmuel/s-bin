@@ -2,13 +2,20 @@ import mongoose from "mongoose";
 import { deviceInstructionModel } from "../models/models.js";
 import { getBinShared } from "../service/sharedService.js";
 
+const supportedInstructionTypes = new Set(["report_now"]);
+
 export async function enqueueDeviceInstruction(req, res) {
     const { type, payload = {} } = req.body ?? {};
-    if (typeof type !== "string" || !/^[a-z][a-z0-9_.-]{0,63}$/i.test(type)) {
-        return res.status(400).json({ message: "A valid instruction type is required." });
+    if (typeof type !== "string" || !supportedInstructionTypes.has(type)) {
+        return res.status(400).json({
+            message: `Unsupported instruction type. Supported types: ${[...supportedInstructionTypes].join(", ")}.`
+        });
     }
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
         return res.status(400).json({ message: "Instruction payload must be a JSON object." });
+    }
+    if (Object.keys(payload).length > 0) {
+        return res.status(400).json({ message: "report_now does not accept a payload." });
     }
 
     const serializedPayload = JSON.stringify(payload);

@@ -40,6 +40,13 @@
 #define SENSOR_RXD_PIN 44
 #define SENSOR_TXD_PIN 43
 
+constexpr uint8_t MAX_PENDING_INSTRUCTIONS = 2;
+
+struct DeviceInstruction {
+    String id;
+    String type;
+};
+
 extern const char apn[];
 
 extern XPowersPMU PMU;
@@ -71,6 +78,11 @@ extern uint64_t nextWakeEpoch;
 extern uint32_t scheduleAckCounter;
 extern uint32_t instructionCheckCounter;
 extern bool instructionCheckAllowsSleep;
+extern bool instructionResponseValid;
+extern DeviceInstruction pendingInstructions[MAX_PENDING_INSTRUCTIONS];
+extern uint8_t pendingInstructionCount;
+extern uint32_t instructionResultAckCounter;
+extern String waitingInstructionResultId;
 extern unsigned long gpsAcquisitionStartedAt;
 extern bool gpsAttemptDue;
 extern bool gpsFixUpdatedThisCycle;
@@ -106,5 +118,7 @@ void maintainMqttConnection();
 void mqttCallback(char* topic, byte* payload, unsigned int length);
 void publishRegistration(int batteryPercent);
 bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, const String& healthMessage);
-void requestInstructionCheck(unsigned long timeoutMs);
+bool requestInstructionCheck(unsigned long timeoutMs);
+bool publishInstructionResult(const String& instructionId, const String& status, const String& result);
+void processPendingInstructions(unsigned long timeoutMs);
 bool updateGpsLocation();

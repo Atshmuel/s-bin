@@ -227,7 +227,7 @@ async function handleInstructionResult(mac, { deviceKey, instructionId, status, 
         return;
     }
 
-    const instruction = await deviceInstructionModel.findOneAndUpdate(
+    let instruction = await deviceInstructionModel.findOneAndUpdate(
         { _id: instructionId, binId: bin._id, status: "pending" },
         {
             $set: {
@@ -239,8 +239,11 @@ async function handleInstructionResult(mac, { deviceKey, instructionId, status, 
         { new: true }
     );
     if (!instruction) {
-        console.warn(`Instruction result ignored for ${mac}: instruction is missing or no longer pending.`);
-        return;
+        instruction = await deviceInstructionModel.findOne({ _id: instructionId, binId: bin._id });
+        if (instruction?.status !== status) {
+            console.warn(`Instruction result ignored for ${mac}: instruction is missing or has a different final status.`);
+            return;
+        }
     }
 
     mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, JSON.stringify({
