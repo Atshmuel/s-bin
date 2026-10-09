@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { binModel } from '../models/models.js'
+import { binModel, deviceInstructionModel } from '../models/models.js'
 import { appendFilter } from '../../utils/helpers.js'
 import { deleteLogsForBins, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
@@ -330,6 +330,7 @@ export async function deleteBin(req, res) {
         }
 
         const deleteLogsResult = await deleteLogsForBins([id], session)
+        await deviceInstructionModel.deleteMany({ binId: deleteBinResult._id }, { session })
 
         removeBinConfig(deleteBinResult.macAddress)
 
@@ -371,6 +372,7 @@ export async function deleteBinsBatch(req, res) {
 
         const deleteBinsResult = await binModel.deleteMany({ _id: { $in: binsToDeleteIds } }, { session });
         const deleteLogsResult = await deleteLogsForBins(binsToDeleteIds, session)
+        await deviceInstructionModel.deleteMany({ binId: { $in: binsToDeleteIds } }, { session })
 
         binsToDelete.forEach(bin => {
             removeBinConfig(bin.macAddress);

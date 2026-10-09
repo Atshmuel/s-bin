@@ -3,7 +3,7 @@
 namespace {
 constexpr char MQTT_SERVER[] = "broker.hivemq.com";
 constexpr uint16_t MQTT_PORT = 1883;
-constexpr uint16_t MQTT_BUFFER_SIZE = 512;
+constexpr uint16_t MQTT_BUFFER_SIZE = 1024;
 constexpr unsigned long MQTT_RETRY_INTERVAL_MS = 5000;
 constexpr unsigned long REGISTRATION_INTERVAL_MS = 30000;
 
@@ -14,6 +14,7 @@ String instructionCheckTopic;
 String logTopic;
 unsigned long lastMqttAttemptAt = 0;
 unsigned long lastRegistrationAt = 0;
+uint8_t receivedInstructionCount = 0;
 }
 
 void setupMqtt() {
@@ -117,7 +118,12 @@ void requestInstructionCheck(unsigned long timeoutMs) {
         return;
     }
     if (!instructionCheckAllowsSleep) {
-        Serial.println("⚠️ Server reported pending instructions, but instruction handling is not implemented; using the sleep fallback.");
+        Serial.println("⏳ Server returned pending instructions; keeping the modem online for the remaining fallback window.");
+        while (millis() - waitStartedAt < timeoutMs) {
+            mqttClient.loop();
+            delay(50);
+        }
+        Serial.println("⚠️ Instruction execution is not implemented yet; returning to sleep with instructions still queued.");
         return;
     }
 
@@ -177,7 +183,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         message += static_cast<char>(payload[i]);
     }
 
-    StaticJsonDocument<256> doc;
+    StaticJsonDocument<1536> doc;
     DeserializationError error = deserializeJson(doc, message);
     if (error) {
         Serial.print("❌ Invalid MQTT message: ");
@@ -214,7 +220,15 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         if (doc["status"] == "instruction_check" &&
             doc["canSleep"].is<bool>()) {
             instructionCheckAllowsSleep = doc["canSleep"].as<bool>();
+            JsonArrayConst instructions = doc["instructions"].as<JsonArrayConst>();
+            receivedInstructionCount = static_cast<uint8_t>(instructions.size());
             instructionCheckCounter++;
+            if (receivedInstructionCount > 0) {
+                Serial.printf(
+                    "📥 Server returned %u pending instruction(s); execution will be added in a later update.\n",
+                    receivedInstructionCount
+                );
+            }
         }
         return;
     }

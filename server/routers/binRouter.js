@@ -3,6 +3,7 @@ import { authToken, authRole } from "../middlewares/authMiddleware.js";
 import { validateBodyFields, validateParamExist, validateRequestBodyBinIds } from "../middlewares/validationMiddleware.js";
 import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName, getRouteBins } from "../db/controllers/binController.js";
 import { removeBinConfig } from "../mqtt/mqttHandlers.js";
+import { cancelDeviceInstruction, enqueueDeviceInstruction, listDeviceInstructions } from "../db/controllers/deviceInstructionController.js";
 
 export const binRouter = Router();
 
@@ -23,6 +24,17 @@ binRouter.patch('/name/:id', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next) //update bin name by id
 }, validateParamExist(), validateBodyFields(['name']), updateBinName)
 
+// Device instructions are managed by organization owners and admins.
+binRouter.post('/:id/instructions', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+}, enqueueDeviceInstruction)
+binRouter.get('/:id/instructions', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+}, listDeviceInstructions)
+binRouter.delete('/:id/instructions/:instructionId', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+}, cancelDeviceInstruction)
+
 
 //deletes
 binRouter.delete('/', (req, res, next) => {
@@ -35,7 +47,6 @@ binRouter.delete('/:id', (req, res, next) => {
 binRouter.delete('/mac/:macId', (req, res, next) => {
     authRole([process.env.ROLE_OWNER])(req, res, next)
 }, validateParamExist('macId', false), removeBinConfigViaMAC)
-
 
 
 

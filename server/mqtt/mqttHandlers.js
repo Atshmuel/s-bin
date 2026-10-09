@@ -1,8 +1,9 @@
+import mongoose from "mongoose";
 import { getBinByMacAndKeyShared, getUserShared, organizationExist } from "../db/service/sharedService.js";
 import { appendFilter, checkPayloadFields, generateRandomToken } from '../utils/helpers.js'
 import { mqttClient } from './mqttClient.js'
 import { BIN_REGISTER_TOPIC, BIN_ACK_TOPIC, BIN_ACK_COMMAND } from "./mqttTopics.js";
-import { binLogModel, binModel } from "../db/models/models.js";
+import { binLogModel, binModel, deviceInstructionModel } from "../db/models/models.js";
 import { getNextReportSchedule } from "../utils/deviceSchedule.js";
 
 export async function handleMqttMessage(topic, payload) {
@@ -32,6 +33,9 @@ export async function handleMqttMessage(topic, payload) {
             break;
         case "instructions":
             await handleInstructionCheck(mac, payload);
+            break;
+        case "instruction-result":
+            await handleInstructionResult(mac, payload);
             break;
         default:
             console.log("Unknown topic:", field);
@@ -167,14 +171,85 @@ async function handleInstructionCheck(mac, { deviceKey }) {
         return;
     }
 
+    const pendingInstructions = await deviceInstructionModel.find({
+        binId: bin._id,
+        status: "pending"
+    })
+        .sort({ createdAt: 1 })
+        .limit(2)
+        .lean();
+    const instructions = pendingInstructions.map(({ _id, type, payload }) => ({
+        id: _id.toString(),
+        type,
+        payload
+    }));
+
     const response = JSON.stringify({
         status: "instruction_check",
-        canSleep: true,
-        instructions: []
+        canSleep: instructions.length === 0,
+        instructions
     });
-    mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, response, { qos: 1 }, error => {
+    mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, response, { qos: 1 }, async error => {
         if (error) {
             console.error(`Failed to reply to instruction check for ${mac}:`, error);
+            return;
+        }
+        if (pendingInstructions.length > 0) {
+            try {
+                await deviceInstructionModel.updateMany(
+                    {
+                        _id: { $in: pendingInstructions.map(instruction => instruction._id) },
+                        status: "pending"
+                    },
+                    {
+                        $inc: { deliveryAttempts: 1 },
+                        $set: { lastDeliveredAt: new Date() }
+                    }
+                );
+            } catch (updateError) {
+                console.error(`Failed to record instruction delivery attempts for ${mac}:`, updateError);
+            }
+        }
+    });
+}
+
+async function handleInstructionResult(mac, { deviceKey, instructionId, status, result }) {
+    if (!deviceKey || !mongoose.Types.ObjectId.isValid(instructionId) ||
+        !["completed", "failed"].includes(status) ||
+        (result !== undefined && (typeof result !== "string" || result.length > 256))) {
+        console.warn(`Invalid instruction result received for ${mac}.`);
+        return;
+    }
+
+    const bin = await getBinByMacAndKeyShared(mac, deviceKey);
+    if (!bin) {
+        console.warn(`Instruction result rejected for ${mac}: invalid device credentials.`);
+        return;
+    }
+
+    const instruction = await deviceInstructionModel.findOneAndUpdate(
+        { _id: instructionId, binId: bin._id, status: "pending" },
+        {
+            $set: {
+                status,
+                completedAt: new Date(),
+                ...(result === undefined ? {} : { result })
+            }
+        },
+        { new: true }
+    );
+    if (!instruction) {
+        console.warn(`Instruction result ignored for ${mac}: instruction is missing or no longer pending.`);
+        return;
+    }
+
+    mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, JSON.stringify({
+        status: "instruction_result",
+        instructionId: instruction._id.toString(),
+        accepted: true
+    }), { qos: 1 }, error => {
+        if (error) {
+            console.error(`Failed to acknowledge instruction result for ${mac}:`, error);
         }
     });
 }
