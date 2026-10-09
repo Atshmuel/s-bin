@@ -4,7 +4,7 @@ namespace {
 constexpr time_t MIN_VALID_EPOCH = 1735689600;
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 constexpr time_t GPS_REFRESH_INTERVAL_SECONDS = 31LL * 24 * 60 * 60;
-constexpr uint64_t DEEP_SLEEP_TEST_SECONDS = 30;
+constexpr uint64_t DEEP_SLEEP_TEST_SECONDS = 60;
 }
 
 bool isSystemClockValid() {

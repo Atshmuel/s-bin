@@ -30,6 +30,9 @@ export async function handleMqttMessage(topic, payload) {
         case "maintenance":
             await handleDeviceMaintenance(mac, payload);
             break;
+        case "instructions":
+            await handleInstructionCheck(mac, payload);
+            break;
         default:
             console.log("Unknown topic:", field);
     }
@@ -152,6 +155,29 @@ async function handleDeviceLog(mac, { deviceKey, location, health, level, sensor
     );
 }
 
+async function handleInstructionCheck(mac, { deviceKey }) {
+    if (!deviceKey) {
+        console.warn(`Instruction check rejected for ${mac}: missing device key.`);
+        return;
+    }
+
+    const bin = await getBinByMacAndKeyShared(mac, deviceKey);
+    if (!bin) {
+        console.warn(`Instruction check rejected for ${mac}: invalid device credentials.`);
+        return;
+    }
+
+    const response = JSON.stringify({
+        status: "instruction_check",
+        canSleep: true,
+        instructions: []
+    });
+    mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, response, { qos: 1 }, error => {
+        if (error) {
+            console.error(`Failed to reply to instruction check for ${mac}:`, error);
+        }
+    });
+}
 
 //TODO: implement these handlers
 async function handleDeviceError(mac, { deviceKey, location, health, level, battery, message }) {

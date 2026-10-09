@@ -10,6 +10,7 @@ constexpr unsigned long REGISTRATION_INTERVAL_MS = 30000;
 String registrationTopic = "bins/register";
 String acknowledgementTopic;
 String commandTopic;
+String instructionCheckTopic;
 String logTopic;
 unsigned long lastMqttAttemptAt = 0;
 unsigned long lastRegistrationAt = 0;
@@ -18,6 +19,7 @@ unsigned long lastRegistrationAt = 0;
 void setupMqtt() {
     acknowledgementTopic = "bins/ack/" + DeviceMac;
     commandTopic = "bins/command/" + DeviceMac;
+    instructionCheckTopic = "bins/" + DeviceMac + "/update/instructions";
     logTopic = "bins/" + DeviceMac + "/update/log";
 
     mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
@@ -81,6 +83,45 @@ void publishRegistration(int batteryPercent) {
 
     lastRegistrationAt = millis();
     Serial.println("Registration published: " + String(payload));
+}
+
+void requestInstructionCheck(unsigned long timeoutMs) {
+    if (!mqttClient.connected() || deviceKey.length() == 0) {
+        Serial.println("⚠️ Cannot check for server instructions; using the sleep fallback.");
+        return;
+    }
+
+    StaticJsonDocument<128> doc;
+    doc["deviceKey"] = deviceKey;
+    char payload[160];
+    size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
+    if (payloadLength == 0 ||
+        !mqttClient.publish(instructionCheckTopic.c_str(), payload, false)) {
+        Serial.println("⚠️ Could not request server instructions; using the sleep fallback.");
+        return;
+    }
+
+    const uint32_t previousCheckCount = instructionCheckCounter;
+    instructionCheckAllowsSleep = false;
+    Serial.printf("Checking for server instructions (up to %lu seconds)...\n", timeoutMs / 1000);
+
+    unsigned long waitStartedAt = millis();
+    while (instructionCheckCounter == previousCheckCount &&
+           millis() - waitStartedAt < timeoutMs) {
+        mqttClient.loop();
+        delay(50);
+    }
+
+    if (instructionCheckCounter == previousCheckCount) {
+        Serial.println("⚠️ No instruction response before timeout; returning to sleep.");
+        return;
+    }
+    if (!instructionCheckAllowsSleep) {
+        Serial.println("⚠️ Server reported pending instructions, but instruction handling is not implemented; using the sleep fallback.");
+        return;
+    }
+
+    Serial.println("✅ Server confirmed there are no pending instructions; returning to sleep.");
 }
 
 bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, const String& healthMessage) {
@@ -169,6 +210,11 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             } else {
                 Serial.println("⚠️ Server sent an invalid or expired nextWakeEpoch.");
             }
+        }
+        if (doc["status"] == "instruction_check" &&
+            doc["canSleep"].is<bool>()) {
+            instructionCheckAllowsSleep = doc["canSleep"].as<bool>();
+            instructionCheckCounter++;
         }
         return;
     }
