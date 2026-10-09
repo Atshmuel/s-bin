@@ -24,15 +24,15 @@ binRouter.patch('/name/:id', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next) //update bin name by id
 }, validateParamExist(), validateBodyFields(['name']), updateBinName)
 
-// Device instructions are managed by organization owners and admins.
+// Device instructions are restricted to owners.
 binRouter.post('/:id/instructions', (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+    authRole([process.env.ROLE_OWNER])(req, res, next)
 }, enqueueDeviceInstruction)
 binRouter.get('/:id/instructions', (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+    authRole([process.env.ROLE_OWNER])(req, res, next)
 }, listDeviceInstructions)
 binRouter.delete('/:id/instructions/:instructionId', (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+    authRole([process.env.ROLE_OWNER])(req, res, next)
 }, cancelDeviceInstruction)
 
 
@@ -47,6 +47,5 @@ binRouter.delete('/:id', (req, res, next) => {
 binRouter.delete('/mac/:macId', (req, res, next) => {
     authRole([process.env.ROLE_OWNER])(req, res, next)
 }, validateParamExist('macId', false), removeBinConfigViaMAC)
-
 
 

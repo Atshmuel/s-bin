@@ -63,7 +63,7 @@ function App() {
                   <Route path="map" element={<BinMap />} />
                   <Route path="add" element={<AddBin />} />
                   <Route path="instructions" element={
-                    <ProtectedRoute roles={['admin', 'owner']}>
+                    <ProtectedRoute roles={['owner']}>
                       <InstructionTesting />
                     </ProtectedRoute>
                   } />

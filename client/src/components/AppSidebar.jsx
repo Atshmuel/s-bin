@@ -65,7 +65,7 @@ export function AppSidebar({
           {
             title: t("sidebar.managment.items.instructionTesting"),
             url: "instructions",
-            isAdminAndAbove: true,
+            isOwnerOnly: true,
           },
         ],
       },
