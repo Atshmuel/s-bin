@@ -522,6 +522,10 @@ void loadDeviceSettings() {
     lastGpsAttemptEpoch = static_cast<time_t>(preferences.getLong64("gpsAttempt", 0));
     nextWakeEpoch = preferences.getULong64("nextWake", 0);
     scheduledSleepDurationSeconds = preferences.getUInt("sleepDuration", 0);
+    meshAwakeWindowSeconds = preferences.getUInt("meshAwake", DEFAULT_MESH_AWAKE_WINDOW_SECONDS);
+    if (meshAwakeWindowSeconds == 0 || meshAwakeWindowSeconds > MAX_MESH_AWAKE_WINDOW_SECONDS) {
+        meshAwakeWindowSeconds = DEFAULT_MESH_AWAKE_WINDOW_SECONDS;
+    }
     bool hasStoredLocation = preferences.isKey("gpsEpoch");
     preferences.end();
 

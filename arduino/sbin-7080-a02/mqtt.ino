@@ -175,7 +175,7 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
     int level = calculateFillLevel(distanceMm);
     bool sensorOk = level >= 0;
 
-    StaticJsonDocument<384> doc;
+    StaticJsonDocument<512> doc;
     doc["deviceKey"] = deviceKey;
     doc["sensorOk"] = sensorOk;
     if (sensorOk) {
@@ -185,6 +185,7 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
     if (scheduledSleepDurationSeconds > 0) {
         doc["sleepDurationSeconds"] = scheduledSleepDurationSeconds;
     }
+    doc["meshAwakeWindowSeconds"] = meshAwakeWindowSeconds;
     doc["health"] = health;
     doc["weight"] = 0;
     doc["location"][0] = latitude;
@@ -193,7 +194,7 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
         doc["message"] = healthMessage;
     }
 
-    char payload[384];
+    char payload[512];
     size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
     if (payloadLength == 0) {
         Serial.println("❌ Failed to serialize telemetry.");

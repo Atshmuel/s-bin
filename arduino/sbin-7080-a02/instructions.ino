@@ -78,6 +78,24 @@ uint32_t processInstruction(const DeviceInstruction& instruction) {
             );
         }
         saveCachedInstructionResult(instruction.id, status, result);
+    } else if (instruction.type == "set_mesh_awake_window") {
+        if (instruction.durationSeconds == 0 ||
+            instruction.durationSeconds > MAX_MESH_AWAKE_WINDOW_SECONDS) {
+            status = "failed";
+            result = "invalid_mesh_awake_window_duration";
+        } else {
+            meshAwakeWindowSeconds = instruction.durationSeconds;
+            preferences.begin("credentials", false);
+            preferences.putUInt("meshAwake", meshAwakeWindowSeconds);
+            preferences.end();
+            status = "completed";
+            result = "mesh_awake_window_" + String(meshAwakeWindowSeconds) + "s";
+            Serial.printf(
+                "📡 Mesh awake window set to %lu seconds.\n",
+                static_cast<unsigned long>(meshAwakeWindowSeconds)
+            );
+        }
+        saveCachedInstructionResult(instruction.id, status, result);
     } else if (instruction.type == "calibrate_empty_bin") {
         Serial.printf("📏 Starting empty-bin calibration for instruction %s.\n",
                       instruction.id.c_str());

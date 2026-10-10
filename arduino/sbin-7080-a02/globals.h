@@ -42,6 +42,10 @@
 
 constexpr uint8_t MAX_PENDING_INSTRUCTIONS = 2;
 constexpr uint32_t MAX_AWAKE_EXTENSION_SECONDS = 3600;
+// Minimum time a node stays awake after each wake-up, so nodes that wake on
+// the same schedule share a common window for ESP-NOW LR mesh communication.
+constexpr uint32_t DEFAULT_MESH_AWAKE_WINDOW_SECONDS = 10;
+constexpr uint32_t MAX_MESH_AWAKE_WINDOW_SECONDS = 60;
 
 struct DeviceInstruction {
     String id;
@@ -78,6 +82,7 @@ extern time_t lastGpsAttemptEpoch;
 extern time_t lastGpsUpdateEpoch;
 extern uint64_t nextWakeEpoch;
 extern uint32_t scheduledSleepDurationSeconds;
+extern uint32_t meshAwakeWindowSeconds;
 extern uint32_t scheduleAckCounter;
 extern uint32_t instructionCheckCounter;
 extern bool instructionCheckAllowsSleep;
