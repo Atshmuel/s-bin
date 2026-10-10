@@ -21,19 +21,24 @@ bool startGpsAcquisition() {
 }
 
 bool stopGpsAcquisition() {
-    if (!modem.disableGPS()) {
-        return false;
+    const bool gpsDisabled = modem.disableGPS();
+    if (!gpsDisabled) {
+        Serial.println("❌ Could not disable GNSS.");
     }
 
     modem.sendAT("+SGPIO=0,5,1,0");
-    if (modem.waitResponse() != 1) {
+    const bool antennaPowerDisabled = modem.waitResponse() == 1;
+    if (!antennaPowerDisabled) {
         Serial.println("❌ GNSS stopped, but antenna power could not be disabled.");
-        return false;
     }
 
     delay(1000);
     gpsModeActive = false;
-    Serial.println("GNSS stopped; cellular data can now connect.");
+    if (!gpsDisabled || !antennaPowerDisabled) {
+        return false;
+    }
+
+    Serial.println("GNSS and antenna power are off.");
     return true;
 }
 

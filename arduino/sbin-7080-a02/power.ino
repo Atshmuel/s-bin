@@ -7,6 +7,7 @@ bool initializePowerManagement() {
         return false;
     }
 
+    PMU.setChargingLedMode(XPOWERS_CHG_LED_OFF);
     PMU.setVbusCurrentLimit(XPOWERS_AXP2101_VBUS_CUR_LIM_1500MA);
     PMU.setDC3Voltage(3300);
     PMU.enableDC3();

@@ -35,6 +35,10 @@ uint32_t serialStart = millis();
         }
     }
 
+    if (!stopGpsAcquisition()) {
+        Serial.println("⚠️ Could not ensure GNSS and antenna power are off before checking the location refresh schedule.");
+    }
+
     if (!synchronizeClockFromNetwork()) {
         while (!isSystemClockValid()) {
             Serial.println("⏳ Waiting for valid network time before scheduling reports.");
