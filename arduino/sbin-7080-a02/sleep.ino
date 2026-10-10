@@ -5,6 +5,9 @@ constexpr time_t MIN_VALID_EPOCH = 1735689600;
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 constexpr time_t GPS_REFRESH_INTERVAL_SECONDS = 31LL * 24 * 60 * 60;
 constexpr uint32_t FALLBACK_SLEEP_SECONDS = 20;
+// Minimum time the node stays awake after each wake-up, so nodes that wake on
+// the same schedule share a common window for ESP-NOW LR communication.
+constexpr unsigned long MIN_AWAKE_WINDOW_MS = 10000UL;
 }
 
 bool isSystemClockValid() {
@@ -102,6 +105,17 @@ void saveLastKnownLocation() {
 }
 
 void enterDeepSleepUntilNextReport() {
+    const unsigned long awakeMs = millis();
+    if (awakeMs < MIN_AWAKE_WINDOW_MS) {
+        Serial.printf(
+            "⏱️ Holding the awake window for %lu more ms before sleep.\n",
+            MIN_AWAKE_WINDOW_MS - awakeMs
+        );
+        while (millis() < MIN_AWAKE_WINDOW_MS) {
+            delay(50);
+        }
+    }
+
     const bool clockValid = isSystemClockValid();
     const uint64_t now = clockValid ? static_cast<uint64_t>(time(nullptr)) : 0;
     uint64_t wakeEpoch = nextWakeEpoch;
