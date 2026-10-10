@@ -113,6 +113,7 @@ async function handleDeviceLog(mac, {
     weight,
     message: healthMessage,
     sleepDurationSeconds,
+    meshAwakeWindowSeconds,
 }) {
     if (!checkPayloadFields({
         location,
@@ -123,6 +124,7 @@ async function handleDeviceLog(mac, {
         weight,
         message: healthMessage,
         sleepDurationSeconds,
+        meshAwakeWindowSeconds,
     })) return;
 
     const bin = await getBinByMacAndKeyShared(mac, deviceKey);
@@ -154,6 +156,7 @@ async function handleDeviceLog(mac, {
         newLevel: levelIsValid ? level : null,
         battery,
         ...(sleepDurationSeconds === undefined ? {} : { sleepDurationSeconds }),
+        ...(meshAwakeWindowSeconds === undefined ? {} : { meshAwakeWindowSeconds }),
         severity,
         type: 'log',
         source: 'sensor',
@@ -173,6 +176,9 @@ async function handleDeviceLog(mac, {
     bin.status.battery = battery;
     if (sleepDurationSeconds !== undefined) {
         bin.status.deepSleepSeconds = sleepDurationSeconds;
+    }
+    if (meshAwakeWindowSeconds !== undefined) {
+        bin.status.meshAwakeWindowSeconds = meshAwakeWindowSeconds;
     }
     bin.status.weight = weight;
     bin.location.coordinates = location;
@@ -285,6 +291,14 @@ async function handleInstructionResult(mac, { deviceKey, instructionId, status, 
             console.warn(`Instruction result ignored for ${mac}: instruction is missing or has a different final status.`);
             return;
         }
+    }
+
+    if (instruction.type === "set_mesh_awake_window" && status === "completed" &&
+        Number.isInteger(instruction.payload?.durationSeconds)) {
+        await binModel.updateOne(
+            { _id: bin._id },
+            { $set: { "status.meshAwakeWindowSeconds": instruction.payload.durationSeconds } }
+        );
     }
 
     mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, JSON.stringify({

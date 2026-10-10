@@ -29,7 +29,8 @@
         "minutes":"דק׳",
         "hours":"שעות"
     },
- "deepSleepDuration":"משך השינה העמוקה",
+ "deepSleepDuration":"משך שינה",
+ "meshAwakeWindow":"משך ערות",
 "backToBin":"חזרה לפח",
 "user":"משתמש",
 "your":"שלך",
@@ -270,6 +271,9 @@
       "duration":"זמן ערות נוסף (בדקות)",
       "durationLimit":"בחר בין דקה אחת ל־60 דקות. רק הפח שנבחר יישאר ער.",
       "durationValue":"זמן ערות נוסף: {{count}} דקות",
+      "meshWindow":"משך ערות (בשניות)",
+      "meshWindowLimit":"בחר בין שנייה אחת ל־60 שניות. יחול בכל התעוררות עד לשינוי הבא.",
+      "meshWindowValue":"משך ערות: {{count}} שניות",
       "queueTitle":"תור ההנחיות",
       "queueDescription":"התור מתעדכן אוטומטית מדי כמה שניות.",
       "selectBinToView":"בחר פח כדי לצפות בתור ההנחיות שלו.",
@@ -287,7 +291,8 @@
       "types":{
         "report_now":"בקשת דיווח מיידי",
         "stay_awake":"הארכת זמן הערות",
-        "calibrate_empty_bin":"כיול מחדש של פח ריק"
+        "calibrate_empty_bin":"כיול מחדש של פח ריק",
+        "set_mesh_awake_window":"הגדרת משך ערות"
       },
       "statuses":{
         "pending":"ממתינה",

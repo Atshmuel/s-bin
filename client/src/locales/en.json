@@ -29,7 +29,8 @@
         "minutes":"min",
         "hours":"h"
     },
-    "deepSleepDuration":"Deep Sleep duration",
+    "deepSleepDuration":"Sleep duration",
+    "meshAwakeWindow":"Awake duration",
 "backToBin":"Back to Bin",
 "user":"User",
 "your":"Your",
@@ -271,6 +272,9 @@
       "duration":"Additional awake time (minutes)",
       "durationLimit":"Choose 1 to 60 minutes. Only the selected bin stays awake.",
       "durationValue":"Additional awake time: {{count}} minutes",
+      "meshWindow":"Awake duration (seconds)",
+      "meshWindowLimit":"Choose 1 to 60 seconds. Applied on every wake-up until changed.",
+      "meshWindowValue":"Awake duration: {{count}} seconds",
       "queueTitle":"Instruction queue",
       "queueDescription":"The queue refreshes automatically every few seconds.",
       "selectBinToView":"Select a bin to view its instruction queue.",
@@ -288,7 +292,8 @@
       "types":{
         "report_now":"Request an immediate report",
         "stay_awake":"Extend awake time",
-        "calibrate_empty_bin":"Recalibrate empty-bin reference"
+        "calibrate_empty_bin":"Recalibrate empty-bin reference",
+        "set_mesh_awake_window":"Set awake duration"
       },
       "statuses":{
         "pending":"Pending",

@@ -75,6 +75,7 @@ export function checkPayloadFields({
     weight,
     message,
     sleepDurationSeconds,
+    meshAwakeWindowSeconds,
 }) {
     const valid = ["good", "warning", "critical"];
     if (
@@ -102,6 +103,9 @@ export function checkPayloadFields({
     if (sleepDurationSeconds !== undefined &&
         (!Number.isInteger(sleepDurationSeconds) ||
             sleepDurationSeconds < 1 || sleepDurationSeconds > 86400)) return false
+    if (meshAwakeWindowSeconds !== undefined &&
+        (!Number.isInteger(meshAwakeWindowSeconds) ||
+            meshAwakeWindowSeconds < 1 || meshAwakeWindowSeconds > 60)) return false
 
     return true;
 }

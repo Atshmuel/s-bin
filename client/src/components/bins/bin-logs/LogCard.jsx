@@ -80,6 +80,13 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 </div>
                             )}
 
+                            {log.meshAwakeWindowSeconds != null && (
+                                <div className="flex justify-between">
+                                    <span className="font-medium">{t("meshAwakeWindow")}:</span>
+                                    <span>{log.meshAwakeWindowSeconds} {t("units.seconds")}</span>
+                                </div>
+                            )}
+
                             {log.message &&
                                 <div className="space-y-1">
                                     <span className="font-medium">{t("components.logCard.message")}:</span>
