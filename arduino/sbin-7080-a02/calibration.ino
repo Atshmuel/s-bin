@@ -22,8 +22,10 @@ bool calibrateBinDepth() {
 
     if (maxDistanceMm <= 0) {
         Serial.println("❌ No valid A02 readings; calibration was not saved.");
+        lastCalibrationFailed = true;
         return false;
     }
+    lastCalibrationFailed = false;
 
     binDepthMm = maxDistanceMm;
     preferences.begin("credentials", false);

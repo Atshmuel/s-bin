@@ -81,23 +81,26 @@ uint32_t processInstruction(const DeviceInstruction& instruction) {
     } else if (instruction.type == "calibrate_empty_bin") {
         Serial.printf("📏 Starting empty-bin calibration for instruction %s.\n",
                       instruction.id.c_str());
-        if (!calibrateBinDepth()) {
-            status = "failed";
-            result = "empty_bin_calibration_failed";
-        } else {
+        const bool calibrated = calibrateBinDepth();
+        if (calibrated) {
             status = "completed";
             result = "empty_depth_mm_" + String(binDepthMm);
+        } else {
+            status = "failed";
+            result = "empty_bin_calibration_failed";
+        }
 
-            int distanceMm = getDistanceMm();
-            bool sensorOk = distanceMm > 0 && calculateFillLevel(distanceMm) >= 0;
-            uint16_t batteryMillivolts = readBatteryMillivolts();
-            bool pmuOk = pmuAvailable && batteryMillivolts > 0;
-            int batteryPercent = readBatteryPercent();
-            String health = updateDeviceHealth(sensorOk, pmuOk, false, true);
-            String healthMessage = getDeviceHealthMessage(distanceMm);
-            if (!publishTelemetry(distanceMm, batteryPercent, health, healthMessage)) {
-                Serial.println("⚠️ Calibration succeeded, but the refreshed telemetry could not be published.");
-            }
+        // Publish refreshed telemetry either way, so the bin's health reflects
+        // the calibration outcome instead of the report sent before it.
+        int distanceMm = getDistanceMm();
+        bool sensorOk = calibrated && distanceMm > 0 && calculateFillLevel(distanceMm) >= 0;
+        uint16_t batteryMillivolts = readBatteryMillivolts();
+        bool pmuOk = pmuAvailable && batteryMillivolts > 0;
+        int batteryPercent = readBatteryPercent();
+        String health = updateDeviceHealth(sensorOk, pmuOk, false, true);
+        String healthMessage = getDeviceHealthMessage(distanceMm);
+        if (!publishTelemetry(distanceMm, batteryPercent, health, healthMessage)) {
+            Serial.println("⚠️ The refreshed telemetry after calibration could not be published.");
         }
         saveCachedInstructionResult(instruction.id, status, result);
     } else {

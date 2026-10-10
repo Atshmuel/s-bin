@@ -22,6 +22,7 @@ bool hasGpsFix = false;
 bool gpsModeActive = false;
 bool configurationPortalActive = false;
 int binDepthMm = 0;
+bool lastCalibrationFailed = false;
 bool pmuAvailable = false;
 RTC_DATA_ATTR uint8_t sensorFailureCycles = 0;
 RTC_DATA_ATTR uint8_t pmuFailureCycles = 0;

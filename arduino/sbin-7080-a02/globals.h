@@ -72,6 +72,7 @@ extern String deviceKey;
 extern float latitude;
 extern float longitude;
 extern bool hasGpsFix;
+extern bool lastCalibrationFailed;
 extern bool gpsModeActive;
 extern bool configurationPortalActive;
 extern int binDepthMm;

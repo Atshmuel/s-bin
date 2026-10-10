@@ -75,7 +75,7 @@ String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk)
 
 String getDeviceHealthMessage(int distanceMm) {
     String message;
-    if (sensorFailureCycles > 0 && binDepthMm <= 0) {
+    if (sensorFailureCycles > 0 && (binDepthMm <= 0 || lastCalibrationFailed)) {
         message = "Empty-bin calibration failed (A02 distance: ";
         message += String(distanceMm);
         message += " mm)";
