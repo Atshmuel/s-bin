@@ -5,13 +5,53 @@ constexpr time_t MIN_VALID_EPOCH = 1735689600;
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 constexpr time_t GPS_REFRESH_INTERVAL_SECONDS = 31LL * 24 * 60 * 60;
 constexpr uint32_t FALLBACK_SLEEP_SECONDS = 20;
+// Sleep before retrying when the clock could not be set after a cold boot.
+constexpr uint32_t CLOCK_RETRY_SLEEP_SECONDS = 300;
+
+// Returns only if the USB Serial Monitor stays connected for the whole wait.
+void sleepOrWaitOnUsb(uint64_t sleepSeconds) {
+    if (Serial) {
+        Serial.printf(
+            "🛠️ USB Serial Monitor is connected; waiting %llu seconds until the next report attempt.\n",
+            static_cast<unsigned long long>(sleepSeconds)
+        );
+        Serial.flush();
+        const unsigned long waitStartedAt = millis();
+        const uint64_t requestedWaitMs = sleepSeconds * 1000ULL;
+        while (Serial && millis() - waitStartedAt < requestedWaitMs) {
+            delay(100);
+        }
+        if (Serial) {
+            return;
+        }
+
+        const uint64_t elapsedSeconds = (millis() - waitStartedAt) / 1000ULL;
+        if (elapsedSeconds >= sleepSeconds) {
+            return;
+        }
+        sleepSeconds -= elapsedSeconds;
+    }
+
+    if (modem.testAT(1000) && !modem.poweroff()) {
+        Serial.println("⚠️ Modem did not confirm power-off before ESP32 deep sleep.");
+    }
+
+    Serial.printf(
+        "💤 Deep sleep for %llu seconds before the next report attempt.\n",
+        static_cast<unsigned long long>(sleepSeconds)
+    );
+
+    lastAwakeSeconds = (millis() + 999UL) / 1000UL;
+    esp_sleep_enable_timer_wakeup(sleepSeconds * MICROSECONDS_PER_SECOND);
+    esp_deep_sleep_start();
+}
 }
 
 bool isSystemClockValid() {
     return time(nullptr) >= MIN_VALID_EPOCH;
 }
 
-bool synchronizeClockFromNetwork() {
+bool synchronizeClockFromNetwork(unsigned long timeoutMs) {
     int year = 0;
     int month = 0;
     int day = 0;
@@ -19,13 +59,14 @@ bool synchronizeClockFromNetwork() {
     int minute = 0;
     int second = 0;
     float timezoneOffset = 0;
+    const unsigned long startedAt = millis();
 
-    if (!modem.waitForNetwork(30000L)) {
+    if (!modem.waitForNetwork(timeoutMs)) {
         Serial.println("⚠️ Cellular network unavailable for clock synchronization.");
         return isSystemClockValid();
     }
 
-    for (uint8_t attempt = 0; attempt < 5; attempt++) {
+    for (uint8_t attempt = 0; attempt < 5 && millis() - startedAt < timeoutMs; attempt++) {
         if (modem.getNetworkTime(
                 &year,
                 &month,
@@ -138,37 +179,15 @@ void enterDeepSleepUntilNextReport() {
         );
     }
 
-    if (Serial) {
-        Serial.printf(
-            "🛠️ USB Serial Monitor is connected; waiting %llu seconds until the next report attempt.\n",
-            static_cast<unsigned long long>(sleepSeconds)
-        );
-        Serial.flush();
-        const unsigned long waitStartedAt = millis();
-        const uint64_t requestedWaitMs = sleepSeconds * 1000ULL;
-        while (Serial && millis() - waitStartedAt < requestedWaitMs) {
-            delay(100);
-        }
-        if (Serial) {
-            return;
-        }
+    sleepOrWaitOnUsb(sleepSeconds);
+}
 
-        const uint64_t elapsedSeconds = (millis() - waitStartedAt) / 1000ULL;
-        if (elapsedSeconds >= sleepSeconds) {
-            return;
-        }
-        sleepSeconds -= elapsedSeconds;
-    }
-
-    if (modem.testAT(1000) && !modem.poweroff()) {
-        Serial.println("⚠️ Modem did not confirm power-off before ESP32 deep sleep.");
-    }
-
+void enterDeepSleepForClockRetry() {
     Serial.printf(
-        "💤 Deep sleep for %llu seconds before the next report attempt.\n",
-        static_cast<unsigned long long>(sleepSeconds)
+        "❌ No valid network time; sleeping %lu seconds before retrying.\n",
+        static_cast<unsigned long>(CLOCK_RETRY_SLEEP_SECONDS)
     );
-
-    esp_sleep_enable_timer_wakeup(sleepSeconds * MICROSECONDS_PER_SECOND);
-    esp_deep_sleep_start();
+    sleepOrWaitOnUsb(CLOCK_RETRY_SLEEP_SECONDS);
+    // USB stayed connected, so no deep sleep happened; restart to retry setup.
+    ESP.restart();
 }

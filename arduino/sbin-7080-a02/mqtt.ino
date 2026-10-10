@@ -186,6 +186,9 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
         doc["sleepDurationSeconds"] = scheduledSleepDurationSeconds;
     }
     doc["meshAwakeWindowSeconds"] = meshAwakeWindowSeconds;
+    if (lastAwakeSeconds > 0) {
+        doc["lastAwakeSeconds"] = lastAwakeSeconds;
+    }
     doc["health"] = health;
     doc["weight"] = 0;
     doc["location"][0] = latitude;
@@ -263,6 +266,22 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             preferences.begin("credentials", false);
             preferences.putUInt("sleepDuration", scheduledSleepDurationSeconds);
             preferences.end();
+        }
+        if (doc["meshAwakeWindowSeconds"].is<uint32_t>()) {
+            uint32_t serverMeshAwakeWindowSeconds = doc["meshAwakeWindowSeconds"].as<uint32_t>();
+            if (serverMeshAwakeWindowSeconds == 0 ||
+                serverMeshAwakeWindowSeconds > MAX_MESH_AWAKE_WINDOW_SECONDS) {
+                Serial.println("⚠️ Server sent an invalid meshAwakeWindowSeconds.");
+            } else if (serverMeshAwakeWindowSeconds != meshAwakeWindowSeconds) {
+                meshAwakeWindowSeconds = serverMeshAwakeWindowSeconds;
+                preferences.begin("credentials", false);
+                preferences.putUInt("meshAwake", meshAwakeWindowSeconds);
+                preferences.end();
+                Serial.printf(
+                    "📡 Mesh awake window set to %lu seconds.\n",
+                    static_cast<unsigned long>(meshAwakeWindowSeconds)
+                );
+            }
         }
         if (doc["status"] == "instruction_check" &&
             doc["canSleep"].is<bool>()) {

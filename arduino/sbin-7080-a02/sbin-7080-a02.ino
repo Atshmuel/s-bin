@@ -39,12 +39,10 @@ uint32_t serialStart = millis();
         Serial.println("⚠️ Could not ensure GNSS and antenna power are off before checking the location refresh schedule.");
     }
 
-    if (!synchronizeClockFromNetwork()) {
-        while (!isSystemClockValid()) {
-            Serial.println("⏳ Waiting for valid network time before scheduling reports.");
-            synchronizeClockFromNetwork();
-            delay(10000);
-        }
+    // Long enough for a cold cellular attach; the modem is powered off between retries.
+    constexpr unsigned long CLOCK_SYNC_TIMEOUT_MS = 120000UL;
+    if (!synchronizeClockFromNetwork(CLOCK_SYNC_TIMEOUT_MS)) {
+        enterDeepSleepForClockRetry();
     }
 
     if (binDepthMm <= 0) {

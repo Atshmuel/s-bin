@@ -30,6 +30,8 @@ time_t lastGpsAttemptEpoch = 0;
 RTC_DATA_ATTR uint64_t nextWakeEpoch = 0;
 RTC_DATA_ATTR uint32_t scheduledSleepDurationSeconds = 0;
 uint32_t meshAwakeWindowSeconds = DEFAULT_MESH_AWAKE_WINDOW_SECONDS;
+// Actual awake time of the previous cycle, reported with the next telemetry.
+RTC_DATA_ATTR uint32_t lastAwakeSeconds = 0;
 RTC_DATA_ATTR uint32_t scheduleAckCounter = 0;
 uint32_t instructionCheckCounter = 0;
 bool instructionCheckAllowsSleep = false;
