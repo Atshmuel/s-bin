@@ -27,12 +27,10 @@ uint32_t serialStart = millis();
         return;
     }
 
+    constexpr uint32_t MODEM_RETRY_SLEEP_SECONDS = 15UL * 60UL;
     if (!initializeModem()) {
-        while (1) {
-            Serial.println("60 seconds to initializeModem.");
-            delay(60000);
-            ESP.restart();
-        }
+        cutModemPower();
+        enterDeepSleepForSetupRetry(MODEM_RETRY_SLEEP_SECONDS, "Modem initialization failed");
     }
 
     if (!stopGpsAcquisition()) {
@@ -41,14 +39,17 @@ uint32_t serialStart = millis();
 
     // Long enough for a cold cellular attach; the modem is powered off between retries.
     constexpr unsigned long CLOCK_SYNC_TIMEOUT_MS = 120000UL;
+    constexpr uint32_t CLOCK_RETRY_SLEEP_SECONDS = 300;
     if (!synchronizeClockFromNetwork(CLOCK_SYNC_TIMEOUT_MS)) {
-        enterDeepSleepForClockRetry();
+        enterDeepSleepForSetupRetry(CLOCK_RETRY_SLEEP_SECONDS, "No valid network time");
     }
 
-    if (binDepthMm <= 0) {
-        while (!calibrateBinDepth()) {
-            Serial.println("⚠️ Calibration failed; retrying in 5 seconds.");
-            delay(5000);
+    // A failed calibration does not block reporting: the cycle reports
+    // sensorOk=false with a calibration health message, and the next wake retries.
+    constexpr uint8_t CALIBRATION_ATTEMPTS = 2;
+    for (uint8_t attempt = 1; binDepthMm <= 0 && attempt <= CALIBRATION_ATTEMPTS; attempt++) {
+        if (!calibrateBinDepth()) {
+            Serial.printf("⚠️ Calibration attempt %u of %u failed.\n", attempt, CALIBRATION_ATTEMPTS);
         }
     }
 

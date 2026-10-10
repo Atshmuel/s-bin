@@ -5,8 +5,6 @@ constexpr time_t MIN_VALID_EPOCH = 1735689600;
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 constexpr time_t GPS_REFRESH_INTERVAL_SECONDS = 31LL * 24 * 60 * 60;
 constexpr uint32_t FALLBACK_SLEEP_SECONDS = 20;
-// Sleep before retrying when the clock could not be set after a cold boot.
-constexpr uint32_t CLOCK_RETRY_SLEEP_SECONDS = 300;
 
 // Returns only if the USB Serial Monitor stays connected for the whole wait.
 void sleepOrWaitOnUsb(uint64_t sleepSeconds) {
@@ -182,12 +180,13 @@ void enterDeepSleepUntilNextReport() {
     sleepOrWaitOnUsb(sleepSeconds);
 }
 
-void enterDeepSleepForClockRetry() {
+void enterDeepSleepForSetupRetry(uint32_t sleepSeconds, const char* reason) {
     Serial.printf(
-        "❌ No valid network time; sleeping %lu seconds before retrying.\n",
-        static_cast<unsigned long>(CLOCK_RETRY_SLEEP_SECONDS)
+        "❌ %s; sleeping %lu seconds before retrying.\n",
+        reason,
+        static_cast<unsigned long>(sleepSeconds)
     );
-    sleepOrWaitOnUsb(CLOCK_RETRY_SLEEP_SECONDS);
+    sleepOrWaitOnUsb(sleepSeconds);
     // USB stayed connected, so no deep sleep happened; restart to retry setup.
     ESP.restart();
 }

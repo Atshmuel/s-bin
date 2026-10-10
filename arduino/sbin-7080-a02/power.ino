@@ -24,6 +24,17 @@ bool initializePowerManagement() {
     return true;
 }
 
+// Turns off the SIM7080 main (DC3) and GNSS antenna (BLDO2) rails for when the
+// modem does not answer AT commands; initializePowerManagement() restores them.
+void cutModemPower() {
+    if (!pmuAvailable) {
+        return;
+    }
+    PMU.disableBLDO2();
+    PMU.disableDC3();
+    Serial.println("🔌 Modem power rails turned off.");
+}
+
 uint16_t readBatteryMillivolts() {
     return pmuAvailable && PMU.isBatteryConnect() ? PMU.getBattVoltage() : 0;
 }
@@ -64,7 +75,11 @@ String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk)
 
 String getDeviceHealthMessage(int distanceMm) {
     String message;
-    if (sensorFailureCycles > 0) {
+    if (sensorFailureCycles > 0 && binDepthMm <= 0) {
+        message = "Empty-bin calibration failed (A02 distance: ";
+        message += String(distanceMm);
+        message += " mm)";
+    } else if (sensorFailureCycles > 0) {
         message = distanceMm <= 0
             ? "A02 sensor issue (distance: -1 mm) in "
             : "A02 fill-level calculation failed at distance ";
