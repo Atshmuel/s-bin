@@ -1,9 +1,8 @@
 import tzLookup from "tz-lookup";
 
 const REPORT_INTERVAL_MINUTES = Number(process.env.DEVICE_REPORT_INTERVAL_MINUTES ?? 1);
-// Keep production reports on shared UTC slots; skip a slot if it is less than three hours away.
+// These UTC slots correspond to 08:00/20:00 in summer and 07:00/19:00 in winter in Israel.
 const FIXED_REPORT_TIMES_UTC = [5, 17];
-const REPORT_SLOT_SKIP_WINDOW_SECONDS = 3 * 60 * 60;
 
 function getNextFixedReportEpoch(now) {
     const nowSeconds = Math.floor(now / 1000);
@@ -18,12 +17,7 @@ function getNextFixedReportEpoch(now) {
         ...FIXED_REPORT_TIMES_UTC.map(hour => utcMidnight + 24 * 60 * 60 + hour * 60 * 60),
     ];
     const nextSlotIndex = reportSlots.findIndex(slot => slot > nowSeconds);
-    const nextSlot = reportSlots[nextSlotIndex];
-    const selectedSlot = nextSlot - nowSeconds <= REPORT_SLOT_SKIP_WINDOW_SECONDS
-        ? reportSlots[nextSlotIndex + 1]
-        : nextSlot;
-
-    return selectedSlot;
+    return reportSlots[nextSlotIndex];
 }
 
 export function getNextReportSchedule(location, now = Date.now()) {
@@ -51,9 +45,10 @@ export function getNextReportSchedule(location, now = Date.now()) {
     }
 
     const nowSeconds = Math.floor(now / 1000);
+    const intervalSeconds = REPORT_INTERVAL_MINUTES * 60;
     const nextWakeEpoch = REPORT_INTERVAL_MINUTES === 720
         ? getNextFixedReportEpoch(now)
-        : nowSeconds + REPORT_INTERVAL_MINUTES * 60;
+        : (Math.floor(nowSeconds / intervalSeconds) + 1) * intervalSeconds;
     const sleepDurationSeconds = nextWakeEpoch - nowSeconds;
     return {
         timeZone,
