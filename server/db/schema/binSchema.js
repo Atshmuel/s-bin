@@ -38,6 +38,7 @@ export const binSchema = new mongoose.Schema({
         battery: { type: Number, default: 0, required: true },
         deepSleepSeconds: { type: Number, min: 1, max: 86400, default: null },
         meshAwakeWindowSeconds: { type: Number, min: 1, max: 60, default: null },
+        lastAwakeSeconds: { type: Number, min: 1, max: 86400, default: null },
         updatedAt: { type: Date, default: Date.now }
     },
     ownerId: {

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { getBinByMacAndKeyShared, getUserShared, organizationExist } from "../db/service/sharedService.js";
+import { getBinByMacAndKeyShared, getOrgMeshAwakeWindowShared, getUserShared, organizationExist } from "../db/service/sharedService.js";
 import { appendFilter, checkPayloadFields, generateRandomToken } from '../utils/helpers.js'
 import { mqttClient } from './mqttClient.js'
 import { BIN_REGISTER_TOPIC, BIN_ACK_TOPIC, BIN_ACK_COMMAND } from "./mqttTopics.js";
@@ -88,6 +88,7 @@ async function handleRegistration({ mac, orgId, location, battery }) {
 
         });
         console.log("Registered new bin via MQTT:", newBin);
+        const meshAwakeWindowSeconds = await getOrgMeshAwakeWindowShared(orgId);
         mqttClient.publish(
             `${BIN_ACK_TOPIC}/${mac}`,
             JSON.stringify({
@@ -96,6 +97,7 @@ async function handleRegistration({ mac, orgId, location, battery }) {
                 timeZone,
                 nextWakeEpoch,
                 sleepDurationSeconds,
+                meshAwakeWindowSeconds,
             })
         );
     } catch (error) {
@@ -114,6 +116,7 @@ async function handleDeviceLog(mac, {
     message: healthMessage,
     sleepDurationSeconds,
     meshAwakeWindowSeconds,
+    lastAwakeSeconds,
 }) {
     if (!checkPayloadFields({
         location,
@@ -125,6 +128,7 @@ async function handleDeviceLog(mac, {
         message: healthMessage,
         sleepDurationSeconds,
         meshAwakeWindowSeconds,
+        lastAwakeSeconds,
     })) return;
 
     const bin = await getBinByMacAndKeyShared(mac, deviceKey);
@@ -157,6 +161,7 @@ async function handleDeviceLog(mac, {
         battery,
         ...(sleepDurationSeconds === undefined ? {} : { sleepDurationSeconds }),
         ...(meshAwakeWindowSeconds === undefined ? {} : { meshAwakeWindowSeconds }),
+        ...(lastAwakeSeconds === undefined ? {} : { lastAwakeSeconds }),
         severity,
         type: 'log',
         source: 'sensor',
@@ -180,6 +185,9 @@ async function handleDeviceLog(mac, {
     if (meshAwakeWindowSeconds !== undefined) {
         bin.status.meshAwakeWindowSeconds = meshAwakeWindowSeconds;
     }
+    if (lastAwakeSeconds !== undefined) {
+        bin.status.lastAwakeSeconds = lastAwakeSeconds;
+    }
     bin.status.weight = weight;
     bin.location.coordinates = location;
     bin.timezone = timeZone;
@@ -189,6 +197,7 @@ async function handleDeviceLog(mac, {
     await bin.save();
 
     console.log("Updated log for", mac);
+    const orgMeshAwakeWindowSeconds = await getOrgMeshAwakeWindowShared(bin.ownerId);
     mqttClient.publish(
         `${BIN_ACK_TOPIC}/${mac}`,
         JSON.stringify({
@@ -197,6 +206,7 @@ async function handleDeviceLog(mac, {
             timeZone,
             nextWakeEpoch,
             sleepDurationSeconds: scheduledSleepDurationSeconds,
+            meshAwakeWindowSeconds: orgMeshAwakeWindowSeconds,
         })
     );
 }
@@ -228,6 +238,7 @@ async function handleInstructionCheck(mac, { deviceKey }) {
 
     const { timeZone, nextWakeEpoch, sleepDurationSeconds } =
         getNextReportSchedule(bin.location.coordinates);
+    const meshAwakeWindowSeconds = await getOrgMeshAwakeWindowShared(bin.ownerId);
     const response = JSON.stringify({
         status: "instruction_check",
         canSleep: instructions.length === 0,
@@ -235,6 +246,7 @@ async function handleInstructionCheck(mac, { deviceKey }) {
         timeZone,
         nextWakeEpoch,
         sleepDurationSeconds,
+        meshAwakeWindowSeconds,
     });
     mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, response, { qos: 1 }, async error => {
         if (error) {
@@ -291,14 +303,6 @@ async function handleInstructionResult(mac, { deviceKey, instructionId, status, 
             console.warn(`Instruction result ignored for ${mac}: instruction is missing or has a different final status.`);
             return;
         }
-    }
-
-    if (instruction.type === "set_mesh_awake_window" && status === "completed" &&
-        Number.isInteger(instruction.payload?.durationSeconds)) {
-        await binModel.updateOne(
-            { _id: bin._id },
-            { $set: { "status.meshAwakeWindowSeconds": instruction.payload.durationSeconds } }
-        );
     }
 
     mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, JSON.stringify({

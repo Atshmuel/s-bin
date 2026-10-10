@@ -87,6 +87,13 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 </div>
                             )}
 
+                            {log.lastAwakeSeconds != null && (
+                                <div className="flex justify-between">
+                                    <span className="font-medium">{t("lastAwakeTime")}:</span>
+                                    <span>{formatSleepDuration(log.lastAwakeSeconds, t)}</span>
+                                </div>
+                            )}
+
                             {log.message &&
                                 <div className="space-y-1">
                                     <span className="font-medium">{t("components.logCard.message")}:</span>

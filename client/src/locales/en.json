@@ -30,7 +30,8 @@
         "hours":"h"
     },
     "deepSleepDuration":"Sleep duration",
-    "meshAwakeWindow":"Awake duration",
+    "meshAwakeWindow":"Mesh awake time",
+    "lastAwakeTime":"Last awake time",
 "backToBin":"Back to Bin",
 "user":"User",
 "your":"Your",
@@ -108,6 +109,7 @@
         "map": "Map",
         "logs": "Logs",
         "instructionTesting": "Test Device Instructions",
+        "meshSettings": "Mesh Settings",
         "userList": "List of Users",
         "organizationList": "Organizations List"
       }
@@ -260,6 +262,16 @@
   },
     
   "pages":{
+    "meshSettings":{
+      "title":"Mesh settings",
+      "description":"Set the minimum time each organization's bins stay awake after every scheduled wake-up, so they can exchange ESP-NOW mesh messages. Bins apply a new value after their next report.",
+      "organization":"Organization",
+      "awakeTime":"Mesh awake time (seconds)",
+      "limit":"1 to 60 seconds",
+      "save":"Save",
+      "saved":"Mesh settings saved.",
+      "empty":"No organizations found."
+    },
     "instructionTesting":{
       "title":"Device Instruction Testing",
       "description":"Temporarily test queued instructions for a selected bin. The device receives them when it next checks in over MQTT.",
@@ -272,9 +284,6 @@
       "duration":"Additional awake time (minutes)",
       "durationLimit":"Choose 1 to 60 minutes. Only the selected bin stays awake.",
       "durationValue":"Additional awake time: {{count}} minutes",
-      "meshWindow":"Awake duration (seconds)",
-      "meshWindowLimit":"Choose 1 to 60 seconds. Applied on every wake-up until changed.",
-      "meshWindowValue":"Awake duration: {{count}} seconds",
       "queueTitle":"Instruction queue",
       "queueDescription":"The queue refreshes automatically every few seconds.",
       "selectBinToView":"Select a bin to view its instruction queue.",
@@ -292,8 +301,7 @@
       "types":{
         "report_now":"Request an immediate report",
         "stay_awake":"Extend awake time",
-        "calibrate_empty_bin":"Recalibrate empty-bin reference",
-        "set_mesh_awake_window":"Set awake duration"
+        "calibrate_empty_bin":"Recalibrate empty-bin reference"
       },
       "statuses":{
         "pending":"Pending",

@@ -16,12 +16,10 @@ export async function getDeviceInstructions(binId) {
     return parseResponse(response);
 }
 
-export async function enqueueDeviceInstruction({ binId, type, durationMinutes, meshWindowSeconds }) {
+export async function enqueueDeviceInstruction({ binId, type, durationMinutes }) {
     const payload = type === "stay_awake"
         ? { durationSeconds: durationMinutes * 60 }
-        : type === "set_mesh_awake_window"
-            ? { durationSeconds: meshWindowSeconds }
-            : {};
+        : {};
     const response = await fetch(
         `${SERVER_URL}/${BINS_EP}/${binId}/instructions`,
         {

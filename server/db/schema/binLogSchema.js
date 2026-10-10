@@ -22,6 +22,7 @@ export const binLogSchema = new mongoose.Schema({
     battery: { type: Number, required: true },
     sleepDurationSeconds: { type: Number, min: 1, max: 86400 },
     meshAwakeWindowSeconds: { type: Number, min: 1, max: 60 },
+    lastAwakeSeconds: { type: Number, min: 1, max: 86400 },
     weight: { type: Number, required: true },
     health: {
         type: String,

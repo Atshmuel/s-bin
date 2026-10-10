@@ -6,6 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { ca } from 'zod/v4/locales';
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
+import { DEFAULT_MESH_AWAKE_WINDOW_SECONDS } from '../schema/organizationSchema.js';
 
 //Bins
 export async function getBinShared(binId) {
@@ -148,6 +149,16 @@ export async function organizationExist(org) {
     } catch (error) {
         console.error(error)
         return false;
+    }
+}
+
+export async function getOrgMeshAwakeWindowShared(orgId) {
+    try {
+        const org = await organizationModel.findById(orgId, { meshAwakeWindowSeconds: 1 })
+        return org?.meshAwakeWindowSeconds ?? DEFAULT_MESH_AWAKE_WINDOW_SECONDS
+    } catch (error) {
+        console.error(error)
+        return DEFAULT_MESH_AWAKE_WINDOW_SECONDS;
     }
 }
 

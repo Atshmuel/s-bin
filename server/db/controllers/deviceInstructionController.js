@@ -3,20 +3,7 @@ import { deviceInstructionModel } from "../models/models.js";
 import { getBinShared } from "../service/sharedService.js";
 
 const MAX_AWAKE_EXTENSION_SECONDS = 3600;
-const MAX_MESH_AWAKE_WINDOW_SECONDS = 60;
-const supportedInstructionTypes = new Set([
-    "report_now",
-    "stay_awake",
-    "calibrate_empty_bin",
-    "set_mesh_awake_window"
-]);
-
-function isValidDurationPayload(payload, maxSeconds) {
-    return Object.keys(payload).length === 1 &&
-        Number.isInteger(payload.durationSeconds) &&
-        payload.durationSeconds >= 1 &&
-        payload.durationSeconds <= maxSeconds;
-}
+const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin"]);
 
 function isValidInstructionPayload(type, payload) {
     if (type === "report_now") {
@@ -27,12 +14,11 @@ function isValidInstructionPayload(type, payload) {
         return Object.keys(payload).length === 0;
     }
 
-    if (type === "set_mesh_awake_window") {
-        return isValidDurationPayload(payload, MAX_MESH_AWAKE_WINDOW_SECONDS);
-    }
-
     return type === "stay_awake" &&
-        isValidDurationPayload(payload, MAX_AWAKE_EXTENSION_SECONDS);
+        Object.keys(payload).length === 1 &&
+        Number.isInteger(payload.durationSeconds) &&
+        payload.durationSeconds >= 1 &&
+        payload.durationSeconds <= MAX_AWAKE_EXTENSION_SECONDS;
 }
 
 export async function enqueueDeviceInstruction(req, res) {
@@ -50,9 +36,7 @@ export async function enqueueDeviceInstruction(req, res) {
             ? "report_now does not accept a payload."
             : type === "stay_awake"
                 ? "stay_awake requires durationSeconds between 1 and 3600."
-                : type === "set_mesh_awake_window"
-                    ? `set_mesh_awake_window requires durationSeconds between 1 and ${MAX_MESH_AWAKE_WINDOW_SECONDS}.`
-                    : `${type} does not accept a payload.`;
+                : `${type} does not accept a payload.`;
         return res.status(400).json({ message });
     }
 

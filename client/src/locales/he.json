@@ -30,7 +30,8 @@
         "hours":"שעות"
     },
  "deepSleepDuration":"משך שינה",
- "meshAwakeWindow":"משך ערות",
+ "meshAwakeWindow":"זמן ערות לרשת",
+ "lastAwakeTime":"זמן ערות אחרון",
 "backToBin":"חזרה לפח",
 "user":"משתמש",
 "your":"שלך",
@@ -208,6 +209,7 @@
                 "map":"מפה",
                 "logs":"תיעודים",
                 "instructionTesting":"בדיקת הנחיות למכשיר",
+                "meshSettings":"הגדרות רשת",
                 "userList":"רשימת משתמשים",
                 "organizationList": "רשימת ארגונים"
             }
@@ -259,6 +261,16 @@
 
   },
   "pages":{
+    "meshSettings":{
+      "title":"הגדרות רשת",
+      "description":"קבע את זמן הערות המינימלי של פחי כל ארגון אחרי כל התעוררות מתוזמנת, כדי שיוכלו להחליף הודעות ברשת ESP-NOW. הפחים מחילים ערך חדש אחרי הדיווח הבא שלהם.",
+      "organization":"ארגון",
+      "awakeTime":"זמן ערות לרשת (בשניות)",
+      "limit":"בין 1 ל־60 שניות",
+      "save":"שמירה",
+      "saved":"הגדרות הרשת נשמרו.",
+      "empty":"לא נמצאו ארגונים."
+    },
     "instructionTesting":{
       "title":"בדיקת הנחיות למכשיר",
       "description":"דף זמני לבדיקה ושליחה של הנחיות לפח. המכשיר יקבל אותן בבדיקת ה־MQTT הבאה שלו.",
@@ -271,9 +283,6 @@
       "duration":"זמן ערות נוסף (בדקות)",
       "durationLimit":"בחר בין דקה אחת ל־60 דקות. רק הפח שנבחר יישאר ער.",
       "durationValue":"זמן ערות נוסף: {{count}} דקות",
-      "meshWindow":"משך ערות (בשניות)",
-      "meshWindowLimit":"בחר בין שנייה אחת ל־60 שניות. יחול בכל התעוררות עד לשינוי הבא.",
-      "meshWindowValue":"משך ערות: {{count}} שניות",
       "queueTitle":"תור ההנחיות",
       "queueDescription":"התור מתעדכן אוטומטית מדי כמה שניות.",
       "selectBinToView":"בחר פח כדי לצפות בתור ההנחיות שלו.",
@@ -291,8 +300,7 @@
       "types":{
         "report_now":"בקשת דיווח מיידי",
         "stay_awake":"הארכת זמן הערות",
-        "calibrate_empty_bin":"כיול מחדש של פח ריק",
-        "set_mesh_awake_window":"הגדרת משך ערות"
+        "calibrate_empty_bin":"כיול מחדש של פח ריק"
       },
       "statuses":{
         "pending":"ממתינה",

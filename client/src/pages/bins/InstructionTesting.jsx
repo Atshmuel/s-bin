@@ -40,8 +40,7 @@ import {
     getDeviceInstructions,
 } from "@/services/apiDeviceInstructions";
 
-const instructionTypes = ["report_now", "stay_awake", "calibrate_empty_bin", "set_mesh_awake_window"];
-const MAX_MESH_AWAKE_WINDOW_SECONDS = 60;
+const instructionTypes = ["report_now", "stay_awake", "calibrate_empty_bin"];
 
 function InstructionTesting() {
     const { t } = useTranslation();
@@ -49,20 +48,12 @@ function InstructionTesting() {
     const [binId, setBinId] = useState("");
     const [instructionType, setInstructionType] = useState(instructionTypes[0]);
     const [durationMinutes, setDurationMinutes] = useState("5");
-    const [meshWindowSeconds, setMeshWindowSeconds] = useState("10");
     const [showCalibrationConfirmation, setShowCalibrationConfirmation] = useState(false);
-
-    const hasDurationInput = instructionType === "stay_awake" ||
-        instructionType === "set_mesh_awake_window";
-    const isMeshWindowInvalid = !Number.isInteger(Number(meshWindowSeconds)) ||
-        Number(meshWindowSeconds) < 1 ||
-        Number(meshWindowSeconds) > MAX_MESH_AWAKE_WINDOW_SECONDS;
 
     const enqueueSelectedInstruction = () => enqueueMutation.mutate({
         binId,
         type: instructionType,
         durationMinutes: Number(durationMinutes),
-        meshWindowSeconds: Number(meshWindowSeconds),
     });
 
     const binsQuery = useQuery({
@@ -122,7 +113,7 @@ function InstructionTesting() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className={`grid gap-4 sm:items-end ${
-                    hasDurationInput
+                    instructionType === "stay_awake"
                         ? "sm:grid-cols-[1fr_1fr_1fr_auto]"
                         : "sm:grid-cols-[1fr_1fr_auto]"
                 }`}>
@@ -192,26 +183,6 @@ function InstructionTesting() {
                         </div>
                     )}
 
-                    {instructionType === "set_mesh_awake_window" && (
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium" htmlFor="mesh-awake-window">
-                                {t("pages.instructionTesting.meshWindow")}
-                            </label>
-                            <Input
-                                id="mesh-awake-window"
-                                type="number"
-                                min={1}
-                                max={MAX_MESH_AWAKE_WINDOW_SECONDS}
-                                step={1}
-                                value={meshWindowSeconds}
-                                onChange={(event) => setMeshWindowSeconds(event.target.value)}
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                {t("pages.instructionTesting.meshWindowLimit")}
-                            </p>
-                        </div>
-                    )}
-
                     <Button
                         type="button"
                         disabled={
@@ -221,8 +192,7 @@ function InstructionTesting() {
                             (instructionType === "stay_awake" &&
                                 (!Number.isInteger(Number(durationMinutes)) ||
                                     Number(durationMinutes) < 1 ||
-                                    Number(durationMinutes) > 60)) ||
-                            (instructionType === "set_mesh_awake_window" && isMeshWindowInvalid)
+                                    Number(durationMinutes) > 60))
                         }
                         onClick={() => {
                             if (instructionType === "calibrate_empty_bin") {
@@ -321,14 +291,6 @@ function InstructionTesting() {
                                                         <div className="text-xs text-muted-foreground">
                                                             {t("pages.instructionTesting.durationValue", {
                                                                 count: instruction.payload.durationSeconds / 60,
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                {instruction.type === "set_mesh_awake_window" &&
-                                                    Number.isInteger(instruction.payload?.durationSeconds) && (
-                                                        <div className="text-xs text-muted-foreground">
-                                                            {t("pages.instructionTesting.meshWindowValue", {
-                                                                count: instruction.payload.durationSeconds,
                                                             })}
                                                         </div>
                                                     )}

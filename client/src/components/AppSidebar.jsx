@@ -67,6 +67,11 @@ export function AppSidebar({
             url: "instructions",
             isOwnerOnly: true,
           },
+          {
+            title: t("sidebar.managment.items.meshSettings"),
+            url: "mesh-settings",
+            isAdminAndAbove: true,
+          },
         ],
       },
       {

@@ -4,6 +4,7 @@ import { validateBodyFields, validateParamExist, validateRequestBodyBinIds } fro
 import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName, getRouteBins } from "../db/controllers/binController.js";
 import { removeBinConfig } from "../mqtt/mqttHandlers.js";
 import { cancelDeviceInstruction, enqueueDeviceInstruction, listDeviceInstructions } from "../db/controllers/deviceInstructionController.js";
+import { getMeshSettings, updateMeshSettings } from "../db/controllers/organizationController.js";
 
 export const binRouter = Router();
 
@@ -12,6 +13,13 @@ binRouter.use(authToken) //demends jwt for all requests
 
 //getters
 binRouter.get('/all', getAllUserBins) //all user bins in db
+// Mesh settings: owners for any organization, admins for their own (checked in the controller).
+binRouter.get('/mesh-settings', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+}, getMeshSettings)
+binRouter.patch('/mesh-settings/:orgId', (req, res, next) => {
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+}, updateMeshSettings)
 binRouter.post('/status', validateBodyFields(['level', 'health']), getBinsByStatus) //get bin
 binRouter.get('/:id', validateParamExist(), getBin) //get bin
 binRouter.post('/radius', validateBodyFields(['coordinates', 'radius'], ['health', 'minLevel', 'maxLevel']), getBinsInUserRadius) //get bins

@@ -31,6 +31,7 @@ import AccountVerify from './pages/auth/AccountVerify';
 import { AppSideProvider } from './contexts/AppSideProvider';
 import OrganizationsList from './pages/organizations/OrganizationsList';
 import InstructionTesting from './pages/bins/InstructionTesting';
+import MeshSettings from './pages/bins/MeshSettings';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -65,6 +66,11 @@ function App() {
                   <Route path="instructions" element={
                     <ProtectedRoute roles={['owner']}>
                       <InstructionTesting />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="mesh-settings" element={
+                    <ProtectedRoute roles={['admin', 'owner']}>
+                      <MeshSettings />
                     </ProtectedRoute>
                   } />
                   <Route path=":id" element={<BinDetails />} />
