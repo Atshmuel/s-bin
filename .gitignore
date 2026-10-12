@@ -29,4 +29,6 @@ Thumbs.db
 *.bak
 *.tmp
 
-libraries/
+# Third-party Arduino libraries are installed locally; our own mesh library is tracked.
+**/libraries/*
+!arduino/libraries/SbinMesh/

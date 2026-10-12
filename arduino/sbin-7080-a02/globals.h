@@ -21,6 +21,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <esp_sleep.h>
+#include <SbinMesh.h>
 
 // LilyGO T-SIM7080G-S3 V1 board pins
 #define BOARD_MODEM_PWR_PIN 41

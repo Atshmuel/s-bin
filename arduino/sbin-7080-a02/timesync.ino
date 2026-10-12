@@ -3,7 +3,8 @@
 // The deep-sleep timer and the system clock both run on the ESP32-S3's internal
 // RC oscillator during sleep (this board has no 32 kHz crystal), which runs
 // about +0.5% fast. Each network time sync measures that drift over the sleep
-// that just ended, and the next sleep request is stretched to cancel it.
+// that just ended, and the next sleep request is stretched to cancel it. The
+// math is shared with the mesh leaves in the SbinMesh library.
 
 namespace {
 constexpr time_t MIN_VALID_EPOCH_FOR_DRIFT = 1735689600;
@@ -15,11 +16,7 @@ constexpr int32_t DRIFT_SAVE_THRESHOLD_PPM = 200;
 }
 
 uint64_t applyDriftCorrection(uint64_t sleepSeconds) {
-    // A clock running fast by r fires after requested / (1 + r) real seconds.
-    const int64_t adjustment =
-        static_cast<int64_t>(sleepSeconds) * driftPpm / 1000000LL;
-    const int64_t corrected = static_cast<int64_t>(sleepSeconds) + adjustment;
-    return corrected > 0 ? static_cast<uint64_t>(corrected) : 1;
+    return sbinmesh::applyDriftCorrection(sleepSeconds, driftPpm);
 }
 
 void markSleepStart() {
@@ -34,38 +31,34 @@ void recordClockDrift(time_t deviceEpoch, time_t referenceEpoch) {
         return;
     }
 
-    // Time awake since boot runs on the accurate main crystal, so only the
-    // deep-sleep part of the elapsed time carries the RC drift.
-    const int64_t slept = static_cast<int64_t>(deviceEpoch) -
-                          static_cast<int64_t>(sleepStartedEpoch) -
-                          static_cast<int64_t>(millis() / 1000UL);
+    int32_t measuredPpm = 0;
+    int64_t realSlept = 0;
+    const sbinmesh::DriftMeasurement result = sbinmesh::measureDriftPpm(
+        static_cast<int64_t>(deviceEpoch),
+        static_cast<int64_t>(referenceEpoch),
+        static_cast<int64_t>(sleepStartedEpoch),
+        static_cast<int64_t>(millis() / 1000UL),
+        MIN_DRIFT_MEASUREMENT_SECONDS,
+        MAX_ABS_DRIFT_PPM,
+        measuredPpm,
+        realSlept
+    );
     sleepStartedEpoch = 0;
-    if (slept < MIN_DRIFT_MEASUREMENT_SECONDS) {
-        return;
-    }
-
-    const int64_t errorSeconds =
-        static_cast<int64_t>(deviceEpoch) - static_cast<int64_t>(referenceEpoch);
-    const int64_t realSlept = slept - errorSeconds;
-    if (realSlept <= 0) {
-        return;
-    }
-    const int64_t measuredPpm = errorSeconds * 1000000LL / realSlept;
-    if (measuredPpm > MAX_ABS_DRIFT_PPM || measuredPpm < -MAX_ABS_DRIFT_PPM) {
+    if (result == sbinmesh::DRIFT_IMPLAUSIBLE) {
         Serial.printf(
-            "⚠️ Ignoring implausible clock drift of %+lld ppm.\n",
-            static_cast<long long>(measuredPpm)
+            "⚠️ Ignoring implausible clock drift of %+ld ppm.\n",
+            static_cast<long>(measuredPpm)
         );
+    }
+    if (result != sbinmesh::DRIFT_MEASURED) {
         return;
     }
 
-    driftPpm = driftMeasured
-        ? static_cast<int32_t>((driftPpm + measuredPpm) / 2)
-        : static_cast<int32_t>(measuredPpm);
+    driftPpm = sbinmesh::blendDriftPpm(driftPpm, driftMeasured, measuredPpm);
     driftMeasured = true;
     Serial.printf(
-        "⏱️ Clock drift: measured %+lld ppm over %lld s; using %+ld ppm.\n",
-        static_cast<long long>(measuredPpm),
+        "⏱️ Clock drift: measured %+ld ppm over %lld s; using %+ld ppm.\n",
+        static_cast<long>(measuredPpm),
         static_cast<long long>(realSlept),
         static_cast<long>(driftPpm)
     );
