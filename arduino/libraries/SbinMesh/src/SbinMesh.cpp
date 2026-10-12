@@ -212,7 +212,7 @@ void MeshRadio::onReceive(const esp_now_recv_info_t* info, const uint8_t* data, 
     frame.rssi = info->rx_ctrl == nullptr ? 0 : static_cast<int8_t>(info->rx_ctrl->rssi);
     frame.receivedAtMs = millis();
     if (xQueueSend(static_cast<QueueHandle_t>(radio->receiveQueue_), &frame, 0) != pdTRUE) {
-        radio->droppedFrames_++;
+        radio->droppedFrames_ = radio->droppedFrames_ + 1;
     }
 }
 
