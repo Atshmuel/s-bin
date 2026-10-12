@@ -101,4 +101,8 @@ jobs:
             echo "Restarting containers..."
             docker compose up -d --force-recreate
 
+            # Each pull leaves the previous :latest images behind as <none>.
+            echo "Removing old images..."
+            docker image prune -f
+
             echo "Deployment completed successfully"
