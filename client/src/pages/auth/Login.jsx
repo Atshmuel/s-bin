@@ -88,7 +88,7 @@ function Login() {
                             render={({ field }) => (
                                 <FormItem>
                                     <div className="relative">
-                                        <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >{t("newEntity.userInputs.fields.password.label")}</InputLabel>
+                                        <InputLabel {...field} placeholder=" " type={showPassword ? "text" : "password"} >{t("pages.loginPage.password")}</InputLabel>
                                         {showPassword ? <Eye onClick={() => setShowPassword(show => !show)}
                                             className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} /> :
                                             <EyeOff onClick={() => setShowPassword(show => !show)} className={`absolute top-3 ${isRight ? 'right-3' : "left-3"}`} />}
