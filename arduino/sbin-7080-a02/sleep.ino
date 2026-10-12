@@ -34,13 +34,17 @@ void sleepOrWaitOnUsb(uint64_t sleepSeconds) {
         Serial.println("⚠️ Modem did not confirm power-off before ESP32 deep sleep.");
     }
 
+    const uint64_t correctedSleepSeconds = applyDriftCorrection(sleepSeconds);
     Serial.printf(
-        "💤 Deep sleep for %llu seconds before the next report attempt.\n",
-        static_cast<unsigned long long>(sleepSeconds)
+        "💤 Deep sleep for %llu seconds (timer %llu s, drift %+ld ppm) before the next report attempt.\n",
+        static_cast<unsigned long long>(sleepSeconds),
+        static_cast<unsigned long long>(correctedSleepSeconds),
+        static_cast<long>(driftPpm)
     );
 
     lastAwakeSeconds = (millis() + 999UL) / 1000UL;
-    esp_sleep_enable_timer_wakeup(sleepSeconds * MICROSECONDS_PER_SECOND);
+    markSleepStart();
+    esp_sleep_enable_timer_wakeup(correctedSleepSeconds * MICROSECONDS_PER_SECOND);
     esp_deep_sleep_start();
 }
 }
@@ -89,6 +93,7 @@ bool synchronizeClockFromNetwork(unsigned long timeoutMs) {
             networkTime.tm_sec = second;
             time_t utcEpoch = mktime(&networkTime) -
                               static_cast<time_t>(timezoneOffset * 3600.0f);
+            recordClockDrift(time(nullptr), utcEpoch);
             struct timeval timeValue = {utcEpoch, 0};
             if (settimeofday(&timeValue, nullptr) == 0) {
                 Serial.println("✅ Clock synchronized from the cellular network.");

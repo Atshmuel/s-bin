@@ -33,6 +33,11 @@ RTC_DATA_ATTR uint32_t scheduledSleepDurationSeconds = 0;
 uint32_t meshAwakeWindowSeconds = DEFAULT_MESH_AWAKE_WINDOW_SECONDS;
 // Actual awake time of the previous cycle, reported with the next telemetry.
 RTC_DATA_ATTR uint32_t lastAwakeSeconds = 0;
+// Sleep clock drift estimate; loaded from preferences after a power loss.
+RTC_DATA_ATTR int32_t driftPpm = 0;
+RTC_DATA_ATTR bool driftMeasured = false;
+RTC_DATA_ATTR bool clockDriftLoaded = false;
+RTC_DATA_ATTR uint64_t sleepStartedEpoch = 0;
 RTC_DATA_ATTR uint32_t scheduleAckCounter = 0;
 uint32_t instructionCheckCounter = 0;
 bool instructionCheckAllowsSleep = false;

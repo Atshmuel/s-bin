@@ -526,6 +526,11 @@ void loadDeviceSettings() {
     if (meshAwakeWindowSeconds == 0 || meshAwakeWindowSeconds > MAX_MESH_AWAKE_WINDOW_SECONDS) {
         meshAwakeWindowSeconds = DEFAULT_MESH_AWAKE_WINDOW_SECONDS;
     }
+    if (!clockDriftLoaded) {
+        driftPpm = preferences.getInt("driftPpm", 0);
+        driftMeasured = preferences.isKey("driftPpm");
+        clockDriftLoaded = true;
+    }
     bool hasStoredLocation = preferences.isKey("gpsEpoch");
     preferences.end();
 
