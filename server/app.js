@@ -80,6 +80,7 @@ const main = async () => {
         // await import("./db/cron/generateBinLogs.js");
         await import("./db/cron/cleanupOTP.js");
         await import("./db/cron/cleanupActivationToken.js");
+        await import("./db/cron/cleanupDeviceInstructions.js");
         setEmailServiceCredentials()
         await import("./db/cron/notifyCriticalBins.js");
         app.listen(SERVER_PORT, () => {

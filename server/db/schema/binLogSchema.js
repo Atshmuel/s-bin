@@ -31,7 +31,7 @@ export const binLogSchema = new mongoose.Schema({
     },
     source: {
         type: String,
-        enum: ["sensor", "manual"],
+        enum: ["sensor", "manual", "system"],
         default: "sensor",
     },
     message: String,
