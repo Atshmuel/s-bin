@@ -25,32 +25,43 @@ constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 // First boot, or after losing the gateway: listen this long for any beacon.
 constexpr uint32_t COLD_JOIN_LISTEN_MS = 5UL * 60UL * 1000UL;
 constexpr uint32_t COLD_JOIN_RETRY_SLEEP_SECONDS = 15UL * 60UL;
-constexpr uint8_t MAX_MISSED_CYCLES = 3;
-// Wake this much before the slot and keep listening this much after it plus
-// the gateway's window. It covers the leaf's clock error relative to the
-// gateway, which also varies with the gateway's own drift from cycle to cycle.
-constexpr uint32_t INITIAL_GUARD_SECONDS = 45;
+// After a missed beacon the leaf keeps following the slot pattern; only this
+// many misses in a row send it back to a cold join.
+constexpr uint8_t MAX_MISSED_CYCLES = 6;
+// The guard is how much before the slot the leaf wakes and how long after the
+// slot (plus the gateway's window) it keeps listening. Clock error grows with
+// the sleep length, so the guard is a fraction of it: the clock uncertainty.
 constexpr uint32_t MIN_GUARD_SECONDS = 10;
-constexpr uint32_t MAX_GUARD_SECONDS = 120;
+constexpr uint32_t MAX_GUARD_SECONDS = 900;
+constexpr uint32_t GUARD_MARGIN_SECONDS = 5;
+// Uncertainty while the drift is unknown, and after a missed beacon.
+constexpr uint32_t UNKNOWN_DRIFT_PPM = 10000;
+// Residual assumed right after the first drift measurement.
+constexpr uint32_t FIRST_RESIDUAL_PPM = 2500;
+// Floor for the residual: temperature and the gateway's own clock still vary.
+constexpr uint32_t MIN_RESIDUAL_PPM = 500;
 constexpr uint32_t LISTEN_SLACK_SECONDS = 5;
 constexpr uint8_t SEND_ATTEMPTS = 3;
 constexpr uint32_t ACK_TIMEOUT_MS = 1500;
 constexpr uint8_t MAX_PENDING_READINGS = 4;
-// Beacon time has millisecond resolution, so shorter sleeps are measurable
-// than with 1 s network time.
-constexpr int64_t MIN_DRIFT_MEASUREMENT_SECONDS = 600;
+// Beacons carry milliseconds, but the gateway sets its own clock from 1 s
+// network time, so its clock can jump by up to 1 s between cycles. Sleeps of
+// 10+ minutes keep that below ~1,700 ppm per sample (averaged over cycles), so
+// a few 10-minute dev cycles teach the drift before 12-hour sleeps.
+constexpr int64_t MIN_DRIFT_MEASUREMENT_MS = 10LL * 60 * 1000;
 constexpr int32_t MAX_ABS_DRIFT_PPM = 20000;
 }  // namespace
 
 // State kept across deep sleep (lost on power loss, which means a cold join).
 RTC_DATA_ATTR uint32_t nextWakeEpoch = 0;
 RTC_DATA_ATTR uint32_t schedulePeriodSeconds = 0;
-RTC_DATA_ATTR uint32_t guardSeconds = INITIAL_GUARD_SECONDS;
+RTC_DATA_ATTR uint32_t guardSeconds = MIN_GUARD_SECONDS;  // of the current sleep
+RTC_DATA_ATTR uint32_t residualPpm = UNKNOWN_DRIFT_PPM;    // drift the estimate missed
 RTC_DATA_ATTR uint8_t missedCycles = 0;
 RTC_DATA_ATTR uint8_t meshWindowSeconds = 10;
 RTC_DATA_ATTR int32_t driftPpm = 0;
 RTC_DATA_ATTR bool driftMeasured = false;
-RTC_DATA_ATTR int64_t sleepStartedEpoch = 0;
+RTC_DATA_ATTR int64_t sleepStartedEpochMs = 0;
 RTC_DATA_ATTR uint16_t lastAwakeSeconds = 0;
 RTC_DATA_ATTR uint8_t fakeLevel = 10;
 RTC_DATA_ATTR uint8_t fakeBattery = 100;
@@ -105,29 +116,34 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame) {
 
     if (hadClock) {
         const int64_t errorMs = deviceNowMs - beaconNowMs;
+        Serial.printf("🕒 Clock was off by %+lld ms.\n", static_cast<long long>(errorMs));
+
+        // Measured in milliseconds: the math is unit-free, and ms precision
+        // makes short sleeps usable.
         int32_t measuredPpm = 0;
-        int64_t realSlept = 0;
+        int64_t realSleptMs = 0;
         const DriftMeasurement result = measureDriftPpm(
-            deviceNowMs / 1000, beaconNowMs / 1000, sleepStartedEpoch,
-            static_cast<int64_t>(millis() / 1000UL),
-            MIN_DRIFT_MEASUREMENT_SECONDS, MAX_ABS_DRIFT_PPM, measuredPpm, realSlept);
+            deviceNowMs, beaconNowMs, sleepStartedEpochMs, static_cast<int64_t>(millis()),
+            MIN_DRIFT_MEASUREMENT_MS, MAX_ABS_DRIFT_PPM, measuredPpm, realSleptMs);
         if (result == DRIFT_MEASURED) {
+            // What the estimate did not predict (temperature, the gateway's own
+            // clock) sets the next guard: it grows at once but shrinks slowly.
+            const uint32_t observedResidual = driftMeasured
+                ? static_cast<uint32_t>(abs(measuredPpm - driftPpm))
+                : FIRST_RESIDUAL_PPM;
+            residualPpm = max(observedResidual, residualPpm * 3 / 4);
             driftPpm = blendDriftPpm(driftPpm, driftMeasured, measuredPpm);
             driftMeasured = true;
-            Serial.printf("⏱️ Clock drift: measured %+ld ppm over %lld s; using %+ld ppm.\n",
-                          static_cast<long>(measuredPpm), static_cast<long long>(realSlept),
-                          static_cast<long>(driftPpm));
+            Serial.printf("⏱️ Clock drift: measured %+ld ppm over %lld s; using %+ld ppm, residual %lu ppm.\n",
+                          static_cast<long>(measuredPpm),
+                          static_cast<long long>(realSleptMs / 1000),
+                          static_cast<long>(driftPpm), static_cast<unsigned long>(residualPpm));
+        } else if (result == DRIFT_IMPLAUSIBLE) {
+            Serial.printf("⚠️ Ignoring implausible clock drift of %+ld ppm.\n",
+                          static_cast<long>(measuredPpm));
         }
-        // Grow the guard at once when the error is large, but shrink it only
-        // slowly: one good cycle does not mean the next one will be.
-        const uint32_t residualSeconds = static_cast<uint32_t>(llabs(errorMs) / 1000);
-        const uint32_t needed = 2 * residualSeconds + 2;
-        const uint32_t decayed = guardSeconds * 3 / 4;
-        guardSeconds = constrain(max(needed, decayed), MIN_GUARD_SECONDS, MAX_GUARD_SECONDS);
-        Serial.printf("🕒 Clock was off by %+lld ms; guard is now %lu s.\n",
-                      static_cast<long long>(errorMs), static_cast<unsigned long>(guardSeconds));
     }
-    sleepStartedEpoch = 0;
+    sleepStartedEpochMs = 0;
 
     struct timeval corrected = {
         static_cast<time_t>(beaconNowMs / 1000),
@@ -223,12 +239,22 @@ void deepSleepFor(uint64_t sleepSeconds) {
     Serial.flush();
     radio.end();
     lastAwakeSeconds = static_cast<uint16_t>((millis() + 999UL) / 1000UL);
-    sleepStartedEpoch = clockValid() ? static_cast<int64_t>(time(nullptr)) : 0;
+    sleepStartedEpochMs = clockValid() ? nowMs() : 0;
     esp_sleep_enable_timer_wakeup(timerSeconds * MICROSECONDS_PER_SECOND);
     esp_deep_sleep_start();
 }
 
-// Sleeps until guardSeconds before the next slot, or retries a cold join.
+// Guard for a sleep of this length: the clock uncertainty times the sleep.
+uint32_t guardFor(uint64_t sleepSeconds) {
+    const uint64_t uncertaintyPpm = driftMeasured
+        ? 2ULL * max(residualPpm, MIN_RESIDUAL_PPM)
+        : UNKNOWN_DRIFT_PPM;
+    const uint64_t guard = sleepSeconds * uncertaintyPpm / 1000000ULL + GUARD_MARGIN_SECONDS;
+    return static_cast<uint32_t>(constrain(guard, static_cast<uint64_t>(MIN_GUARD_SECONDS),
+                                           static_cast<uint64_t>(MAX_GUARD_SECONDS)));
+}
+
+// Sleeps until the guard before the next slot, or retries a cold join.
 void sleepUntilNextSlot() {
     const time_t now = time(nullptr);
     if (!clockValid() || nextWakeEpoch == 0 || missedCycles >= MAX_MISSED_CYCLES) {
@@ -241,6 +267,10 @@ void sleepUntilNextSlot() {
     while (static_cast<time_t>(nextWakeEpoch) <= now && schedulePeriodSeconds > 0) {
         nextWakeEpoch += schedulePeriodSeconds;
     }
+    const uint64_t untilSlot = static_cast<time_t>(nextWakeEpoch) > now
+        ? static_cast<uint64_t>(nextWakeEpoch - now)
+        : 0;
+    guardSeconds = guardFor(untilSlot);
     const time_t wakeAt = static_cast<time_t>(nextWakeEpoch) - guardSeconds;
     deepSleepFor(wakeAt > now + 1 ? static_cast<uint64_t>(wakeAt - now) : 1);
 }
@@ -269,7 +299,9 @@ void setup() {
     const DataPacket reading = makeFakeReading();
     if (!waitForBeacon(listenMs)) {
         missedCycles++;
-        guardSeconds = min<uint32_t>(guardSeconds * 2, MAX_GUARD_SECONDS);
+        // Treat the clock as unknown again so the next guard is wide enough
+        // to find the gateway (e.g. ~7 minutes around a 12-hour slot).
+        residualPpm = max(residualPpm * 2, UNKNOWN_DRIFT_PPM / 2);
         queueReading(reading);
         Serial.printf("⚠️ No beacon heard (%u missed cycle(s)); reading queued.\n", missedCycles);
         sleepUntilNextSlot();
