@@ -39,6 +39,15 @@ export const binSchema = new mongoose.Schema({
         deepSleepSeconds: { type: Number, min: 1, max: 86400, default: null },
         meshAwakeWindowSeconds: { type: Number, min: 1, max: 60, default: null },
         lastAwakeSeconds: { type: Number, min: 1, max: 86400, default: null },
+        // How the last report arrived: the bin's own cellular link or a mesh gateway.
+        connection: {
+            via: { type: String, enum: ["cellular", "mesh"], default: null },
+            gatewayId: { type: mongoose.Schema.Types.ObjectId, ref: "Bin", default: null },
+            hops: { type: Number, min: 1, max: 8, default: null },
+            rssi: { type: Number, min: -128, max: 0, default: null },
+        },
+        // Relayed message IDs already stored, so gateway retries are not stored twice.
+        recentMeshMessageIds: { type: [Number], default: [] },
         updatedAt: { type: Date, default: Date.now }
     },
     ownerId: {

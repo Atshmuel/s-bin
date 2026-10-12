@@ -23,6 +23,10 @@ export const binLogSchema = new mongoose.Schema({
     sleepDurationSeconds: { type: Number, min: 1, max: 86400 },
     meshAwakeWindowSeconds: { type: Number, min: 1, max: 60 },
     lastAwakeSeconds: { type: Number, min: 1, max: 86400 },
+    connection: { type: String, enum: ["cellular", "mesh"] },
+    gatewayId: { type: mongoose.Schema.Types.ObjectId, ref: "Bin" },
+    hops: { type: Number, min: 1, max: 8 },
+    rssi: { type: Number, min: -128, max: 0 },
     weight: { type: Number, required: true },
     health: {
         type: String,

@@ -37,6 +37,9 @@ export async function handleMqttMessage(topic, payload) {
         case "instruction-result":
             await handleInstructionResult(mac, payload);
             break;
+        case "relay":
+            await handleRelay(mac, payload);
+            break;
         default:
             console.log("Unknown topic:", field);
     }
@@ -107,8 +110,36 @@ async function handleRegistration({ mac, orgId, location, battery }) {
     }
 }
 
-async function handleDeviceLog(mac, {
-    deviceKey,
+function isValidTelemetryRecord({
+    location,
+    health,
+    level,
+    sensorOk,
+    battery,
+    weight,
+    message,
+    sleepDurationSeconds,
+    meshAwakeWindowSeconds,
+    lastAwakeSeconds,
+}) {
+    return checkPayloadFields({
+        location,
+        health,
+        level,
+        sensorOk,
+        battery,
+        weight,
+        message,
+        sleepDurationSeconds,
+        meshAwakeWindowSeconds,
+        lastAwakeSeconds,
+    });
+}
+
+// Stores one validated telemetry record for an authenticated bin, whether it
+// arrived over the bin's own cellular link or was relayed by a mesh gateway.
+// Returns the bin's next report schedule.
+async function applyDeviceLog(bin, {
     location,
     health,
     level,
@@ -119,28 +150,8 @@ async function handleDeviceLog(mac, {
     sleepDurationSeconds,
     meshAwakeWindowSeconds,
     lastAwakeSeconds,
-}) {
-    if (!checkPayloadFields({
-        location,
-        health,
-        level,
-        sensorOk,
-        battery,
-        weight,
-        message: healthMessage,
-        sleepDurationSeconds,
-        meshAwakeWindowSeconds,
-        lastAwakeSeconds,
-    })) return;
-
-    const bin = await getBinByMacAndKeyShared(mac, deviceKey);
-    if (!bin) return;
-    const {
-        timeZone,
-        nextWakeEpoch,
-        followingWakeEpoch,
-        sleepDurationSeconds: scheduledSleepDurationSeconds,
-    } = getNextReportSchedule(location);
+}, { via, gatewayId = null, hops = null, rssi = null }) {
+    const schedule = getNextReportSchedule(location);
 
     const severity = level >= 80 || battery <= 20 || health === 'critical'
         ? 'critical'
@@ -155,7 +166,7 @@ async function handleDeviceLog(mac, {
     if (healthMessage) messages.push(healthMessage);
     const message = messages.length > 0 ? messages.join(' ') : null;
 
-    weight = weight <= 0 ? 0 : weight / 1000; // Ensure weight is not negative, convert grams to kilograms
+    const weightKg = weight <= 0 ? 0 : weight / 1000; // Ensure weight is not negative, convert grams to kilograms
 
     const levelIsValid = sensorOk !== false;
     let query = {
@@ -168,10 +179,14 @@ async function handleDeviceLog(mac, {
         ...(sleepDurationSeconds === undefined ? {} : { sleepDurationSeconds }),
         ...(meshAwakeWindowSeconds === undefined ? {} : { meshAwakeWindowSeconds }),
         ...(lastAwakeSeconds === undefined ? {} : { lastAwakeSeconds }),
+        connection: via,
+        ...(gatewayId === null ? {} : { gatewayId }),
+        ...(hops === null ? {} : { hops }),
+        ...(rssi === null ? {} : { rssi }),
         severity,
         type: 'log',
         source: 'sensor',
-        weight
+        weight: weightKg
     };
     query = appendFilter(query, message, 'message', message);
 
@@ -194,13 +209,28 @@ async function handleDeviceLog(mac, {
     if (lastAwakeSeconds !== undefined) {
         bin.status.lastAwakeSeconds = lastAwakeSeconds;
     }
-    bin.status.weight = weight;
+    bin.status.weight = weightKg;
+    bin.status.connection = { via, gatewayId, hops, rssi };
     bin.location.coordinates = location;
-    bin.timezone = timeZone;
+    bin.timezone = schedule.timeZone;
     if (message) {
         bin.maintenance.notes = `Last updated via MQTT on ${new Date().toLocaleString()}, message: ${message}`;
     }
     await bin.save();
+    return schedule;
+}
+
+async function handleDeviceLog(mac, { deviceKey, ...record }) {
+    if (!isValidTelemetryRecord(record)) return;
+
+    const bin = await getBinByMacAndKeyShared(mac, deviceKey);
+    if (!bin) return;
+    const {
+        timeZone,
+        nextWakeEpoch,
+        followingWakeEpoch,
+        sleepDurationSeconds: scheduledSleepDurationSeconds,
+    } = await applyDeviceLog(bin, record, { via: "cellular" });
 
     console.log("Updated log for", mac);
     const orgMeshAwakeWindowSeconds = await getOrgMeshAwakeWindowShared(bin.ownerId);
@@ -216,6 +246,116 @@ async function handleDeviceLog(mac, {
             meshAwakeWindowSeconds: orgMeshAwakeWindowSeconds,
         })
     );
+}
+
+const MAC_ADDRESS_PATTERN = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
+const MAX_MESH_HOPS = 8;
+const RECENT_MESH_MESSAGE_IDS = 8;
+
+function publishRelayResult(gatewayMac, leafMac, messageId, accepted, reason) {
+    mqttClient.publish(`${BIN_ACK_TOPIC}/${gatewayMac}`, JSON.stringify({
+        status: "relay_result",
+        leafMac,
+        messageId,
+        accepted,
+        ...(reason === undefined ? {} : { reason }),
+    }), { qos: 1 }, error => {
+        if (error) {
+            console.error(`Failed to send relay result to ${gatewayMac}:`, error);
+        }
+    });
+}
+
+async function findOrCreateLeafBin(leafMac, gateway, record) {
+    const existing = await binModel.findOne({ macAddress: leafMac });
+    if (existing) return existing;
+
+    try {
+        return await binModel.create({
+            binName: `Bin-${leafMac.slice(0, 5)}-${Date.now().toString().slice(-4)}`,
+            macAddress: leafMac,
+            ownerId: gateway.ownerId,
+            deviceKey: generateRandomToken(),
+            location: { type: "Point", coordinates: record.location },
+            timezone: getNextReportSchedule(record.location).timeZone,
+            status: { battery: record.battery },
+        });
+    } catch (error) {
+        // Another gateway relayed the same new leaf at the same moment.
+        if (error?.code === 11000) {
+            return binModel.findOne({ macAddress: leafMac });
+        }
+        throw error;
+    }
+}
+
+// A mesh gateway uploads a reading it took custody of from a leaf without a SIM.
+// The leaf has no device key, so the authenticated gateway vouches for it; leaves
+// are created in, and limited to, the gateway's organization.
+async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, hops, rssi, record }) {
+    const gateway = await getBinByMacAndKeyShared(gatewayMac, deviceKey);
+    if (!gateway) {
+        console.warn(`Relay rejected for ${gatewayMac}: invalid gateway credentials.`);
+        return;
+    }
+    if (typeof leafMac !== "string" || !MAC_ADDRESS_PATTERN.test(leafMac) ||
+        !Number.isInteger(messageId) || messageId < 0 || messageId > 0xFFFFFFFF) {
+        console.warn(`Relay from ${gatewayMac} has no valid leaf MAC or message ID.`);
+        return;
+    }
+    // Permanent rejections are still answered so the gateway drops the record.
+    if (leafMac.toUpperCase() === gatewayMac.toUpperCase() ||
+        !Number.isInteger(hops) || hops < 1 || hops > MAX_MESH_HOPS ||
+        (rssi !== undefined && (!Number.isInteger(rssi) || rssi < -128 || rssi > 0)) ||
+        !record || typeof record !== "object" || Array.isArray(record)) {
+        publishRelayResult(gatewayMac, leafMac, messageId, false, "invalid_envelope");
+        return;
+    }
+
+    const leafRecord = record.location === undefined
+        ? { ...record, location: gateway.location.coordinates }
+        : record;
+    if (!isValidTelemetryRecord(leafRecord)) {
+        publishRelayResult(gatewayMac, leafMac, messageId, false, "invalid_record");
+        return;
+    }
+
+    const leaf = await findOrCreateLeafBin(leafMac, gateway, leafRecord);
+    if (!leaf.ownerId.equals(gateway.ownerId)) {
+        console.warn(`Relay rejected: leaf ${leafMac} belongs to another organization than gateway ${gatewayMac}.`);
+        publishRelayResult(gatewayMac, leafMac, messageId, false, "organization_mismatch");
+        return;
+    }
+
+    // Claim the message ID first so two gateways uploading the same reading
+    // cannot both store it; release the claim if storing fails.
+    const claim = await binModel.updateOne(
+        { _id: leaf._id, "status.recentMeshMessageIds": { $ne: messageId } },
+        { $push: { "status.recentMeshMessageIds": { $each: [messageId], $slice: -RECENT_MESH_MESSAGE_IDS } } }
+    );
+    if (claim.modifiedCount === 0) {
+        console.log(`Duplicate relay of message ${messageId} for ${leafMac}; acknowledging again.`);
+        publishRelayResult(gatewayMac, leafMac, messageId, true, "duplicate");
+        return;
+    }
+
+    try {
+        await applyDeviceLog(leaf, leafRecord, {
+            via: "mesh",
+            gatewayId: gateway._id,
+            hops,
+            rssi: rssi ?? null,
+        });
+    } catch (error) {
+        await binModel.updateOne(
+            { _id: leaf._id },
+            { $pull: { "status.recentMeshMessageIds": messageId } }
+        );
+        throw error;
+    }
+
+    console.log(`Stored relayed log for ${leafMac} via ${gatewayMac} (${hops} hop(s)).`);
+    publishRelayResult(gatewayMac, leafMac, messageId, true);
 }
 
 async function handleInstructionCheck(mac, { deviceKey }) {
