@@ -3,9 +3,13 @@ import tzLookup from "tz-lookup";
 const REPORT_INTERVAL_MINUTES = Number(process.env.DEVICE_REPORT_INTERVAL_MINUTES ?? 1);
 // These UTC slots correspond to 08:00/20:00 in summer and 07:00/19:00 in winter in Israel.
 const FIXED_REPORT_TIMES_UTC = [5, 17];
+// Device sleep clocks run fast (about +0.5%, so ~4 minutes per 12 hours). A report
+// arriving this close before a slot belongs to that slot, so the next wake is the
+// slot after it instead of a second report minutes later.
+const EARLY_WAKE_TOLERANCE_SECONDS = 600;
 
 function getNextFixedReportEpoch(now) {
-    const nowSeconds = Math.floor(now / 1000);
+    const nowSeconds = Math.floor(now / 1000) + EARLY_WAKE_TOLERANCE_SECONDS;
     const date = new Date(now);
     const utcMidnight = Date.UTC(
         date.getUTCFullYear(),
@@ -46,9 +50,13 @@ export function getNextReportSchedule(location, now = Date.now()) {
 
     const nowSeconds = Math.floor(now / 1000);
     const intervalSeconds = REPORT_INTERVAL_MINUTES * 60;
+    const intervalToleranceSeconds = Math.min(
+        EARLY_WAKE_TOLERANCE_SECONDS,
+        Math.floor(intervalSeconds / 4),
+    );
     const nextWakeEpoch = REPORT_INTERVAL_MINUTES === 720
         ? getNextFixedReportEpoch(now)
-        : (Math.floor(nowSeconds / intervalSeconds) + 1) * intervalSeconds;
+        : (Math.floor((nowSeconds + intervalToleranceSeconds) / intervalSeconds) + 1) * intervalSeconds;
     const sleepDurationSeconds = nextWakeEpoch - nowSeconds;
     return {
         timeZone,
