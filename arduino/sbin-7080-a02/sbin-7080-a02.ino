@@ -2,11 +2,6 @@
 
 void setup() {
     Serial.begin(115200);
-uint32_t serialStart = millis();
-    while (!Serial && (millis() - serialStart < 4000)) {
-        delay(10);
-    }
-    delay(500); // השהיית ייצוב קצרה
 
     Serial.println("\n=================================");
     Serial.println("  S-Bin SIM7080 A02 Firmware     ");
