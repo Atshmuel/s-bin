@@ -261,6 +261,14 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
                 Serial.println("⚠️ Server sent an invalid or expired nextWakeEpoch.");
             }
         }
+        if (doc["followingWakeEpoch"].is<uint64_t>()) {
+            uint64_t serverFollowingWakeEpoch = doc["followingWakeEpoch"].as<uint64_t>();
+            if (serverFollowingWakeEpoch > nextWakeEpoch) {
+                followingWakeEpoch = serverFollowingWakeEpoch;
+            } else {
+                Serial.println("⚠️ Server sent a followingWakeEpoch that is not after nextWakeEpoch.");
+            }
+        }
         if (doc["sleepDurationSeconds"].is<uint32_t>()) {
             scheduledSleepDurationSeconds = doc["sleepDurationSeconds"].as<uint32_t>();
             preferences.begin("credentials", false);

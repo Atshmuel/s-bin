@@ -58,9 +58,15 @@ export function getNextReportSchedule(location, now = Date.now()) {
         ? getNextFixedReportEpoch(now)
         : (Math.floor((nowSeconds + intervalToleranceSeconds) / intervalSeconds) + 1) * intervalSeconds;
     const sleepDurationSeconds = nextWakeEpoch - nowSeconds;
+    // The slot after next: mesh gateways advertise it to leaves at the next wake,
+    // before they have reached the server for that cycle.
+    const followingWakeEpoch = REPORT_INTERVAL_MINUTES === 720
+        ? getNextFixedReportEpoch(nextWakeEpoch * 1000)
+        : nextWakeEpoch + intervalSeconds;
     return {
         timeZone,
         nextWakeEpoch,
+        followingWakeEpoch,
         sleepDurationSeconds,
     };
 }

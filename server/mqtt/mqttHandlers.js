@@ -66,7 +66,8 @@ async function handleRegistration({ mac, orgId, location, battery }) {
             console.log("Invalid location or battery data");
             return;
         }
-        const { timeZone, nextWakeEpoch, sleepDurationSeconds } = getNextReportSchedule(location);
+        const { timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds } =
+            getNextReportSchedule(location);
 
         const deviceKey = generateRandomToken();
         // 0,5 to get first 5 chars for example: 1D:44:8E:A7:32:5D -> 1D:44 date used for uniqueness validity
@@ -96,6 +97,7 @@ async function handleRegistration({ mac, orgId, location, battery }) {
                 deviceKey,
                 timeZone,
                 nextWakeEpoch,
+                followingWakeEpoch,
                 sleepDurationSeconds,
                 meshAwakeWindowSeconds,
             })
@@ -133,8 +135,12 @@ async function handleDeviceLog(mac, {
 
     const bin = await getBinByMacAndKeyShared(mac, deviceKey);
     if (!bin) return;
-    const { timeZone, nextWakeEpoch, sleepDurationSeconds: scheduledSleepDurationSeconds } =
-        getNextReportSchedule(location);
+    const {
+        timeZone,
+        nextWakeEpoch,
+        followingWakeEpoch,
+        sleepDurationSeconds: scheduledSleepDurationSeconds,
+    } = getNextReportSchedule(location);
 
     const severity = level >= 80 || battery <= 20 || health === 'critical'
         ? 'critical'
@@ -205,6 +211,7 @@ async function handleDeviceLog(mac, {
             mac,
             timeZone,
             nextWakeEpoch,
+            followingWakeEpoch,
             sleepDurationSeconds: scheduledSleepDurationSeconds,
             meshAwakeWindowSeconds: orgMeshAwakeWindowSeconds,
         })
@@ -236,7 +243,7 @@ async function handleInstructionCheck(mac, { deviceKey }) {
         payload
     }));
 
-    const { timeZone, nextWakeEpoch, sleepDurationSeconds } =
+    const { timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds } =
         getNextReportSchedule(bin.location.coordinates);
     const meshAwakeWindowSeconds = await getOrgMeshAwakeWindowShared(bin.ownerId);
     const response = JSON.stringify({
@@ -245,6 +252,7 @@ async function handleInstructionCheck(mac, { deviceKey }) {
         instructions,
         timeZone,
         nextWakeEpoch,
+        followingWakeEpoch,
         sleepDurationSeconds,
         meshAwakeWindowSeconds,
     });

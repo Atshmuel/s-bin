@@ -83,6 +83,7 @@ extern uint8_t gpsFailureCycles;
 extern time_t lastGpsAttemptEpoch;
 extern time_t lastGpsUpdateEpoch;
 extern uint64_t nextWakeEpoch;
+extern uint64_t followingWakeEpoch;
 extern uint32_t scheduledSleepDurationSeconds;
 extern uint32_t meshAwakeWindowSeconds;
 extern uint32_t lastAwakeSeconds;
