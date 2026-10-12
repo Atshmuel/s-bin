@@ -12,8 +12,15 @@ String acknowledgementTopic;
 String commandTopic;
 String instructionCheckTopic;
 String logTopic;
+String relayTopic;
 unsigned long lastMqttAttemptAt = 0;
 unsigned long lastRegistrationAt = 0;
+
+// The relay upload currently waiting for the server's relay_result.
+String waitingRelayLeafMac;
+uint32_t waitingRelayMessageId = 0;
+uint32_t relayResultCounter = 0;
+bool relayResultAccepted = false;
 }
 
 void setupMqtt() {
@@ -21,6 +28,7 @@ void setupMqtt() {
     commandTopic = "bins/command/" + DeviceMac;
     instructionCheckTopic = "bins/" + DeviceMac + "/update/instructions";
     logTopic = "bins/" + DeviceMac + "/update/log";
+    relayTopic = "bins/" + DeviceMac + "/update/relay";
 
     mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
     mqttClient.setCallback(mqttCallback);
@@ -165,6 +173,78 @@ bool publishInstructionResult(
         return false;
     }
     return true;
+}
+
+// Uploads one leaf reading on this gateway's relay topic and waits for the
+// server's relay_result. The server vouches for the leaf through this
+// gateway's device key and creates the leaf bin in this organization.
+RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long timeoutMs) {
+    if (!mqttClient.connected() || deviceKey.length() == 0) {
+        return RELAY_NO_REPLY;
+    }
+
+    const sbinmesh::DataPacket& data = record.data;
+    char leafMac[18];
+    sbinmesh::formatMac(data.header.origin, leafMac);
+    const bool sensorOk = (data.flags & sbinmesh::DATA_SENSOR_OK) != 0;
+
+    StaticJsonDocument<768> doc;
+    doc["deviceKey"] = deviceKey;
+    doc["leafMac"] = leafMac;
+    doc["messageId"] = data.header.messageId;
+    doc["hops"] = record.hops;
+    doc["rssi"] = record.rssi;
+    JsonObject reading = doc["record"].to<JsonObject>();
+    reading["health"] = healthFromFailureCounts(
+        data.sensorFailureCycles, data.pmuFailureCycles, data.gpsFailureCycles);
+    reading["sensorOk"] = sensorOk;
+    if (sensorOk) {
+        reading["level"] = data.level;
+    }
+    reading["battery"] = data.battery;
+    reading["weight"] = 0;
+    if (data.flags & sbinmesh::DATA_HAS_LOCATION) {
+        reading["location"][0] = data.latitude;
+        reading["location"][1] = data.longitude;
+    }
+    const String message = buildHealthMessage(
+        data.sensorFailureCycles, data.pmuFailureCycles, data.gpsFailureCycles,
+        (data.flags & sbinmesh::DATA_CALIBRATION_FAILED) != 0, data.distanceMm);
+    if (message.length() > 0) {
+        reading["message"] = message;
+    }
+    if (data.lastAwakeSeconds > 0) {
+        reading["lastAwakeSeconds"] = data.lastAwakeSeconds;
+    }
+    if (data.meshAwakeWindowSeconds >= 1 &&
+        data.meshAwakeWindowSeconds <= MAX_MESH_AWAKE_WINDOW_SECONDS) {
+        reading["meshAwakeWindowSeconds"] = data.meshAwakeWindowSeconds;
+    }
+
+    char payload[768];
+    const size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
+    if (payloadLength == 0 || payloadLength >= sizeof(payload) ||
+        !mqttClient.publish(relayTopic.c_str(), payload)) {
+        Serial.printf("❌ Could not publish the relayed reading of %s.\n", leafMac);
+        return RELAY_NO_REPLY;
+    }
+
+    waitingRelayLeafMac = leafMac;
+    waitingRelayMessageId = data.header.messageId;
+    const uint32_t previousResultCount = relayResultCounter;
+    const unsigned long waitStartedAt = millis();
+    while (relayResultCounter == previousResultCount && millis() - waitStartedAt < timeoutMs) {
+        mqttClient.loop();
+        delay(50);
+    }
+    waitingRelayLeafMac = "";
+    if (relayResultCounter == previousResultCount) {
+        return RELAY_NO_REPLY;
+    }
+    Serial.printf("%s Relayed reading %08lX of %s.\n",
+                  relayResultAccepted ? "✅ Server stored" : "⚠️ Server rejected",
+                  static_cast<unsigned long>(data.header.messageId), leafMac);
+    return relayResultAccepted ? RELAY_ACCEPTED : RELAY_REJECTED;
 }
 
 bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, const String& healthMessage) {
@@ -332,6 +412,18 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             doc["instructionId"].is<const char*>() &&
             waitingInstructionResultId == doc["instructionId"].as<String>()) {
             instructionResultAckCounter++;
+        }
+        if (doc["status"] == "relay_result" &&
+            doc["leafMac"].is<const char*>() &&
+            doc["messageId"].is<uint32_t>() &&
+            doc["messageId"].as<uint32_t>() == waitingRelayMessageId &&
+            waitingRelayLeafMac.equalsIgnoreCase(doc["leafMac"].as<const char*>())) {
+            relayResultAccepted = doc["accepted"] == true;
+            if (!relayResultAccepted && doc["reason"].is<const char*>()) {
+                Serial.printf("⚠️ Relay rejected by the server: %s.\n",
+                              doc["reason"].as<const char*>());
+            }
+            relayResultCounter++;
         }
         return;
     }

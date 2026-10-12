@@ -109,6 +109,33 @@ uint16_t readBatteryMillivolts();
 int readBatteryPercent();
 String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk);
 String getDeviceHealthMessage(int distanceMm);
+String healthFromFailureCounts(uint8_t sensorFailures, uint8_t pmuFailures, uint8_t gpsFailures);
+String buildHealthMessage(
+    uint8_t sensorFailures,
+    uint8_t pmuFailures,
+    uint8_t gpsFailures,
+    bool calibrationFailed,
+    int distanceMm
+);
+
+// A reading this gateway took custody of from a mesh leaf, kept in RTC memory
+// until the server confirms it.
+struct RelayRecord {
+    sbinmesh::DataPacket data;
+    uint8_t hops;   // radio hops the reading travelled to reach this gateway
+    int8_t rssi;    // dBm of the last hop
+};
+
+enum RelayUploadResult {
+    RELAY_ACCEPTED,
+    RELAY_REJECTED,
+    RELAY_NO_REPLY,
+};
+
+void beginMeshWindow();
+void endMeshWindow();
+void uploadRelayedReadings();
+RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long timeoutMs);
 bool synchronizeClockFromNetwork(unsigned long timeoutMs);
 bool isSystemClockValid();
 uint64_t applyDriftCorrection(uint64_t sleepSeconds);

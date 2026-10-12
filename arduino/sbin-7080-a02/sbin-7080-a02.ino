@@ -22,6 +22,10 @@ void setup() {
         return;
     }
 
+    // Open the mesh window before the slow modem work so leaves are served
+    // from the moment this gateway wakes.
+    beginMeshWindow();
+
     constexpr uint32_t MODEM_RETRY_SLEEP_SECONDS = 15UL * 60UL;
     if (!initializeModem()) {
         cutModemPower();
@@ -69,6 +73,8 @@ void loop() {
         handleConfigurationPortal();
         return;
     }
+    // A new cycle without a reboot (USB connected) needs its own window.
+    beginMeshWindow();
 
     if (gpsModeActive) {
         bool fixAcquired = updateGpsLocation();
@@ -183,9 +189,13 @@ void loop() {
     }
 
     Serial.println(reportSent ? "✅ Reporting cycle completed." : "⚠️ Reporting cycle ended without a telemetry report.");
+    if (mqttReady) {
+        uploadRelayedReadings();
+    }
     constexpr unsigned long INSTRUCTION_CHECK_TIMEOUT_MS = 5000UL;
     if (deviceKey.length() > 0) {
         processPendingInstructions(INSTRUCTION_CHECK_TIMEOUT_MS);
     }
+    endMeshWindow();
     enterDeepSleepUntilNextReport();
 }

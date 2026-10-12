@@ -64,22 +64,43 @@ String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk)
         }
     }
 
-    if (sensorFailureCycles >= 2 || pmuFailureCycles >= 2 || gpsFailureCycles >= 2) {
+    return healthFromFailureCounts(sensorFailureCycles, pmuFailureCycles, gpsFailureCycles);
+}
+
+String healthFromFailureCounts(uint8_t sensorFailures, uint8_t pmuFailures, uint8_t gpsFailures) {
+    if (sensorFailures >= 2 || pmuFailures >= 2 || gpsFailures >= 2) {
         return "critical";
     }
-    if (sensorFailureCycles > 0 || pmuFailureCycles > 0 || gpsFailureCycles > 0) {
+    if (sensorFailures > 0 || pmuFailures > 0 || gpsFailures > 0) {
         return "warning";
     }
     return "good";
 }
 
 String getDeviceHealthMessage(int distanceMm) {
+    return buildHealthMessage(
+        sensorFailureCycles,
+        pmuFailureCycles,
+        gpsFailureCycles,
+        binDepthMm <= 0 || lastCalibrationFailed,
+        distanceMm
+    );
+}
+
+// Shared by this bin's own reports and the readings it relays for mesh leaves.
+String buildHealthMessage(
+    uint8_t sensorFailures,
+    uint8_t pmuFailures,
+    uint8_t gpsFailures,
+    bool calibrationFailed,
+    int distanceMm
+) {
     String message;
-    if (sensorFailureCycles > 0 && (binDepthMm <= 0 || lastCalibrationFailed)) {
+    if (sensorFailures > 0 && calibrationFailed) {
         message = "Empty-bin calibration failed (A02 distance: ";
         message += String(distanceMm);
         message += " mm)";
-    } else if (sensorFailureCycles > 0) {
+    } else if (sensorFailures > 0) {
         message = distanceMm <= 0
             ? "A02 sensor issue (distance: -1 mm) in "
             : "A02 fill-level calculation failed at distance ";
@@ -87,21 +108,21 @@ String getDeviceHealthMessage(int distanceMm) {
             message += String(distanceMm);
             message += " mm in ";
         }
-        message += sensorFailureCycles >= 2 ? "2 or more consecutive reporting cycles" : "the previous reporting cycle";
+        message += sensorFailures >= 2 ? "2 or more consecutive reporting cycles" : "the previous reporting cycle";
     }
-    if (pmuFailureCycles > 0) {
+    if (pmuFailures > 0) {
         if (message.length() > 0) {
             message += "; ";
         }
         message += "AXP2101 PMU or battery measurement failed in ";
-        message += pmuFailureCycles >= 2 ? "2 or more consecutive reporting cycles" : "the previous reporting cycle";
+        message += pmuFailures >= 2 ? "2 or more consecutive reporting cycles" : "the previous reporting cycle";
     }
-    if (gpsFailureCycles > 0) {
+    if (gpsFailures > 0) {
         if (message.length() > 0) {
             message += "; ";
         }
         message += "GNSS location refresh failed in ";
-        message += gpsFailureCycles >= 2 ? "2 or more consecutive monthly attempts" : "the previous monthly attempt";
+        message += gpsFailures >= 2 ? "2 or more consecutive monthly attempts" : "the previous monthly attempt";
     }
     return message;
 }

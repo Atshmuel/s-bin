@@ -102,6 +102,7 @@ void MeshRadio::end() {
         return;
     }
     esp_now_deinit();
+    WiFi.mode(WIFI_OFF);  // the radio draws ~100 mA while it listens
     activeRadio = nullptr;
     running_ = false;
 }
