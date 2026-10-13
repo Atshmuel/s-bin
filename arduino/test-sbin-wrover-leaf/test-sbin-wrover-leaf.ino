@@ -22,9 +22,17 @@ constexpr char ORGANIZATION_ID[] = "699760a44e48dff9a082101e";
 
 constexpr time_t MIN_VALID_EPOCH = 1735689600;
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
-// First boot, or after losing the gateway: listen this long for any beacon.
-constexpr uint32_t COLD_JOIN_LISTEN_MS = 5UL * 60UL * 1000UL;
+// First boot, or after losing the gateway: without a clock or schedule the
+// leaf cannot know when the gateway's short window is, so it listens through
+// a whole 12-hour cycle. Fine for this USB-powered test board; real leaves
+// rely on a pole gateway's long window instead.
+constexpr uint32_t COLD_JOIN_LISTEN_MS = 12UL * 60UL * 60UL * 1000UL + 30UL * 60UL * 1000UL;
 constexpr uint32_t COLD_JOIN_RETRY_SLEEP_SECONDS = 15UL * 60UL;
+// A learned slot period outside this range is treated as a bad schedule.
+constexpr uint32_t MIN_SCHEDULE_PERIOD_SECONDS = 60;
+constexpr uint32_t MAX_SCHEDULE_PERIOD_SECONDS = 24UL * 60UL * 60UL;
+// Never schedule a wake closer than this; it means the schedule is stale.
+constexpr uint32_t MIN_SLEEP_TO_SLOT_SECONDS = 15;
 // After a missed beacon the leaf keeps following the slot pattern; only this
 // many misses in a row send it back to a cold join.
 constexpr uint8_t MAX_MISSED_CYCLES = 6;
@@ -108,7 +116,9 @@ DataPacket makeFakeReading() {
 }
 
 // Sets the clock from a gateway beacon and learns drift, guard and schedule.
-void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame) {
+// atScheduledSlot is false during a cold join, when the stored wake time is
+// not the slot this beacon belongs to.
+void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool atScheduledSlot) {
     const int64_t beaconNowMs = static_cast<int64_t>(beacon.epochMs) +
                                 (millis() - frame.receivedAtMs);
     const int64_t deviceNowMs = nowMs();
@@ -151,8 +161,13 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame) {
     };
     settimeofday(&corrected, nullptr);
 
-    if (beacon.nextWakeEpoch > nextWakeEpoch && nextWakeEpoch > 0) {
-        schedulePeriodSeconds = beacon.nextWakeEpoch - nextWakeEpoch;
+    // Learn the slot period only from the slot this leaf actually woke for;
+    // anything else (cold join, a schedule that changed) would be a guess.
+    if (atScheduledSlot && beacon.nextWakeEpoch > nextWakeEpoch && nextWakeEpoch > 0) {
+        const uint32_t period = beacon.nextWakeEpoch - nextWakeEpoch;
+        if (period >= MIN_SCHEDULE_PERIOD_SECONDS && period <= MAX_SCHEDULE_PERIOD_SECONDS) {
+            schedulePeriodSeconds = period;
+        }
     }
     nextWakeEpoch = beacon.nextWakeEpoch;
     meshWindowSeconds = beacon.meshWindowSeconds;
@@ -161,7 +176,7 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame) {
 }
 
 // Listens up to listenMs for a beacon sent directly by a gateway.
-bool waitForBeacon(uint32_t listenMs) {
+bool waitForBeacon(uint32_t listenMs, bool atScheduledSlot) {
     const uint32_t startedAt = millis();
     ReceivedFrame frame;
     while (millis() - startedAt < listenMs) {
@@ -180,7 +195,7 @@ bool waitForBeacon(uint32_t listenMs) {
                       static_cast<unsigned long>(beacon->beaconSeq), macText, frame.rssi,
                       static_cast<unsigned long>(beacon->nextWakeEpoch),
                       beacon->meshWindowSeconds);
-        applyBeacon(*beacon, frame);
+        applyBeacon(*beacon, frame, atScheduledSlot);
         return true;
     }
     return false;
@@ -257,16 +272,23 @@ uint32_t guardFor(uint64_t sleepSeconds) {
 // Sleeps until the guard before the next slot, or retries a cold join.
 void sleepUntilNextSlot() {
     const time_t now = time(nullptr);
-    if (!clockValid() || nextWakeEpoch == 0 || missedCycles >= MAX_MISSED_CYCLES) {
+    bool usable = clockValid() && nextWakeEpoch != 0 && missedCycles < MAX_MISSED_CYCLES;
+    if (usable) {
+        // After a missed beacon, assume the slot pattern continues.
+        while (static_cast<time_t>(nextWakeEpoch) <= now + MIN_SLEEP_TO_SLOT_SECONDS &&
+               schedulePeriodSeconds > 0) {
+            nextWakeEpoch += schedulePeriodSeconds;
+        }
+        // A slot in the past or seconds away means the schedule is stale;
+        // sleeping a second at a time would just spin.
+        usable = static_cast<time_t>(nextWakeEpoch) > now + MIN_SLEEP_TO_SLOT_SECONDS;
+    }
+    if (!usable) {
         Serial.println("🔍 No usable schedule; retrying a cold join later.");
         nextWakeEpoch = 0;
         deepSleepFor(COLD_JOIN_RETRY_SLEEP_SECONDS);
     }
 
-    // After a missed beacon, assume the slot pattern continues.
-    while (static_cast<time_t>(nextWakeEpoch) <= now && schedulePeriodSeconds > 0) {
-        nextWakeEpoch += schedulePeriodSeconds;
-    }
     const uint64_t untilSlot = static_cast<time_t>(nextWakeEpoch) > now
         ? static_cast<uint64_t>(nextWakeEpoch - now)
         : 0;
@@ -297,7 +319,7 @@ void setup() {
                   coldJoin ? "🔍 Cold join:" : "👂", static_cast<unsigned long>(listenMs / 1000));
 
     const DataPacket reading = makeFakeReading();
-    if (!waitForBeacon(listenMs)) {
+    if (!waitForBeacon(listenMs, !coldJoin)) {
         missedCycles++;
         // Treat the clock as unknown again so the next guard is wide enough
         // to find the gateway (e.g. ~7 minutes around a 12-hour slot).
