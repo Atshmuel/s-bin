@@ -317,9 +317,16 @@ export async function getRecentBinLogs(req, res, next) {
             $gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
         }
     }
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
+        // Logs carry no ownerId; scope them through the organization's bins.
+        if (role !== process.env.ROLE_OWNER) {
+            const userBins = await binModel.find({
+                ownerId: new mongoose.Types.ObjectId(ownerId)
+            }).select('_id');
+            filter.binId = { $in: userBins.map(bin => bin._id) };
+        }
+
         const recentLogs = await binLogModel.find(filter).sort({ createdAt: -1 }).limit(50);
         req.recentBinLogs = recentLogs;
         next()
@@ -473,7 +480,7 @@ export async function getLogTypes(req, res) {
 
         const binIds = userBins.map(bin => bin._id);
 
-        query = { binId: { $in: binIds } };
+        query.binId = { $in: binIds };
     }
 
     try {
