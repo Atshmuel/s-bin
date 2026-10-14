@@ -86,6 +86,7 @@ extern time_t lastGpsUpdateEpoch;
 extern uint64_t nextWakeEpoch;
 extern uint64_t followingWakeEpoch;
 extern bool clockSyncedFromNetwork;
+extern uint32_t slotPeriodSeconds;
 extern uint32_t scheduledSleepDurationSeconds;
 extern uint32_t meshAwakeWindowSeconds;
 extern uint32_t lastAwakeSeconds;

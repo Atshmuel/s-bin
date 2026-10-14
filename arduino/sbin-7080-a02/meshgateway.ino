@@ -81,6 +81,13 @@ uint32_t leafWakeEpochToAdvertise() {
             best = candidate;
         }
     }
+    // No fresh slot from the server (the last cycle got no reply, or a reset
+    // cleared followingWakeEpoch): continue the stored slot pattern rather
+    // than advertise 0 and send every leaf into a cold join.
+    if (best == 0 && nextWakeEpoch > 0 && slotPeriodSeconds > 0) {
+        const uint64_t periodsAfter = (after - nextWakeEpoch) / slotPeriodSeconds + 1;
+        best = nextWakeEpoch + periodsAfter * slotPeriodSeconds;
+    }
     return static_cast<uint32_t>(best);
 }
 

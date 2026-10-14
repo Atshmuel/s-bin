@@ -6,6 +6,9 @@ constexpr uint16_t MQTT_PORT = 1883;
 constexpr uint16_t MQTT_BUFFER_SIZE = 1024;
 constexpr unsigned long MQTT_RETRY_INTERVAL_MS = 5000;
 constexpr unsigned long REGISTRATION_INTERVAL_MS = 30000;
+// A report period outside this range is not a plausible schedule.
+constexpr uint64_t MIN_SLOT_PERIOD_SECONDS = 60;
+constexpr uint64_t MAX_SLOT_PERIOD_SECONDS = 24ULL * 60ULL * 60ULL;
 
 String registrationTopic = "bins/register";
 String acknowledgementTopic;
@@ -345,6 +348,17 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             uint64_t serverFollowingWakeEpoch = doc["followingWakeEpoch"].as<uint64_t>();
             if (serverFollowingWakeEpoch > nextWakeEpoch) {
                 followingWakeEpoch = serverFollowingWakeEpoch;
+                // Remember the report period so the next beacons can continue
+                // the slot pattern even after a cycle without a server reply.
+                const uint64_t period = followingWakeEpoch - nextWakeEpoch;
+                if (doc["nextWakeEpoch"].as<uint64_t>() == nextWakeEpoch &&
+                    period >= MIN_SLOT_PERIOD_SECONDS && period <= MAX_SLOT_PERIOD_SECONDS &&
+                    period != slotPeriodSeconds) {
+                    slotPeriodSeconds = static_cast<uint32_t>(period);
+                    preferences.begin("credentials", false);
+                    preferences.putUInt("slotPeriod", slotPeriodSeconds);
+                    preferences.end();
+                }
             } else {
                 Serial.println("⚠️ Server sent a followingWakeEpoch that is not after nextWakeEpoch.");
             }

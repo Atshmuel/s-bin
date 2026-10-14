@@ -521,6 +521,7 @@ void loadDeviceSettings() {
     lastGpsUpdateEpoch = static_cast<time_t>(preferences.getLong64("gpsEpoch", 0));
     lastGpsAttemptEpoch = static_cast<time_t>(preferences.getLong64("gpsAttempt", 0));
     nextWakeEpoch = preferences.getULong64("nextWake", 0);
+    slotPeriodSeconds = preferences.getUInt("slotPeriod", 0);
     scheduledSleepDurationSeconds = preferences.getUInt("sleepDuration", 0);
     meshAwakeWindowSeconds = preferences.getUInt("meshAwake", DEFAULT_MESH_AWAKE_WINDOW_SECONDS);
     if (meshAwakeWindowSeconds == 0 || meshAwakeWindowSeconds > MAX_MESH_AWAKE_WINDOW_SECONDS) {
