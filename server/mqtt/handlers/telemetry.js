@@ -16,7 +16,7 @@ export function isValidTelemetryRecord({
     sleepDurationSeconds,
     meshAwakeWindowSeconds,
     lastAwakeSeconds,
-}) {
+}, kind = "bin") {
     return checkPayloadFields({
         location,
         health,
@@ -28,7 +28,7 @@ export function isValidTelemetryRecord({
         sleepDurationSeconds,
         meshAwakeWindowSeconds,
         lastAwakeSeconds,
-    });
+    }, { hasFillSensor: kind !== "gateway" });
 }
 
 // Optional sleep-clock diagnostics. An invalid value is dropped instead of
@@ -61,6 +61,12 @@ export async function applyDeviceLog(bin, {
     wakeOffsetSeconds,
 }, { via, gatewayId = null, hops = null, rssi = null }) {
     const schedule = getNextReportSchedule(location);
+    // A gateway has no fill sensor: a level it sends is ignored, and its level
+    // fields stay untouched so it never reads as a bin with a failed sensor.
+    const isGateway = bin.kind === "gateway";
+    if (isGateway) {
+        level = undefined;
+    }
 
     const severity = level >= 80 || battery <= 20 || health === 'critical'
         ? 'critical'
@@ -77,12 +83,12 @@ export async function applyDeviceLog(bin, {
 
     const weightKg = weight <= 0 ? 0 : weight / 1000; // Ensure weight is not negative, convert grams to kilograms
 
-    const levelIsValid = sensorOk !== false;
+    const levelIsValid = !isGateway && sensorOk !== false;
     let query = {
         binId: bin._id,
         location,
         health,
-        oldLevel: bin.status.level,
+        oldLevel: isGateway ? null : bin.status.level,
         newLevel: levelIsValid ? level : null,
         battery,
         ...(sleepDurationSeconds === undefined ? {} : { sleepDurationSeconds }),
@@ -105,9 +111,11 @@ export async function applyDeviceLog(bin, {
     bin.status.updatedAt = new Date();
     bin.status.health = health;
     bin.status.healthMessage = healthMessage || "";
-    bin.status.levelValid = levelIsValid;
-    if (levelIsValid) {
-        bin.status.level = level;
+    if (!isGateway) {
+        bin.status.levelValid = levelIsValid;
+        if (levelIsValid) {
+            bin.status.level = level;
+        }
     }
     bin.status.battery = battery;
     if (sleepDurationSeconds !== undefined) {
@@ -131,10 +139,10 @@ export async function applyDeviceLog(bin, {
 }
 
 export async function handleDeviceLog(mac, { deviceKey, ...record }) {
-    if (!isValidTelemetryRecord(record)) return;
-
     const bin = await getBinByMacAndKeyShared(mac, deviceKey);
     if (!bin) return;
+    // Validated after the lookup: whether a level is required depends on kind.
+    if (!isValidTelemetryRecord(record, bin.kind)) return;
     const {
         timeZone,
         nextWakeEpoch,

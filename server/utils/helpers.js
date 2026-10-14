@@ -80,7 +80,7 @@ export function checkPayloadFields({
     sleepDurationSeconds,
     meshAwakeWindowSeconds,
     lastAwakeSeconds,
-}) {
+}, { hasFillSensor = true } = {}) {
     const valid = ["good", "warning", "critical"];
     if (
         !Array.isArray(location) ||
@@ -95,11 +95,14 @@ export function checkPayloadFields({
         location[1] > 180
     ) return false;
     if (!valid.includes(health)) return false
-    if (sensorOk !== undefined && typeof sensorOk !== "boolean") return false
-    if (sensorOk === false) {
-        if (level !== undefined && level !== null) return false
-    } else if (typeof level !== "number" || level < 0 || level > 100) {
-        return false
+    // Without a fill sensor (a gateway) the level fields are ignored, not checked.
+    if (hasFillSensor) {
+        if (sensorOk !== undefined && typeof sensorOk !== "boolean") return false
+        if (sensorOk === false) {
+            if (level !== undefined && level !== null) return false
+        } else if (typeof level !== "number" || level < 0 || level > 100) {
+            return false
+        }
     }
     if (typeof battery !== "number" || battery < 0 || battery > 100) return false
     if (typeof weight !== "number") return false

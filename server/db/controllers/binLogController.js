@@ -98,7 +98,7 @@ export async function getAllLogs(req, res) {
     }
 
     pipeline.push(
-        { $addFields: { binName: '$bin.binName' } },
+        { $addFields: { binName: '$bin.binName', binKind: '$bin.kind' } },
         { $project: { bin: 0 } }
     );
 
