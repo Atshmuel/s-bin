@@ -5,6 +5,13 @@ export const binSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    // "gateway" is a mesh gateway without a fill sensor (e.g. mounted on a
+    // pole); it is kept out of fill-level, collection and statistics features.
+    kind: {
+        type: String,
+        enum: ["bin", "gateway"],
+        default: "bin",
+    },
     deviceKey: {
         type: String,
         required: true,

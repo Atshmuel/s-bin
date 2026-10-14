@@ -79,6 +79,11 @@ export async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, h
     }
 
     const leaf = await findOrCreateLeafBin(leafMac, gateway, leafRecord);
+    if (leaf.kind === "gateway") {
+        console.warn(`Relay rejected: ${leafMac} is a gateway, not a leaf bin.`);
+        publishRelayResult(gatewayMac, leafMac, messageId, false, "leaf_is_gateway");
+        return;
+    }
     if (!leaf.ownerId.equals(gateway.ownerId)) {
         console.warn(`Relay rejected: leaf ${leafMac} belongs to another organization than gateway ${gatewayMac}.`);
         publishRelayResult(gatewayMac, leafMac, messageId, false, "organization_mismatch");

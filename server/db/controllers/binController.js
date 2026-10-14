@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import { binModel, deviceInstructionModel } from '../models/models.js'
-import { appendFilter } from '../../utils/helpers.js'
+import { appendFilter, BINS_ONLY_FILTER } from '../../utils/helpers.js'
 import { deleteLogsForBins, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
@@ -96,7 +96,7 @@ export async function getBinsByStatus(req, res) {
     const { org: ownerId, role } = req.user
     const { level, health } = req.body
 
-    let query = {}
+    let query = { ...BINS_ONLY_FILTER }
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     if (level && typeof level === 'number') {
         query['status.level'] = { $gt: level }
@@ -128,6 +128,8 @@ export async function getBinsInUserRadius(req, res) {
             $lte: maxLevel !== undefined ? Number(maxLevel) : 100
         };
         query['status.levelValid'] = { $ne: false }
+        // Gateways have no fill level; without a level filter they stay on the map.
+        query = { ...query, ...BINS_ONLY_FILTER }
     }
 
     try {
@@ -177,6 +179,8 @@ export async function getRouteBins(req, res) {
     if (type === 'collection') {
         query['status.level'] = { $gte: 70 }
         query['status.levelValid'] = { $ne: false }
+        // Gateways need maintenance visits but are never collected.
+        query = { ...query, ...BINS_ONLY_FILTER }
     }
 
 

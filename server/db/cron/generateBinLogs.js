@@ -1,5 +1,6 @@
 import cron from "node-cron";
 import { binModel, binLogModel } from "../models/models.js";
+import { BINS_ONLY_FILTER } from "../../utils/helpers.js";
 
 const randomInt = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
@@ -12,7 +13,7 @@ const getSeverity = (level, battery, health) => {
 
 async function generateLogsForAllBins() {
     try {
-        const bins = await binModel.find({});
+        const bins = await binModel.find(BINS_ONLY_FILTER);
 
         if (!bins.length) {
             console.log("[Cron] No bins found in DB");

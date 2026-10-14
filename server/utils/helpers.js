@@ -62,6 +62,9 @@ export function generateRandomToken(bytes = 32) {
     return crypto.randomBytes(bytes).toString('hex');
 }
 
+// Matches real bins, including documents created before the kind field existed.
+export const BINS_ONLY_FILTER = Object.freeze({ kind: { $ne: "gateway" } });
+
 export function appendFilter(baseQuery, condition, field, value) {
     return condition ? { ...baseQuery, [field]: value } : baseQuery
 }

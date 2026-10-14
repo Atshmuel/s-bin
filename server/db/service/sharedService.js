@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
-import { appendFilter, UnionArraysById } from '../../utils/helpers.js'
+import { appendFilter, BINS_ONLY_FILTER, UnionArraysById } from '../../utils/helpers.js'
 import { AI_INSTRUCTIONS } from "../../utils/constants.js";
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
@@ -201,10 +201,15 @@ export async function getOrgAdmins(orgs) {
     }
 }
 
+// Logs carry no kind; log-based stats exclude gateways by their bin IDs.
+async function getGatewayIds() {
+    return binModel.distinct('_id', { kind: 'gateway' })
+}
+
 //overview
 export async function getAllBins(req, res, next) {
     const { org: ownerId, role } = req.user;
-    let filter = {}
+    let filter = { ...BINS_ONLY_FILTER }
     filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
@@ -219,6 +224,7 @@ export async function getAllBins(req, res, next) {
 export async function getAlmostFullBins(req, res, next) {
     const { org: ownerId, role } = req.user;
     let filter = {
+        ...BINS_ONLY_FILTER,
         "status.level": { $gte: 80 },
         "status.levelValid": { $ne: false }
     }
@@ -242,7 +248,7 @@ export async function getAvgFillLevel(req, res, next) {
     if (role !== process.env.ROLE_OWNER) {
         aggregation.push({ $match: { ownerId: new mongoose.Types.ObjectId(ownerId) } })
     }
-    aggregation.push({ $match: { "status.levelValid": { $ne: false } } })
+    aggregation.push({ $match: { ...BINS_ONLY_FILTER, "status.levelValid": { $ne: false } } })
     aggregation.push({ $group: { _id: null, avgLevel: { $avg: "$status.level" } } })
     try {
         const avg = await binModel.aggregate(aggregation)
@@ -315,13 +321,15 @@ export async function getRecentBinLogs(req, res, next) {
     let filter = {
         createdAt: {
             $gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
-        }
+        },
+        binId: { $nin: await getGatewayIds() }
     }
 
     try {
         // Logs carry no ownerId; scope them through the organization's bins.
         if (role !== process.env.ROLE_OWNER) {
             const userBins = await binModel.find({
+                ...BINS_ONLY_FILTER,
                 ownerId: new mongoose.Types.ObjectId(ownerId)
             }).select('_id');
             filter.binId = { $in: userBins.map(bin => bin._id) };
@@ -350,7 +358,7 @@ export function mapOverviewToResponse(req, res) {
 
 export async function getBinsStatusOV(req, res) {
     const { role, org: ownerId } = req.user
-    let query = {}
+    let query = { ...BINS_ONLY_FILTER }
     query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
@@ -396,11 +404,12 @@ export async function getBinsStatusOV(req, res) {
 //ai-ov
 export async function getAIOverview(req, res) {
     const { id, role, org: ownerId } = req.user
-    let query = {}
+    let query = { binId: { $nin: await getGatewayIds() } }
     let userBins = {}
 
     if (role !== process.env.ROLE_OWNER) {
         userBins = await binModel.find({
+            ...BINS_ONLY_FILTER,
             ownerId: new mongoose.Types.ObjectId(ownerId)
         }).select('_id binName');
 
@@ -470,11 +479,13 @@ export async function getLogTypes(req, res) {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     let query = {
-        createdAt: { $gt: thirtyDaysAgo }
+        createdAt: { $gt: thirtyDaysAgo },
+        binId: { $nin: await getGatewayIds() }
     }
 
     if (role !== process.env.ROLE_OWNER) {
         const userBins = await binModel.find({
+            ...BINS_ONLY_FILTER,
             ownerId: new mongoose.Types.ObjectId(ownerId)
         }).select('_id');
 
@@ -554,7 +565,7 @@ export async function updateMaintenance(id, notes, technicianId) {
 //For testing purposes only
 export async function getAllBinsForMqtt() {
     try {
-        const bins = await binModel.find({}).select('macAddress deviceKey location -_id');
+        const bins = await binModel.find(BINS_ONLY_FILTER).select('macAddress deviceKey location -_id');
         return bins;
     } catch (error) {
         console.error(error);

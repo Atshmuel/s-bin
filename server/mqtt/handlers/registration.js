@@ -5,8 +5,12 @@ import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { binModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
 
-export async function handleRegistration({ mac, orgId, location, battery }) {
+export async function handleRegistration({ mac, orgId, location, battery, kind = "bin" }) {
     try {
+        if (!["bin", "gateway"].includes(kind)) {
+            console.log("Invalid device kind:", kind);
+            return;
+        }
 
         const orgExist = await organizationExist(orgId)
         if (!orgExist) {
@@ -34,10 +38,11 @@ export async function handleRegistration({ mac, orgId, location, battery }) {
 
         const deviceKey = generateRandomToken();
         // 0,5 to get first 5 chars for example: 1D:44:8E:A7:32:5D -> 1D:44 date used for uniqueness validity
-        const binName = `Bin-${mac.slice(0, 5)}-${Date.now().toString().slice(-4)}`;
+        const binName = `${kind === "gateway" ? "Gateway" : "Bin"}-${mac.slice(0, 5)}-${Date.now().toString().slice(-4)}`;
 
         const newBin = await binModel.create({
             binName,
+            kind,
             macAddress: mac,
             ownerId: orgId,
             deviceKey,
