@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import Battery from "../../components/bins/Battary"
 import { Link } from "react-router-dom";
 import { MobileTooltip } from "../ui/mobile-tooltip";
+import { isGateway } from "@/utils/binHelpers";
 
 
 function BinPopupCard({ bin }) {
@@ -23,8 +24,12 @@ function BinPopupCard({ bin }) {
                 <Battery level={bin.status.battery} />
             </div>
             <div className={`flex flex-col ${isRight ? "" : "text-right"}`}>
-                <p className="!my-1">{t("fillLevel")}: <span className={`font-semibold`}>{bin.status.levelValid === false ? t("sensorUnavailable") : `${bin.status.level}%`}</span></p>
-                <p className="!my-1">{t("components.logCard.weight")} : <span className={`font-semibold`}>{typeof bin.status.weight === 'number' ? `${bin.status.weight.toFixed(1)} ` : '0 '} {t("units.kg")}</span></p>
+                {isGateway(bin) ?
+                    <p className="!my-1">{t("components.binCard.deviceType")}: <span className={`font-semibold`}>{t("gateway")}</span></p>
+                    : <>
+                        <p className="!my-1">{t("fillLevel")}: <span className={`font-semibold`}>{bin.status.levelValid === false ? t("sensorUnavailable") : `${bin.status.level}%`}</span></p>
+                        <p className="!my-1">{t("components.logCard.weight")} : <span className={`font-semibold`}>{typeof bin.status.weight === 'number' ? `${bin.status.weight.toFixed(1)} ` : '0 '} {t("units.kg")}</span></p>
+                    </>}
                 <p className="!my-1">{t("lastUpdated")}: {new Date(bin.status.updatedAt).toLocaleString(isRight ? "en-US" : "he-IL")}</p>
                 <Link to={`/bins/${bin._id}`} className="w-fit self-end underline !text-primary font-extrabold">{t("viewBin")}</Link>
             </div>

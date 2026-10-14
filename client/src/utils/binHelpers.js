@@ -21,6 +21,11 @@ export function getColor(levelOrStatus, type = 'fill') {
     }
 }
 
+// A mesh gateway has no fill sensor, so it is never shown with a fill level.
+export function isGateway(bin) {
+    return bin?.kind === 'gateway'
+}
+
 export function getVariant(health) {
     switch (health) {
         case "good": return "active"

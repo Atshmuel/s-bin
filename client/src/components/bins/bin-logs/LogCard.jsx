@@ -5,11 +5,13 @@ import EmptyCard from "@/components/EmptyCard"
 import { useTranslation } from "react-i18next"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { formatSleepDuration } from "@/utils/helpers"
+import { isGateway } from "@/utils/binHelpers"
 
 function LogCard({ log, isLoading = true, ...props }) {
     const { t } = useTranslation()
     const { isRight } = useAppSide()
     const isInfo = log?.severity === "info"
+    const gateway = isGateway(log?.bin)
     const iconColor = isInfo ? 'oklch(0.723 0.219 149.579)' : 'oklch(0.577 0.245 27.325)'
 
     return (
@@ -39,23 +41,25 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 <span>{log.bin._id}</span>
                             </div>
 
-                            <div className="flex justify-between">
-                                <span className="font-medium flex items-center gap-2">
-                                    <GaugeCircle size={16} /> {t("fillLevel")}:
-                                </span>
-                                <span>
-                                    {log.oldLevel}% → <b>{log.newLevel == null ? t("sensorUnavailable") : `${log.newLevel}%`}</b>
-                                </span>
-                            </div>
+                            {!gateway && <>
+                                <div className="flex justify-between">
+                                    <span className="font-medium flex items-center gap-2">
+                                        <GaugeCircle size={16} /> {t("fillLevel")}:
+                                    </span>
+                                    <span>
+                                        {log.oldLevel}% → <b>{log.newLevel == null ? t("sensorUnavailable") : `${log.newLevel}%`}</b>
+                                    </span>
+                                </div>
 
-                            <div className="flex justify-between">
-                                <span className="font-medium flex items-center gap-2">
-                                    <Activity size={16} /> {t("components.logCard.weight")}:
-                                </span>
-                                <span>
-                                    {typeof log.weight === 'number' ? `${log.weight.toFixed(1)} ` : '0 '} {t("units.kg")}
-                                </span>
-                            </div>
+                                <div className="flex justify-between">
+                                    <span className="font-medium flex items-center gap-2">
+                                        <Activity size={16} /> {t("components.logCard.weight")}:
+                                    </span>
+                                    <span>
+                                        {typeof log.weight === 'number' ? `${log.weight.toFixed(1)} ` : '0 '} {t("units.kg")}
+                                    </span>
+                                </div>
+                            </>}
 
                             <div className="flex justify-between">
                                 <span className="font-medium flex items-center gap-2">

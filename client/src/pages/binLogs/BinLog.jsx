@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useMapSettings } from "@/contexts/mapContext"
 import { useLog } from "@/hooks/bins/binLogs/useLog"
-import { getColor } from "@/utils/binHelpers"
-import { ArrowLeft, ArrowRight } from "lucide-react"
+import { getColor, isGateway } from "@/utils/binHelpers"
+import { ArrowLeft, ArrowRight, RadioTower } from "lucide-react"
 import { Link, useParams } from "react-router-dom"
 import ErrorPage from "../generals/ErrorPage"
 import { useAppSide } from "@/contexts/AppSideProvider"
@@ -45,7 +45,9 @@ function BinLog() {
             </div>
             <div ref={mapContainerRef} className="rounded-2xl overflow-hidden h-[450px]">
                 <MapComponent zoom={14} center={bin.location.coordinates} legend={true} >
-                    <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status)} popup={<BinPopupCard bin={bin} />} />
+                    {isGateway(bin)
+                        ? <CustomMarker key={bin._id} icon={RadioTower} position={bin.location.coordinates} color={getColor(bin.status, 'battery')} popup={<BinPopupCard bin={bin} />} />
+                        : <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status)} popup={<BinPopupCard bin={bin} />} />}
                 </MapComponent>
             </div>
         </div>

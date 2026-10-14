@@ -5,7 +5,7 @@ import Battery from "@/components/bins/Battary";
 import { format } from "date-fns";
 import { getVariant } from "@/utils/binHelpers";
 import { Link, useSearchParams } from "react-router-dom";
-import { LinkIcon } from "lucide-react";
+import { LinkIcon, RadioTower } from "lucide-react";
 import { useLogs } from "@/hooks/bins/binLogs/useBinLogs";
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -51,10 +51,13 @@ function AllLogs() {
             header: t('pages.logList.columns.binName'),
             accessorKey: 'binName',
             cell: ({ row }) => (
-                <Link className="flex gap-2 items-center"
-                    to={`/bins/${row.original.binId}`}>
-                    <LinkIcon size={14} /> <span>{row.original.binName}</span>
-                </Link>
+                <div className="flex gap-2 items-center">
+                    <Link className="flex gap-2 items-center"
+                        to={`/bins/${row.original.binId}`}>
+                        <LinkIcon size={14} /> <span>{row.original.binName}</span>
+                    </Link>
+                    {row.original.binKind === 'gateway' && <Badge variant="outline"><RadioTower size={12} /> {t('gateway')}</Badge>}
+                </div>
             ),
         },
         {
@@ -83,6 +86,7 @@ function AllLogs() {
             id: 'Fill level',
             accessorKey: 'newLevel',
             cell: ({ row }) => {
+                if (row.original.binKind === 'gateway') return '-';
                 return row.original.newLevel == null
                     ? t('sensorUnavailable')
                     : `${row.original.newLevel}%`;
@@ -93,7 +97,7 @@ function AllLogs() {
             id: 'Weight',
             accessorKey: 'weight',
             cell: ({ row }) => {
-                return row.original.weight ?? '-'
+                return row.original.binKind === 'gateway' ? '-' : row.original.weight ?? '-'
             }
         },
         {

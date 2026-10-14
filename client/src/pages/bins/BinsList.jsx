@@ -3,7 +3,9 @@ import DataTable from "../../components/DataTable"
 import { Link, useSearchParams } from "react-router-dom";
 import HealthBadge from "@/components/bins/HealthBadge";
 import Battery from "../../components/bins/Battary";
-import { LinkIcon, MapPin, Trash } from "lucide-react";
+import { LinkIcon, MapPin, RadioTower, Trash } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { isGateway } from "@/utils/binHelpers";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
 import { useBins } from "@/hooks/bins/useBins";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -84,10 +86,13 @@ function BinsList() {
                 const id = row.original._id;
 
                 return (
-                    <Link className="flex gap-2 items-center"
-                        to={`/bins/${id}`}>
-                        <LinkIcon size={14} /> <span>{row.original.binName}</span>
-                    </Link>
+                    <div className="flex gap-2 items-center">
+                        <Link className="flex gap-2 items-center"
+                            to={`/bins/${id}`}>
+                            <LinkIcon size={14} /> <span>{row.original.binName}</span>
+                        </Link>
+                        {isGateway(row.original) && <Badge variant="outline"><RadioTower size={12} /> {t('gateway')}</Badge>}
+                    </div>
                 );
             },
         },
@@ -121,6 +126,7 @@ function BinsList() {
             id: 'Fill level',
             accessorKey: 'status.level',
             cell: ({ row }) => {
+                if (isGateway(row.original)) return '-';
                 return row.original.status.levelValid === false
                     ? t('sensorUnavailable')
                     : `${row.original.status.level}%`;
@@ -131,7 +137,7 @@ function BinsList() {
             accessorKey: 'Weight',
             cell: ({ row }) => {
                 const weight = row.original.status?.weight;
-                return typeof weight === 'number' ? `${weight}` : '-';
+                return !isGateway(row.original) && typeof weight === 'number' ? `${weight}` : '-';
             },
         },
         {

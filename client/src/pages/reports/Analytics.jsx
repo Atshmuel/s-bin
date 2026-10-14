@@ -64,6 +64,8 @@ function Analytics() {
     const { logTypes, isLoadingLogTypeOV, logTypeOVError } = useLogsTypeOV()
 
     const filteredLogs = allLogs?.filter((item) => {
+        // Gateways have no fill level and stay out of fleet statistics.
+        if (item.binKind === 'gateway') return false
         const date = new Date(item.createdAt)
         const referenceDate = new Date()
         let daysToSubtract = 90

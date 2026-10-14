@@ -34,11 +34,12 @@ export async function getBin(req, res) {
 
         if (!binData) return res.status(404).json({ message: "Bin not found." });
 
-        // A gateway's card lists the bins whose last report it relayed.
-        const gateway = binData[0]?.kind === 'gateway' ? binData[0] : null;
-        if (gateway) {
-            gateway.connectedLeaves = await binModel.find(
-                { ownerId: gateway.ownerId, 'status.connection.gatewayId': gateway._id },
+        // The bins whose last report this device relayed. Any device with a SIM
+        // can relay for mesh leaves: a gateway, or a bin that is also a gateway.
+        const device = binData[0];
+        if (device) {
+            device.connectedLeaves = await binModel.find(
+                { ownerId: device.ownerId, 'status.connection.gatewayId': device._id },
                 { binName: 1, 'status.updatedAt': 1, 'status.connection.hops': 1, 'status.connection.rssi': 1 }
             ).lean();
         }

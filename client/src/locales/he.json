@@ -49,6 +49,7 @@
         "all":"הכל"
     },  
     "sensorUnavailable":"לא זמין",
+    "gateway":"שער תקשורת",
     "healthTooltip":{
         "critical":"זוהתה תקלה קריטית בחומרה או באחד הרכיבים.",
         "warning":"המכשיר דיווח על תקלה בחומרה או באחד הרכיבים.",
@@ -719,6 +720,10 @@
        "location":"מיקום",
        "locationTooltip":"לחץ כדי לאתר את הפח על המפה",
        "clickToEditName":"לחץ כדי לערוך את שם הפח",
+       "deviceType":"סוג מכשיר",
+       "connectedLeaves":"פחים מחוברים",
+       "noConnectedLeaves":"אף פח עוד לא דיווח דרך שער התקשורת הזה.",
+       "hops":"קפיצות",
        "maintenance":{
         "title":"תחזוקה",
         "lastService":"שירות אחרון",

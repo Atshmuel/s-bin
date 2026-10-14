@@ -49,6 +49,7 @@
         "all":"All"
     },
         "sensorUnavailable":"Unavailable",
+        "gateway":"Gateway",
         "healthTooltip":{
             "critical":"The device has a critical hardware or component issue.",
             "warning":"The device reported a hardware or component issue.",
@@ -717,6 +718,10 @@
        "location":"Location",
        "locationTooltip":"Click to locate the bin on the map",
        "clickToEditName":"Click to edit the bin name",
+       "deviceType":"Device Type",
+       "connectedLeaves":"Connected Bins",
+       "noConnectedLeaves":"No bin has reported through this gateway yet.",
+       "hops":"Hops",
        "maintenance":{
         "title":"Maintenance",
         "lastService":"Last Service",

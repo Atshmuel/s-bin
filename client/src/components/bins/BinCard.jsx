@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "../ui/card"
 import { Button } from "../ui/button"
-import { Copy, Info, MapPin, Pencil, Trash2, Wrench, Check, X } from "lucide-react"
+import { Copy, Info, MapPin, Pencil, RadioTower, Trash2, Wrench, Check, X } from "lucide-react"
 import HealthBadge from "./HealthBadge"
 import { Link } from "react-router-dom"
 import { Separator } from "../ui/separator"
@@ -20,6 +20,7 @@ import { Textarea } from "../ui/textarea"
 import { useUpdateBinMaintenance, useUpdateBinName } from "@/hooks/bins/useUpdateBin"
 import { useMe } from "@/hooks/users/auth/useMe";
 import { formatSleepDuration } from "@/utils/helpers";
+import { isGateway } from "@/utils/binHelpers";
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
     const [deleteInput, setDeleteInput] = useState('')
@@ -37,6 +38,9 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
 
     const { me, isAdmin } = useMe();
     const isUser = me?.role === 'user'
+
+    const gateway = isGateway(bin)
+    const NameIcon = gateway ? RadioTower : Trash2
 
     function handleCopyDeviceKey() {
         navigator.clipboard.writeText(bin?.deviceKey)
@@ -106,7 +110,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                     {isAdmin ?
                                         isEditingName ? (
                                             <div className="flex items-center gap-2">
-                                                <Trash2 size={20} />
+                                                <NameIcon size={20} />
                                                 <input
                                                     ref={nameInputRef}
                                                     type="text"
@@ -142,7 +146,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                                     className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
                                                     onClick={handleStartEditName}
                                                 >
-                                                    <Trash2 size={20} />
+                                                    <NameIcon size={20} />
                                                     <span className="truncate max-w-40 md:max-w-65">{bin.binName}</span>
                                                     <Pencil size={14} className="text-muted-foreground " />
                                                 </h3>
@@ -152,7 +156,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                             className="flex items-center gap-2"
                                             onClick={handleStartEditName}
                                         >
-                                            <Trash2 size={20} />
+                                            <NameIcon size={20} />
                                             <span className="truncate max-w-40 md:max-w-65">{bin.binName}</span>
                                         </h3>}
                                 </div>
@@ -168,10 +172,15 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                         <CardContent className="space-y-5 text-sm">
                             <div className="space-y-3">
 
-                                <div className="flex flex-row justify-between">
-                                    <span className="font-medium">{t('fillLevel')}:</span>
-                                    <span>{bin.status.levelValid === false ? t('sensorUnavailable') : `${bin.status.level}%`}</span>
-                                </div>
+                                {gateway ?
+                                    <div className="flex flex-row justify-between">
+                                        <span className="font-medium">{t('components.binCard.deviceType')}:</span>
+                                        <span>{t('gateway')}</span>
+                                    </div>
+                                    : <div className="flex flex-row justify-between">
+                                        <span className="font-medium">{t('fillLevel')}:</span>
+                                        <span>{bin.status.levelValid === false ? t('sensorUnavailable') : `${bin.status.level}%`}</span>
+                                    </div>}
 
                                 <div className="flex flex-row justify-between">
                                     <span className="font-medium">{t('deepSleepDuration')}:</span>
@@ -228,6 +237,30 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                         </div>}
                                 </div>
                             </div>
+
+                            {/* A bin relaying for leaves lists them too; a gateway always shows the section. */}
+                            {bin.connectedLeaves && (gateway || bin.connectedLeaves.length > 0) && (
+                                <>
+                                    <Separator />
+                                    <div className="space-y-2.5">
+                                        <p className="text-sm md:text-base font-medium flex gap-2">
+                                            <Trash2 size={18} /> <span>{t('components.binCard.connectedLeaves')}:</span>
+                                        </p>
+                                        {bin.connectedLeaves.length ?
+                                            bin.connectedLeaves.map(leaf => (
+                                                <div key={leaf._id} className="flex justify-between items-center gap-2">
+                                                    <Link to={`/bins/${leaf._id}`} className="truncate"><Button className={"p-0 m-0 h-fit"} variant={'link'}>{leaf.binName}</Button></Link>
+                                                    <span className="text-xs text-muted-foreground text-end">
+                                                        {leaf.status?.connection?.rssi ?? '-'} dBm · {t('components.binCard.hops')}: {leaf.status?.connection?.hops ?? '-'}
+                                                        <br />
+                                                        {new Date(leaf.status?.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short' })}
+                                                    </span>
+                                                </div>
+                                            ))
+                                            : <p className="text-muted-foreground">{t('components.binCard.noConnectedLeaves')}</p>}
+                                    </div>
+                                </>
+                            )}
 
                             <Separator />
 

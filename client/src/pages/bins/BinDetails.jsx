@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import HealthBadge from "@/components/bins/HealthBadge"
 import { format } from "date-fns"
-import { getVariant } from "@/utils/binHelpers"
+import { getVariant, isGateway } from "@/utils/binHelpers"
 import { useBin } from "@/hooks/bins/useBin"
 import { Link, useParams } from "react-router-dom"
 import { LinkIcon } from "lucide-react"
@@ -22,6 +22,7 @@ function BinDetails() {
     const { id } = useParams()
 
     const { bin, isLoadingBins, binsError } = useBin(id)
+    const gateway = isGateway(bin)
 
     const logsColumns = [
         {
@@ -113,17 +114,19 @@ function BinDetails() {
             },
         }
 
-    ]
+    ].filter(column => !gateway || !['newLevel', 'weight'].includes(column.accessorKey))
 
     const chartConfig = {
         battery: {
             label: t("pages.binDetails.areaChart.battery"),
             color: 'var(--chart-1)'
         },
-        newLevel: {
-            label: t("pages.binDetails.areaChart.level"),
-            color: "var(--chart-2)",
-        }
+        ...(gateway ? {} : {
+            newLevel: {
+                label: t("pages.binDetails.areaChart.level"),
+                color: "var(--chart-2)",
+            }
+        })
     }
     const [timeRange, setTimeRange] = useState("90d")
     const filteredData = bin?.logs.filter((item) => {
@@ -242,14 +245,14 @@ function BinDetails() {
                                 stroke="var(--chart-2)"
                                 stackId='a'
                             />
-                            <Area
+                            {!gateway && <Area
                                 dataKey="newLevel"
                                 type="natural"
                                 fill="url(#fillLevel)"
                                 stroke="var(--chart-1)"
                                 stackId='a'
 
-                            />
+                            />}
                             <ChartLegend content={<ChartLegendContent />} />
                         </AreaChart>
                     </ChartContainer>

@@ -1,7 +1,8 @@
 import CustomMarker from "@/components/map/CustomMarker"
 import MapComponent from "@/components/map/MapComponent"
 import { useBins } from "@/hooks/bins/useBins";
-import { getColor } from "@/utils/binHelpers";
+import { getColor, isGateway } from "@/utils/binHelpers";
+import { RadioTower } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import BinPopupCard from "@/components/map/BinPopupCard";
 import { Polyline } from "react-leaflet";
@@ -29,7 +30,9 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
             <MapComponent center={locationFromUrl ? locationFromUrl : center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} isLoading={isLoadingBins} >
                 {binsToUse?.map((bin) => (
-                    <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status)} popup={<BinPopupCard bin={bin} />} />
+                    isGateway(bin)
+                        ? <CustomMarker key={bin._id} icon={RadioTower} position={bin.location.coordinates} color={getColor(bin.status, 'battery')} popup={<BinPopupCard bin={bin} />} />
+                        : <CustomMarker key={bin._id} position={bin.location.coordinates} color={getColor(bin.status)} popup={<BinPopupCard bin={bin} />} />
                 ))}
                 <Polyline positions={routeCoordinates}
                     pathOptions={{
