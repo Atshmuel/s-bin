@@ -127,7 +127,11 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
     if (hadClock) {
         const int64_t errorMs = deviceNowMs - beaconNowMs;
         Serial.printf("🕒 Clock was off by %+lld ms.\n", static_cast<long long>(errorMs));
-
+    }
+    // Learn drift only from a sleep that was aimed at this slot. After a cold
+    // join the last sleep was a retry wait and the clock may have been set from
+    // an unrelated beacon, so a measurement would teach the leaf a wrong drift.
+    if (hadClock && atScheduledSlot) {
         // Measured in milliseconds: the math is unit-free, and ms precision
         // makes short sleeps usable.
         int32_t measuredPpm = 0;
