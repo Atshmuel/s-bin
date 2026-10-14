@@ -13,6 +13,9 @@ constexpr int64_t MIN_DRIFT_MEASUREMENT_SECONDS = 3600;
 constexpr int32_t MAX_ABS_DRIFT_PPM = 20000;
 // Flash is rewritten only when the estimate moves this much.
 constexpr int32_t DRIFT_SAVE_THRESHOLD_PPM = 200;
+// Limits that match the server's validation of the report's diagnostics.
+constexpr int64_t MAX_REPORTED_CLOCK_ERROR_SECONDS = 86400;
+constexpr int64_t MAX_REPORTED_WAKE_OFFSET_SECONDS = 3600;
 }
 
 uint64_t applyDriftCorrection(uint64_t sleepSeconds) {
@@ -24,6 +27,33 @@ void markSleepStart() {
     sleepStartedEpoch = now >= MIN_VALID_EPOCH_FOR_DRIFT
         ? static_cast<uint64_t>(now)
         : 0;
+}
+
+// Records, for the report, how far the clock was off after the deep sleep that
+// just ended and when this wake happened relative to its slot (<0 = early).
+void recordWakeTiming(time_t deviceEpoch, time_t networkEpoch) {
+    if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER ||
+        deviceEpoch < MIN_VALID_EPOCH_FOR_DRIFT) {
+        return;
+    }
+    const int64_t error = static_cast<int64_t>(deviceEpoch) - static_cast<int64_t>(networkEpoch);
+    if (llabs(error) <= MAX_REPORTED_CLOCK_ERROR_SECONDS) {
+        clockErrorSeconds = static_cast<int32_t>(error);
+        hasClockError = true;
+    }
+    if (nextWakeEpoch == 0) {
+        return;
+    }
+    // Boot follows the wake by a few hundred ms; network time has 1 s resolution.
+    const int64_t wakeEpoch = static_cast<int64_t>(networkEpoch) - static_cast<int64_t>(millis() / 1000UL);
+    const int64_t offset = wakeEpoch - static_cast<int64_t>(nextWakeEpoch);
+    if (llabs(offset) <= MAX_REPORTED_WAKE_OFFSET_SECONDS) {
+        wakeOffsetSeconds = static_cast<int32_t>(offset);
+        hasWakeOffset = true;
+        Serial.printf("⏰ Woke %lld s %s the slot (clock was off by %+lld s).\n",
+                      static_cast<long long>(llabs(offset)), offset < 0 ? "before" : "after",
+                      static_cast<long long>(error));
+    }
 }
 
 void recordClockDrift(time_t deviceEpoch, time_t referenceEpoch) {

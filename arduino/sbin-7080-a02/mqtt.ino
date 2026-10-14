@@ -219,6 +219,9 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     if (data.lastAwakeSeconds > 0) {
         reading["lastAwakeSeconds"] = data.lastAwakeSeconds;
     }
+    if (data.driftPpm != 0) {
+        reading["driftPpm"] = data.driftPpm;
+    }
     if (data.meshAwakeWindowSeconds >= 1 &&
         data.meshAwakeWindowSeconds <= MAX_MESH_AWAKE_WINDOW_SECONDS) {
         reading["meshAwakeWindowSeconds"] = data.meshAwakeWindowSeconds;
@@ -258,7 +261,7 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
     int level = calculateFillLevel(distanceMm);
     bool sensorOk = level >= 0;
 
-    StaticJsonDocument<512> doc;
+    StaticJsonDocument<768> doc;
     doc["deviceKey"] = deviceKey;
     doc["sensorOk"] = sensorOk;
     if (sensorOk) {
@@ -272,6 +275,15 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
     if (lastAwakeSeconds > 0) {
         doc["lastAwakeSeconds"] = lastAwakeSeconds;
     }
+    if (driftMeasured) {
+        doc["driftPpm"] = driftPpm;
+    }
+    if (hasClockError) {
+        doc["clockErrorSeconds"] = clockErrorSeconds;
+    }
+    if (hasWakeOffset) {
+        doc["wakeOffsetSeconds"] = wakeOffsetSeconds;
+    }
     doc["health"] = health;
     doc["weight"] = 0;
     doc["location"][0] = latitude;
@@ -280,9 +292,9 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
         doc["message"] = healthMessage;
     }
 
-    char payload[512];
+    char payload[768];
     size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
-    if (payloadLength == 0) {
+    if (payloadLength == 0 || payloadLength >= sizeof(payload) - 1) {
         Serial.println("❌ Failed to serialize telemetry.");
         return false;
     }

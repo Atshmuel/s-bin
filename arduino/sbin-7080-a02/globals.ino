@@ -35,6 +35,11 @@ RTC_DATA_ATTR uint64_t followingWakeEpoch = 0;
 // Server report period (followingWakeEpoch - nextWakeEpoch), kept in flash so
 // beacons can continue the slot pattern after a reset or a missed reply.
 uint32_t slotPeriodSeconds = 0;
+// This boot's clock diagnostics, reported with the telemetry.
+int32_t clockErrorSeconds = 0;
+bool hasClockError = false;
+int32_t wakeOffsetSeconds = 0;
+bool hasWakeOffset = false;
 // True once this boot set the clock from network time; mesh beacons wait for it.
 bool clockSyncedFromNetwork = false;
 RTC_DATA_ATTR uint32_t scheduledSleepDurationSeconds = 0;

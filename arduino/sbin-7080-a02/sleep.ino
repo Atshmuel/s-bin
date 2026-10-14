@@ -93,7 +93,9 @@ bool synchronizeClockFromNetwork(unsigned long timeoutMs) {
             networkTime.tm_sec = second;
             time_t utcEpoch = mktime(&networkTime) -
                               static_cast<time_t>(timezoneOffset * 3600.0f);
-            recordClockDrift(time(nullptr), utcEpoch);
+            const time_t deviceEpoch = time(nullptr);
+            recordWakeTiming(deviceEpoch, utcEpoch);
+            recordClockDrift(deviceEpoch, utcEpoch);
             struct timeval timeValue = {utcEpoch, 0};
             if (settimeofday(&timeValue, nullptr) == 0) {
                 clockSyncedFromNetwork = true;
