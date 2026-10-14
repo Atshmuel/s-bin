@@ -31,6 +31,17 @@ export function isValidTelemetryRecord({
     });
 }
 
+// Optional sleep-clock diagnostics. An invalid value is dropped instead of
+// rejecting the report, so a diagnostic field can never cost a reading.
+function clockDiagnostics({ driftPpm, clockErrorSeconds, wakeOffsetSeconds }) {
+    const within = (value, limit) => Number.isInteger(value) && Math.abs(value) <= limit;
+    return {
+        ...(within(driftPpm, 100000) ? { driftPpm } : {}),
+        ...(within(clockErrorSeconds, 86400) ? { clockErrorSeconds } : {}),
+        ...(within(wakeOffsetSeconds, 3600) ? { wakeOffsetSeconds } : {}),
+    };
+}
+
 // Stores one validated telemetry record for an authenticated bin, whether it
 // arrived over the bin's own cellular link or was relayed by a mesh gateway.
 // Returns the bin's next report schedule.
@@ -45,6 +56,9 @@ export async function applyDeviceLog(bin, {
     sleepDurationSeconds,
     meshAwakeWindowSeconds,
     lastAwakeSeconds,
+    driftPpm,
+    clockErrorSeconds,
+    wakeOffsetSeconds,
 }, { via, gatewayId = null, hops = null, rssi = null }) {
     const schedule = getNextReportSchedule(location);
 
@@ -74,6 +88,7 @@ export async function applyDeviceLog(bin, {
         ...(sleepDurationSeconds === undefined ? {} : { sleepDurationSeconds }),
         ...(meshAwakeWindowSeconds === undefined ? {} : { meshAwakeWindowSeconds }),
         ...(lastAwakeSeconds === undefined ? {} : { lastAwakeSeconds }),
+        ...clockDiagnostics({ driftPpm, clockErrorSeconds, wakeOffsetSeconds }),
         connection: via,
         ...(gatewayId === null ? {} : { gatewayId }),
         ...(hops === null ? {} : { hops }),
