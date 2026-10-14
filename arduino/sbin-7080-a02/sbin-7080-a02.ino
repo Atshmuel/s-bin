@@ -22,10 +22,6 @@ void setup() {
         return;
     }
 
-    // Open the mesh window before the slow modem work so leaves are served
-    // from the moment this gateway wakes.
-    beginMeshWindow();
-
     constexpr uint32_t MODEM_RETRY_SLEEP_SECONDS = 15UL * 60UL;
     if (!initializeModem()) {
         cutModemPower();
@@ -42,6 +38,12 @@ void setup() {
     if (!synchronizeClockFromNetwork(CLOCK_SYNC_TIMEOUT_MS)) {
         enterDeepSleepForSetupRetry(CLOCK_RETRY_SLEEP_SECONDS, "No valid network time");
     }
+
+    // Open the mesh window only now: leaves set their clocks from the beacons,
+    // and after a deep sleep this gateway's clock is off by about the whole
+    // sleep-clock drift until it is corrected from the network. The report
+    // runs in parallel with the window.
+    beginMeshWindow();
 
     // A failed calibration does not block reporting: the cycle reports
     // sensorOk=false with a calibration health message, and the next wake retries.

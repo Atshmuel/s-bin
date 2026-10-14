@@ -96,6 +96,7 @@ bool synchronizeClockFromNetwork(unsigned long timeoutMs) {
             recordClockDrift(time(nullptr), utcEpoch);
             struct timeval timeValue = {utcEpoch, 0};
             if (settimeofday(&timeValue, nullptr) == 0) {
+                clockSyncedFromNetwork = true;
                 Serial.println("✅ Clock synchronized from the cellular network.");
                 return true;
             }

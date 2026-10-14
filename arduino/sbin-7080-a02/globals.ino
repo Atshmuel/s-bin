@@ -32,6 +32,8 @@ RTC_DATA_ATTR uint64_t nextWakeEpoch = 0;
 // The slot after nextWakeEpoch; a mesh gateway advertises it to leaves in its
 // beacon at the next wake. RTC only: after a power loss the next ack restores it.
 RTC_DATA_ATTR uint64_t followingWakeEpoch = 0;
+// True once this boot set the clock from network time; mesh beacons wait for it.
+bool clockSyncedFromNetwork = false;
 RTC_DATA_ATTR uint32_t scheduledSleepDurationSeconds = 0;
 uint32_t meshAwakeWindowSeconds = DEFAULT_MESH_AWAKE_WINDOW_SECONDS;
 // Actual awake time of the previous cycle, reported with the next telemetry.
