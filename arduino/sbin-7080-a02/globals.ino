@@ -51,6 +51,9 @@ RTC_DATA_ATTR int32_t driftPpm = 0;
 RTC_DATA_ATTR bool driftMeasured = false;
 RTC_DATA_ATTR bool clockDriftLoaded = false;
 RTC_DATA_ATTR uint64_t sleepStartedEpoch = 0;
+// How much before its slot the last deep sleep was set to end, on purpose (see
+// waitForSlotStart()); the wake timing diagnostic is measured against it.
+RTC_DATA_ATTR uint32_t sleepLeadSeconds = 0;
 RTC_DATA_ATTR uint32_t scheduleAckCounter = 0;
 uint32_t instructionCheckCounter = 0;
 bool instructionCheckAllowsSleep = false;

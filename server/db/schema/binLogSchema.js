@@ -24,7 +24,8 @@ export const binLogSchema = new mongoose.Schema({
     meshAwakeWindowSeconds: { type: Number, min: 1, max: 60 },
     lastAwakeSeconds: { type: Number, min: 1, max: 86400 },
     // Sleep-clock diagnostics: the device's drift estimate, how far its clock
-    // was off when it synced, and when it woke relative to its slot (<0 early).
+    // was off when it synced, and when it woke relative to its planned wake: the
+    // slot minus the lead a gateway wakes early by on purpose (<0 early).
     driftPpm: { type: Number, min: -100000, max: 100000 },
     clockErrorSeconds: { type: Number, min: -86400, max: 86400 },
     wakeOffsetSeconds: { type: Number, min: -3600, max: 3600 },

@@ -39,6 +39,11 @@ void setup() {
         enterDeepSleepForSetupRetry(CLOCK_RETRY_SLEEP_SECONDS, "No valid network time");
     }
 
+    // The slot sleep ended a few minutes early on purpose; wait for the slot
+    // itself, so the window opens on it rather than wherever the drifting
+    // sleep clock woke this gateway.
+    waitForSlotStart();
+
     // Open the mesh window only now: leaves set their clocks from the beacons,
     // and after a deep sleep this gateway's clock is off by about the whole
     // sleep-clock drift until it is corrected from the network. The report

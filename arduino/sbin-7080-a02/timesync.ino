@@ -2,15 +2,19 @@
 
 // The deep-sleep timer and the system clock both run on the ESP32-S3's internal
 // RC oscillator during sleep (this board has no 32 kHz crystal), which runs
-// about +0.5% fast. Each network time sync measures that drift over the sleep
-// that just ended, and the next sleep request is stretched to cancel it. The
-// math is shared with the mesh leaves in the SbinMesh library.
+// about +1% fast, and the rate changes from cycle to cycle with temperature.
+// Each network time sync measures that drift over the sleep that just ended,
+// and the next sleep request is stretched to cancel it; what the estimate
+// misses is absorbed by waking early and waiting for the slot
+// (waitForSlotStart()). The math is shared with the mesh leaves in the
+// SbinMesh library.
 
 namespace {
 constexpr time_t MIN_VALID_EPOCH_FOR_DRIFT = 1735689600;
 // Network time has 1 s resolution, so shorter sleeps are too noisy to measure.
 constexpr int64_t MIN_DRIFT_MEASUREMENT_SECONDS = 3600;
-constexpr int32_t MAX_ABS_DRIFT_PPM = 20000;
+// The internal RC oscillator is specified to ±5%; measured so far up to ~1.4%.
+constexpr int32_t MAX_ABS_DRIFT_PPM = 60000;
 // Flash is rewritten only when the estimate moves this much.
 constexpr int32_t DRIFT_SAVE_THRESHOLD_PPM = 200;
 // Limits that match the server's validation of the report's diagnostics.
@@ -30,7 +34,8 @@ void markSleepStart() {
 }
 
 // Records, for the report, how far the clock was off after the deep sleep that
-// just ended and when this wake happened relative to its slot (<0 = early).
+// just ended and when this wake happened relative to the planned wake: the slot
+// minus the lead the sleep ended early by on purpose (<0 = early).
 void recordWakeTiming(time_t deviceEpoch, time_t networkEpoch) {
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER ||
         deviceEpoch < MIN_VALID_EPOCH_FOR_DRIFT) {
@@ -46,11 +51,12 @@ void recordWakeTiming(time_t deviceEpoch, time_t networkEpoch) {
     }
     // Boot follows the wake by a few hundred ms; network time has 1 s resolution.
     const int64_t wakeEpoch = static_cast<int64_t>(networkEpoch) - static_cast<int64_t>(millis() / 1000UL);
-    const int64_t offset = wakeEpoch - static_cast<int64_t>(nextWakeEpoch);
+    const int64_t plannedWake = static_cast<int64_t>(nextWakeEpoch) - sleepLeadSeconds;
+    const int64_t offset = wakeEpoch - plannedWake;
     if (llabs(offset) <= MAX_REPORTED_WAKE_OFFSET_SECONDS) {
         wakeOffsetSeconds = static_cast<int32_t>(offset);
         hasWakeOffset = true;
-        Serial.printf("⏰ Woke %lld s %s the slot (clock was off by %+lld s).\n",
+        Serial.printf("⏰ Woke %lld s %s the planned wake (clock was off by %+lld s).\n",
                       static_cast<long long>(llabs(offset)), offset < 0 ? "before" : "after",
                       static_cast<long long>(error));
     }
