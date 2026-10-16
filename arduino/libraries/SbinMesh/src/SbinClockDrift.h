@@ -4,8 +4,9 @@
 
 // Sleep-clock drift math shared by gateways (measured against network time)
 // and leaves (measured against a gateway beacon). The ESP32 deep-sleep timer
-// and system clock run on the internal RC oscillator, which drifts by about
-// +0.5% on the boards measured so far.
+// and system clock run on the internal RC oscillator, which drifted by about
+// +1% (LilyGO ESP32-S3) and +1.3% to +3.5% (ESP32 WROVER, more the longer it
+// was awake before the sleep) on the boards measured so far.
 
 namespace sbinmesh {
 

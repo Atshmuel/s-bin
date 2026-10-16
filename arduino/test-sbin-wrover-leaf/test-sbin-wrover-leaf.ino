@@ -40,12 +40,15 @@ constexpr uint8_t MAX_MISSED_CYCLES = 6;
 // slot (plus the gateway's window) it keeps listening. Clock error grows with
 // the sleep length, so the guard is a fraction of it: the clock uncertainty.
 constexpr uint32_t MIN_GUARD_SECONDS = 10;
-constexpr uint32_t MAX_GUARD_SECONDS = 900;
+// Room for an unknown drift over a 12-hour sleep (~36 minutes at 5%).
+constexpr uint32_t MAX_GUARD_SECONDS = 2400;
 constexpr uint32_t GUARD_MARGIN_SECONDS = 5;
-// Uncertainty while the drift is unknown, and after a missed beacon.
-constexpr uint32_t UNKNOWN_DRIFT_PPM = 10000;
-// Residual assumed right after the first drift measurement.
-constexpr uint32_t FIRST_RESIDUAL_PPM = 2500;
+// Uncertainty while the drift is unknown, and after a missed beacon: the RC
+// oscillator is specified to ±5%, and this board measured +2.7%.
+constexpr uint32_t UNKNOWN_DRIFT_PPM = 50000;
+// Residual assumed right after the first drift measurement: the WROVER's drift
+// changed by up to ~9,000 ppm between cycles, and the guard covers twice this.
+constexpr uint32_t FIRST_RESIDUAL_PPM = 5000;
 // Floor for the residual: temperature and the gateway's own clock still vary.
 constexpr uint32_t MIN_RESIDUAL_PPM = 500;
 constexpr uint32_t LISTEN_SLACK_SECONDS = 5;
@@ -57,7 +60,8 @@ constexpr uint8_t MAX_PENDING_READINGS = 4;
 // 10+ minutes keep that below ~1,700 ppm per sample (averaged over cycles), so
 // a few 10-minute dev cycles teach the drift before 12-hour sleeps.
 constexpr int64_t MIN_DRIFT_MEASUREMENT_MS = 10LL * 60 * 1000;
-constexpr int32_t MAX_ABS_DRIFT_PPM = 20000;
+// Above the RC oscillator's ±5%: a larger value means a bad reference time.
+constexpr int32_t MAX_ABS_DRIFT_PPM = 60000;
 }  // namespace
 
 // State kept across deep sleep (lost on power loss, which means a cold join).
@@ -70,6 +74,9 @@ RTC_DATA_ATTR uint8_t meshWindowSeconds = 10;
 RTC_DATA_ATTR int32_t driftPpm = 0;
 RTC_DATA_ATTR bool driftMeasured = false;
 RTC_DATA_ATTR int64_t sleepStartedEpochMs = 0;
+// Deep sleep since the last beacon, by the device clock: the clock's error
+// builds up only while asleep, since awake time runs on the main crystal.
+RTC_DATA_ATTR int64_t sleptSinceSyncMs = 0;
 RTC_DATA_ATTR uint16_t lastAwakeSeconds = 0;
 RTC_DATA_ATTR uint8_t fakeLevel = 10;
 RTC_DATA_ATTR uint8_t fakeBattery = 100;
@@ -128,24 +135,26 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
         const int64_t errorMs = deviceNowMs - beaconNowMs;
         Serial.printf("🕒 Clock was off by %+lld ms.\n", static_cast<long long>(errorMs));
     }
-    // Learn drift only from a sleep that was aimed at this slot. After a cold
-    // join the last sleep was a retry wait and the clock may have been set from
-    // an unrelated beacon, so a measurement would teach the leaf a wrong drift.
-    if (hadClock && atScheduledSlot) {
+    // Measured over all deep sleep since the last beacon, so a catch after a
+    // missed slot and a cold-join retry teaches the drift too; that is how a
+    // leaf whose drift is beyond its first guard learns it at all.
+    if (hadClock && sleptSinceSyncMs > 0) {
         // Measured in milliseconds: the math is unit-free, and ms precision
-        // makes short sleeps usable.
+        // makes short sleeps usable. The accumulated sleep is passed as one
+        // sleep that ended at boot.
         int32_t measuredPpm = 0;
         int64_t realSleptMs = 0;
+        const int64_t awakeMs = static_cast<int64_t>(millis());
         const DriftMeasurement result = measureDriftPpm(
-            deviceNowMs, beaconNowMs, sleepStartedEpochMs, static_cast<int64_t>(millis()),
+            deviceNowMs, beaconNowMs, deviceNowMs - awakeMs - sleptSinceSyncMs, awakeMs,
             MIN_DRIFT_MEASUREMENT_MS, MAX_ABS_DRIFT_PPM, measuredPpm, realSleptMs);
         if (result == DRIFT_MEASURED) {
             // What the estimate did not predict (temperature, the gateway's own
             // clock) sets the next guard: it grows at once but shrinks slowly.
-            const uint32_t observedResidual = driftMeasured
-                ? static_cast<uint32_t>(abs(measuredPpm - driftPpm))
+            // The first measurement replaces the unknown-drift residual outright.
+            residualPpm = driftMeasured
+                ? max(static_cast<uint32_t>(abs(measuredPpm - driftPpm)), residualPpm * 3 / 4)
                 : FIRST_RESIDUAL_PPM;
-            residualPpm = max(observedResidual, residualPpm * 3 / 4);
             driftPpm = blendDriftPpm(driftPpm, driftMeasured, measuredPpm);
             driftMeasured = true;
             Serial.printf("⏱️ Clock drift: measured %+ld ppm over %lld s; using %+ld ppm, residual %lu ppm.\n",
@@ -157,7 +166,7 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
                           static_cast<long>(measuredPpm));
         }
     }
-    sleepStartedEpochMs = 0;
+    sleptSinceSyncMs = 0;
 
     struct timeval corrected = {
         static_cast<time_t>(beaconNowMs / 1000),
@@ -304,6 +313,11 @@ void sleepUntilNextSlot() {
 void setup() {
     Serial.begin(115200);
     Serial.println("\n=== S-Bin WROVER simulated mesh leaf ===");
+    // Add the deep sleep that just ended to the sleep since the last beacon.
+    if (sleepStartedEpochMs > 0) {
+        sleptSinceSyncMs += nowMs() - static_cast<int64_t>(millis()) - sleepStartedEpochMs;
+        sleepStartedEpochMs = 0;
+    }
     if (strcmp(ORGANIZATION_ID, "PUT_YOUR_ORGANIZATION_ID_HERE") == 0) {
         Serial.println("❌ Set ORGANIZATION_ID in the sketch to the gateway's organization ID.");
     }
@@ -326,7 +340,7 @@ void setup() {
     if (!waitForBeacon(listenMs, !coldJoin)) {
         missedCycles++;
         // Treat the clock as unknown again so the next guard is wide enough
-        // to find the gateway (e.g. ~7 minutes around a 12-hour slot).
+        // to find the gateway (up to MAX_GUARD_SECONDS around a 12-hour slot).
         residualPpm = max(residualPpm * 2, UNKNOWN_DRIFT_PPM / 2);
         queueReading(reading);
         Serial.printf("⚠️ No beacon heard (%u missed cycle(s)); reading queued.\n", missedCycles);
