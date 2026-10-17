@@ -30,7 +30,6 @@ import { BreadcrumbProvider } from './contexts/breadcrumbsContext';
 import AccountVerify from './pages/auth/AccountVerify';
 import { AppSideProvider } from './contexts/AppSideProvider';
 import Organizations from './pages/organizations/Organizations';
-import InstructionTesting from './pages/bins/InstructionTesting';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -62,11 +61,6 @@ function App() {
                   <Route path="" element={<BinsList />} />
                   <Route path="map" element={<BinMap />} />
                   <Route path="add" element={<AddBin />} />
-                  <Route path="instructions" element={
-                    <ProtectedRoute roles={['owner']}>
-                      <InstructionTesting />
-                    </ProtectedRoute>
-                  } />
                   <Route path=":id" element={<BinDetails />} />
                   <Route path='logs'>
                     <Route path="" element={<AllLogs />} />

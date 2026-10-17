@@ -15,6 +15,8 @@ import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartToo
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
+import DeviceInstructions from "@/components/bins/DeviceInstructions"
+import { useMe } from "@/hooks/users/auth/useMe"
 
 function BinDetails() {
     const { isRight } = useAppSide()
@@ -22,6 +24,7 @@ function BinDetails() {
     const { id } = useParams()
 
     const { bin, isLoadingBins, binsError } = useBin(id)
+    const { isAdmin } = useMe()
     const gateway = isGateway(bin)
 
     const logsColumns = [
@@ -148,18 +151,21 @@ function BinDetails() {
         <div className="space-y-4">
             <div className="flex flex-wrap gap-4">
                 <BinCard className='flex-1 min-w-xs flex-col justify-between' bin={bin} isLoading={isLoadingBins} />
-                <Card className='flex-2  min-w-xs md:min-w-md'>
-                    <CardHeader>
-                        <h3 className="text-xl md:text-2xl"></h3>
-                        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                            {t("pages.binDetails.logsTable.title")}
-                        </CardTitle>
-                        <CardDescription>{t("pages.binDetails.logsTable.description")}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <DataTable columns={logsColumns} isLoading={isLoadingBins} data={bin?.logs ?? []} maxLength={4} error={binsError} sortingBy={[{ id: 'createdAt', desc: true }]} />
-                    </CardContent>
-                </Card>
+                <div className='flex-2 min-w-xs md:min-w-md flex flex-col gap-4'>
+                    <Card>
+                        <CardHeader>
+                            <h3 className="text-xl md:text-2xl"></h3>
+                            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                                {t("pages.binDetails.logsTable.title")}
+                            </CardTitle>
+                            <CardDescription>{t("pages.binDetails.logsTable.description")}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <DataTable columns={logsColumns} isLoading={isLoadingBins} data={bin?.logs ?? []} maxLength={4} error={binsError} sortingBy={[{ id: 'createdAt', desc: true }]} />
+                        </CardContent>
+                    </Card>
+                    {isAdmin && bin && <DeviceInstructions key={bin._id} bin={bin} />}
+                </div>
 
             </div>
             <Card>

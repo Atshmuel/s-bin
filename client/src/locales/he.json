@@ -210,7 +210,6 @@
                 "addBin":"הוסף פח",
                 "map":"מפה",
                 "logs":"תיעודים",
-                "instructionTesting":"בדיקת הנחיות למכשיר",
                 "userList":"רשימת משתמשים",
                 "organizationList": "רשימת ארגונים",
                 "orgSettings": "הגדרות הארגון"
@@ -263,44 +262,6 @@
 
   },
   "pages":{
-    "instructionTesting":{
-      "title":"בדיקת הנחיות למכשיר",
-      "description":"דף זמני לבדיקה ושליחה של הנחיות לפח. המכשיר יקבל אותן בבדיקת ה־MQTT הבאה שלו.",
-      "sendTitle":"שליחת הנחיית בדיקה",
-      "sendDescription":"בחר פח והוסף הנחיה לתור של המכשיר שלו.",
-      "bin":"פח",
-      "selectBin":"בחר פח",
-      "instruction":"הנחיה",
-      "send":"הוסף לתור",
-      "duration":"זמן ערות נוסף (בדקות)",
-      "durationLimit":"בחר בין דקה אחת ל־60 דקות. רק הפח שנבחר יישאר ער.",
-      "durationValue":"זמן ערות נוסף: {{count}} דקות",
-      "queueTitle":"תור ההנחיות",
-      "queueDescription":"התור מתעדכן אוטומטית מדי כמה שניות.",
-      "selectBinToView":"בחר פח כדי לצפות בתור ההנחיות שלו.",
-      "emptyQueue":"לא נמצאו הנחיות עבור הפח הזה.",
-      "status":"סטטוס",
-      "createdAt":"נוצרה",
-      "result":"תוצאה",
-      "actions":"פעולות",
-      "cancel":"ביטול",
-      "requestQueued":"ההנחיה נוספה לתור.",
-      "requestCancelled":"ההנחיה הממתינה בוטלה.",
-      "calibrationConfirmationTitle":"אישור כיול כשהפח ריק",
-      "calibrationConfirmationDescription":"יש לוודא שהפח ריק ונתיב החיישן פנוי למשך כ־20 שניות. המכשיר יכייל מחדש את נקודת הייחוס של פח ריק וישלח מדידה עדכנית.",
-      "confirmCalibration":"הוסף כיול לתור",
-      "types":{
-        "report_now":"בקשת דיווח מיידי",
-        "stay_awake":"הארכת זמן הערות",
-        "calibrate_empty_bin":"כיול מחדש של פח ריק"
-      },
-      "statuses":{
-        "pending":"ממתינה",
-        "completed":"הושלמה",
-        "failed":"נכשלה",
-        "cancelled":"בוטלה"
-      }
-    },
     "dashboard":{
        "titles":{
         "quickOverview":{
@@ -704,6 +665,47 @@
     "deleteViaMacButton":"מחק באמצעות MAC",
 
    "components":{
+    "deviceInstructions":{
+      "title":"הנחיות למכשיר",
+      "deliveryNote":"ההנחיה תגיע למכשיר בדיווח הבא שלו.",
+      "schedule":"דיווחים: {{schedule}}.",
+      "lastReport":"דיווח אחרון:",
+      "meshNotSupported":"הפח הזה מדווח דרך פח אחר ברשת, והנחיות עוד לא יכולות להגיע אליו בדרך הזו.",
+      "instruction":"הנחיה",
+      "send":"שליחה",
+      "duration":"זמן ערות נוסף (בדקות)",
+      "durationLimit":"בין דקה אחת ל־60 דקות. זמן ערות נוסף צורך יותר סוללה.",
+      "durationValue":"זמן ערות נוסף: {{count}} דקות",
+      "recentTitle":"הנחיות אחרונות",
+      "emptyQueue":"עוד לא נשלחו הנחיות למכשיר הזה.",
+      "cancel":"ביטול",
+      "requestQueued":"ההנחיה ממתינה לדיווח הבא.",
+      "requestCancelled":"ההנחיה הממתינה בוטלה.",
+      "calibrationConfirmationTitle":"אישור כיול כשהפח ריק",
+      "calibrationConfirmationDescription":"יש לוודא שהפח ריק ונתיב החיישן פנוי למשך כ־20 שניות. המכשיר יכייל מחדש את נקודת הייחוס של פח ריק וישלח מדידה עדכנית.",
+      "confirmCalibration":"הוסף כיול לתור",
+      "results":{
+        "additional_report_published":"הדיווח נשלח",
+        "additional_report_publish_failed":"שליחת הדיווח נכשלה",
+        "awake_window_extended":"המכשיר נשאר ער כמבוקש",
+        "invalid_awake_extension_duration":"זמן ערות לא תקין",
+        "emptyDepth":"כויל: עומק פח ריק {{cm}} ס״מ",
+        "empty_bin_calibration_failed":"הכיול נכשל",
+        "unsupported_instruction_type":"המכשיר לא תומך בהנחיה הזו",
+        "expired":"פג תוקף לפני שהמכשיר דיווח"
+      },
+      "types":{
+        "report_now":"בקשת דיווח מיידי",
+        "stay_awake":"הארכת זמן הערות",
+        "calibrate_empty_bin":"כיול מחדש של פח ריק"
+      },
+      "statuses":{
+        "pending":"ממתינה",
+        "completed":"הושלמה",
+        "failed":"נכשלה",
+        "cancelled":"בוטלה"
+      }
+    },
     "orgSettings":{
       "title":"הגדרות הארגון",
       "description":"כל כמה זמן ובאילו שעות הפחים של הארגון מדווחים, וכמה זמן הם נשארים ערים אחרי כל התעוררות כדי להעביר הודעות ברשת. הפחים מחילים ערכים חדשים אחרי הדיווח הבא שלהם.",

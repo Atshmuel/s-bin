@@ -110,7 +110,6 @@
         "addBin": "Add Bin",
         "map": "Map",
         "logs": "Logs",
-        "instructionTesting": "Test Device Instructions",
         "userList": "List of Users",
         "organizationList": "Organizations List",
         "orgSettings": "Organization Settings"
@@ -264,44 +263,6 @@
   },
     
   "pages":{
-    "instructionTesting":{
-      "title":"Device Instruction Testing",
-      "description":"Temporarily test queued instructions for a selected bin. The device receives them when it next checks in over MQTT.",
-      "sendTitle":"Send a test instruction",
-      "sendDescription":"Choose a bin and enqueue an instruction for its device.",
-      "bin":"Bin",
-      "selectBin":"Select a bin",
-      "instruction":"Instruction",
-      "send":"Queue instruction",
-      "duration":"Additional awake time (minutes)",
-      "durationLimit":"Choose 1 to 60 minutes. Only the selected bin stays awake.",
-      "durationValue":"Additional awake time: {{count}} minutes",
-      "queueTitle":"Instruction queue",
-      "queueDescription":"The queue refreshes automatically every few seconds.",
-      "selectBinToView":"Select a bin to view its instruction queue.",
-      "emptyQueue":"No instructions found for this bin.",
-      "status":"Status",
-      "createdAt":"Created",
-      "result":"Result",
-      "actions":"Actions",
-      "cancel":"Cancel",
-      "requestQueued":"Instruction added to the queue.",
-      "requestCancelled":"Pending instruction cancelled.",
-      "calibrationConfirmationTitle":"Confirm empty-bin calibration",
-      "calibrationConfirmationDescription":"The bin must be empty and the sensor path unobstructed for about 20 seconds. The device will recalibrate its empty reference and publish a fresh reading.",
-      "confirmCalibration":"Queue calibration",
-      "types":{
-        "report_now":"Request an immediate report",
-        "stay_awake":"Extend awake time",
-        "calibrate_empty_bin":"Recalibrate empty-bin reference"
-      },
-      "statuses":{
-        "pending":"Pending",
-        "completed":"Completed",
-        "failed":"Failed",
-        "cancelled":"Cancelled"
-      }
-    },
     "dashboard":{
       "titles":{
         "quickOverview":{
@@ -702,6 +663,47 @@
   },
   "deleteViaMacButton":"Delete via MAC",
   "components":{
+    "deviceInstructions":{
+      "title":"Device instructions",
+      "deliveryNote":"An instruction reaches the device at its next report.",
+      "schedule":"Reports: {{schedule}}.",
+      "lastReport":"Last report:",
+      "meshNotSupported":"This bin reports through another bin over the mesh, and instructions can't reach it that way yet.",
+      "instruction":"Instruction",
+      "send":"Send",
+      "duration":"Additional awake time (minutes)",
+      "durationLimit":"1 to 60 minutes. Staying awake uses more battery.",
+      "durationValue":"Additional awake time: {{count}} minutes",
+      "recentTitle":"Recent instructions",
+      "emptyQueue":"No instructions sent to this device yet.",
+      "cancel":"Cancel",
+      "requestQueued":"Instruction queued for the next report.",
+      "requestCancelled":"Pending instruction cancelled.",
+      "calibrationConfirmationTitle":"Confirm empty-bin calibration",
+      "calibrationConfirmationDescription":"The bin must be empty and the sensor path unobstructed for about 20 seconds. The device will recalibrate its empty reference and publish a fresh reading.",
+      "confirmCalibration":"Queue calibration",
+      "results":{
+        "additional_report_published":"Report sent",
+        "additional_report_publish_failed":"The report could not be sent",
+        "awake_window_extended":"Stayed awake as requested",
+        "invalid_awake_extension_duration":"Invalid awake time",
+        "emptyDepth":"Calibrated: empty bin depth {{cm}} cm",
+        "empty_bin_calibration_failed":"Calibration failed",
+        "unsupported_instruction_type":"The device doesn't support this instruction",
+        "expired":"Expired before the device reported"
+      },
+      "types":{
+        "report_now":"Request an immediate report",
+        "stay_awake":"Extend awake time",
+        "calibrate_empty_bin":"Recalibrate empty-bin reference"
+      },
+      "statuses":{
+        "pending":"Pending",
+        "completed":"Completed",
+        "failed":"Failed",
+        "cancelled":"Cancelled"
+      }
+    },
     "orgSettings":{
       "title":"Organization settings",
       "description":"How often and at what hours the organization's bins report, and how long they stay awake after every wake-up to pass messages through the mesh. Bins apply new values after their next report.",

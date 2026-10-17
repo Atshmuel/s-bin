@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { binModel, deviceInstructionModel } from '../models/models.js'
 import { appendFilter, BINS_ONLY_FILTER } from '../../utils/helpers.js'
-import { deleteLogsForBins, updateMaintenance } from '../service/sharedService.js'
+import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
 
@@ -42,6 +42,9 @@ export async function getBin(req, res) {
                 { ownerId: device.ownerId, 'status.connection.gatewayId': device._id },
                 { binName: 1, 'status.updatedAt': 1, 'status.connection.hops': 1, 'status.connection.rssi': 1 }
             ).lean();
+            // When the device next reports, which is when it gets queued instructions.
+            const { reportIntervalMinutes, reportStartHour } = await getOrgDeviceSettingsShared(device.ownerId);
+            device.reportSchedule = { reportIntervalMinutes, reportStartHour };
         }
 
         res.status(200).json({ binData })

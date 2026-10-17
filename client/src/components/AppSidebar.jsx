@@ -62,11 +62,6 @@ export function AppSidebar({
             title: t("sidebar.managment.items.logs"),
             url: "logs",
           },
-          {
-            title: t("sidebar.managment.items.instructionTesting"),
-            url: "instructions",
-            isOwnerOnly: true,
-          },
         ],
       },
       {

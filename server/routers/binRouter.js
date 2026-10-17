@@ -32,15 +32,15 @@ binRouter.patch('/name/:id', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next) //update bin name by id
 }, validateParamExist(), validateBodyFields(['name']), updateBinName)
 
-// Device instructions are restricted to owners.
+// Device instructions: owners for any bin, admins for their organization's bins (checked in the controller).
 binRouter.post('/:id/instructions', (req, res, next) => {
-    authRole([process.env.ROLE_OWNER])(req, res, next)
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, enqueueDeviceInstruction)
 binRouter.get('/:id/instructions', (req, res, next) => {
-    authRole([process.env.ROLE_OWNER])(req, res, next)
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, listDeviceInstructions)
 binRouter.delete('/:id/instructions/:instructionId', (req, res, next) => {
-    authRole([process.env.ROLE_OWNER])(req, res, next)
+    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, cancelDeviceInstruction)
 
 
