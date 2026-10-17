@@ -18,7 +18,7 @@ function ConnectedLeaves({ leaves }) {
             <span className="text-xs text-muted-foreground text-end">
                 <span dir="ltr">{leaf.status?.connection?.rssi ?? '-'} dBm</span> · {t('components.binCard.hops')}: {leaf.status?.connection?.hops ?? '-'}
                 <br />
-                {new Date(leaf.status?.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short' })}
+                {new Date(leaf.status?.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short', hourCycle: 'h23' })}
             </span>
         </div>
     ))

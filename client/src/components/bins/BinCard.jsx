@@ -45,7 +45,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 </div>
                             </CardTitle>
                             <CardDescription>
-                                {t('lastUpdated')}: {new Date(bin.status.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL')}
+                                {t('lastUpdated')}: {new Date(bin.status.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { hourCycle: 'h23' })}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-5 text-sm">

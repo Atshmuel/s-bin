@@ -29,7 +29,7 @@ function BinMaintenanceDetails({ maintenance }) {
                         <div className="flex justify-between items-baseline mb-1">
                             <span className="">{t('components.binCard.maintenance.techNote')}:</span>
                             <span className="text-xs text-muted-foreground">
-                                {new Date(maintenance.lastServiceAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short' })}
+                                {new Date(maintenance.lastServiceAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short', hourCycle: 'h23' })}
                             </span>
                         </div>
                         <p className="mt-2 text-sm italic text-muted-foreground">

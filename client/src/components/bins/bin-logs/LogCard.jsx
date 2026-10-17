@@ -29,7 +29,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 <InfoIcon color={iconColor} size={20} />
                             </CardTitle>
                             <CardDescription>
-                                {t('types.' + log.type)} – {new Date(log.createdAt).toLocaleString(isRight ? "en-US" : "he-IL")}
+                                {t('types.' + log.type)} – {new Date(log.createdAt).toLocaleString(isRight ? "en-US" : "he-IL", { hourCycle: "h23" })}
                             </CardDescription>
                         </CardHeader>
 
@@ -73,7 +73,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                                     <CalendarClock size={16} /> {t("components.logCard.timestamp")}:
                                 </span>
                                 <span>
-                                    {new Date(log.createdAt).toLocaleTimeString(isRight ? "en-US" : "he-IL", { hour: "2-digit", minute: "2-digit" })}
+                                    {new Date(log.createdAt).toLocaleTimeString(isRight ? "en-US" : "he-IL", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}
                                 </span>
                             </div>
 
