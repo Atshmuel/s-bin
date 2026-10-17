@@ -125,7 +125,7 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                     </div>
                 </div>
             </div>
-            <div className="rounded-md border">
+            <div className="relative rounded-md border">
                 <Table className="relative">
                     <TableHeader className="bg-muted shadow-md text-sm sm:text-base">
                         {table.getHeaderGroups().map(headerGroup => (
@@ -182,9 +182,11 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                                 </TableRow>
                             ))
                         )}
-                        {(!hasData || error) && !isLoading ? <EmptyTable title={t("globalTable.noResults")} description={searching ? t("globalTable.noSearchResults") : t("globalTable.nothingToShow")} /> : null}
                     </TableBody>
                 </Table>
+                {/* Over the frame, not inside the table: a table wider than the screen
+                    scrolls sideways, and the message stays centered in view. */}
+                {(!hasData || error) && !isLoading ? <EmptyTable title={t("globalTable.noResults")} description={searching ? t("globalTable.noSearchResults") : t("globalTable.nothingToShow")} /> : null}
             </div>
 
             <div className={`flex justify-between`}>
