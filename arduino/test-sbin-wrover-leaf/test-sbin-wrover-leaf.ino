@@ -38,13 +38,14 @@ constexpr uint32_t MIN_SLEEP_TO_SLOT_SECONDS = 15;
 constexpr uint8_t MAX_MISSED_CYCLES = 6;
 // The guard is how much before the slot the leaf wakes and how long after the
 // slot (plus the gateway's window) it keeps listening. Clock error grows with
-// the sleep length, so the guard is a fraction of it: the clock uncertainty.
+// all the sleep since the last beacon, so the guard is a fraction of it: the
+// clock uncertainty.
 constexpr uint32_t MIN_GUARD_SECONDS = 10;
 // Room for an unknown drift over a 12-hour sleep (~36 minutes at 5%).
 constexpr uint32_t MAX_GUARD_SECONDS = 2400;
 constexpr uint32_t GUARD_MARGIN_SECONDS = 5;
-// Uncertainty while the drift is unknown, and after a missed beacon: the RC
-// oscillator is specified to ±5%, and this board measured +2.7%.
+// Uncertainty while the drift is unknown, and the most missed beacons widen it
+// to: the RC oscillator is specified to ±5%, and this board measured +1.3-3.5%.
 constexpr uint32_t UNKNOWN_DRIFT_PPM = 50000;
 // Residual assumed right after the first drift measurement: the WROVER's drift
 // changed by up to ~9,000 ppm between cycles, and the guard covers twice this.
@@ -77,6 +78,8 @@ RTC_DATA_ATTR int64_t sleepStartedEpochMs = 0;
 // Deep sleep since the last beacon, by the device clock: the clock's error
 // builds up only while asleep, since awake time runs on the main crystal.
 RTC_DATA_ATTR int64_t sleptSinceSyncMs = 0;
+// Drift estimate taken off the clock at each wake since the last beacon.
+RTC_DATA_ATTR int64_t clockCorrectedSinceSyncMs = 0;
 RTC_DATA_ATTR uint16_t lastAwakeSeconds = 0;
 RTC_DATA_ATTR uint8_t fakeLevel = 10;
 RTC_DATA_ATTR uint8_t fakeBattery = 100;
@@ -94,6 +97,15 @@ int64_t nowMs() {
 
 bool clockValid() {
     return time(nullptr) >= MIN_VALID_EPOCH;
+}
+
+void shiftClockMs(int64_t deltaMs) {
+    const int64_t shiftedMs = nowMs() + deltaMs;
+    struct timeval shifted = {
+        static_cast<time_t>(shiftedMs / 1000),
+        static_cast<suseconds_t>((shiftedMs % 1000) * 1000),
+    };
+    settimeofday(&shifted, nullptr);
 }
 
 void queueReading(const DataPacket& reading) {
@@ -129,6 +141,9 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
     const int64_t beaconNowMs = static_cast<int64_t>(beacon.epochMs) +
                                 (millis() - frame.receivedAtMs);
     const int64_t deviceNowMs = nowMs();
+    // The clock as the sleeps left it, before the wake-time drift corrections:
+    // drift is measured on this, the error printed is what the estimate missed.
+    const int64_t uncorrectedNowMs = deviceNowMs + clockCorrectedSinceSyncMs;
     const bool hadClock = clockValid();
 
     if (hadClock) {
@@ -146,14 +161,15 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
         int64_t realSleptMs = 0;
         const int64_t awakeMs = static_cast<int64_t>(millis());
         const DriftMeasurement result = measureDriftPpm(
-            deviceNowMs, beaconNowMs, deviceNowMs - awakeMs - sleptSinceSyncMs, awakeMs,
+            uncorrectedNowMs, beaconNowMs, uncorrectedNowMs - awakeMs - sleptSinceSyncMs, awakeMs,
             MIN_DRIFT_MEASUREMENT_MS, MAX_ABS_DRIFT_PPM, measuredPpm, realSleptMs);
         if (result == DRIFT_MEASURED) {
             // What the estimate did not predict (temperature, the gateway's own
-            // clock) sets the next guard: it grows at once but shrinks slowly.
-            // The first measurement replaces the unknown-drift residual outright.
+            // clock) sets the next guard: it grows at once and halves per catch,
+            // so a residual widened by missed beacons settles within a few
+            // catches. The first measurement replaces the unknown-drift residual.
             residualPpm = driftMeasured
-                ? max(static_cast<uint32_t>(abs(measuredPpm - driftPpm)), residualPpm * 3 / 4)
+                ? max(static_cast<uint32_t>(abs(measuredPpm - driftPpm)), residualPpm / 2)
                 : FIRST_RESIDUAL_PPM;
             driftPpm = blendDriftPpm(driftPpm, driftMeasured, measuredPpm);
             driftMeasured = true;
@@ -167,6 +183,7 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
         }
     }
     sleptSinceSyncMs = 0;
+    clockCorrectedSinceSyncMs = 0;
 
     struct timeval corrected = {
         static_cast<time_t>(beaconNowMs / 1000),
@@ -272,7 +289,8 @@ void deepSleepFor(uint64_t sleepSeconds) {
     esp_deep_sleep_start();
 }
 
-// Guard for a sleep of this length: the clock uncertainty times the sleep.
+// Guard for a slot this much sleep after the last beacon: the clock
+// uncertainty times that sleep.
 uint32_t guardFor(uint64_t sleepSeconds) {
     const uint64_t uncertaintyPpm = driftMeasured
         ? 2ULL * max(residualPpm, MIN_RESIDUAL_PPM)
@@ -305,7 +323,9 @@ void sleepUntilNextSlot() {
     const uint64_t untilSlot = static_cast<time_t>(nextWakeEpoch) > now
         ? static_cast<uint64_t>(nextWakeEpoch - now)
         : 0;
-    guardSeconds = guardFor(untilSlot);
+    // After missed beacons the clock error keeps building over every sleep since
+    // the last one, so the guard covers those sleeps too.
+    guardSeconds = guardFor(untilSlot + static_cast<uint64_t>(sleptSinceSyncMs / 1000));
     const time_t wakeAt = static_cast<time_t>(nextWakeEpoch) - guardSeconds;
     deepSleepFor(wakeAt > now + 1 ? static_cast<uint64_t>(wakeAt - now) : 1);
 }
@@ -315,8 +335,18 @@ void setup() {
     Serial.println("\n=== S-Bin WROVER simulated mesh leaf ===");
     // Add the deep sleep that just ended to the sleep since the last beacon.
     if (sleepStartedEpochMs > 0) {
-        sleptSinceSyncMs += nowMs() - static_cast<int64_t>(millis()) - sleepStartedEpochMs;
+        const int64_t sleptMs = nowMs() - static_cast<int64_t>(millis()) - sleepStartedEpochMs;
+        sleptSinceSyncMs += sleptMs;
         sleepStartedEpochMs = 0;
+        // The clock ran fast by about driftPpm over that sleep: the timer was
+        // stretched to match, so the wake is on time, but the clock now reads
+        // ahead by the whole drift (minutes after 12 hours). Take the estimate
+        // off, so the listen deadline and any rescheduling run on real time.
+        if (driftMeasured) {
+            const int64_t correctionMs = sleptMs * driftPpm / (1000000LL + driftPpm);
+            shiftClockMs(-correctionMs);
+            clockCorrectedSinceSyncMs += correctionMs;
+        }
     }
     if (strcmp(ORGANIZATION_ID, "PUT_YOUR_ORGANIZATION_ID_HERE") == 0) {
         Serial.println("❌ Set ORGANIZATION_ID in the sketch to the gateway's organization ID.");
@@ -339,9 +369,9 @@ void setup() {
     const DataPacket reading = makeFakeReading();
     if (!waitForBeacon(listenMs, !coldJoin)) {
         missedCycles++;
-        // Treat the clock as unknown again so the next guard is wide enough
-        // to find the gateway (up to MAX_GUARD_SECONDS around a 12-hour slot).
-        residualPpm = max(residualPpm * 2, UNKNOWN_DRIFT_PPM / 2);
+        // The drift may have moved beyond the guard: widen it, but never past
+        // the unknown-drift uncertainty (the guard covers twice the residual).
+        residualPpm = min(max(residualPpm, MIN_RESIDUAL_PPM) * 2, UNKNOWN_DRIFT_PPM / 2);
         queueReading(reading);
         Serial.printf("⚠️ No beacon heard (%u missed cycle(s)); reading queued.\n", missedCycles);
         sleepUntilNextSlot();
