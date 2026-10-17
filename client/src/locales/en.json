@@ -102,7 +102,8 @@
       "subtitles": {
         "bins": "Bins",
         "users": "Users",
-        "organizations": "Organizations"
+        "organizations": "Organizations",
+        "organization": "Organization"
       },
       "items": {
         "binList": "List of Bins",
@@ -110,9 +111,9 @@
         "map": "Map",
         "logs": "Logs",
         "instructionTesting": "Test Device Instructions",
-        "meshSettings": "Mesh Settings",
         "userList": "List of Users",
-        "organizationList": "Organizations List"
+        "organizationList": "Organizations List",
+        "orgSettings": "Organization Settings"
       }
     },
     "general": {
@@ -263,16 +264,6 @@
   },
     
   "pages":{
-    "meshSettings":{
-      "title":"Mesh settings",
-      "description":"Set the minimum time each organization's bins stay awake after every scheduled wake-up, so they can exchange ESP-NOW mesh messages. Bins apply a new value after their next report.",
-      "organization":"Organization",
-      "awakeTime":"Mesh awake time (seconds)",
-      "limit":"1 to 60 seconds",
-      "save":"Save",
-      "saved":"Mesh settings saved.",
-      "empty":"No organizations found."
-    },
     "instructionTesting":{
       "title":"Device Instruction Testing",
       "description":"Temporarily test queued instructions for a selected bin. The device receives them when it next checks in over MQTT.",
@@ -677,7 +668,8 @@
         "orgName": "Organization Name",
         "editOrgName": "Edit",
         "deleteOrg": "Delete",
-        "orgId": "Organization ID" 
+        "orgId": "Organization ID",
+        "settings": "Settings"
       },
       "deletion": {
         "confirmationTitle": "Delete Organization",
@@ -710,6 +702,28 @@
   },
   "deleteViaMacButton":"Delete via MAC",
   "components":{
+    "orgSettings":{
+      "title":"Organization settings",
+      "description":"How often and at what hours the organization's bins report, and how long they stay awake after every wake-up to pass messages through the mesh. Bins apply new values after their next report.",
+      "dialogTitle":"Settings: {{name}}",
+      "open":"Settings",
+      "summary":"{{seconds}} s · {{schedule}}",
+      "awakeTime":"Mesh awake time (seconds)",
+      "awakeTimeNote":"How long bins stay awake after every wake-up to pass messages through the mesh (1 to 60 seconds). A longer time uses more battery.",
+      "reportInterval":"Report interval",
+      "startHour":"First report of the day",
+      "reportsAt":"Reports: {{schedule}}",
+      "everyMinutes":"Every {{count}} minutes",
+      "everyHour":"Every hour",
+      "everyHours":"Every {{count}} hours",
+      "everyDay":"Once a day",
+      "everyFrom":"{{interval}} from {{time}}",
+      "intervalNote":"A shorter interval gives fresher data but uses more battery.",
+      "changeNote":"Changing the interval or the hour: bins that report through another bin may miss a few reports until they sync again, and meanwhile they stay awake longer and use more battery.",
+      "save":"Save",
+      "saved":"Settings saved.",
+      "empty":"No organization found."
+    },
     "binCard":{
        "lastUpdated":"Last Updated",
        "fillLevel":"Fill Level",

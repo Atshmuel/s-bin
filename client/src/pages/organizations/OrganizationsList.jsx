@@ -14,6 +14,7 @@ import { useUpdateOrgName } from "@/hooks/organizations/useUpdateOrg";
 import { useOrganizations } from "@/hooks/organizations/useOrganizations";
 import { useSearchParams } from "react-router-dom";
 import { useAppSide } from "@/contexts/AppSideProvider";
+import OrgSettingsDialog from "@/components/organizations/OrgSettingsDialog";
 function OrganizationsList() {
     const { t } = useTranslation();
     const { deleteOrgById, isDeleting } = useDeleteOrg();
@@ -37,7 +38,7 @@ function OrganizationsList() {
             accessorKey: '_id',
             id: 'Org id',
             enableSorting: true,
-            size: 700,
+            size: 400,
             cell: ({ row }) => (
                 <MobileTooltip content={row.original._id}>
                     <div
@@ -54,19 +55,24 @@ function OrganizationsList() {
             )
         },
         {
+            header: t('pages.organizationsList.columns.settings'),
+            id: 'settings',
+            cell: ({ row }) => <OrgSettingsDialog organization={row.original} />,
+            size: 200,
+        },
+        {
             header: t('pages.organizationsList.columns.editOrgName'),
             cell: ({ row }) => {
                 return RenameOrg(row.original._id)
             },
-            size: 20,
+            size: 100,
         },
         {
             header: t('pages.organizationsList.columns.deleteOrg'),
             cell: ({ row }) => {
                 return DeleteOrg(row.original._id)
             },
-            size: 20,
-
+            size: 100,
         },
     ]
 

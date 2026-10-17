@@ -67,11 +67,6 @@ export function AppSidebar({
             url: "instructions",
             isOwnerOnly: true,
           },
-          {
-            title: t("sidebar.managment.items.meshSettings"),
-            url: "mesh-settings",
-            isAdminAndAbove: true,
-          },
         ],
       },
       {
@@ -86,14 +81,15 @@ export function AppSidebar({
           },
         ],
       },
+      // Owners manage every organization; an admin gets their own organization's settings.
       {
-        title: t("sidebar.managment.subtitles.organizations"),
+        title: t(isOwner ? "sidebar.managment.subtitles.organizations" : "sidebar.managment.subtitles.organization"),
         url: "/organizations",
         icon: UserCircle2Icon,
-        isOwnerOnly: true,
+        isAdminAndAbove: true,
         items: [
           {
-            title: t("sidebar.managment.items.organizationList"),
+            title: t(isOwner ? "sidebar.managment.items.organizationList" : "sidebar.managment.items.orgSettings"),
             url: "",
           },
         ],

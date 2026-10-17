@@ -29,9 +29,8 @@ import AddBin from './pages/bins/AddBin';
 import { BreadcrumbProvider } from './contexts/breadcrumbsContext';
 import AccountVerify from './pages/auth/AccountVerify';
 import { AppSideProvider } from './contexts/AppSideProvider';
-import OrganizationsList from './pages/organizations/OrganizationsList';
+import Organizations from './pages/organizations/Organizations';
 import InstructionTesting from './pages/bins/InstructionTesting';
-import MeshSettings from './pages/bins/MeshSettings';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -68,11 +67,6 @@ function App() {
                       <InstructionTesting />
                     </ProtectedRoute>
                   } />
-                  <Route path="mesh-settings" element={
-                    <ProtectedRoute roles={['admin', 'owner']}>
-                      <MeshSettings />
-                    </ProtectedRoute>
-                  } />
                   <Route path=":id" element={<BinDetails />} />
                   <Route path='logs'>
                     <Route path="" element={<AllLogs />} />
@@ -92,10 +86,10 @@ function App() {
                 <Route path="account">
                   <Route path="" element={<AccountProfile />} />
                 </Route>
-                <Route path="organizations" element={<ProtectedRoute roles={['owner']}>
+                <Route path="organizations" element={<ProtectedRoute roles={['admin', 'owner']}>
                   <Outlet />
                 </ProtectedRoute>}>
-                  <Route path='' element={<OrganizationsList />} />
+                  <Route path='' element={<Organizations />} />
                 </Route>
 
 

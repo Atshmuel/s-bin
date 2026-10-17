@@ -16,14 +16,14 @@ export async function getMeshSettings() {
     return parseResponse(response);
 }
 
-export async function updateMeshSettings({ orgId, meshAwakeWindowSeconds }) {
+export async function updateMeshSettings({ orgId, meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour }) {
     const response = await fetch(
         `${SERVER_URL}/${BINS_EP}/mesh-settings/${orgId}`,
         {
             method: "PATCH",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ meshAwakeWindowSeconds }),
+            body: JSON.stringify({ meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour }),
         }
     );
     return parseResponse(response);
