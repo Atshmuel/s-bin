@@ -23,7 +23,7 @@ function MapComponent({ children, center, zoom = 13, legend = false, legendForm 
     }
 
     return (
-        <MapContainer center={center} zoom={zoom} className="h-full w-full relative" ref={setMap} {...props}>
+        <MapContainer center={center} zoom={zoom} minZoom={4} className="h-full w-full relative" ref={setMap} {...props}>
             <TileLayer attribution={attribution} url={tileUrl} />
             {legend ? <MapLegend legendForm={legendForm} /> : null}
             {children}
