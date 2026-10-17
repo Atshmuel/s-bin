@@ -2,7 +2,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useAppSide } from "@/contexts/AppSideProvider"
+import { useOrganizations } from "@/hooks/organizations/useOrganizations"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, CircleCheck, Copy, Info, ListChecks, AlertTriangle, Wifi, WifiOff } from "lucide-react"
 import { useState } from "react"
@@ -18,9 +21,12 @@ function AddBin() {
     const [api, setApi] = useState(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [copiedOwnerId, setCopiedOwnerId] = useState(false);
+    const [selectedOrgId, setSelectedOrgId] = useState(null);
+    const { data: organizations, isLoadingOrgs, orgsError } = useOrganizations()
 
     const totalSteps = 4;
-    const ownerId = me?.org ?? null
+    // Owners have no organization of their own, so they pick the one the bin belongs to.
+    const ownerId = isOwner ? selectedOrgId : me?.org ?? null
 
 
 
@@ -102,10 +108,33 @@ function AddBin() {
 
                                     {/* Owner ID Section */}
                                     <div className="bg-muted p-4 rounded-lg space-y-3">
+                                        {isOwner ?
+                                            <div className="space-y-2">
+                                                <p className="font-medium text-sm">{t("pages.addBin.stepOne.organizationLabel")}:</p>
+                                                {isLoadingOrgs ? <Skeleton className="w-full h-10" /> :
+                                                    <Select isRight={isRight} onValueChange={setSelectedOrgId}
+                                                        value={selectedOrgId ?? ""}
+                                                    >
+                                                        <SelectTrigger isRight={isRight} className="bg-background">
+                                                            <SelectValue placeholder={t("pages.addBin.stepOne.organizationPlaceholder")} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectGroup>
+                                                                <SelectLabel isRight={isRight}>{orgsError ? t("pages.addBin.stepOne.organizationError") : t("pages.addBin.stepOne.organizationLabel")}</SelectLabel>
+                                                                <div className="max-h-52 overflow-y-auto">
+                                                                    {!orgsError ? organizations?.map(o => (
+                                                                        <SelectItem isRight={isRight} className="capitalize max-w-[320px] truncate" key={o._id} value={o._id}>{o.name}</SelectItem>
+                                                                    )) : null}
+                                                                </div>
+                                                            </SelectGroup>
+                                                        </SelectContent>
+                                                    </Select>}
+                                            </div>
+                                            : null}
                                         <p className="font-medium text-sm">{t("pages.addBin.stepOne.ownerIdLabel")}:</p>
                                         <div className="flex items-center gap-2">
                                             <code className="flex-1 bg-background p-3 rounded border text-sm font-mono break-all">
-                                                {ownerId || t("pages.addBin.stepOne.ownerIdLoading")}
+                                                {ownerId || (isOwner ? t("pages.addBin.stepOne.organizationRequired") : t("pages.addBin.stepOne.ownerIdLoading"))}
                                             </code>
                                             <Button
                                                 variant="outline"
