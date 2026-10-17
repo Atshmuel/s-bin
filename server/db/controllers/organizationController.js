@@ -3,7 +3,7 @@ import { organizationModel } from "../models/models.js";
 import { deleteOrgRefs } from "../service/sharedService.js";
 import { MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../schema/organizationSchema.js";
 
-const MESH_SETTINGS_PROJECTION = { name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1 };
+const MESH_SETTINGS_PROJECTION = { name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1 };
 
 
 export async function getOrganizations(req, res) {
@@ -70,7 +70,7 @@ export async function getMeshSettings(req, res) {
 
 export async function updateMeshSettings(req, res) {
     const { orgId } = req.params;
-    const { meshAwakeWindowSeconds, reportIntervalMinutes } = req.body ?? {};
+    const { meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour } = req.body ?? {};
     const { role, org } = req.user;
 
     if (!mongoose.Types.ObjectId.isValid(orgId)) {
@@ -79,8 +79,10 @@ export async function updateMeshSettings(req, res) {
     if (role !== process.env.ROLE_OWNER && orgId !== org) {
         return res.status(403).json({ message: "You can only change your own organization's settings." });
     }
-    if (meshAwakeWindowSeconds === undefined && reportIntervalMinutes === undefined) {
-        return res.status(400).json({ message: "Nothing to update: send meshAwakeWindowSeconds and/or reportIntervalMinutes." });
+    if (meshAwakeWindowSeconds === undefined && reportIntervalMinutes === undefined && reportStartHour === undefined) {
+        return res.status(400).json({
+            message: "Nothing to update: send meshAwakeWindowSeconds, reportIntervalMinutes and/or reportStartHour."
+        });
     }
     if (meshAwakeWindowSeconds !== undefined &&
         (!Number.isInteger(meshAwakeWindowSeconds) ||
@@ -95,6 +97,10 @@ export async function updateMeshSettings(req, res) {
             message: `reportIntervalMinutes must be one of ${REPORT_INTERVAL_OPTIONS_MINUTES.join(", ")}.`
         });
     }
+    if (reportStartHour !== undefined &&
+        (!Number.isInteger(reportStartHour) || reportStartHour < 0 || reportStartHour > 23)) {
+        return res.status(400).json({ message: "reportStartHour must be an integer between 0 and 23." });
+    }
 
     try {
         const organization = await organizationModel.findByIdAndUpdate(
@@ -103,6 +109,7 @@ export async function updateMeshSettings(req, res) {
                 $set: {
                     ...(meshAwakeWindowSeconds === undefined ? {} : { meshAwakeWindowSeconds }),
                     ...(reportIntervalMinutes === undefined ? {} : { reportIntervalMinutes }),
+                    ...(reportStartHour === undefined ? {} : { reportStartHour }),
                 }
             },
             { new: true, runValidators: true, projection: MESH_SETTINGS_PROJECTION }

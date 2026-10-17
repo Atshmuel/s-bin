@@ -60,8 +60,8 @@ export async function applyDeviceLog(bin, {
     driftPpm,
     clockErrorSeconds,
     wakeOffsetSeconds,
-}, { via, gatewayId = null, hops = null, rssi = null, reportIntervalMinutes }) {
-    const schedule = getNextReportSchedule(location, reportIntervalMinutes);
+}, { via, gatewayId = null, hops = null, rssi = null, reportIntervalMinutes, reportStartHour }) {
+    const schedule = getNextReportSchedule(location, reportIntervalMinutes, reportStartHour);
     // A gateway has no fill sensor: a level it sends is ignored, and its level
     // fields stay untouched so it never reads as a bin with a failed sensor.
     const isGateway = bin.kind === "gateway";
@@ -147,13 +147,14 @@ export async function handleDeviceLog(mac, { deviceKey, ...record }) {
     const {
         meshAwakeWindowSeconds: orgMeshAwakeWindowSeconds,
         reportIntervalMinutes,
+        reportStartHour,
     } = await getOrgDeviceSettingsShared(bin.ownerId);
     const {
         timeZone,
         nextWakeEpoch,
         followingWakeEpoch,
         sleepDurationSeconds: scheduledSleepDurationSeconds,
-    } = await applyDeviceLog(bin, record, { via: "cellular", reportIntervalMinutes });
+    } = await applyDeviceLog(bin, record, { via: "cellular", reportIntervalMinutes, reportStartHour });
 
     console.log("Updated log for", mac);
     mqttClient.publish(

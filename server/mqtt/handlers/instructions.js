@@ -30,9 +30,9 @@ export async function handleInstructionCheck(mac, { deviceKey }) {
         payload
     }));
 
-    const { meshAwakeWindowSeconds, reportIntervalMinutes } = await getOrgDeviceSettingsShared(bin.ownerId);
+    const { meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour } = await getOrgDeviceSettingsShared(bin.ownerId);
     const { timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds } =
-        getNextReportSchedule(bin.location.coordinates, reportIntervalMinutes);
+        getNextReportSchedule(bin.location.coordinates, reportIntervalMinutes, reportStartHour);
     const response = JSON.stringify({
         status: "instruction_check",
         canSleep: instructions.length === 0,

@@ -107,9 +107,10 @@ export function checkPayloadFields({
     if (typeof battery !== "number" || battery < 0 || battery > 100) return false
     if (typeof weight !== "number") return false
     if (message !== undefined && (typeof message !== "string" || message.length > 256)) return false
+    // Up to two days: a daily interval plus the early-wake tolerance passes 24 hours.
     if (sleepDurationSeconds !== undefined &&
         (!Number.isInteger(sleepDurationSeconds) ||
-            sleepDurationSeconds < 1 || sleepDurationSeconds > 86400)) return false
+            sleepDurationSeconds < 1 || sleepDurationSeconds > 172800)) return false
     if (meshAwakeWindowSeconds !== undefined &&
         (!Number.isInteger(meshAwakeWindowSeconds) ||
             meshAwakeWindowSeconds < 1 || meshAwakeWindowSeconds > 60)) return false

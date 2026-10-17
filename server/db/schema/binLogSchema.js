@@ -20,7 +20,7 @@ export const binLogSchema = new mongoose.Schema({
     oldLevel: Number,
     newLevel: { type: Number, default: null },
     battery: { type: Number, required: true },
-    sleepDurationSeconds: { type: Number, min: 1, max: 86400 },
+    sleepDurationSeconds: { type: Number, min: 1, max: 172800 },
     meshAwakeWindowSeconds: { type: Number, min: 1, max: 60 },
     lastAwakeSeconds: { type: Number, min: 1, max: 86400 },
     // Sleep-clock diagnostics: the device's drift estimate, how far its clock

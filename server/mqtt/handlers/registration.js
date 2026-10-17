@@ -33,9 +33,9 @@ export async function handleRegistration({ mac, orgId, location, battery, kind =
             console.log("Invalid location or battery data");
             return;
         }
-        const { meshAwakeWindowSeconds, reportIntervalMinutes } = await getOrgDeviceSettingsShared(orgId);
+        const { meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour } = await getOrgDeviceSettingsShared(orgId);
         const { timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds } =
-            getNextReportSchedule(location, reportIntervalMinutes);
+            getNextReportSchedule(location, reportIntervalMinutes, reportStartHour);
 
         const deviceKey = generateRandomToken();
         // 0,5 to get first 5 chars for example: 1D:44:8E:A7:32:5D -> 1D:44 date used for uniqueness validity
