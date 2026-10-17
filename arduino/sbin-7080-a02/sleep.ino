@@ -17,11 +17,25 @@ constexpr uint64_t MAX_SLOT_LEAD_SECONDS = 600;
 constexpr uint64_t MIN_LEAD_SLEEP_SECONDS = 600;
 // The light sleep ends this long before the slot to re-read network time.
 constexpr int64_t SLOT_RESYNC_SECONDS = 5;
+// The re-read comes at least this long after the first read, even when that
+// read puts the slot closer or past: the network corrected the modem's clock
+// within seconds of registering.
+constexpr int64_t MIN_RESYNC_GAP_MS = 10000;
 // A timer wake further than this before the slot is not that slot's wake.
 constexpr int64_t MAX_SLOT_WAIT_SECONDS = 900;
 
 // Time spent in light sleep this boot; not counted as awake time.
 uint32_t lightSleptMs = 0;
+
+// Right after the modem powers on, its network time was often seconds ahead
+// (in 5 of 8 test cycles) until the network updated it; the re-read before the
+// slot was always right. So on a slot wake the first read only times the light
+// sleep, and the wake and drift are measured at the re-read (waitForSlotStart()).
+bool slotSyncPending = false;
+time_t firstReadDeviceEpoch = 0;
+time_t firstReadNetworkEpoch = 0;
+int64_t firstReadCorrectionMs = 0;  // how far the first read moved the clock
+uint32_t firstReadMillis = 0;
 
 int64_t epochMsNow() {
     struct timeval now;
@@ -139,9 +153,19 @@ bool synchronizeClockFromNetwork(unsigned long timeoutMs) {
     for (uint8_t attempt = 0; attempt < 5 && millis() - startedAt < timeoutMs; attempt++) {
         time_t utcEpoch = 0;
         if (readNetworkEpoch(utcEpoch)) {
-            const time_t deviceEpoch = time(nullptr);
-            recordWakeTiming(deviceEpoch, utcEpoch);
-            recordClockDrift(deviceEpoch, utcEpoch);
+            const int64_t deviceMs = epochMsNow();
+            const time_t deviceEpoch = static_cast<time_t>(deviceMs / 1000);
+            slotSyncPending = esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER &&
+                              sleepLeadSeconds > 0 && nextWakeEpoch != 0;
+            if (slotSyncPending) {
+                firstReadDeviceEpoch = deviceEpoch;
+                firstReadNetworkEpoch = utcEpoch;
+                firstReadCorrectionMs = static_cast<int64_t>(utcEpoch) * 1000LL - deviceMs;
+                firstReadMillis = millis();
+            } else {
+                recordWakeTiming(deviceEpoch, utcEpoch);
+                recordClockDrift(deviceEpoch, utcEpoch);
+            }
             struct timeval timeValue = {utcEpoch, 0};
             if (settimeofday(&timeValue, nullptr) == 0) {
                 clockSyncedFromNetwork = true;
@@ -196,16 +220,76 @@ void saveLastKnownLocation() {
 
 // The sleep clock drifts by minutes over 12 hours and the drift changes from
 // cycle to cycle, so a slot sleep ends sleepLeadSeconds early on purpose. Once
-// network time says exactly how long is left, this waits out the rest in light
-// sleep (the modem in its own sleep mode) and returns on the slot: the mesh
-// window opens on it to about a second, wherever the drifting clock woke the
-// gateway. A late wake returns at once.
+// network time says roughly how long is left, this waits out the rest in light
+// sleep (the modem in its own sleep mode), re-reads network time just before
+// the slot and returns on it: the mesh window opens on the slot to about a
+// second, wherever the drifting clock woke the gateway. The re-read is also
+// what this wake's timing and drift are measured against, so it always
+// happens, even when the first read puts the slot seconds away or past. If it
+// shows the first read was far ahead, the rest is slept out the same way. A
+// wake that is really late returns at once after the re-read.
 void waitForSlotStart() {
-    if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER || sleepLeadSeconds == 0 ||
-        nextWakeEpoch == 0 || !clockSyncedFromNetwork) {
+    if (!slotSyncPending) {
         return;
     }
+    slotSyncPending = false;
+
+    constexpr uint8_t MAX_SLOT_SLEEPS = 3;
+    bool measured = false;
     int64_t untilSlotMs = static_cast<int64_t>(nextWakeEpoch) * 1000LL - epochMsNow();
+    for (uint8_t round = 0; round < MAX_SLOT_SLEEPS && untilSlotMs <= MAX_SLOT_WAIT_SECONDS * 1000LL; round++) {
+        int64_t waitMs = untilSlotMs - SLOT_RESYNC_SECONDS * 1000LL;
+        if (round == 0) {
+            const int64_t sinceFirstReadMs = static_cast<int64_t>(millis() - firstReadMillis);
+            waitMs = max(waitMs, MIN_RESYNC_GAP_MS - sinceFirstReadMs);
+        } else if (waitMs <= 1000) {
+            break;
+        }
+        if (waitMs > 1000) {
+            Serial.printf("⏳ %lld s until the slot; light sleep with the modem asleep.\n",
+                          static_cast<long long>(untilSlotMs / 1000));
+            Serial.flush();
+            modem.sleepEnable(true);
+            digitalWrite(BOARD_MODEM_DTR_PIN, HIGH);
+            // The light-sleep timer runs on the same RC clock as deep sleep.
+            const uint64_t timerMs = sbinmesh::applyDriftCorrection(static_cast<uint64_t>(waitMs), driftPpm);
+            const uint32_t sleepStartedMs = millis();
+            esp_sleep_enable_timer_wakeup(timerMs * 1000ULL);
+            esp_light_sleep_start();
+            lightSleptMs += millis() - sleepStartedMs;
+
+            // DTR low for at least 50 ms wakes the modem; then leave its sleep mode.
+            digitalWrite(BOARD_MODEM_DTR_PIN, LOW);
+            delay(100);
+            modem.testAT(1000);
+            modem.sleepEnable(false);
+        } else if (waitMs > 0) {
+            delay(static_cast<uint32_t>(waitMs));
+        }
+        time_t utcEpoch = 0;
+        const int64_t deviceMs = epochMsNow();
+        if (!readNetworkEpoch(utcEpoch)) {
+            Serial.println("⚠️ Could not re-read network time after the wait; using the sleep clock.");
+            break;
+        }
+        if (!measured) {
+            // Against the clock as the deep sleep left it, before the first read moved it.
+            const time_t deviceEpoch = static_cast<time_t>((deviceMs - firstReadCorrectionMs) / 1000);
+            recordWakeTiming(deviceEpoch, utcEpoch);
+            recordClockDrift(deviceEpoch, utcEpoch);
+            measured = true;
+        }
+        struct timeval timeValue = {utcEpoch, 0};
+        settimeofday(&timeValue, nullptr);
+        untilSlotMs = static_cast<int64_t>(nextWakeEpoch) * 1000LL - epochMsNow();
+    }
+    if (!measured) {
+        // No re-read: measure against the first read, carried forward to now.
+        const time_t elapsed = static_cast<time_t>((millis() - firstReadMillis) / 1000UL);
+        recordWakeTiming(firstReadDeviceEpoch + elapsed, firstReadNetworkEpoch + elapsed);
+        recordClockDrift(firstReadDeviceEpoch + elapsed, firstReadNetworkEpoch + elapsed);
+    }
+
     if (untilSlotMs <= 0) {
         Serial.printf("⚠️ Reached the slot %lld s late; opening the mesh window now.\n",
                       static_cast<long long>(-untilSlotMs / 1000));
@@ -214,39 +298,7 @@ void waitForSlotStart() {
     if (untilSlotMs > MAX_SLOT_WAIT_SECONDS * 1000LL) {
         return;
     }
-
-    const int64_t sleepMs = untilSlotMs - SLOT_RESYNC_SECONDS * 1000LL;
-    if (sleepMs > 1000) {
-        Serial.printf("⏳ %lld s until the slot; light sleep with the modem asleep.\n",
-                      static_cast<long long>(untilSlotMs / 1000));
-        Serial.flush();
-        modem.sleepEnable(true);
-        digitalWrite(BOARD_MODEM_DTR_PIN, HIGH);
-        // The light-sleep timer runs on the same RC clock as deep sleep.
-        const uint64_t timerMs = sbinmesh::applyDriftCorrection(static_cast<uint64_t>(sleepMs), driftPpm);
-        const uint32_t sleepStartedMs = millis();
-        esp_sleep_enable_timer_wakeup(timerMs * 1000ULL);
-        esp_light_sleep_start();
-        lightSleptMs += millis() - sleepStartedMs;
-
-        // DTR low for at least 50 ms wakes the modem; then leave its sleep mode.
-        digitalWrite(BOARD_MODEM_DTR_PIN, LOW);
-        delay(100);
-        modem.testAT(1000);
-        modem.sleepEnable(false);
-        // The system clock also ran on the RC clock; take it from the network again.
-        time_t utcEpoch = 0;
-        if (readNetworkEpoch(utcEpoch)) {
-            struct timeval timeValue = {utcEpoch, 0};
-            settimeofday(&timeValue, nullptr);
-        } else {
-            Serial.println("⚠️ Could not re-read network time after the wait; using the sleep clock.");
-        }
-        untilSlotMs = static_cast<int64_t>(nextWakeEpoch) * 1000LL - epochMsNow();
-    }
-    if (untilSlotMs > 0) {
-        delay(static_cast<uint32_t>(untilSlotMs));
-    }
+    delay(static_cast<uint32_t>(untilSlotMs));
     Serial.println("🎯 Slot reached; opening the mesh window on time.");
 }
 

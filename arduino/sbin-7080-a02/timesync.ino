@@ -11,8 +11,8 @@
 
 namespace {
 constexpr time_t MIN_VALID_EPOCH_FOR_DRIFT = 1735689600;
-// Network time has 1 s resolution, so shorter sleeps are too noisy to measure.
-constexpr int64_t MIN_DRIFT_MEASUREMENT_SECONDS = 3600;
+// Network time has 1 s resolution: 30+ minutes keep a sample within ~±600 ppm.
+constexpr int64_t MIN_DRIFT_MEASUREMENT_SECONDS = 1800;
 // The internal RC oscillator is specified to ±5%; measured so far up to ~1.4%.
 constexpr int32_t MAX_ABS_DRIFT_PPM = 60000;
 // Flash is rewritten only when the estimate moves this much.
