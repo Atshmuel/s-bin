@@ -8,7 +8,9 @@ function AppLayout() {
     return (
         <SidebarProvider>
             <AppSidebar />
-            <SidebarInset>
+            {/* min-w-0: a flex item is otherwise as wide as its widest content, so a wide
+                table would widen the page instead of scrolling inside its own frame. */}
+            <SidebarInset className="min-w-0">
                 <header className="bg-background sticky top-0 flex h-12 shrink-0 items-center justify-between gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-10 z-[9]">
                     <div className="flex items-center gap-2 px-4">
                         <SidebarTrigger className="-ml-5 mr-2" />

@@ -78,9 +78,11 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                {title ? <h1 className="text-lg sm:text-2xl capitalize font-bold min-w-20 sm:min-w-72">{title}</h1> : null}
-                <div className={`flex items-center w-full gap-3 ${title ? "md:justify-end" : "justify-between"} `}>
+            {/* One row only from lg, and the controls wrap: next to the sidebar a narrower
+                screen has no room for the title, search and buttons side by side. */}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                {title ? <h1 className="text-lg sm:text-2xl capitalize font-bold shrink-0">{title}</h1> : null}
+                <div className={`flex flex-wrap items-center w-full min-w-0 gap-3 lg:w-auto ${title ? "lg:justify-end" : "justify-between"} `}>
                     <Input
                         withIcon={true}
                         Icon={iconToShow}
@@ -93,9 +95,9 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                             setSearching("")
                         }}
                         disabled={isLoading || error}
-                        className="w-30 sm:w-48 relative"
+                        className="w-40 sm:w-48 relative"
                     />
-                    <div className="flex gap-1.5 w-full sm:w-auto justify-end">
+                    <div className="flex gap-1.5 ms-auto">
                         {ActionButton ? <ActionButton /> : null}
 
                         <DropdownMenu>
