@@ -4,6 +4,10 @@ import mongoose from "mongoose";
 // stay awake for the same minimum window after the shared wake-up time.
 export const DEFAULT_MESH_AWAKE_WINDOW_SECONDS = 10;
 export const MAX_MESH_AWAKE_WINDOW_SECONDS = 60;
+// How often the organization's devices report. Every option divides 24 hours,
+// so the slots stay aligned; below 30 minutes gateways learn no clock drift.
+export const REPORT_INTERVAL_OPTIONS_MINUTES = Object.freeze([15, 30, 60, 120, 180, 240, 360, 720]);
+export const DEFAULT_REPORT_INTERVAL_MINUTES = 720;
 
 export const organizationSchema = new mongoose.Schema({
     name: { type: String, required: true, unique: true },
@@ -15,6 +19,14 @@ export const organizationSchema = new mongoose.Schema({
         validate: {
             validator: Number.isInteger,
             message: "meshAwakeWindowSeconds must be an integer"
+        }
+    },
+    reportIntervalMinutes: {
+        type: Number,
+        default: DEFAULT_REPORT_INTERVAL_MINUTES,
+        validate: {
+            validator: (value) => REPORT_INTERVAL_OPTIONS_MINUTES.includes(value),
+            message: `reportIntervalMinutes must be one of ${REPORT_INTERVAL_OPTIONS_MINUTES.join(", ")}`
         }
     },
 });

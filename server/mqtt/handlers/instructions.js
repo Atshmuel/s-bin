@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { getBinByMacAndKeyShared, getOrgMeshAwakeWindowShared } from "../../db/service/sharedService.js";
+import { getBinByMacAndKeyShared, getOrgDeviceSettingsShared } from "../../db/service/sharedService.js";
 import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { deviceInstructionModel } from "../../db/models/models.js";
@@ -30,9 +30,9 @@ export async function handleInstructionCheck(mac, { deviceKey }) {
         payload
     }));
 
+    const { meshAwakeWindowSeconds, reportIntervalMinutes } = await getOrgDeviceSettingsShared(bin.ownerId);
     const { timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds } =
-        getNextReportSchedule(bin.location.coordinates);
-    const meshAwakeWindowSeconds = await getOrgMeshAwakeWindowShared(bin.ownerId);
+        getNextReportSchedule(bin.location.coordinates, reportIntervalMinutes);
     const response = JSON.stringify({
         status: "instruction_check",
         canSleep: instructions.length === 0,

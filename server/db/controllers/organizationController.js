@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 import { organizationModel } from "../models/models.js";
 import { deleteOrgRefs } from "../service/sharedService.js";
-import { MAX_MESH_AWAKE_WINDOW_SECONDS } from "../schema/organizationSchema.js";
+import { MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../schema/organizationSchema.js";
+
+const MESH_SETTINGS_PROJECTION = { name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1 };
 
 
 export async function getOrganizations(req, res) {
@@ -58,7 +60,7 @@ export async function getMeshSettings(req, res) {
     const { role, org } = req.user;
     const query = role === process.env.ROLE_OWNER ? {} : { _id: org };
     try {
-        const organizations = await organizationModel.find(query, { name: 1, meshAwakeWindowSeconds: 1 })
+        const organizations = await organizationModel.find(query, MESH_SETTINGS_PROJECTION)
             .sort({ name: 1 });
         return res.status(200).json({ organizations });
     } catch (error) {
@@ -68,7 +70,7 @@ export async function getMeshSettings(req, res) {
 
 export async function updateMeshSettings(req, res) {
     const { orgId } = req.params;
-    const { meshAwakeWindowSeconds } = req.body ?? {};
+    const { meshAwakeWindowSeconds, reportIntervalMinutes } = req.body ?? {};
     const { role, org } = req.user;
 
     if (!mongoose.Types.ObjectId.isValid(orgId)) {
@@ -77,19 +79,33 @@ export async function updateMeshSettings(req, res) {
     if (role !== process.env.ROLE_OWNER && orgId !== org) {
         return res.status(403).json({ message: "You can only change your own organization's settings." });
     }
-    if (!Number.isInteger(meshAwakeWindowSeconds) ||
-        meshAwakeWindowSeconds < 1 ||
-        meshAwakeWindowSeconds > MAX_MESH_AWAKE_WINDOW_SECONDS) {
+    if (meshAwakeWindowSeconds === undefined && reportIntervalMinutes === undefined) {
+        return res.status(400).json({ message: "Nothing to update: send meshAwakeWindowSeconds and/or reportIntervalMinutes." });
+    }
+    if (meshAwakeWindowSeconds !== undefined &&
+        (!Number.isInteger(meshAwakeWindowSeconds) ||
+            meshAwakeWindowSeconds < 1 ||
+            meshAwakeWindowSeconds > MAX_MESH_AWAKE_WINDOW_SECONDS)) {
         return res.status(400).json({
             message: `meshAwakeWindowSeconds must be an integer between 1 and ${MAX_MESH_AWAKE_WINDOW_SECONDS}.`
+        });
+    }
+    if (reportIntervalMinutes !== undefined && !REPORT_INTERVAL_OPTIONS_MINUTES.includes(reportIntervalMinutes)) {
+        return res.status(400).json({
+            message: `reportIntervalMinutes must be one of ${REPORT_INTERVAL_OPTIONS_MINUTES.join(", ")}.`
         });
     }
 
     try {
         const organization = await organizationModel.findByIdAndUpdate(
             orgId,
-            { $set: { meshAwakeWindowSeconds } },
-            { new: true, runValidators: true, projection: { name: 1, meshAwakeWindowSeconds: 1 } }
+            {
+                $set: {
+                    ...(meshAwakeWindowSeconds === undefined ? {} : { meshAwakeWindowSeconds }),
+                    ...(reportIntervalMinutes === undefined ? {} : { reportIntervalMinutes }),
+                }
+            },
+            { new: true, runValidators: true, projection: MESH_SETTINGS_PROJECTION }
         );
         if (!organization) {
             return res.status(404).json({ message: "Organization not found." });

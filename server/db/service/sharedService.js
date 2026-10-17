@@ -6,7 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { ca } from 'zod/v4/locales';
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
-import { DEFAULT_MESH_AWAKE_WINDOW_SECONDS } from '../schema/organizationSchema.js';
+import { DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES } from '../schema/organizationSchema.js';
 
 //Bins
 export async function getBinShared(binId) {
@@ -152,13 +152,20 @@ export async function organizationExist(org) {
     }
 }
 
-export async function getOrgMeshAwakeWindowShared(orgId) {
+// The organization's device settings, sent to its devices with every schedule.
+export async function getOrgDeviceSettingsShared(orgId) {
     try {
-        const org = await organizationModel.findById(orgId, { meshAwakeWindowSeconds: 1 })
-        return org?.meshAwakeWindowSeconds ?? DEFAULT_MESH_AWAKE_WINDOW_SECONDS
+        const org = await organizationModel.findById(orgId, { meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1 })
+        return {
+            meshAwakeWindowSeconds: org?.meshAwakeWindowSeconds ?? DEFAULT_MESH_AWAKE_WINDOW_SECONDS,
+            reportIntervalMinutes: org?.reportIntervalMinutes ?? DEFAULT_REPORT_INTERVAL_MINUTES,
+        }
     } catch (error) {
         console.error(error)
-        return DEFAULT_MESH_AWAKE_WINDOW_SECONDS;
+        return {
+            meshAwakeWindowSeconds: DEFAULT_MESH_AWAKE_WINDOW_SECONDS,
+            reportIntervalMinutes: DEFAULT_REPORT_INTERVAL_MINUTES,
+        };
     }
 }
 

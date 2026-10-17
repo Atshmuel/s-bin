@@ -1,4 +1,4 @@
-import { getBinByMacAndKeyShared, getOrgMeshAwakeWindowShared } from "../../db/service/sharedService.js";
+import { getBinByMacAndKeyShared, getOrgDeviceSettingsShared } from "../../db/service/sharedService.js";
 import { appendFilter, checkPayloadFields } from "../../utils/helpers.js";
 import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
@@ -44,7 +44,8 @@ function clockDiagnostics({ driftPpm, clockErrorSeconds, wakeOffsetSeconds }) {
 
 // Stores one validated telemetry record for an authenticated bin, whether it
 // arrived over the bin's own cellular link or was relayed by a mesh gateway.
-// Returns the bin's next report schedule.
+// Returns the bin's next report schedule at the organization's interval (a
+// relayed leaf follows its gateway's beacons instead, so only its time zone is used).
 export async function applyDeviceLog(bin, {
     location,
     health,
@@ -59,8 +60,8 @@ export async function applyDeviceLog(bin, {
     driftPpm,
     clockErrorSeconds,
     wakeOffsetSeconds,
-}, { via, gatewayId = null, hops = null, rssi = null }) {
-    const schedule = getNextReportSchedule(location);
+}, { via, gatewayId = null, hops = null, rssi = null, reportIntervalMinutes }) {
+    const schedule = getNextReportSchedule(location, reportIntervalMinutes);
     // A gateway has no fill sensor: a level it sends is ignored, and its level
     // fields stay untouched so it never reads as a bin with a failed sensor.
     const isGateway = bin.kind === "gateway";
@@ -144,14 +145,17 @@ export async function handleDeviceLog(mac, { deviceKey, ...record }) {
     // Validated after the lookup: whether a level is required depends on kind.
     if (!isValidTelemetryRecord(record, bin.kind)) return;
     const {
+        meshAwakeWindowSeconds: orgMeshAwakeWindowSeconds,
+        reportIntervalMinutes,
+    } = await getOrgDeviceSettingsShared(bin.ownerId);
+    const {
         timeZone,
         nextWakeEpoch,
         followingWakeEpoch,
         sleepDurationSeconds: scheduledSleepDurationSeconds,
-    } = await applyDeviceLog(bin, record, { via: "cellular" });
+    } = await applyDeviceLog(bin, record, { via: "cellular", reportIntervalMinutes });
 
     console.log("Updated log for", mac);
-    const orgMeshAwakeWindowSeconds = await getOrgMeshAwakeWindowShared(bin.ownerId);
     mqttClient.publish(
         `${BIN_ACK_TOPIC}/${mac}`,
         JSON.stringify({

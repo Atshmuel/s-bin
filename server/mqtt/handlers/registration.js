@@ -1,4 +1,4 @@
-import { getOrgMeshAwakeWindowShared, organizationExist } from "../../db/service/sharedService.js";
+import { getOrgDeviceSettingsShared, organizationExist } from "../../db/service/sharedService.js";
 import { generateRandomToken } from "../../utils/helpers.js";
 import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
@@ -33,8 +33,9 @@ export async function handleRegistration({ mac, orgId, location, battery, kind =
             console.log("Invalid location or battery data");
             return;
         }
+        const { meshAwakeWindowSeconds, reportIntervalMinutes } = await getOrgDeviceSettingsShared(orgId);
         const { timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds } =
-            getNextReportSchedule(location);
+            getNextReportSchedule(location, reportIntervalMinutes);
 
         const deviceKey = generateRandomToken();
         // 0,5 to get first 5 chars for example: 1D:44:8E:A7:32:5D -> 1D:44 date used for uniqueness validity
@@ -57,7 +58,6 @@ export async function handleRegistration({ mac, orgId, location, battery, kind =
 
         });
         console.log("Registered new bin via MQTT:", newBin);
-        const meshAwakeWindowSeconds = await getOrgMeshAwakeWindowShared(orgId);
         mqttClient.publish(
             `${BIN_ACK_TOPIC}/${mac}`,
             JSON.stringify({

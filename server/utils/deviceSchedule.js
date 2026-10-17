@@ -1,6 +1,6 @@
 import tzLookup from "tz-lookup";
+import { DEFAULT_REPORT_INTERVAL_MINUTES } from "../db/schema/organizationSchema.js";
 
-const REPORT_INTERVAL_MINUTES = Number(process.env.DEVICE_REPORT_INTERVAL_MINUTES ?? 1);
 // These UTC slots correspond to 08:00/20:00 in summer and 07:00/19:00 in winter in Israel.
 const FIXED_REPORT_TIMES_UTC = [5, 17];
 // Device sleep clocks run fast (about +0.5%, so ~4 minutes per 12 hours). A report
@@ -24,7 +24,9 @@ function getNextFixedReportEpoch(now) {
     return reportSlots[nextSlotIndex];
 }
 
-export function getNextReportSchedule(location, now = Date.now()) {
+// intervalMinutes is the organization's report interval; 720 uses the fixed
+// daily slots, anything shorter aligns to multiples of the interval.
+export function getNextReportSchedule(location, intervalMinutes = DEFAULT_REPORT_INTERVAL_MINUTES, now = Date.now()) {
     if (!Array.isArray(location) || location.length !== 2) {
         throw new TypeError("Device location must contain latitude and longitude.");
     }
@@ -42,25 +44,25 @@ export function getNextReportSchedule(location, now = Date.now()) {
     }
 
     const timeZone = tzLookup(latitude, longitude);
-    if (!Number.isInteger(REPORT_INTERVAL_MINUTES) ||
-        REPORT_INTERVAL_MINUTES < 1 ||
-        REPORT_INTERVAL_MINUTES > 720) {
-        throw new RangeError("DEVICE_REPORT_INTERVAL_MINUTES must be an integer from 1 to 720.");
+    if (!Number.isInteger(intervalMinutes) ||
+        intervalMinutes < 1 ||
+        intervalMinutes > 720) {
+        throw new RangeError("The report interval must be an integer from 1 to 720 minutes.");
     }
 
     const nowSeconds = Math.floor(now / 1000);
-    const intervalSeconds = REPORT_INTERVAL_MINUTES * 60;
+    const intervalSeconds = intervalMinutes * 60;
     const intervalToleranceSeconds = Math.min(
         EARLY_WAKE_TOLERANCE_SECONDS,
         Math.floor(intervalSeconds / 4),
     );
-    const nextWakeEpoch = REPORT_INTERVAL_MINUTES === 720
+    const nextWakeEpoch = intervalMinutes === 720
         ? getNextFixedReportEpoch(now)
         : (Math.floor((nowSeconds + intervalToleranceSeconds) / intervalSeconds) + 1) * intervalSeconds;
     const sleepDurationSeconds = nextWakeEpoch - nowSeconds;
     // The slot after next: mesh gateways advertise it to leaves at the next wake,
     // before they have reached the server for that cycle.
-    const followingWakeEpoch = REPORT_INTERVAL_MINUTES === 720
+    const followingWakeEpoch = intervalMinutes === 720
         ? getNextFixedReportEpoch(nextWakeEpoch * 1000)
         : nextWakeEpoch + intervalSeconds;
     return {
