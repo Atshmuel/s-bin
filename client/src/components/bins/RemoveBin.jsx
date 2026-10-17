@@ -6,8 +6,9 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 import { Button } from "../ui/button";
 import InputLabel from "../InputLabel";
 import { Spinner } from "../ui/spinner";
+import { Trash2 } from "lucide-react";
 
-function RemoveBin() {
+function RemoveBin({ isExpanded }) {
     const { t } = useTranslation();
     const { isRight, side } = useAppSide()
     const { isMobile } = useAppSide();
@@ -21,7 +22,10 @@ function RemoveBin() {
     return (
         <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
             <DialogTrigger asChild>
-                <Button disabled={isDeleting} className="cursor-pointer" variant='outline_destructive' size='sm'>{isDeleting ? <Spinner /> : t("deleteViaMacButton")}</Button>
+                <Button disabled={isDeleting} className="cursor-pointer" variant='outline_destructive' size={isExpanded ? 'sm' : 'icon'}
+                    title={isExpanded ? undefined : t("deleteViaMacButton")} aria-label={t("deleteViaMacButton")}>
+                    {isDeleting ? <Spinner /> : isExpanded ? t("deleteViaMacButton") : <Trash2 />}
+                </Button>
             </DialogTrigger>
             <DialogContent className={`${!isMobile ? "z-[999999]" : ""}`} side={side}>
                 <DialogHeader className="pt-6" isRight={isRight}>

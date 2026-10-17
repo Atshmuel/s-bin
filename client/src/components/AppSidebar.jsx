@@ -117,7 +117,7 @@ export function AppSidebar({
         <NavGeneral general={data.general} />
       </SidebarContent>
       <SidebarFooter>
-        {isOwner ? <RemoveBin /> : null}
+        {isOwner ? <RemoveBin isExpanded={isExpanded} /> : null}
         {isAdmin ? <NewEntitySheet isExpanded={isExpanded} /> : null}
         <NavAccount isRight={isRight} account={{ ...me, avater: '/avatars/shadcn.jpg' }} />
       </SidebarFooter>
