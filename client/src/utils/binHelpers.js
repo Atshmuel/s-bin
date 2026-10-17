@@ -1,9 +1,16 @@
 
+// The marker colors for a device's state, from good to critical.
+export const STATUS_COLORS = Object.freeze({
+    good: "oklch(0.723 0.219 149.579)",
+    warning: "oklch(0.769 0.188 70.08)",
+    critical: "oklch(0.577 0.245 27.325)",
+})
+
 export function getColor(levelOrStatus, type = 'fill') {
     // levelOrStatus can be a numeric level (0-100) or an object `{ level, weight, battery }`
     if (type === 'battery') {
         const level = typeof levelOrStatus === 'object' ? (levelOrStatus.battery ?? 0) : (levelOrStatus ?? 0)
-        return level > 75 ? "oklch(0.723 0.219 149.579)" : level > 50 && level <= 75 ? "oklch(0.769 0.188 70.08)" : "oklch(0.577 0.245 27.325)"
+        return level > 75 ? STATUS_COLORS.good : level > 50 && level <= 75 ? STATUS_COLORS.warning : STATUS_COLORS.critical
     }
     if (type === 'fill') {
         let level = typeof levelOrStatus === 'object' ? (levelOrStatus.level ?? 0) : (levelOrStatus ?? 0)
@@ -17,7 +24,7 @@ export function getColor(levelOrStatus, type = 'fill') {
             const combined = Math.round(level * 0.6 + weightPercent * 0.4)
             level = combined
         }
-        return level > 75 ? "oklch(0.577 0.245 27.325)" : level > 50 && level <= 75 ? "oklch(0.769 0.188 70.08)" : "oklch(0.723 0.219 149.579)"
+        return level > 75 ? STATUS_COLORS.critical : level > 50 && level <= 75 ? STATUS_COLORS.warning : STATUS_COLORS.good
     }
 }
 

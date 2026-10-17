@@ -163,6 +163,44 @@
   z-index: 400 !important;
 }
 
+/* Map popups and marker groups follow the app theme instead of Leaflet's white.
+   Leaflet's stylesheet loads after this one, so these rules are one class more
+   specific than its own. The close button stays at the top right in both
+   directions, so the content keeps room on that side. */
+.leaflet-container .leaflet-popup-content-wrapper,
+.leaflet-container .leaflet-popup-tip {
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.leaflet-container .leaflet-popup-content {
+  margin: 16px 28px 16px 16px;
+}
+
+.leaflet-container .leaflet-popup-content p {
+  margin: 0;
+}
+
+.leaflet-container .leaflet-popup a.leaflet-popup-close-button {
+  color: var(--muted-foreground);
+}
+
+.bin-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 3px solid var(--cluster-color);
+  background: var(--card);
+  color: var(--card-foreground);
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+}
+
 html[lang="he"] {
   direction: rtl;
 }
