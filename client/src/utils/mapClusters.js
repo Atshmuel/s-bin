@@ -1,7 +1,4 @@
 import L from "leaflet"
-import { Trash2 } from "lucide-react"
-import { createElement } from "react"
-import { renderToStaticMarkup } from "react-dom/server"
 import { STATUS_COLORS } from "./binHelpers"
 
 // Below street level the map groups nearby devices into one marker with their
@@ -14,9 +11,7 @@ const STATUS_RANK = {
     [STATUS_COLORS.critical]: 2,
 }
 
-const binIconMarkup = renderToStaticMarkup(createElement(Trash2, { size: 14, strokeWidth: 2.5 }))
-
-// A group's marker: a bin and the count, ringed in the color of its most
+// A group's marker: the count of its devices, ringed in the color of its most
 // urgent device, so a full bin is not hidden inside a group.
 export function createClusterIcon(cluster) {
     const colors = cluster.getAllChildMarkers().map((marker) => marker.options.markerColor)
@@ -25,7 +20,7 @@ export function createClusterIcon(cluster) {
         STATUS_COLORS.good,
     )
     return L.divIcon({
-        html: `<div class="bin-cluster" style="--cluster-color: ${worst}">${binIconMarkup}<span>${cluster.getChildCount()}</span></div>`,
+        html: `<div class="bin-cluster" style="--cluster-color: ${worst}">${cluster.getChildCount()}</div>`,
         className: "",
         iconSize: [44, 44],
     })
