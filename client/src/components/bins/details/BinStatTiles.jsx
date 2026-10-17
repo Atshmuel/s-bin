@@ -1,0 +1,87 @@
+import { format, formatDistanceToNow } from "date-fns"
+import { he } from "date-fns/locale"
+import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import Battery from "@/components/bins/Battary"
+import { getColor, isGateway } from "@/utils/binHelpers"
+
+function StatTile({ title, value, children }) {
+    return (
+        <Card>
+            <CardHeader className="pb-2">
+                <CardDescription>{title}</CardDescription>
+                <CardTitle className="flex items-center gap-2 text-2xl tabular-nums">{value}</CardTitle>
+            </CardHeader>
+            {children && <CardContent className="flex flex-col gap-1 text-xs text-muted-foreground">{children}</CardContent>}
+        </Card>
+    )
+}
+
+// The bin's state at a glance, four tiles for the page's grid: fill level (or,
+// for a gateway, the bins it serves), battery, last report and how it reaches
+// the server.
+function BinStatTiles({ bin }) {
+    const { t, i18n } = useTranslation()
+    const gateway = isGateway(bin)
+    const { level, levelValid, battery, updatedAt, connection } = bin.status
+    const leaves = bin.connectedLeaves ?? []
+    const viaMesh = connection?.via === "mesh"
+
+    return (
+        <>
+            {gateway ? (
+                <StatTile title={t('components.binCard.connectedLeaves')} value={leaves.length} />
+            ) : (
+                <StatTile
+                    title={t('fillLevel')}
+                    value={levelValid === false ? t('sensorUnavailable') : `${level}%`}
+                >
+                    {levelValid !== false && (
+                        <div className="h-2 w-full rounded-full bg-muted">
+                            <div
+                                className="h-full rounded-full"
+                                style={{ width: `${Math.min(100, Math.max(0, level))}%`, backgroundColor: getColor(level, 'fill') }}
+                            />
+                        </div>
+                    )}
+                </StatTile>
+            )}
+
+            <StatTile title={t('pages.binDetails.tiles.battery')} value={<><span>{battery}%</span><Battery level={battery} /></>} />
+
+            <StatTile
+                title={t('pages.binDetails.tiles.lastReport')}
+                value={updatedAt
+                    ? formatDistanceToNow(new Date(updatedAt), { addSuffix: true, locale: i18n.language === 'he' ? he : undefined })
+                    : t('pages.binDetails.tiles.never')}
+            >
+                {/* self-start: the LTR time sits at the start of the tile in both directions. */}
+                {updatedAt && <span dir="ltr" className="self-start">{format(new Date(updatedAt), 'yyyy-MM-dd HH:mm:ss')}</span>}
+            </StatTile>
+
+            <StatTile
+                title={t('pages.binDetails.tiles.connection')}
+                value={viaMesh ? t('pages.binDetails.tiles.mesh') : t('pages.binDetails.tiles.cellular')}
+            >
+                {viaMesh && bin.gateway && (
+                    <span>
+                        {t('pages.binDetails.tiles.via')}{" "}
+                        <Link to={`/bins/${bin.gateway._id}`} className="text-primary underline-offset-4 hover:underline">
+                            {bin.gateway.binName}
+                        </Link>
+                    </span>
+                )}
+                {viaMesh && (
+                    <span><span dir="ltr">{connection.rssi ?? '-'} dBm</span> · {t('components.binCard.hops')}: {connection.hops ?? '-'}</span>
+                )}
+                {/* A gateway's first tile already counts them. */}
+                {leaves.length > 0 && !gateway && (
+                    <span>{t('pages.binDetails.tiles.relaysFor', { count: leaves.length })}</span>
+                )}
+            </StatTile>
+        </>
+    )
+}
+
+export default BinStatTiles

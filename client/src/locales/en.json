@@ -262,6 +262,11 @@
 
   },
     
+  "deviceRoles":{
+    "gateway":"Gateway",
+    "gatewayBin":"Gateway bin",
+    "meshBin":"Mesh bin"
+  },
   "pages":{
     "dashboard":{
       "titles":{
@@ -320,6 +325,7 @@
     "binsList":{
       "title":"Bins List",
       "columns":{
+        "type": "Type",
         "binName":"Bin Name",
         "location":"Location",
         "fillLevel":"Fill Level",
@@ -491,6 +497,36 @@
       }
     },
     "binDetails":{
+      "tabs":{
+        "label":"Bin sections",
+        "logs":"Logs",
+        "details":"Details",
+        "connected":"Connected bins",
+        "instructions":"Remote commands",
+        "actions":"Manage"
+      },
+      "deviceTitle":"Device",
+      "actions":{
+        "renameTitle":"Rename",
+        "renameDescription":"Up to {{count}} characters.",
+        "deleteTitle":"Delete device",
+        "deleteDescription":"Deletes the device, all its logs and its registration. This can't be undone."
+      },
+      "connectedTable":{
+        "name":"Bin",
+        "signal":"Signal (RSSI)"
+      },
+      "tiles":{
+        "battery":"Battery",
+        "lastReport":"Last report",
+        "never":"No reports yet",
+        "connection":"Connection",
+        "cellular":"Cellular",
+        "mesh":"Mesh",
+        "via":"via",
+        "relaysFor_one":"Relays for 1 bin",
+        "relaysFor_other":"Relays for {{count}} bins"
+      },
       "logsTable":{
         "title":"Log Overview",
         "description":"Review detailed records of all bin activities, including fill levels, timestamps, and event types.",
@@ -668,21 +704,21 @@
   "deleteViaMacButton":"Delete via MAC",
   "components":{
     "deviceInstructions":{
-      "title":"Device instructions",
-      "deliveryNote":"An instruction reaches the device at its next report.",
+      "title":"Remote commands",
+      "deliveryNote":"A command reaches the device at its next report.",
       "schedule":"Reports: {{schedule}}.",
       "lastReport":"Last report:",
-      "meshNotSupported":"This bin reports through another bin over the mesh, and instructions can't reach it that way yet.",
-      "instruction":"Instruction",
+      "meshNotSupported":"This bin reports through another bin over the mesh, and commands can't reach it that way yet.",
+      "instruction":"Command",
       "send":"Send",
       "duration":"Additional awake time (minutes)",
       "durationLimit":"1 to 60 minutes. Staying awake uses more battery.",
       "durationValue":"Additional awake time: {{count}} minutes",
-      "recentTitle":"Recent instructions",
-      "emptyQueue":"No instructions sent to this device yet.",
+      "recentTitle":"Recent commands",
+      "emptyQueue":"No commands sent to this device yet.",
       "cancel":"Cancel",
-      "requestQueued":"Instruction queued for the next report.",
-      "requestCancelled":"Pending instruction cancelled.",
+      "requestQueued":"Command queued for the next report.",
+      "requestCancelled":"Pending command cancelled.",
       "calibrationConfirmationTitle":"Confirm empty-bin calibration",
       "calibrationConfirmationDescription":"The bin must be empty and the sensor path unobstructed for about 20 seconds. The device will recalibrate its empty reference and publish a fresh reading.",
       "confirmCalibration":"Queue calibration",
@@ -693,7 +729,7 @@
         "invalid_awake_extension_duration":"Invalid awake time",
         "emptyDepth":"Calibrated: empty bin depth {{cm}} cm",
         "empty_bin_calibration_failed":"Calibration failed",
-        "unsupported_instruction_type":"The device doesn't support this instruction",
+        "unsupported_instruction_type":"The device doesn't support this command",
         "expired":"Expired before the device reported"
       },
       "types":{

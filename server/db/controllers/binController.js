@@ -45,6 +45,14 @@ export async function getBin(req, res) {
             // When the device next reports, which is when it gets queued instructions.
             const { reportIntervalMinutes, reportStartHour } = await getOrgDeviceSettingsShared(device.ownerId);
             device.reportSchedule = { reportIntervalMinutes, reportStartHour };
+            // A leaf links to the gateway its last report came through.
+            const gatewayId = device.status?.connection?.gatewayId;
+            if (gatewayId) {
+                device.gateway = await binModel.findOne(
+                    { _id: gatewayId, ownerId: device.ownerId },
+                    { binName: 1 }
+                ).lean();
+            }
         }
 
         res.status(200).json({ binData })

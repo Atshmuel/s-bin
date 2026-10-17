@@ -1,4 +1,4 @@
-import { Check, Pencil, RadioTower, Trash2, X } from "lucide-react"
+import { Check, Pencil, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "../ui/button"
@@ -6,9 +6,8 @@ import { MobileTooltip } from "../ui/mobile-tooltip"
 import { Spinner } from "../ui/spinner"
 import { useUpdateBinName } from "@/hooks/bins/useUpdateBin"
 import { useMe } from "@/hooks/users/auth/useMe"
-import { isGateway } from "@/utils/binHelpers"
 
-// The device's name with its type's icon; admins rename it inline.
+// The device's name; admins rename it inline. Its type is shown by the type badge.
 function BinNameEditor({ bin }) {
     const { t } = useTranslation()
     const { isAdmin } = useMe()
@@ -16,7 +15,6 @@ function BinNameEditor({ bin }) {
     const [editedName, setEditedName] = useState('')
     const { updateName, isUpdating: isUpdatingName } = useUpdateBinName()
     const nameInputRef = useRef(null)
-    const NameIcon = isGateway(bin) ? RadioTower : Trash2
 
     function handleStartEditName() {
         setEditedName(bin.binName)
@@ -57,7 +55,6 @@ function BinNameEditor({ bin }) {
     if (!isAdmin) {
         return (
             <h3 className="flex items-center gap-2">
-                <NameIcon size={20} />
                 <span className="truncate max-w-40 md:max-w-65">{bin.binName}</span>
             </h3>
         )
@@ -66,7 +63,6 @@ function BinNameEditor({ bin }) {
     if (isEditingName) {
         return (
             <div className="flex items-center gap-2">
-                <NameIcon size={20} />
                 <input
                     ref={nameInputRef}
                     type="text"
@@ -105,7 +101,6 @@ function BinNameEditor({ bin }) {
                 className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
                 onClick={handleStartEditName}
             >
-                <NameIcon size={20} />
                 <span className="truncate max-w-40 md:max-w-65">{bin.binName}</span>
                 <Pencil size={14} className="text-muted-foreground " />
             </h3>

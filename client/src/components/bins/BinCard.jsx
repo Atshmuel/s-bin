@@ -15,6 +15,7 @@ import BinMaintenanceDetails from "./BinMaintenanceDetails"
 import ConnectedLeaves from "./ConnectedLeaves"
 import CreateNoteDialog from "./CreateNoteDialog"
 import DeleteBinDialog from "./DeleteBinDialog"
+import DeviceRoleBadge from "./DeviceRoleBadge"
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
     const { t } = useTranslation()
@@ -50,12 +51,12 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                         <CardContent className="space-y-5 text-sm">
                             <div className="space-y-3">
 
-                                {gateway ?
+                                <div className="flex flex-row justify-between">
+                                    <span className="font-medium">{t('components.binCard.deviceType')}:</span>
+                                    <DeviceRoleBadge bin={bin} />
+                                </div>
+                                {!gateway &&
                                     <div className="flex flex-row justify-between">
-                                        <span className="font-medium">{t('components.binCard.deviceType')}:</span>
-                                        <span>{t('gateway')}</span>
-                                    </div>
-                                    : <div className="flex flex-row justify-between">
                                         <span className="font-medium">{t('fillLevel')}:</span>
                                         <span>{bin.status.levelValid === false ? t('sensorUnavailable') : `${bin.status.level}%`}</span>
                                     </div>}

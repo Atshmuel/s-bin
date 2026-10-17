@@ -261,6 +261,11 @@
     "tablePage": "מתוך"
 
   },
+  "deviceRoles":{
+    "gateway":"שער תקשורת",
+    "gatewayBin":"פח תקשורת",
+    "meshBin":"פח רשת"
+  },
   "pages":{
     "dashboard":{
        "titles":{
@@ -320,6 +325,7 @@
       "title":"רשימת פחים",
       "description":"נהל את הפחים שלך על ידי צפייה, עריכה או מחיקה שלהם.",
       "columns":{
+        "type": "סוג",
         "binName":"שם הפח",
         "location":"מיקום",
         "fillLevel":"רמת מילוי",
@@ -492,6 +498,37 @@
       }
     },
   "binDetails":{
+      "tabs":{
+        "label":"חלקי דף הפח",
+        "logs":"תיעודים",
+        "details":"פרטים",
+        "connected":"פחים מחוברים",
+        "instructions":"פקודות מרחוק",
+        "actions":"ניהול"
+      },
+      "deviceTitle":"מכשיר",
+      "actions":{
+        "renameTitle":"שינוי שם",
+        "renameDescription":"עד {{count}} תווים.",
+        "deleteTitle":"מחיקת המכשיר",
+        "deleteDescription":"מוחק את המכשיר, את כל התיעודים שלו ואת הרישום שלו. אי אפשר לבטל את הפעולה."
+      },
+      "connectedTable":{
+        "name":"פח",
+        "signal":"עוצמת אות (RSSI)"
+      },
+      "tiles":{
+        "battery":"סוללה",
+        "lastReport":"דיווח אחרון",
+        "never":"עוד אין דיווחים",
+        "connection":"חיבור",
+        "cellular":"סלולרי",
+        "mesh":"רשת Mesh",
+        "via":"דרך",
+        "relaysFor_one":"מעביר דיווחים של פח אחד",
+        "relaysFor_two":"מעביר דיווחים של שני פחים",
+        "relaysFor_other":"מעביר דיווחים של {{count}} פחים"
+      },
       "logsTable":{
         "title":"סקירת התיעודים של הפח",
         "description":"תיעודים אחרונים שנוצרו על ידי הפח, כולל רמות מילוי, מצב בריאות ומידע חשוב אחר.",
@@ -670,21 +707,21 @@
 
    "components":{
     "deviceInstructions":{
-      "title":"הנחיות למכשיר",
-      "deliveryNote":"ההנחיה תגיע למכשיר בדיווח הבא שלו.",
+      "title":"פקודות מרחוק",
+      "deliveryNote":"הפקודה תגיע למכשיר בדיווח הבא שלו.",
       "schedule":"דיווחים: {{schedule}}.",
       "lastReport":"דיווח אחרון:",
-      "meshNotSupported":"הפח הזה מדווח דרך פח אחר ברשת, והנחיות עוד לא יכולות להגיע אליו בדרך הזו.",
-      "instruction":"הנחיה",
+      "meshNotSupported":"הפח הזה מדווח דרך פח אחר ברשת, ופקודות עוד לא יכולות להגיע אליו בדרך הזו.",
+      "instruction":"פקודה",
       "send":"שליחה",
       "duration":"זמן ערות נוסף (בדקות)",
       "durationLimit":"בין דקה אחת ל־60 דקות. זמן ערות נוסף צורך יותר סוללה.",
       "durationValue":"זמן ערות נוסף: {{count}} דקות",
-      "recentTitle":"הנחיות אחרונות",
-      "emptyQueue":"עוד לא נשלחו הנחיות למכשיר הזה.",
+      "recentTitle":"פקודות אחרונות",
+      "emptyQueue":"עוד לא נשלחו פקודות למכשיר הזה.",
       "cancel":"ביטול",
-      "requestQueued":"ההנחיה ממתינה לדיווח הבא.",
-      "requestCancelled":"ההנחיה הממתינה בוטלה.",
+      "requestQueued":"הפקודה ממתינה לדיווח הבא.",
+      "requestCancelled":"הפקודה הממתינה בוטלה.",
       "calibrationConfirmationTitle":"אישור כיול כשהפח ריק",
       "calibrationConfirmationDescription":"יש לוודא שהפח ריק ונתיב החיישן פנוי למשך כ־20 שניות. המכשיר יכייל מחדש את נקודת הייחוס של פח ריק וישלח מדידה עדכנית.",
       "confirmCalibration":"הוסף כיול לתור",
@@ -695,7 +732,7 @@
         "invalid_awake_extension_duration":"זמן ערות לא תקין",
         "emptyDepth":"כויל: עומק פח ריק {{cm}} ס״מ",
         "empty_bin_calibration_failed":"הכיול נכשל",
-        "unsupported_instruction_type":"המכשיר לא תומך בהנחיה הזו",
+        "unsupported_instruction_type":"המכשיר לא תומך בפקודה הזו",
         "expired":"פג תוקף לפני שהמכשיר דיווח"
       },
       "types":{

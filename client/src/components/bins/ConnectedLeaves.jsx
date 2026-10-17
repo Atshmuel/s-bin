@@ -16,7 +16,7 @@ function ConnectedLeaves({ leaves }) {
         <div key={leaf._id} className="flex justify-between items-center gap-2">
             <Link to={`/bins/${leaf._id}`} className="truncate"><Button className={"p-0 m-0 h-fit"} variant={'link'}>{leaf.binName}</Button></Link>
             <span className="text-xs text-muted-foreground text-end">
-                {leaf.status?.connection?.rssi ?? '-'} dBm · {t('components.binCard.hops')}: {leaf.status?.connection?.hops ?? '-'}
+                <span dir="ltr">{leaf.status?.connection?.rssi ?? '-'} dBm</span> · {t('components.binCard.hops')}: {leaf.status?.connection?.hops ?? '-'}
                 <br />
                 {new Date(leaf.status?.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short' })}
             </span>

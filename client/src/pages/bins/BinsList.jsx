@@ -3,9 +3,10 @@ import DataTable from "../../components/DataTable"
 import { Link, useSearchParams } from "react-router-dom";
 import HealthBadge from "@/components/bins/HealthBadge";
 import Battery from "../../components/bins/Battary";
-import { LinkIcon, MapPin, RadioTower, Trash } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { LinkIcon, MapPin, Trash } from "lucide-react";
 import { isGateway } from "@/utils/binHelpers";
+import { getDeviceRole } from "@/utils/deviceRoles";
+import DeviceRoleBadge from "@/components/bins/DeviceRoleBadge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
 import { useBins } from "@/hooks/bins/useBins";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -91,10 +92,16 @@ function BinsList() {
                             to={`/bins/${id}`}>
                             <LinkIcon size={14} /> <span>{row.original.binName}</span>
                         </Link>
-                        {isGateway(row.original) && <Badge variant="outline"><RadioTower size={12} /> {t('gateway')}</Badge>}
                     </div>
                 );
             },
+        },
+        {
+            header: t('pages.binsList.columns.type'),
+            id: 'type',
+            accessorFn: (bin) => t(`deviceRoles.${getDeviceRole(bin)}`),
+            enableSorting: true,
+            cell: ({ row }) => <DeviceRoleBadge bin={row.original} />,
         },
         {
             header: t('pages.binsList.columns.location'),

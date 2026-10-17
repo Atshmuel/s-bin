@@ -24,6 +24,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useAppSide } from "@/contexts/AppSideProvider";
+import { cn } from "@/lib/utils";
 import {
     useCancelInstruction,
     useDeviceInstructions,
@@ -34,8 +35,10 @@ import { formatReportSchedule } from "@/utils/orgSettings";
 
 const INSTRUCTION_TYPES = ["report_now", "stay_awake", "calibrate_empty_bin"];
 const MAX_AWAKE_MINUTES = 60;
-const RECENT_INSTRUCTIONS = 5;
+const PAGE_SIZE = 5;
 const DATE_FORMAT = "yyyy-MM-dd HH:mm";
+// The last report to the second, as on the bin page's tile.
+const REPORT_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 const STATUS_VARIANTS = {
     pending: "pending",
     completed: "default",
@@ -66,10 +69,17 @@ function DeviceInstructions({ bin, className }) {
     const [instructionType, setInstructionType] = useState(instructionTypes[0]);
     const [durationMinutes, setDurationMinutes] = useState("5");
     const [showCalibrationConfirmation, setShowCalibrationConfirmation] = useState(false);
+    const [page, setPage] = useState(0);
 
     const { instructions, isLoadingInstructions, instructionsError } = useDeviceInstructions(bin._id);
     const { enqueueInstruction, isEnqueuing } = useEnqueueInstruction(bin._id);
     const { cancelInstruction, isCancelling } = useCancelInstruction(bin._id);
+
+    // Older commands stay reachable (the server returns the latest 100), so a
+    // pending one beyond the first page can still be cancelled.
+    const pageCount = Math.max(1, Math.ceil(instructions.length / PAGE_SIZE));
+    const currentPage = Math.min(page, pageCount - 1);
+    const pageInstructions = instructions.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
     // A leaf reports through another bin over the mesh, and instructions can't
     // reach it that way yet.
@@ -85,96 +95,108 @@ function DeviceInstructions({ bin, className }) {
     });
 
     return (
-        <Card className={className}>
-            <CardHeader>
-                <CardTitle>{t("components.deviceInstructions.title")}</CardTitle>
-                {viaMesh ? (
-                    <CardDescription>{t("components.deviceInstructions.meshNotSupported")}</CardDescription>
-                ) : (
-                    <CardDescription className="space-y-1">
-                        <span className="block">{t("components.deviceInstructions.deliveryNote")}</span>
-                        {bin.reportSchedule && (
-                            <span className="block">
-                                {t("components.deviceInstructions.schedule", {
-                                    schedule: formatReportSchedule(
-                                        bin.reportSchedule.reportIntervalMinutes,
-                                        bin.reportSchedule.reportStartHour,
-                                        t,
-                                        i18n.language,
-                                    ),
-                                })}
-                            </span>
-                        )}
-                        {bin.status?.updatedAt && (
-                            <span className="block">
-                                {t("components.deviceInstructions.lastReport")}{" "}
-                                <span dir="ltr">{format(new Date(bin.status.updatedAt), DATE_FORMAT)}</span>
-                            </span>
-                        )}
-                    </CardDescription>
-                )}
-            </CardHeader>
-            {!viaMesh && (
-                <CardContent className="space-y-6">
-                    <div className="space-y-3">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium" htmlFor="instruction-type">
-                                {t("components.deviceInstructions.instruction")}
-                            </label>
-                            <Select value={instructionType} onValueChange={setInstructionType}>
-                                <SelectTrigger id="instruction-type" isRight={isRight}>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {instructionTypes.map((type) => (
-                                        <SelectItem isRight={isRight} key={type} value={type}>
-                                            {t(`components.deviceInstructions.types.${type}`)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+        // Sending on one side and what was sent on the other.
+        <div className={cn("grid gap-4", !viaMesh && "lg:grid-cols-2", className)}>
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t("components.deviceInstructions.title")}</CardTitle>
+                    {viaMesh ? (
+                        <CardDescription>{t("components.deviceInstructions.meshNotSupported")}</CardDescription>
+                    ) : (
+                        <CardDescription className="flex flex-col gap-1">
+                            <span className="block">{t("components.deviceInstructions.deliveryNote")}</span>
+                            {bin.reportSchedule && (
+                                <span className="block">
+                                    {t("components.deviceInstructions.schedule", {
+                                        schedule: formatReportSchedule(
+                                            bin.reportSchedule.reportIntervalMinutes,
+                                            bin.reportSchedule.reportStartHour,
+                                            t,
+                                            i18n.language,
+                                        ),
+                                    })}
+                                </span>
+                            )}
+                            {bin.status?.updatedAt && (
+                                <span className="block">
+                                    {t("components.deviceInstructions.lastReport")}{" "}
+                                    <span dir="ltr">{format(new Date(bin.status.updatedAt), REPORT_TIME_FORMAT)}</span>
+                                </span>
+                            )}
+                        </CardDescription>
+                    )}
+                </CardHeader>
+                {!viaMesh && (
+                    <CardContent>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+                                <div className="flex flex-col gap-2 sm:w-72">
+                                    <label className="text-sm font-medium" htmlFor="instruction-type">
+                                        {t("components.deviceInstructions.instruction")}
+                                    </label>
+                                    <Select value={instructionType} onValueChange={setInstructionType}>
+                                        <SelectTrigger id="instruction-type" isRight={isRight}>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {instructionTypes.map((type) => (
+                                                <SelectItem isRight={isRight} key={type} value={type}>
+                                                    {t(`components.deviceInstructions.types.${type}`)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                        {instructionType === "stay_awake" && (
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium" htmlFor="awake-duration">
-                                    {t("components.deviceInstructions.duration")}
-                                </label>
-                                <Input
-                                    id="awake-duration"
-                                    className="w-28"
-                                    type="number"
-                                    min={1}
-                                    max={MAX_AWAKE_MINUTES}
-                                    step={1}
-                                    value={durationMinutes}
-                                    onChange={(event) => setDurationMinutes(event.target.value)}
-                                />
+                                {instructionType === "stay_awake" && (
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium" htmlFor="awake-duration">
+                                            {t("components.deviceInstructions.duration")}
+                                        </label>
+                                        <Input
+                                            id="awake-duration"
+                                            className="w-28"
+                                            type="number"
+                                            min={1}
+                                            max={MAX_AWAKE_MINUTES}
+                                            step={1}
+                                            value={durationMinutes}
+                                            onChange={(event) => setDurationMinutes(event.target.value)}
+                                        />
+                                    </div>
+                                )}
+
+                                <Button
+                                    type="button"
+                                    className="cursor-pointer self-start sm:self-auto"
+                                    disabled={isEnqueuing || durationInvalid}
+                                    onClick={() => {
+                                        if (instructionType === "calibrate_empty_bin") {
+                                            setShowCalibrationConfirmation(true);
+                                        } else {
+                                            enqueueSelectedInstruction();
+                                        }
+                                    }}
+                                >
+                                    {isEnqueuing ? <LoaderCircle className="animate-spin" /> : <Send />}
+                                    {t("components.deviceInstructions.send")}
+                                </Button>
+                            </div>
+                            {instructionType === "stay_awake" && (
                                 <p className="text-xs text-muted-foreground">
                                     {t("components.deviceInstructions.durationLimit")}
                                 </p>
-                            </div>
-                        )}
-
-                        <Button
-                            type="button"
-                            className="w-full"
-                            disabled={isEnqueuing || durationInvalid}
-                            onClick={() => {
-                                if (instructionType === "calibrate_empty_bin") {
-                                    setShowCalibrationConfirmation(true);
-                                } else {
-                                    enqueueSelectedInstruction();
-                                }
-                            }}
-                        >
-                            {isEnqueuing ? <LoaderCircle className="animate-spin" /> : <Send />}
-                            {t("components.deviceInstructions.send")}
-                        </Button>
-                    </div>
-
-                    <div className="space-y-2">
-                        <h4 className="text-sm font-medium">{t("components.deviceInstructions.recentTitle")}</h4>
+                            )}
+                        </div>
+                    </CardContent>
+                )}
+            </Card>
+            {!viaMesh && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t("components.deviceInstructions.recentTitle")}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
                         {isLoadingInstructions ? (
                             <div className="flex items-center gap-2 text-muted-foreground">
                                 <LoaderCircle className="size-4 animate-spin" />
@@ -190,9 +212,9 @@ function DeviceInstructions({ bin, className }) {
                             </p>
                         ) : (
                             <ul className="divide-y">
-                                {instructions.slice(0, RECENT_INSTRUCTIONS).map((instruction) => (
+                                {pageInstructions.map((instruction) => (
                                     <li key={instruction._id} className="flex items-start justify-between gap-3 py-3">
-                                        <div className="min-w-0 space-y-1">
+                                        <div className="flex min-w-0 flex-col gap-1">
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <span className="text-sm font-medium">
                                                     {t(`components.deviceInstructions.types.${instruction.type}`, {
@@ -237,8 +259,33 @@ function DeviceInstructions({ bin, className }) {
                                 ))}
                             </ul>
                         )}
-                    </div>
-                </CardContent>
+                        {pageCount > 1 && (
+                            <div className="flex items-center justify-between gap-2 pt-3">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={currentPage === 0}
+                                    onClick={() => setPage(currentPage - 1)}
+                                >
+                                    {t("globalTable.previous")}
+                                </Button>
+                                <span className="text-sm text-muted-foreground">
+                                    {currentPage + 1} {t("globalTable.tablePage")} {pageCount}
+                                </span>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={currentPage === pageCount - 1}
+                                    onClick={() => setPage(currentPage + 1)}
+                                >
+                                    {t("globalTable.next")}
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             )}
 
             <AlertDialog open={showCalibrationConfirmation} onOpenChange={setShowCalibrationConfirmation}>
@@ -265,7 +312,7 @@ function DeviceInstructions({ bin, className }) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </Card>
+        </div>
     );
 }
 
