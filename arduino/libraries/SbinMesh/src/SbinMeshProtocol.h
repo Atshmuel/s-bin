@@ -15,6 +15,9 @@ constexpr uint8_t RADIO_CHANNEL = 1;
 constexpr uint8_t DEFAULT_TTL = 4;
 constexpr size_t MAX_FRAME_SIZE = 250;
 constexpr size_t MAC_LENGTH = 6;
+// The longest report interval is a day, 25 hours on the day clocks go back; a
+// wake time further ahead than this is stale (saved while a clock was wrong).
+constexpr uint32_t MAX_WAKE_AHEAD_SECONDS = 26UL * 60UL * 60UL;
 
 enum PacketType : uint8_t {
     PACKET_BEACON = 1,

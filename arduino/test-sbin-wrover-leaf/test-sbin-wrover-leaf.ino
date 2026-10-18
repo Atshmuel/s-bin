@@ -205,15 +205,24 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
     };
     settimeofday(&corrected, nullptr);
 
+    // A next wake further ahead than any schedule is stale; without one the
+    // leaf searches for the gateway again later.
+    const int64_t wakeAheadSeconds = static_cast<int64_t>(beacon.nextWakeEpoch) - beaconNowMs / 1000;
+    const uint32_t advertisedWake =
+        wakeAheadSeconds > 0 && wakeAheadSeconds <= MAX_WAKE_AHEAD_SECONDS ? beacon.nextWakeEpoch : 0;
+    if (advertisedWake == 0) {
+        Serial.printf("⚠️ Ignoring the beacon's next wake %lu.\n",
+                      static_cast<unsigned long>(beacon.nextWakeEpoch));
+    }
     // Learn the slot period only from the slot this leaf actually woke for;
     // anything else (cold join, a schedule that changed) would be a guess.
-    if (atScheduledSlot && beacon.nextWakeEpoch > nextWakeEpoch && nextWakeEpoch > 0) {
-        const uint32_t period = beacon.nextWakeEpoch - nextWakeEpoch;
+    if (atScheduledSlot && advertisedWake > nextWakeEpoch && nextWakeEpoch > 0) {
+        const uint32_t period = advertisedWake - nextWakeEpoch;
         if (period >= MIN_SCHEDULE_PERIOD_SECONDS && period <= MAX_SCHEDULE_PERIOD_SECONDS) {
             schedulePeriodSeconds = period;
         }
     }
-    nextWakeEpoch = beacon.nextWakeEpoch;
+    nextWakeEpoch = advertisedWake;
     meshWindowSeconds = beacon.meshWindowSeconds;
     missedCycles = 0;
     memcpy(gatewayMac, frame.sender, MAC_LENGTH);
@@ -332,8 +341,10 @@ void sleepUntilNextSlot() {
             nextWakeEpoch += schedulePeriodSeconds;
         }
         // A slot in the past or seconds away means the schedule is stale;
-        // sleeping a second at a time would just spin.
-        usable = static_cast<time_t>(nextWakeEpoch) > now + MIN_SLEEP_TO_SLOT_SECONDS;
+        // sleeping a second at a time would just spin. So does one further
+        // ahead than any schedule.
+        usable = static_cast<time_t>(nextWakeEpoch) > now + MIN_SLEEP_TO_SLOT_SECONDS &&
+                 static_cast<time_t>(nextWakeEpoch) <= now + static_cast<time_t>(MAX_WAKE_AHEAD_SECONDS);
     }
     if (!usable) {
         Serial.println("🔍 No usable schedule; retrying a cold join later.");
@@ -382,7 +393,8 @@ void setup() {
     if (!coldJoin) {
         const int64_t listenUntilMs = (static_cast<int64_t>(nextWakeEpoch) + guardSeconds +
                                        meshWindowSeconds + LISTEN_SLACK_SECONDS) * 1000;
-        listenMs = static_cast<uint32_t>(max<int64_t>(listenUntilMs - nowMs(), 1000));
+        listenMs = static_cast<uint32_t>(constrain(listenUntilMs - nowMs(), static_cast<int64_t>(1000),
+                                                   static_cast<int64_t>(COLD_JOIN_LISTEN_MS)));
     }
     Serial.printf("%s Listening up to %lu s for a gateway beacon.\n",
                   coldJoin ? "🔍 Cold join:" : "👂", static_cast<unsigned long>(listenMs / 1000));

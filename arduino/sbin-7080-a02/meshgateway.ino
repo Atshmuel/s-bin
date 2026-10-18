@@ -11,7 +11,16 @@ namespace {
 constexpr uint8_t RELAY_QUEUE_SIZE = 16;
 constexpr uint32_t BEACON_INTERVAL_MS = 500;
 constexpr uint32_t MESH_TASK_STACK_BYTES = 6144;
-constexpr unsigned long RELAY_RESULT_TIMEOUT_MS = 5000;
+// The server needs a few seconds per relayed reading (the public broker both
+// ways and several database writes).
+constexpr unsigned long RELAY_RESULT_TIMEOUT_MS = 10000;
+// A slow reply does not end the upload: the reading is sent again (the server
+// recognises the repeat by its message ID) until the server stays silent this
+// many times in a row...
+constexpr uint8_t RELAY_MAX_SILENT_REPLIES = 3;
+// ...or this cycle's uploads (after the report and after the window) have run
+// this long together, so a slow server cannot keep the gateway awake.
+constexpr unsigned long RELAY_UPLOAD_BUDGET_MS = 60000;
 // A boot this close to the stored slot is the wake-up for that slot.
 constexpr int64_t SLOT_MATCH_SECONDS = 600;
 
@@ -23,6 +32,8 @@ volatile bool meshTaskRunning = false;
 bool meshWindowStarted = false;
 uint32_t meshWindowEndMs = 0;
 uint64_t meshWindowSlotEpoch = 0;
+// Relay upload time used this cycle, against RELAY_UPLOAD_BUDGET_MS.
+unsigned long relayUploadSpentMs = 0;
 }
 
 RTC_DATA_ATTR RelayRecord relayQueue[RELAY_QUEUE_SIZE];
@@ -77,14 +88,15 @@ uint32_t leafWakeEpochToAdvertise() {
     const uint64_t after = max(meshWindowSlotEpoch, now);
     uint64_t best = 0;
     for (const uint64_t candidate : {nextWakeEpoch, followingWakeEpoch}) {
-        if (candidate > after && (best == 0 || candidate < best)) {
+        if (candidate > after && candidate <= now + MAX_WAKE_AHEAD_SECONDS &&
+            (best == 0 || candidate < best)) {
             best = candidate;
         }
     }
     // No fresh slot from the server (the last cycle got no reply, or a reset
     // cleared followingWakeEpoch): continue the stored slot pattern rather
     // than advertise 0 and send every leaf into a cold join.
-    if (best == 0 && nextWakeEpoch > 0 && slotPeriodSeconds > 0) {
+    if (best == 0 && nextWakeEpoch > 0 && nextWakeEpoch <= after && slotPeriodSeconds > 0) {
         const uint64_t periodsAfter = (after - nextWakeEpoch) / slotPeriodSeconds + 1;
         best = nextWakeEpoch + periodsAfter * slotPeriodSeconds;
     }
@@ -178,6 +190,7 @@ void beginMeshWindow() {
     if (meshWindowStarted || ownerId.length() == 0) {
         return;
     }
+    relayUploadSpentMs = 0;  // a new cycle
     if (!clockSynced) {
         static bool warned = false;
         if (!warned) {
@@ -241,7 +254,14 @@ void uploadRelayedReadings() {
     if (relayQueueMutex == nullptr || !mqttClient.connected() || deviceKey.length() == 0) {
         return;
     }
+    const unsigned long startedAt = millis();
+    uint8_t silentReplies = 0;
     while (true) {
+        const unsigned long usedMs = relayUploadSpentMs + (millis() - startedAt);
+        if (usedMs >= RELAY_UPLOAD_BUDGET_MS) {
+            Serial.printf("⚠️ Relay upload time is up; %u leaf reading(s) stay queued.\n", relayQueueCount);
+            break;
+        }
         RelayRecord record;
         xSemaphoreTake(relayQueueMutex, portMAX_DELAY);
         const bool hasRecord = relayQueueCount > 0;
@@ -250,14 +270,21 @@ void uploadRelayedReadings() {
         }
         xSemaphoreGive(relayQueueMutex);
         if (!hasRecord) {
-            return;
+            break;
         }
 
-        const RelayUploadResult result = publishRelayRecord(record, RELAY_RESULT_TIMEOUT_MS);
+        const unsigned long timeoutMs = min(RELAY_RESULT_TIMEOUT_MS, RELAY_UPLOAD_BUDGET_MS - usedMs);
+        const RelayUploadResult result = publishRelayRecord(record, timeoutMs);
         if (result == RELAY_NO_REPLY) {
-            Serial.println("⚠️ No relay result from the server; leaf readings stay queued.");
-            return;
+            if (++silentReplies >= RELAY_MAX_SILENT_REPLIES) {
+                Serial.println("⚠️ No relay result from the server; leaf readings stay queued.");
+                break;
+            }
+            Serial.println("⏳ No relay result yet; sending the reading again.");
+            continue;
         }
+        silentReplies = 0;
         removeRelayRecord(record.data.header.origin, record.data.header.messageId);
     }
+    relayUploadSpentMs += millis() - startedAt;
 }

@@ -388,7 +388,9 @@ void enterDeepSleepUntilNextReport() {
     uint64_t sleepSeconds = 0;
     uint32_t leadSeconds = 0;
 
-    if (clockValid && wakeEpoch > now) {
+    // A stored wake further ahead than any schedule is stale; the server's
+    // sleep length replaces it below.
+    if (clockValid && wakeEpoch > now && wakeEpoch - now <= sbinmesh::MAX_WAKE_AHEAD_SECONDS) {
         sleepSeconds = wakeEpoch - now;
         leadSeconds = slotLeadSeconds(sleepSeconds);
     } else {
