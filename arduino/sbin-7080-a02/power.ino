@@ -2,7 +2,6 @@
 
 bool initializePowerManagement() {
     if (!PMU.begin(Wire1, AXP2101_SLAVE_ADDRESS, PMU_I2C_SDA_PIN, PMU_I2C_SCL_PIN)) {
-        Serial.println("❌ AXP2101 PMU initialization failed.");
         pmuAvailable = false;
         return false;
     }
@@ -20,7 +19,6 @@ bool initializePowerManagement() {
     PMU.enableVbusVoltageMeasure();
 
     pmuAvailable = true;
-    Serial.println("✅ AXP2101 PMU Ready.");
     return true;
 }
 

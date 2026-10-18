@@ -2,13 +2,20 @@
 
 void setup() {
     Serial.begin(115200);
+    const bool pmuReady = initializePowerManagement();
+    // Only on USB power: a board on battery has no monitor to wait for.
+    if (pmuReady && PMU.isVbusIn() && esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
+        const uint32_t waitStartedAt = millis();
+        while (!Serial && millis() - waitStartedAt < USB_LOG_RECONNECT_WAIT_MS) {
+            delay(10);
+        }
+    }
 
     Serial.println("\n=================================");
     Serial.println("  S-Bin SIM7080 A02 Firmware     ");
     Serial.println("=================================");
     Serial.printf("USB Serial monitor: %s\n", Serial ? "connected" : "not connected");
-
-    initializePowerManagement();
+    Serial.println(pmuReady ? "✅ AXP2101 PMU Ready." : "❌ AXP2101 PMU initialization failed.");
 
     initializeSensor();
     DeviceMac = getChipMac();
@@ -83,8 +90,6 @@ void loop() {
         handleConfigurationPortal();
         return;
     }
-    // A new cycle without a reboot (USB connected) needs its own window.
-    beginMeshWindow();
 
     if (gpsModeActive) {
         bool fixAcquired = updateGpsLocation();

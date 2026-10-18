@@ -41,6 +41,12 @@
 #define SENSOR_RXD_PIN 44
 #define SENSOR_TXD_PIN 43
 
+// The board deep-sleeps even with USB attached, so the USB port disappears
+// between wakes (uploading to a sleeping board needs BOOT held while pressing
+// RST). On USB power a timer wake waits this long for a Serial Monitor to
+// reconnect, so the first lines of the wake are not lost.
+constexpr uint32_t USB_LOG_RECONNECT_WAIT_MS = 1500;
+
 constexpr uint8_t MAX_PENDING_INSTRUCTIONS = 2;
 constexpr uint32_t MAX_AWAKE_EXTENSION_SECONDS = 3600;
 // Minimum time a node stays awake after each wake-up, so nodes that wake on

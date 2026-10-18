@@ -99,32 +99,8 @@ bool readNetworkEpoch(time_t& utcEpoch) {
     return true;
 }
 
-// Returns only if the USB Serial Monitor stays connected for the whole wait.
-// While connected the clock runs on the crystal, so the wait lasts until the
-// slot itself; a deep sleep ends leadSeconds before it.
-void sleepOrWaitOnUsb(uint64_t sleepSeconds, uint32_t leadSeconds) {
-    if (Serial) {
-        Serial.printf(
-            "🛠️ USB Serial Monitor is connected; waiting %llu seconds until the next report attempt.\n",
-            static_cast<unsigned long long>(sleepSeconds)
-        );
-        Serial.flush();
-        const unsigned long waitStartedAt = millis();
-        const uint64_t requestedWaitMs = sleepSeconds * 1000ULL;
-        while (Serial && millis() - waitStartedAt < requestedWaitMs) {
-            delay(100);
-        }
-        if (Serial) {
-            return;
-        }
-
-        const uint64_t elapsedSeconds = (millis() - waitStartedAt) / 1000ULL;
-        if (elapsedSeconds >= sleepSeconds) {
-            return;
-        }
-        sleepSeconds -= elapsedSeconds;
-    }
-
+// Deep-sleeps until leadSeconds before the end of sleepSeconds; never returns.
+void enterDeepSleep(uint64_t sleepSeconds, uint32_t leadSeconds) {
     if (modem.testAT(1000) && !modem.poweroff()) {
         Serial.println("⚠️ Modem did not confirm power-off before ESP32 deep sleep.");
     }
@@ -410,7 +386,7 @@ void enterDeepSleepUntilNextReport() {
         );
     }
 
-    sleepOrWaitOnUsb(sleepSeconds, leadSeconds);
+    enterDeepSleep(sleepSeconds, leadSeconds);
 }
 
 void enterDeepSleepForSetupRetry(uint32_t sleepSeconds, const char* reason) {
@@ -419,7 +395,5 @@ void enterDeepSleepForSetupRetry(uint32_t sleepSeconds, const char* reason) {
         reason,
         static_cast<unsigned long>(sleepSeconds)
     );
-    sleepOrWaitOnUsb(sleepSeconds, 0);
-    // USB stayed connected, so no deep sleep happened; restart to retry setup.
-    ESP.restart();
+    enterDeepSleep(sleepSeconds, 0);
 }
