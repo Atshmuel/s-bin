@@ -9,6 +9,25 @@ import { applyDeviceLog, isValidTelemetryRecord } from "./telemetry.js";
 const MAC_ADDRESS_PATTERN = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
 const MAX_MESH_HOPS = 8;
 const RECENT_MESH_MESSAGE_IDS = 8;
+// A leaf that missed its gateway sends queued readings later, and the gateway
+// stamps each with when it was taken. A time beyond these limits is not
+// trusted, and the reading is logged at its arrival instead.
+const MAX_READING_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_READING_AHEAD_MS = 2 * 60 * 1000;
+
+// measuredAt is in UTC seconds; returns undefined when the arrival time should be used.
+function readingTime(measuredAt, leafMac) {
+    if (measuredAt === undefined) return undefined;
+    const now = Date.now();
+    const measuredAtMs = measuredAt * 1000;
+    if (!Number.isInteger(measuredAt) || measuredAtMs > now + MAX_READING_AHEAD_MS ||
+        measuredAtMs < now - MAX_READING_AGE_MS) {
+        console.warn(`Ignoring the reading time ${measuredAt} of ${leafMac}; using its arrival time.`);
+        return undefined;
+    }
+    // A gateway clock slightly ahead must not date a reading in the future.
+    return new Date(Math.min(measuredAtMs, now));
+}
 
 function publishRelayResult(gatewayMac, leafMac, messageId, accepted, reason) {
     mqttClient.publish(`${BIN_ACK_TOPIC}/${gatewayMac}`, JSON.stringify({
@@ -50,7 +69,7 @@ async function findOrCreateLeafBin(leafMac, gateway, record) {
 // A mesh gateway uploads a reading it took custody of from a leaf without a SIM.
 // The leaf has no device key, so the authenticated gateway vouches for it; leaves
 // are created in, and limited to, the gateway's organization.
-export async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, hops, rssi, record }) {
+export async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, hops, rssi, measuredAt, record }) {
     const gateway = await getBinByMacAndKeyShared(gatewayMac, deviceKey);
     if (!gateway) {
         console.warn(`Relay rejected for ${gatewayMac}: invalid gateway credentials.`);
@@ -102,12 +121,14 @@ export async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, h
         return;
     }
 
+    const takenAt = readingTime(measuredAt, leafMac);
     try {
         await applyDeviceLog(leaf, leafRecord, {
             via: "mesh",
             gatewayId: gateway._id,
             hops,
             rssi: rssi ?? null,
+            measuredAt: takenAt,
         });
     } catch (error) {
         await binModel.updateOne(
@@ -117,6 +138,7 @@ export async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, h
         throw error;
     }
 
-    console.log(`Stored relayed log for ${leafMac} via ${gatewayMac} (${hops} hop(s)).`);
+    const delay = takenAt ? `, taken ${Math.round((Date.now() - takenAt.getTime()) / 1000)} s ago` : "";
+    console.log(`Stored relayed log for ${leafMac} via ${gatewayMac} (${hops} hop(s)${delay}).`);
     publishRelayResult(gatewayMac, leafMac, messageId, true);
 }

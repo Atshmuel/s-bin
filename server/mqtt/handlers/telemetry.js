@@ -42,8 +42,17 @@ function clockDiagnostics({ driftPpm, clockErrorSeconds, wakeOffsetSeconds }) {
     };
 }
 
+// Whether a reading taken at this time is newer than every reading logged for the bin.
+async function isNewestReading(binId, measuredAt) {
+    const latest = await binLogModel.findOne({ binId }, { createdAt: 1 }).sort({ createdAt: -1 }).lean();
+    return !latest || measuredAt >= latest.createdAt;
+}
+
 // Stores one validated telemetry record for an authenticated bin, whether it
 // arrived over the bin's own cellular link or was relayed by a mesh gateway.
+// measuredAt is when a relayed reading was taken; without it the reading is
+// from now. A reading is logged at that time, and only the newest one sets the
+// bin's status, so readings a leaf queued land in place, in any order.
 // Returns the bin's next report schedule at the organization's interval (a
 // relayed leaf follows its gateway's beacons instead, so only its time zone is used).
 export async function applyDeviceLog(bin, {
@@ -60,8 +69,10 @@ export async function applyDeviceLog(bin, {
     driftPpm,
     clockErrorSeconds,
     wakeOffsetSeconds,
-}, { via, gatewayId = null, hops = null, rssi = null, reportIntervalMinutes, reportStartHour }) {
+}, { via, gatewayId = null, hops = null, rssi = null, measuredAt, reportIntervalMinutes, reportStartHour }) {
     const schedule = getNextReportSchedule(location, reportIntervalMinutes, reportStartHour);
+    const takenAt = measuredAt ?? new Date();
+    const isNewest = measuredAt === undefined || await isNewestReading(bin._id, measuredAt);
     // A gateway has no fill sensor: a level it sends is ignored, and its level
     // fields stay untouched so it never reads as a bin with a failed sensor.
     const isGateway = bin.kind === "gateway";
@@ -103,13 +114,17 @@ export async function applyDeviceLog(bin, {
         severity,
         type: 'log',
         source: 'sensor',
-        weight: weightKg
+        weight: weightKg,
+        createdAt: takenAt,
     };
     query = appendFilter(query, message, 'message', message);
 
     await binLogModel.create(query);
+    if (!isNewest) {
+        return schedule;
+    }
 
-    bin.status.updatedAt = new Date();
+    bin.status.updatedAt = takenAt;
     bin.status.health = health;
     bin.status.healthMessage = healthMessage || "";
     if (!isGateway) {
