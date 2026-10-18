@@ -280,7 +280,8 @@ bool publishTelemetry(const DeviceReading& reading) {
         doc["clockErrorSeconds"] = clockErrorSeconds;
     }
     doc["health"] = reading.health;
-    doc["weight"] = 0;
+    doc["weight"] = reading.weightGrams;
+    doc["scale"] = reading.scaleState;
     doc["location"][0] = latitude;
     doc["location"][1] = longitude;
     if (reading.healthMessage.length() > 0) {
@@ -408,6 +409,9 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
                 JsonVariantConst durationSeconds = instruction["payload"]["durationSeconds"];
                 pendingInstructions[pendingInstructionCount].durationSeconds =
                     durationSeconds.is<uint32_t>() ? durationSeconds.as<uint32_t>() : 0;
+                JsonVariantConst grams = instruction["payload"]["grams"];
+                pendingInstructions[pendingInstructionCount].grams =
+                    grams.is<uint32_t>() ? grams.as<uint32_t>() : 0;
                 if (pendingInstructions[pendingInstructionCount].id.length() == 0 ||
                     pendingInstructions[pendingInstructionCount].type.length() == 0) {
                     instructionResponseValid = false;

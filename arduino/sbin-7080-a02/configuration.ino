@@ -481,6 +481,9 @@ void loadDeviceSettings() {
         driftMeasured = preferences.isKey("driftPpm");
         clockDriftLoaded = true;
     }
+    scaleZeroSet = preferences.isKey("scaleZero");
+    scaleZero = preferences.getInt("scaleZero", 0);
+    scaleCountsPerGram = preferences.getFloat("scaleFactor", 0.0f);
     bool hasStoredLocation = preferences.isKey("gpsEpoch");
     preferences.end();
 

@@ -46,7 +46,22 @@ DeviceReading takeReading(bool gpsTested, bool gpsOk, bool sensorTrusted) {
     reading.batteryMillivolts = readBatteryMillivolts();
     reading.batteryPercent = readBatteryPercent();
     const bool pmuOk = pmuAvailable && reading.batteryMillivolts > 0;
-    reading.health = updateDeviceHealth(sensorOk, pmuOk, gpsTested, gpsOk);
+    // A scale counts (and can fail) only once it is calibrated: a bin without
+    // one is never calibrated.
+    reading.weightGrams = 0;
+    reading.scaleState = "uncalibrated";
+    const bool scaleTested = isScaleCalibrated();
+    bool scaleOk = true;
+    if (scaleTested) {
+        const ScaleResult scale = readWeightGrams(reading.weightGrams);
+        scaleOk = scale == SCALE_OK;
+        reading.scaleState = scaleOk ? "ok" : "failed";
+        if (!scaleOk) {
+            reading.weightGrams = 0;
+            Serial.printf("⚠️ Scale reading failed (%s); weight reported as unavailable.\n", scaleResultCode(scale));
+        }
+    }
+    reading.health = updateDeviceHealth(sensorOk, pmuOk, gpsTested, gpsOk, scaleTested, scaleOk);
     reading.healthMessage = getDeviceHealthMessage(reading.distanceMm);
     return reading;
 }
@@ -59,7 +74,7 @@ int readBatteryPercent() {
     return pmuAvailable && PMU.isBatteryConnect() ? PMU.getBatteryPercent() : 0;
 }
 
-String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk) {
+String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk, bool scaleTested, bool scaleOk) {
     if (sensorOk) {
         sensorFailureCycles = 0;
     } else if (sensorFailureCycles < 2) {
@@ -80,7 +95,21 @@ String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk)
         }
     }
 
-    return healthFromFailureCounts(sensorFailureCycles, pmuFailureCycles, gpsFailureCycles);
+    if (scaleTested) {
+        if (scaleOk) {
+            scaleFailureCycles = 0;
+        } else if (scaleFailureCycles < 2) {
+            scaleFailureCycles++;
+        }
+    }
+
+    // The scale counts like the other parts; it is kept out of
+    // healthFromFailureCounts, which relayed leaves (no scale) share.
+    const String health = healthFromFailureCounts(sensorFailureCycles, pmuFailureCycles, gpsFailureCycles);
+    if (scaleFailureCycles >= 2) {
+        return "critical";
+    }
+    return scaleFailureCycles > 0 && health == "good" ? "warning" : health;
 }
 
 String healthFromFailureCounts(uint8_t sensorFailures, uint8_t pmuFailures, uint8_t gpsFailures) {
@@ -94,13 +123,21 @@ String healthFromFailureCounts(uint8_t sensorFailures, uint8_t pmuFailures, uint
 }
 
 String getDeviceHealthMessage(int distanceMm) {
-    return buildHealthMessage(
+    String message = buildHealthMessage(
         sensorFailureCycles,
         pmuFailureCycles,
         gpsFailureCycles,
         binDepthMm <= 0 || lastCalibrationFailed,
         distanceMm
     );
+    if (scaleFailureCycles > 0) {
+        if (message.length() > 0) {
+            message += "; ";
+        }
+        message += "HX711 scale reading failed in ";
+        message += scaleFailureCycles >= 2 ? "2 or more consecutive reporting cycles" : "the previous reporting cycle";
+    }
+    return message;
 }
 
 // Shared by this bin's own reports and the readings it relays for mesh leaves.

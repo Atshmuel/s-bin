@@ -18,6 +18,7 @@ void setup() {
     Serial.println(pmuReady ? "✅ AXP2101 PMU Ready." : "❌ AXP2101 PMU initialization failed.");
 
     initializeSensor();
+    initializeScale();
     DeviceMac = getChipMac();
     loadDeviceSettings();
 

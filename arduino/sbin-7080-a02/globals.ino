@@ -27,6 +27,11 @@ bool pmuAvailable = false;
 RTC_DATA_ATTR uint8_t sensorFailureCycles = 0;
 RTC_DATA_ATTR uint8_t pmuFailureCycles = 0;
 RTC_DATA_ATTR uint8_t gpsFailureCycles = 0;
+RTC_DATA_ATTR uint8_t scaleFailureCycles = 0;
+// Scale calibration (see scale.ino), loaded from flash.
+int32_t scaleZero = 0;
+bool scaleZeroSet = false;
+float scaleCountsPerGram = 0.0f;
 time_t lastGpsAttemptEpoch = 0;
 RTC_DATA_ATTR uint64_t nextWakeEpoch = 0;
 // The slot after nextWakeEpoch; a mesh gateway advertises it to leaves in its

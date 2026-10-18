@@ -77,10 +77,33 @@ uint32_t processInstruction(const DeviceInstruction& instruction) {
                 status = "failed";
                 result = "empty_bin_calibration_failed";
             }
+            // The empty bin is also the scale's zero. A bin without a scale
+            // (no answer) just leaves it out of the result.
+            const ScaleResult zero = zeroScale();
+            if (zero == SCALE_OK) {
+                result += "_scale_zeroed";
+            } else if (zero != SCALE_NOT_RESPONDING) {
+                result += String("_") + scaleResultCode(zero);
+            }
             // Publish refreshed telemetry either way, so the bin's health reflects
             // the calibration outcome instead of the report sent before it.
             if (!publishTelemetry(takeReading(false, true, calibrated))) {
                 Serial.println("⚠️ The refreshed telemetry after calibration could not be published.");
+            }
+        } else if (instruction.type == "calibrate_scale") {
+            Serial.printf("⚖️ Calibrating the scale with %lu g for instruction %s.\n",
+                          static_cast<unsigned long>(instruction.grams), instruction.id.c_str());
+            int32_t measuredGrams = 0;
+            const ScaleResult scale = calibrateScale(instruction.grams, measuredGrams);
+            if (scale == SCALE_OK) {
+                status = "completed";
+                result = "scale_calibrated_" + String(instruction.grams) + "_reads_" + String(measuredGrams);
+            } else {
+                status = "failed";
+                result = scaleResultCode(scale);
+            }
+            if (!publishTelemetry(takeReading(false, true, true))) {
+                Serial.println("⚠️ The refreshed telemetry after scale calibration could not be published.");
             }
         } else {
             Serial.printf("⚠️ Unsupported instruction type: %s.\n", instruction.type.c_str());

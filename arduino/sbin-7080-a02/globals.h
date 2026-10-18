@@ -41,6 +41,10 @@
 #define SENSOR_RXD_PIN 44
 #define SENSOR_TXD_PIN 43
 
+// HX711 load-cell amplifier pins (powered from DC1)
+#define SCALE_DOUT_PIN 2
+#define SCALE_SCK_PIN 3
+
 // The board deep-sleeps even with USB attached, so the USB port disappears
 // between wakes (uploading to a sleeping board needs BOOT held while pressing
 // RST). On USB power a timer wake waits this long for a Serial Monitor to
@@ -58,6 +62,16 @@ struct DeviceInstruction {
     String id;
     String type;
     uint32_t durationSeconds = 0;
+    uint32_t grams = 0;  // calibrate_scale: the known weight placed in the bin
+};
+
+enum ScaleResult {
+    SCALE_OK,
+    SCALE_NOT_RESPONDING,
+    SCALE_UNSTABLE,
+    SCALE_NOT_ZEROED,
+    SCALE_NO_LOAD_CHANGE,
+    SCALE_INVALID_WEIGHT,
 };
 
 extern const char apn[];
@@ -85,6 +99,10 @@ extern bool pmuAvailable;
 extern uint8_t sensorFailureCycles;
 extern uint8_t pmuFailureCycles;
 extern uint8_t gpsFailureCycles;
+extern uint8_t scaleFailureCycles;
+extern int32_t scaleZero;
+extern bool scaleZeroSet;
+extern float scaleCountsPerGram;
 extern time_t lastGpsAttemptEpoch;
 extern time_t lastGpsUpdateEpoch;
 extern uint64_t nextWakeEpoch;
@@ -118,6 +136,8 @@ struct DeviceReading {
     int distanceMm;
     uint16_t batteryMillivolts;
     int batteryPercent;
+    int32_t weightGrams;     // 0 unless scaleState is "ok"
+    const char* scaleState;  // "ok", "uncalibrated" or "failed"
     String health;
     String healthMessage;
 };
@@ -126,7 +146,7 @@ bool initializePowerManagement();
 DeviceReading takeReading(bool gpsTested, bool gpsOk, bool sensorTrusted);
 uint16_t readBatteryMillivolts();
 int readBatteryPercent();
-String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk);
+String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk, bool scaleTested, bool scaleOk);
 String getDeviceHealthMessage(int distanceMm);
 String healthFromFailureCounts(uint8_t sensorFailures, uint8_t pmuFailures, uint8_t gpsFailures);
 String buildHealthMessage(
@@ -182,6 +202,14 @@ void saveDeviceKey(const String& key);
 void clearDeviceSettings();
 String getChipMac();
 bool calibrateBinDepth();
+void initializeScale();
+void powerDownScale();
+bool isScaleCalibrated();
+ScaleResult readScaleRaw(int32_t& raw);
+ScaleResult readWeightGrams(int32_t& grams);
+ScaleResult zeroScale();
+ScaleResult calibrateScale(uint32_t knownGrams, int32_t& measuredGrams);
+const char* scaleResultCode(ScaleResult result);
 int calculateFillLevel(int distanceMm);
 bool startGpsAcquisition();
 bool stopGpsAcquisition();
