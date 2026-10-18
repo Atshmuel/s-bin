@@ -556,22 +556,3 @@ export async function updateMaintenance(id, notes, technicianId) {
 }
 
 //For testing purposes only
-export async function getAllBinsForMqtt() {
-    try {
-        const bins = await binModel.find(BINS_ONLY_FILTER).select('macAddress deviceKey location -_id');
-        return bins;
-    } catch (error) {
-        console.error(error);
-        return [];
-    }
-}
-
-export async function getAllOrgsForMqtt() {
-    try {
-        const orgs = await organizationModel.find({}).select('_id');
-        return orgs;
-    } catch (error) {
-        console.error(error);
-        return [];
-    }
-}
