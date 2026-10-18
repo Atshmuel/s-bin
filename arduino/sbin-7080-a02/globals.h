@@ -61,7 +61,6 @@ extern XPowersPMU PMU;
 extern HardwareSerial SerialModem;
 extern HardwareSerial SerialSensor;
 extern TinyGsm modem;
-extern TinyGsmClient gsmClient;
 extern PubSubClient mqttClient;
 extern Preferences preferences;
 extern DNSServer dnsServer;

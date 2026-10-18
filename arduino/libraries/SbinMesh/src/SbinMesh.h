@@ -62,7 +62,6 @@ public:
     // broadcast peer. Must not run while the Wi-Fi setup portal is active.
     bool begin(const char* ownerId);
     void end();
-    bool isRunning() const { return running_; }
 
     const uint8_t* macAddress() const { return mac_; }
     uint32_t networkId() const { return networkId_; }
@@ -80,7 +79,6 @@ public:
 
     // Waits up to timeoutMs for the next frame from this node's network.
     bool receive(ReceivedFrame& frame, uint32_t timeoutMs);
-    uint32_t droppedFrames() const { return droppedFrames_; }
 
 private:
     bool ensurePeer(const uint8_t mac[MAC_LENGTH]);
@@ -96,7 +94,6 @@ private:
     volatile bool waitingForSend_ = false;
     volatile bool lastSendDelivered_ = false;
     uint8_t pendingDestination_[MAC_LENGTH] = {};
-    volatile uint32_t droppedFrames_ = 0;
 };
 
 }  // namespace sbinmesh

@@ -212,9 +212,8 @@ void MeshRadio::onReceive(const esp_now_recv_info_t* info, const uint8_t* data, 
     memcpy(frame.sender, info->src_addr, MAC_LENGTH);
     frame.rssi = info->rx_ctrl == nullptr ? 0 : static_cast<int8_t>(info->rx_ctrl->rssi);
     frame.receivedAtMs = millis();
-    if (xQueueSend(static_cast<QueueHandle_t>(radio->receiveQueue_), &frame, 0) != pdTRUE) {
-        radio->droppedFrames_ = radio->droppedFrames_ + 1;
-    }
+    // With the queue full the frame is dropped; the sender retries.
+    xQueueSend(static_cast<QueueHandle_t>(radio->receiveQueue_), &frame, 0);
 }
 
 void MeshRadio::onSent(const esp_now_send_info_t* info, esp_now_send_status_t status) {

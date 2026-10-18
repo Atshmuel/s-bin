@@ -1,8 +1,16 @@
 #include "globals.h"
 
+namespace {
+// Switches the active GNSS antenna's power through the modem's GPIO.
+void sendGnssAntennaPower(bool on) {
+    modem.sendAT("+SGPIO=0,", MODEM_GPS_ENABLE_GPIO, ",1,",
+                 on ? MODEM_GPS_ENABLE_LEVEL : 1 - MODEM_GPS_ENABLE_LEVEL);
+}
+}
+
 bool startGpsAcquisition() {
     Serial.println("🛰️ Powering the SIM7080G active GNSS antenna.");
-    modem.sendAT("+SGPIO=0,5,1,1");
+    sendGnssAntennaPower(true);
     if (modem.waitResponse() != 1) {
         Serial.println("❌ Could not enable GNSS antenna power (AT+SGPIO).");
         return false;
@@ -11,7 +19,7 @@ bool startGpsAcquisition() {
     Serial.println("🛰️ Enabling GNSS.");
     if (!modem.enableGPS()) {
         Serial.println("❌ Failed to enable GNSS.");
-        modem.sendAT("+SGPIO=0,5,1,0");
+        sendGnssAntennaPower(false);
         modem.waitResponse();
         return false;
     }
@@ -26,7 +34,7 @@ bool stopGpsAcquisition() {
         Serial.println("❌ Could not disable GNSS.");
     }
 
-    modem.sendAT("+SGPIO=0,5,1,0");
+    sendGnssAntennaPower(false);
     const bool antennaPowerDisabled = modem.waitResponse() == 1;
     if (!antennaPowerDisabled) {
         Serial.println("❌ GNSS stopped, but antenna power could not be disabled.");
