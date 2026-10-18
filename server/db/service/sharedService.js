@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
-import { appendFilter, BINS_ONLY_FILTER, UnionArraysById } from '../../utils/helpers.js'
+import { BINS_ONLY_FILTER, UnionArraysById, scopeToOrganization } from '../../utils/helpers.js'
 import { ROLES, AI_INSTRUCTIONS } from "../../utils/constants.js";
 import { GoogleGenAI } from "@google/genai";
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
@@ -202,9 +202,8 @@ async function getGatewayIds() {
 
 //overview
 export async function getAllBins(req, res, next) {
-    const { org: ownerId, role } = req.user;
     let filter = { ...BINS_ONLY_FILTER }
-    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = scopeToOrganization(filter, req.user)
 
     try {
         const bins = await binModel.countDocuments(filter);
@@ -216,14 +215,13 @@ export async function getAllBins(req, res, next) {
 }
 
 export async function getAlmostFullBins(req, res, next) {
-    const { org: ownerId, role } = req.user;
     let filter = {
         ...BINS_ONLY_FILTER,
         "status.level": { $gte: 80 },
         "status.levelValid": { $ne: false }
     }
 
-    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = scopeToOrganization(filter, req.user)
 
     try {
         const almostFullBins = await binModel.find(filter);
@@ -260,13 +258,11 @@ export async function getAvgFillLevel(req, res, next) {
 }
 
 export async function getRequiringMaintenance(req, res, next) {
-    const { org: ownerId, role } = req.user;
-
     let filter = {
         "maintenance.nextServiceAt": { $lt: new Date() }
     }
 
-    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = scopeToOrganization(filter, req.user)
 
     try {
         const RequirinBins = await binModel.find(filter)
@@ -289,7 +285,6 @@ export async function getAllCriticalBins(req, res, next) {
 
 }
 export async function getRequiringAttentionBins(req, res, next) {
-    const { org: ownerId, role } = req.user;
     let filter = {
         $or: [
             { "status.battery": { $lte: 40 } },
@@ -297,7 +292,7 @@ export async function getRequiringAttentionBins(req, res, next) {
         ]
     }
 
-    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = scopeToOrganization(filter, req.user)
 
     try {
         const requiringAttentionBins = await binModel.find(filter).limit(50);
@@ -351,9 +346,8 @@ export function mapOverviewToResponse(req, res) {
 }
 
 export async function getBinsStatusOV(req, res) {
-    const { role, org: ownerId } = req.user
     let query = { ...BINS_ONLY_FILTER }
-    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = scopeToOrganization(query, req.user)
 
     try {
         const binsCount = await binModel.aggregate([

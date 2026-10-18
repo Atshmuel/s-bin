@@ -1,18 +1,16 @@
 import mongoose from 'mongoose'
 import { binModel, deviceInstructionModel } from '../models/models.js'
-import { appendFilter, BINS_ONLY_FILTER } from '../../utils/helpers.js'
+import { appendFilter, BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
-import { ROLES } from "../../utils/constants.js";
 
 export async function getBin(req, res) {
     const { id } = req.params;
-    const { org: ownerId, role } = req.user
     const { withLogs } = req.query
 
     let query = {}
     query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(id))
-    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = scopeToOrganization(query, req.user)
 
     const pipeline = [
         { $match: query },
@@ -62,7 +60,6 @@ export async function getBin(req, res) {
 }
 
 export async function getAllUserBins(req, res) {
-    const { org: ownerId, role } = req.user
     const { withLogs, page, limit, search } = req.query
 
     const pageNum = Number(page) || 1;
@@ -70,7 +67,7 @@ export async function getAllUserBins(req, res) {
     const skip = (pageNum - 1) * limitNum;
 
     let query = {}
-    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = scopeToOrganization(query, req.user)
 
     if (search) {
         query.binName = { $regex: search, $options: 'i' };
@@ -114,14 +111,13 @@ export async function getAllUserBins(req, res) {
 }
 
 export async function getBinsInUserRadius(req, res) {
-    const { org: ownerId, role } = req.user
     const { coordinates, radius, health, minLevel, maxLevel } = req.body
     if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
 
     let query = {};
-    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = scopeToOrganization(query, req.user)
     query = appendFilter(query, health && health !== "all", 'status.health', health)
     if (minLevel !== undefined || maxLevel !== undefined) {
         query['status.level'] = {
@@ -156,7 +152,6 @@ export async function getBinsInUserRadius(req, res) {
 }
 
 export async function getRouteBins(req, res) {
-    const { org: ownerId, role } = req.user
     const { coordinates, radius, type, limit, byFoot } = req.body
     if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
 
@@ -175,7 +170,7 @@ export async function getRouteBins(req, res) {
     const useWalkingRoute = parseBooleanParam(byFoot);
 
     let query = {};
-    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = scopeToOrganization(query, req.user)
     query = appendFilter(query, type === 'maintenance', 'status.health', { $in: ['critical'] })
     if (type === 'collection') {
         query['status.level'] = { $gte: 70 }
@@ -253,12 +248,11 @@ export async function getRouteBins(req, res) {
 
 export async function updateBinName(req, res) {
     const { id } = req.params
-    const { org: ownerId, role } = req.user
     const { name } = req.body
 
     let filter = {}
     filter = appendFilter(filter, true, '_id', id)
-    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = scopeToOrganization(filter, req.user)
 
     try {
         const updatedBin = await binModel.findOneAndUpdate(filter, { $set: { binName: name } }, { new: true, runValidators: true }).select('-macAddress')
@@ -290,10 +284,8 @@ export async function updateBinMaintenance(req, res) {
 
 export async function deleteBin(req, res) {
     const { id } = req.params;
-    const { org: ownerId, role } = req.user
-
     let query = {}
-    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = scopeToOrganization(query, req.user)
     query = appendFilter(query, true, '_id', id)
 
     const session = await mongoose.startSession();
@@ -328,12 +320,10 @@ export async function deleteBin(req, res) {
 }
 
 export async function deleteBinsBatch(req, res) {
-
-    const { org: ownerId, role } = req.user
     const binIds = req.binIds
 
     let query = {}
-    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = scopeToOrganization(query, req.user)
     query = appendFilter(query, true, '_id', { $in: binIds })
 
     const session = await mongoose.startSession();

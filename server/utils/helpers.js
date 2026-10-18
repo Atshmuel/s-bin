@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
+import mongoose from 'mongoose'
+import { ROLES } from './constants.js'
 
 export async function generateOTP(expiryMinutes = 5, length = 6) {
     let otp = '';
@@ -67,6 +69,11 @@ export const BINS_ONLY_FILTER = Object.freeze({ kind: { $ne: "gateway" } });
 
 export function appendFilter(baseQuery, condition, field, value) {
     return condition ? { ...baseQuery, [field]: value } : baseQuery
+}
+
+// Limits a bin query to the user's organization; an owner sees every organization.
+export function scopeToOrganization(filter, { role, org }) {
+    return role === ROLES.OWNER ? filter : { ...filter, ownerId: new mongoose.Types.ObjectId(org) }
 }
 
 export function checkPayloadFields({
