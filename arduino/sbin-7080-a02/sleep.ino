@@ -346,18 +346,6 @@ void waitForSlotStart() {
 }
 
 void enterDeepSleepUntilNextReport() {
-    const unsigned long awakeWindowMs = meshAwakeWindowSeconds * 1000UL;
-    const unsigned long awakeMs = millis();
-    if (awakeMs < awakeWindowMs) {
-        Serial.printf(
-            "⏱️ Holding the awake window for %lu more ms before sleep.\n",
-            awakeWindowMs - awakeMs
-        );
-        while (millis() < awakeWindowMs) {
-            delay(50);
-        }
-    }
-
     const bool clockValid = isSystemClockValid();
     const uint64_t now = clockValid ? static_cast<uint64_t>(time(nullptr)) : 0;
     uint64_t wakeEpoch = nextWakeEpoch;

@@ -7,7 +7,8 @@ bool initializeModem() {
     SerialModem.begin(115200, SERIAL_8N1, BOARD_MODEM_RXD_PIN, BOARD_MODEM_TXD_PIN);
     delay(100);
 
-    if (modem.testAT(1000)) {
+    const bool alreadyOn = modem.testAT(1000);
+    if (alreadyOn) {
         Serial.println("✅ Modem already responds to AT; skipping PWRKEY pulse.");
     } else {
         Serial.println("Modem is not responding to AT; powering it on.");
@@ -48,6 +49,11 @@ bool initializeModem() {
     }
 
     Serial.println("✅ SIM7080G modem initialized.");
+    // A modem that stayed on through an ESP32 reset may still have GNSS on from
+    // an interrupted refresh; one powered on just now starts with it off.
+    if (alreadyOn && !stopGpsAcquisition()) {
+        Serial.println("⚠️ Could not make sure GNSS and its antenna power are off.");
+    }
     return true;
 }
 

@@ -35,10 +35,6 @@ void setup() {
         enterDeepSleepForSetupRetry(MODEM_RETRY_SLEEP_SECONDS, "Modem initialization failed");
     }
 
-    if (!stopGpsAcquisition()) {
-        Serial.println("⚠️ Could not ensure GNSS and antenna power are off before checking the location refresh schedule.");
-    }
-
     // Long enough for a cold cellular attach; the modem is powered off between retries.
     constexpr unsigned long CLOCK_SYNC_TIMEOUT_MS = 120000UL;
     constexpr uint32_t CLOCK_RETRY_SLEEP_SECONDS = 300;
