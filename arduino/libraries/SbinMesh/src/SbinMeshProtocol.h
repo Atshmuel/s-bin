@@ -10,7 +10,7 @@
 namespace sbinmesh {
 
 constexpr uint16_t PACKET_MAGIC = 0x4253;  // "SB"
-constexpr uint8_t PROTOCOL_VERSION = 1;
+constexpr uint8_t PROTOCOL_VERSION = 2;
 constexpr uint8_t RADIO_CHANNEL = 1;
 constexpr uint8_t DEFAULT_TTL = 4;
 constexpr size_t MAX_FRAME_SIZE = 250;
@@ -72,6 +72,10 @@ struct __attribute__((packed)) DataPacket {
     uint16_t lastAwakeSeconds;    // previous cycle, 0 when unknown
     uint8_t meshAwakeWindowSeconds;
     int32_t driftPpm;
+    // How long before this send the reading was taken: more than a cycle when
+    // the leaf queued it after missing the gateway. An age rather than a time,
+    // so it is right even before the leaf has learned the time.
+    uint32_t ageSeconds;
 };
 
 // Sent back hop by hop along the path the DATA came from.

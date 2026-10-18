@@ -131,6 +131,7 @@ struct RelayRecord {
     sbinmesh::DataPacket data;
     uint8_t hops;   // radio hops the reading travelled to reach this gateway
     int8_t rssi;    // dBm of the last hop
+    uint32_t measuredAtEpoch;  // UTC when the leaf took the reading, 0 when unknown
 };
 
 enum RelayUploadResult {

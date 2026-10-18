@@ -197,6 +197,9 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     doc["messageId"] = data.header.messageId;
     doc["hops"] = record.hops;
     doc["rssi"] = record.rssi;
+    if (record.measuredAtEpoch > 0) {
+        doc["measuredAt"] = record.measuredAtEpoch;
+    }
     JsonObject reading = doc["record"].to<JsonObject>();
     reading["health"] = healthFromFailureCounts(
         data.sensorFailureCycles, data.pmuFailureCycles, data.gpsFailureCycles);

@@ -123,6 +123,13 @@ void handleMeshFrame(const ReceivedFrame& frame) {
         record.data = *data;
         record.hops = static_cast<uint8_t>(data->header.hops + 1);
         record.rssi = frame.rssi;
+        // The leaf sends the reading's age; this gateway's clock is network
+        // time (no window opens without it), so the reading's UTC time is fixed
+        // here and stays right however long the record waits for upload.
+        const time_t now = time(nullptr);
+        if (isSystemClockValid() && static_cast<time_t>(data->ageSeconds) < now) {
+            record.measuredAtEpoch = static_cast<uint32_t>(now - data->ageSeconds);
+        }
         storeRelayRecord(record);
     }
 
@@ -135,10 +142,10 @@ void handleMeshFrame(const ReceivedFrame& frame) {
 
     char macText[18];
     formatMac(origin, macText);
-    Serial.printf("%s Leaf %s reading %08lX (level %u%%, RSSI %d dBm)%s.\n",
+    Serial.printf("%s Leaf %s reading %08lX (level %u%%, RSSI %d dBm, taken %lu s ago)%s.\n",
                   duplicate ? "🔁 Duplicate of" : "📥 Stored", macText,
                   static_cast<unsigned long>(messageId), data->level, frame.rssi,
-                  acked ? "" : "; ACK not confirmed");
+                  static_cast<unsigned long>(data->ageSeconds), acked ? "" : "; ACK not confirmed");
 }
 
 void meshGatewayTask(void*) {

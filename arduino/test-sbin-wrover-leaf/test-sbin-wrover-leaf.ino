@@ -65,6 +65,12 @@ constexpr int64_t MIN_DRIFT_MEASUREMENT_MS = 10LL * 60 * 1000;
 constexpr int32_t MAX_ABS_DRIFT_PPM = 60000;
 }  // namespace
 
+// A reading waiting for the gateway, and when it was taken by the device clock.
+struct PendingReading {
+    DataPacket packet;
+    int64_t takenAtMs;
+};
+
 // State kept across deep sleep (lost on power loss, which means a cold join).
 RTC_DATA_ATTR uint32_t nextWakeEpoch = 0;
 RTC_DATA_ATTR uint32_t schedulePeriodSeconds = 0;
@@ -83,7 +89,7 @@ RTC_DATA_ATTR int64_t clockCorrectedSinceSyncMs = 0;
 RTC_DATA_ATTR uint16_t lastAwakeSeconds = 0;
 RTC_DATA_ATTR uint8_t fakeLevel = 10;
 RTC_DATA_ATTR uint8_t fakeBattery = 100;
-RTC_DATA_ATTR DataPacket pendingReadings[MAX_PENDING_READINGS];
+RTC_DATA_ATTR PendingReading pendingReadings[MAX_PENDING_READINGS];
 RTC_DATA_ATTR uint8_t pendingCount = 0;
 
 MeshRadio radio;
@@ -112,10 +118,10 @@ void queueReading(const DataPacket& reading) {
     if (pendingCount == MAX_PENDING_READINGS) {
         // Keep the newest readings; the oldest is the least useful.
         memmove(&pendingReadings[0], &pendingReadings[1],
-                sizeof(DataPacket) * (MAX_PENDING_READINGS - 1));
+                sizeof(PendingReading) * (MAX_PENDING_READINGS - 1));
         pendingCount--;
     }
-    pendingReadings[pendingCount++] = reading;
+    pendingReadings[pendingCount++] = {reading, nowMs()};
 }
 
 DataPacket makeFakeReading() {
@@ -185,6 +191,12 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
     sleptSinceSyncMs = 0;
     clockCorrectedSinceSyncMs = 0;
 
+    // Queued readings were timed on the clock being replaced; they move with
+    // it, so a reading taken before the leaf had any time (a cold join) still
+    // gets its real age.
+    for (uint8_t i = 0; i < pendingCount; i++) {
+        pendingReadings[i].takenAtMs += beaconNowMs - deviceNowMs;
+    }
     struct timeval corrected = {
         static_cast<time_t>(beaconNowMs / 1000),
         static_cast<suseconds_t>((beaconNowMs % 1000) * 1000),
@@ -251,9 +263,9 @@ bool deliverReading(const DataPacket& reading) {
                 !macEquals(ack->ackedOrigin, radio.macAddress())) {
                 continue;
             }
-            Serial.printf("✅ Reading %08lX acknowledged (status %u, level %u%%).\n",
+            Serial.printf("✅ Reading %08lX acknowledged (status %u, level %u%%, taken %lu s ago).\n",
                           static_cast<unsigned long>(reading.header.messageId), ack->status,
-                          reading.level);
+                          reading.level, static_cast<unsigned long>(reading.ageSeconds));
             return true;  // stored, duplicate or rejected: stop sending it either way
         }
         Serial.printf("⚠️ No ACK for reading %08lX (attempt %u).\n",
@@ -264,11 +276,17 @@ bool deliverReading(const DataPacket& reading) {
 
 void sendPendingReadings() {
     uint8_t delivered = 0;
-    while (delivered < pendingCount && deliverReading(pendingReadings[delivered])) {
+    while (delivered < pendingCount) {
+        PendingReading& pending = pendingReadings[delivered];
+        pending.packet.ageSeconds =
+            static_cast<uint32_t>(max<int64_t>(nowMs() - pending.takenAtMs, 0) / 1000);
+        if (!deliverReading(pending.packet)) {
+            break;
+        }
         delivered++;
     }
     memmove(&pendingReadings[0], &pendingReadings[delivered],
-            sizeof(DataPacket) * (pendingCount - delivered));
+            sizeof(PendingReading) * (pendingCount - delivered));
     pendingCount -= delivered;
     if (pendingCount > 0) {
         Serial.printf("📦 %u reading(s) kept for the next cycle.\n", pendingCount);
@@ -366,18 +384,17 @@ void setup() {
     Serial.printf("%s Listening up to %lu s for a gateway beacon.\n",
                   coldJoin ? "🔍 Cold join:" : "👂", static_cast<unsigned long>(listenMs / 1000));
 
-    const DataPacket reading = makeFakeReading();
+    // Queued before listening, so a beacon that sets the clock moves its time too.
+    queueReading(makeFakeReading());
     if (!waitForBeacon(listenMs, !coldJoin)) {
         missedCycles++;
         // The drift may have moved beyond the guard: widen it, but never past
         // the unknown-drift uncertainty (the guard covers twice the residual).
         residualPpm = min(max(residualPpm, MIN_RESIDUAL_PPM) * 2, UNKNOWN_DRIFT_PPM / 2);
-        queueReading(reading);
         Serial.printf("⚠️ No beacon heard (%u missed cycle(s)); reading queued.\n", missedCycles);
         sleepUntilNextSlot();
     }
 
-    queueReading(reading);
     sendPendingReadings();
     sleepUntilNextSlot();
 }
