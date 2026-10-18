@@ -1,15 +1,10 @@
 {
-  "welcome": "Welcome",
   "login": "Login",
   "logout": "Logout",
   "settings": "Settings",
   "profile": "User Profile",
-  "language": "Language",
-  "help": "Help",
   "filter": "Filter Bins",
   "route": "Find Route",
-  "notifications": "Notifications",
-  "messages": "Messages",
   "dashboard": "Dashboard",
   "users": "Users",
   "bins":"Bins",
@@ -19,12 +14,10 @@
     "map":"Map",
     "logs":"Logs",
     "analytics":"Analytics",
-    "location":"Location",
     "coordinates":"Coordinates",
     "zoom":"Zoom",
     "units":{
         "kg":"kg",
-        "km":"km",
         "seconds":"seconds",
         "minutes":"min",
         "hours":"h"
@@ -81,10 +74,8 @@
   "cancel": "Cancel",
   "edit": "Edit",
   "delete": "Delete",
-  "update": "Update",
   "loading": "Loading...",
   "error": "Error",
-  "success": "Success",
 
   "binName": "Bin name",
   "fillLevel": "Fill level",
@@ -200,10 +191,6 @@
       }
     },
 
-    "loading": {
-      "organizations": "Loading organizations...",
-      "managers": "Loading managers..."
-    },
 
     "orgInputs": {
       "fields": {
@@ -217,9 +204,6 @@
           "required": "Organization name is required",
           "notEmpty": "Organization name cannot be empty or contain only spaces"
         }
-      },
-      "loading": {
-        "organizations": "Loading organizations..."
       }
     }
   },
@@ -308,8 +292,6 @@
           }
         },
         "topFilledBins":{
-          "title":"Bins Requiring Attention",
-          "description":"List of bins that have triggered alerts or need maintenance.",
           "columns":{
             "createdAt":"Created At",
             "type":"Type",
@@ -415,7 +397,6 @@
       },
       "progress":"Step {{current}} of {{total}}",
       "navigation":{
-        "next":"Next",
         "back":"Back",
         "ready":"I'm Ready",
         "formSubmitted":"I Submitted the Form",
@@ -480,13 +461,11 @@
         "finalSteps":"What Now?",
         "final1":"Reconnect to your regular Wi-Fi.",
         "final2":"New bin appears in list shortly.",
-        "final3":"",
         "noteTitle":"Missing?",
         "noteDescription":"Refresh page. If missing, check Wi-Fi password & retry.",
         "troubleshootTitle":"Troubleshoot",
         "troubleshoot1":"Wrong Wi-Fi name/password?",
-        "troubleshoot2":"Not connected to internet?",
-        "troubleshoot3":""
+        "troubleshoot2":"Not connected to internet?"
       },
       "noOrganization": {
         "code": "No Organizational Affiliation",
@@ -555,19 +534,9 @@
     "loginPage":{
       "title":"Login to your account",
       "description":"Enter your email below to login to your account",
-      "email":"Email Address",
-      "emailRequired":"Email is required",
-      "invalidEmail":"Invalid email address",
-      "emptyEmail":"Email cannot be empty or only spaces",
       "password":"Password",
       "passwordRequired":"Password is required",
       "minLength":"Password must be at least 8 characters long",
-      "maxLength":"Password must not exceed 30 characters",
-      "lowercase":"Password must include at least one lowercase letter (a-z)",
-      "uppercase":"Password must include at least one uppercase letter (A-Z)",
-      "number":"Password must include at least one number (0-9)",
-      "special":"Password must include at least one special character (!@#$%^&*)",
-      "loginError":"Failed to login. Please check your credentials and try again.",
       "forgotPassword":"Forgot Password?",
       "loginButton":"Login",
       "noAccount":"Don't have an account?",
@@ -577,9 +546,6 @@
       "stepOne":{
       "title":"Password Recovery",
       "description":"Enter your email address below to receive password reset instructions.",
-      "emailRequired":"Email is required",
-      "invalidEmail":"Invalid email address",
-      "emptyEmail":"Email cannot be empty or only spaces",
       "sendRecovery":"Send Recovery Code",
       "emailLabel":"Email Address"
     },
@@ -607,11 +573,9 @@
     },
     "login":"Login",
     "signUp":"Sign Up",
-      "email":"Email Address",
     "back":"Back",
       "remembered":"Remembered your password?",
-      "noAccount":"Don't have an account?",
-      "passwordReset":"Reset password"
+      "noAccount":"Don't have an account?"
     },
     "verifyAccountPage":{
       "verify":"Account verified, moving to login page...",
@@ -688,14 +652,8 @@
     "typeDelete":"Type: 'Delete' to perform deletion",
     "confirmationDescriptionUser":"This action will permanently delete all user's bins.",
     "confirmationDescriptionYour":"This action will permanently delete all your bins.",
-    "typeDeleteAll":"To confirm, type 'Delete All' in the field below. This action cannot be undone.",
-    "typeDeleteAllDesc":"This action will permanently delete all {{case}} bins. To confirm, type 'Delete All' in the field below. This action cannot be undone.",
-    "confirmationUserDeletion":"This action will permanently delete the user's account",
-    "confirmationAccountDeletion":"This action will permanently delete your account",
     "confirmationUserName":"To confirm, type {{userName}} in the field below, This action cannot be undone.",
     "typeUserName":"Type: '{{userName}}' to perform deletion",
-    "deleteConfirmWord": "delete",
-    "deleteAllConfirmWord": "delete all",
     "deleteViaMac":"This action will permanently delete the bin via its MAC address.",
     "typeMacAddress":"Type the bin's MAC address to confirm deletion."
   },
@@ -765,8 +723,6 @@
       "empty":"No organization found."
     },
     "binCard":{
-       "lastUpdated":"Last Updated",
-       "fillLevel":"Fill Level",
        "deviceKey":"Device Access Key",
        "ownerId":"Owner ID",
        "location":"Location",
@@ -792,8 +748,6 @@
       "log":"Log",
       "details":"Details",
       "binId":"Bin ID",
-      "maintenance":"Maintenance",
-      "healthStatus":"Health Status",
       "weight":"Weight",
       "message":"Details",
       "timestamp":"Timestamp",
@@ -808,8 +762,6 @@
     "dangerZoneCard":{
       "title":"Danger Zone",
       "subTitle":"This section contains actions that will affect many other variables, Please act carefully.",
-      "deleteUserBins":"Delete all user bins",
-      "deleteYourBins":"Delete all your bins",
       "deleteUserAccount":"Delete User account",
       "deleteYourAccount":"Delete Your account",
       "note":"Note",
@@ -835,7 +787,6 @@
       "updateUserPassword": "Update User Password",
       "updateYourPassword": "Update Your Password",
       "description": "Keep your account safe by updating {{entity}} password",
-      "requiredPassword": "Password is required",
       "oldPasswordRequired": "Old password is required",
       "newPasswordRequired": "New password is required",
       "confirmPasswordRequired": "Confirm password is required",
@@ -852,7 +803,6 @@
       "oldPassword": "Old Password",
       "newPassword": "New Password",
       "confirmPassword": "Confirm New Password",
-      "notMatch": "Passwords does not match",
       "passwordsDoNotMatch": "Passwords do not match",
       "button": "Update Password",
       "requirementsTitle": "Password Requirements"
@@ -1025,7 +975,6 @@
     "updatedOrgNameSuccessfully": "Organization name updated successfully",
     "failedToUpdateOrgName": "Failed to update organization name",
     "maintenanceUpdatedSuccessfully": "Maintenance note saved successfully!",
-    "failedToUpdateMaintenance": "Failed to update bin maintenance note",
     "binNameUpdatedSuccessfully": "Bin name updated successfully",
     "failedToUpdateBinName": "Failed to update bin name"
 

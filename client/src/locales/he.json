@@ -1,16 +1,11 @@
 
 {
-    "welcome": "ברוך הבא",
     "login": "התחברות",
     "logout": "התנתקות",
     "settings": "הגדרות",
     "profile": "פרופיל משתמש",
-    "language": "שפה",
-    "help": "עזרה",
     "filter": "סינון פחים",
     "route": "חשב מסלול",
-    "notifications": "התראות",
-    "messages": "הודעות",
     "dashboard": "לוח בקרה",
     "bins":"פחים",
     "bin":"פח",
@@ -19,12 +14,10 @@
     "submit":"שלח",
     "logs":"תיעודים",
     "analytics":"אנליטיקות",
-    "location":"מיקום",
     "coordinates":"קואורדינטות",
     "zoom":"זום",
         "units":{
         "kg":"ק״ג",
-        "km":"ק״מ",
         "seconds":"שניות",
         "minutes":"דק׳",
         "hours":"שעות"
@@ -171,9 +164,6 @@
                     "required": "שם הארגון הוא שדה חובה",
                     "notEmpty": "שם הארגון לא יכול להיות ריק או להכיל רווחים בלבד"
                 }
-            },
-            "loading": {
-                "organizations": "טוען ארגונים..."
             }
         }
     },
@@ -183,10 +173,8 @@
     "cancel": "ביטול",
     "edit": "ערוך",
     "delete": "מחק",
-    "update": "עדכן",
     "loading": "טוען...",
     "error": "שגיאה",
-    "success": "הצלחה",
     "binName": "שם הפח",
     "fillLevel": "רמת מילוי",
   "healthStatus":"מצב בריאות",
@@ -307,8 +295,6 @@
           }
         },
         "topFilledBins":{
-          "title":"פחים הדורשים תשומת לב",
-          "description":"רשימת פחים שהפעילו התראות או זקוקים לתחזוקה.",
           "columns":{
             "createdAt":"נוצר בתאריך",
             "type":"סוג",
@@ -416,7 +402,6 @@
       },
       "progress":"שלב {{current}} מתוך {{total}}",
       "navigation":{
-        "next":"הבא",
         "back":"חזור",
         "ready":"אני מוכן/ה",
         "formSubmitted":"שלחתי את הטופס",
@@ -481,13 +466,11 @@
         "finalSteps": "מה עכשיו?",
         "final1": "ודא שהתחברת חזרה ל-Wi-Fi שלך.",
         "final2": "הפח החדש יופיע ברשימה תוך דקות ספורות.",
-        "final3": "",
         "noteTitle": "לא מופיע?",
         "noteDescription": "רענן את הדף. אם עדיין לא מופיע, ייתכן שהייתה שגיאה בסיסמה - נסה שוב.",
         "troubleshootTitle":"תקלות נפוצות",
         "troubleshoot1":"טעות בהקלדת שם הרשת/סיסמה.",
-        "troubleshoot2":"לא חזרתם לאינטרנט הרגיל.",
-        "troubleshoot3":""
+        "troubleshoot2":"לא חזרתם לאינטרנט הרגיל."
       },
       "noOrganization": {
         "code": "אינך משויך לארגון",
@@ -557,19 +540,9 @@
        "loginPage":{
       "title":"התחבר לחשבונך",
       "description":"הזן את האימייל שלך למטה כדי להתחבר לחשבונך",
-      "email":"כתובת אימייל",
-      "emailRequired":"אימייל הוא שדה חובה",
-      "invalidEmail":"כתובת אימייל לא תקינה",
-      "emptyEmail":"אימייל לא יכול להיות ריק או להכיל רק רווחים",
       "password":"סיסמה",
       "passwordRequired":"סיסמה היא שדה חובה",
       "minLength":"הסיסמה חייבת להכיל לפחות 8 תווים",
-      "maxLength":"הסיסמה לא יכולה לעלות על 30 תווים",
-      "lowercase":"הסיסמה חייבת לכלול לפחות אות קטנה אחת (a-z)",
-      "uppercase":"הסיסמה חייבת לכלול לפחות אות גדולה אחת (A-Z)",
-      "number":"הסיסמה חייבת לכלול לפחות מספר אחד (0-9)",
-      "special":"הסיסמה חייבת לכלול לפחות תו מיוחד אחד (!@#$%^&*)",
-      "loginError":"ההתחברות נכשלה. אנא בדוק את הפרטים ונסה שוב.",
       "forgotPassword":"שכחת סיסמה?",
       "loginButton":"התחבר",
       "noAccount":"אין לך חשבון?",
@@ -580,9 +553,6 @@
       "stepOne":{
       "title":"שחזור סיסמה",
       "description":"הזן את כתובת האימייל המשויכת לחשבונך כדי לקבל קוד אימות לאיפוס הסיסמה.",
-      "emailRequired":"שדה האימייל הוא חובה",
-      "invalidEmail":"כתובת אימייל לא תקינה",
-      "emptyEmail":"אימייל לא יכול להיות ריק או להכיל רק רווחים",
       "sendRecovery":"שלח קוד לאיפוס",
       "emailLabel":"כתובת אימייל"
     },
@@ -610,11 +580,9 @@
     },
     "login":"התחבר",
     "signUp":"הרשם",
-      "email":"כתובת אימייל",
     "back":"חזור",
       "remembered":"זכרת את הסיסמה שלך?",
-      "noAccount":"אין לך חשבון?",
-      "passwordReset":"אפס סיסמה"
+      "noAccount":"אין לך חשבון?"
     },
        "verifyAccountPage":{
       "verify":"החשבון אומת, מעביר לדף ההתחברות...",
@@ -690,14 +658,8 @@
     "typeDelete":"הקלד: 'מחק' כדי לבצע את המחיקה",
     "confirmationDescriptionUser":"פעולה זו תמחק לצמיתות את כל הפחים של המשתמש.",
     "confirmationDescriptionYour":"פעולה זו תמחק לצמיתות את כל הפחים שלך.",
-    "typeDeleteAllDesc":"כדי לאשר, הקלד 'מחק הכל' בשדה למטה. פעולה זו אינה ניתנת לביטול.",
-    "typeDeleteAll":"כדי לאשר הקלד 'מחק הכל'.",
-    "confirmationUserDeletion":"פעולה זו תמחק לצמיתות את חשבון המשתמש",
-    "confirmationAccountDeletion":"פעולה זו תמחק לצמיתות את החשבון שלך",
     "confirmationUserName":"כדי לאשר, הקלד {{userName}} בשדה למטה, פעולה זו אינה ניתנת לביטול.",
     "typeUserName":"הקלד: '{{userName}}' כדי לבצע את המחיקה",
-    "deleteConfirmWord": "מחק",
-    "deleteAllConfirmWord": "מחק הכל",
      "deleteViaMac":"פעולה זו תמחק לצמיתות את הפח באמצעות כתובת ה-MAC שלו.",
         "typeMacAddress":"הקלד את כתובת ה-MAC של הפח כדי לאשר את המחיקה"
   },
@@ -768,8 +730,6 @@
       "empty":"לא נמצא ארגון."
     },
     "binCard":{
-       "lastUpdated":"עודכן לאחרונה",
-       "fillLevel":"רמת מילוי",
        "deviceKey":"מפתח הגישה של המכשיר",
        "ownerId":"מזהה בעלים",
        "location":"מיקום",
@@ -795,8 +755,6 @@
       "log":"תיעוד",
       "details":"פרטים",
       "binId":"מזהה פח",
-      "maintenance":"תחזוקה",
-      "healthStatus":"מצב בריאות",
       "weight":"משקל",
       "message":"פרטים",
       "timestamp":"חותמת זמן",
@@ -827,8 +785,6 @@
     "dangerZoneCard":{
       "title":"אזור מסוכן",
       "subTitle":"קטע זה מכיל פעולות שישפיעו המון משתנים אחרים, אנא פעל בזהירות.",
-      "deleteUserBins":"מחק את כל הפחים של המשתמש",
-      "deleteYourBins":"מחק את כל הפחים שלך",
       "deleteUserAccount":"מחק את חשבון המשתמש",
       "deleteYourAccount":"מחק את החשבון שלך",
       "note":"הערה",
@@ -838,7 +794,6 @@
       "updateUserPassword": "עדכן סיסמת משתמש",
       "updateYourPassword": "עדכן את הסיסמה שלך",
       "description": "שמור על חשבונך בטוח על ידי עדכון סיסמת {{entity}}",
-      "requiredPassword": "סיסמה נדרשת",
       "oldPasswordRequired": "סיסמה ישנה נדרשת",
       "newPasswordRequired": "סיסמה חדשה נדרשת",
       "confirmPasswordRequired": "אישור סיסמה נדרש",
@@ -855,7 +810,6 @@
       "oldPassword": "סיסמה ישנה",
       "newPassword": "סיסמה חדשה",
       "confirmPassword": "אשר סיסמה חדשה",
-      "notMatch": "הסיסמאות אינן תואמות",
       "passwordsDoNotMatch": "הסיסמאות אינן תואמות",
       "button": "עדכן סיסמה",
       "requirementsTitle": "דרישות סיסמה"
@@ -1028,7 +982,6 @@
     "updatedOrgNameSuccessfully": "שם הארגון עודכן בהצלחה",
     "failedToUpdateOrgName": "עדכון שם הארגון נכשל",
         "maintenanceUpdatedSuccessfully": "עדכון הערת תחזוקה לפח בוצע בהצלחה",
-    "failedToUpdateMaintenance": "עדכון הערת תחזוקה לפח נכשל",
     "binNameUpdatedSuccessfully": "שם הפח עודכן בהצלחה",
     "failedToUpdateBinName": "עדכון שם הפח נכשל"
   },
