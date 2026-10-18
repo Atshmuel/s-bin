@@ -27,6 +27,8 @@ export function isValidTelemetryRecord({
     }, { hasFillSensor: kind !== "gateway" });
 }
 
+const SCALE_STATES = ["ok", "uncalibrated", "failed"];
+
 // Optional sleep-clock diagnostics. An invalid value is dropped instead of
 // rejecting the report, so a diagnostic field can never cost a reading.
 function clockDiagnostics({ driftPpm, clockErrorSeconds }) {
@@ -61,6 +63,7 @@ export async function applyDeviceLog(bin, {
     lastAwakeSeconds,
     driftPpm,
     clockErrorSeconds,
+    scale,
 }, { via, gatewayId = null, hops = null, rssi = null, measuredAt, reportIntervalMinutes, reportStartHour }) {
     const schedule = getNextReportSchedule(location, reportIntervalMinutes, reportStartHour);
     const takenAt = measuredAt ?? new Date();
@@ -85,7 +88,10 @@ export async function applyDeviceLog(bin, {
     if (healthMessage) messages.push(healthMessage);
     const message = messages.length > 0 ? messages.join(' ') : null;
 
-    const weightKg = weight <= 0 ? 0 : weight / 1000; // Ensure weight is not negative, convert grams to kilograms
+    // The device sends grams. A weight counts only from a calibrated scale that
+    // read fine; otherwise (or with no scale at all) it is null, not 0.
+    const scaleState = SCALE_STATES.includes(scale) ? scale : null;
+    const weightKg = scaleState === "ok" ? Math.max(weight, 0) / 1000 : null;
 
     const levelIsValid = !isGateway && sensorOk !== false;
     let query = {
@@ -128,6 +134,7 @@ export async function applyDeviceLog(bin, {
         bin.status.lastAwakeSeconds = lastAwakeSeconds;
     }
     bin.status.weight = weightKg;
+    bin.status.scale = scaleState;
     bin.status.connection = { via, gatewayId, hops, rssi };
     bin.location.coordinates = location;
     bin.timezone = schedule.timeZone;

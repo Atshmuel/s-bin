@@ -41,7 +41,11 @@ export const binSchema = new mongoose.Schema({
         healthMessage: { type: String, default: "" },
         levelValid: { type: Boolean, default: true },
         level: { type: Number, default: 0, required: true },
-        weight: { type: Number, default: 0, required: true },
+        // Kilograms, or null without a working, calibrated scale (see scale).
+        weight: { type: Number, default: null },
+        // The bin's scale as its last report gave it; null for a device without
+        // one (a leaf, or firmware before the scale).
+        scale: { type: String, enum: ["ok", "uncalibrated", "failed"], default: null },
         battery: { type: Number, default: 0, required: true },
         lastAwakeSeconds: { type: Number, min: 1, max: 86400, default: null },
         // How the last report arrived: the bin's own cellular link or a mesh gateway.

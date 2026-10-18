@@ -4,7 +4,10 @@ import { getBinShared } from "../service/sharedService.js";
 import { ROLES } from "../../utils/constants.js";
 
 const MAX_AWAKE_EXTENSION_SECONDS = 3600;
-const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin"]);
+// The known weight for calibrate_scale, in grams (the device checks the same range).
+const MIN_SCALE_CALIBRATION_GRAMS = 100;
+const MAX_SCALE_CALIBRATION_GRAMS = 200000;
+const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale"]);
 
 function isValidInstructionPayload(type, payload) {
     if (type === "report_now") {
@@ -13,6 +16,13 @@ function isValidInstructionPayload(type, payload) {
 
     if (type === "calibrate_empty_bin") {
         return Object.keys(payload).length === 0;
+    }
+
+    if (type === "calibrate_scale") {
+        return Object.keys(payload).length === 1 &&
+            Number.isInteger(payload.grams) &&
+            payload.grams >= MIN_SCALE_CALIBRATION_GRAMS &&
+            payload.grams <= MAX_SCALE_CALIBRATION_GRAMS;
     }
 
     return type === "stay_awake" &&
