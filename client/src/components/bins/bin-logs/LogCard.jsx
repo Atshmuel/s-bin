@@ -5,7 +5,7 @@ import EmptyCard from "@/components/EmptyCard"
 import { Spinner } from "@/components/ui/spinner"
 import { useTranslation } from "react-i18next"
 import { useAppSide } from "@/contexts/AppSideProvider"
-import { formatSleepDuration } from "@/utils/helpers"
+import { formatSleepDuration, formatDate } from "@/utils/helpers"
 import { isGateway } from "@/utils/binHelpers"
 
 function LogCard({ log, isLoading = true, ...props }) {
@@ -30,7 +30,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 <InfoIcon color={iconColor} size={20} />
                             </CardTitle>
                             <CardDescription>
-                                {t('types.' + log.type)} – {new Date(log.createdAt).toLocaleString(isRight ? "en-US" : "he-IL", { hourCycle: "h23" })}
+                                {t('types.' + log.type)} – {formatDate(log.createdAt, isRight)}
                             </CardDescription>
                         </CardHeader>
 
@@ -74,7 +74,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                                     <CalendarClock size={16} /> {t("components.logCard.timestamp")}:
                                 </span>
                                 <span>
-                                    {new Date(log.createdAt).toLocaleTimeString(isRight ? "en-US" : "he-IL", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}
+                                    {formatDate(log.createdAt, isRight, { hour: "2-digit", minute: "2-digit" })}
                                 </span>
                             </div>
 

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Button } from "../ui/button"
 import { useAppSide } from "@/contexts/AppSideProvider"
+import { formatDate } from "@/utils/helpers"
 
 // Service dates, the technician and their last note.
 function BinMaintenanceDetails({ maintenance }) {
@@ -13,11 +14,11 @@ function BinMaintenanceDetails({ maintenance }) {
         <>
             <div className="flex justify-between">
                 <span>{t('components.binCard.maintenance.lastService')}:</span>
-                <span>{new Date(maintenance.lastServiceAt).toLocaleDateString()}</span>
+                <span>{formatDate(maintenance.lastServiceAt, isRight, { year: "numeric", month: "numeric", day: "numeric" })}</span>
             </div>
             <div className="flex justify-between">
                 <span>{t('components.binCard.maintenance.nextService')}:</span>
-                <span>{new Date(maintenance.nextServiceAt).toLocaleDateString()}</span>
+                <span>{formatDate(maintenance.nextServiceAt, isRight, { year: "numeric", month: "numeric", day: "numeric" })}</span>
             </div>
             {maintenance.technicianId ?
                 <>
@@ -29,7 +30,7 @@ function BinMaintenanceDetails({ maintenance }) {
                         <div className="flex justify-between items-baseline mb-1">
                             <span className="">{t('components.binCard.maintenance.techNote')}:</span>
                             <span className="text-xs text-muted-foreground">
-                                {new Date(maintenance.lastServiceAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short', hourCycle: 'h23' })}
+                                {formatDate(maintenance.lastServiceAt, isRight, { dateStyle: 'short', timeStyle: 'short' })}
                             </span>
                         </div>
                         <p className="mt-2 text-sm italic text-muted-foreground">

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Button } from "../ui/button"
 import { useAppSide } from "@/contexts/AppSideProvider"
+import { formatDate } from "@/utils/helpers"
 
 // The bins whose last report this device relayed over the mesh.
 function ConnectedLeaves({ leaves }) {
@@ -18,7 +19,7 @@ function ConnectedLeaves({ leaves }) {
             <span className="text-xs text-muted-foreground text-end">
                 <span dir="ltr">{leaf.status?.connection?.rssi ?? '-'} dBm</span> · {t('components.binCard.hops')}: {leaf.status?.connection?.hops ?? '-'}
                 <br />
-                {new Date(leaf.status?.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { dateStyle: 'short', timeStyle: 'short', hourCycle: 'h23' })}
+                {formatDate(leaf.status?.updatedAt, isRight, { dateStyle: 'short', timeStyle: 'short' })}
             </span>
         </div>
     ))

@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next"
 import DeviceInstructions from "@/components/bins/DeviceInstructions"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { formatDate } from "@/utils/helpers"
 
 function BinDetails() {
     const { isRight } = useAppSide()
@@ -314,24 +315,13 @@ function BinDetails() {
                                 tickMargin={8}
                                 minTickGap={32}
                                 reversed={!isRight}
-                                tickFormatter={(value) => {
-                                    const date = new Date(value)
-                                    return date.toLocaleDateString(isRight ? "en-US" : "he-IL", {
-                                        month: "short",
-                                        day: "numeric",
-                                    })
-                                }}
+                                tickFormatter={(value) => formatDate(value, isRight, { month: "short", day: "numeric" })}
                             />
                             <ChartTooltip
                                 cursor={false}
                                 content={
                                     <ChartTooltipContent
-                                        labelFormatter={(value) => {
-                                            return new Date(value).toLocaleDateString("en-US", {
-                                                month: "short",
-                                                day: "numeric",
-                                            })
-                                        }}
+                                        labelFormatter={(value) => formatDate(value, isRight, { month: "short", day: "numeric" })}
                                         indicator="dot"
                                     />
                                 }

@@ -16,6 +16,7 @@ import ConnectedLeaves from "./ConnectedLeaves"
 import CreateNoteDialog from "./CreateNoteDialog"
 import DeleteBinDialog from "./DeleteBinDialog"
 import DeviceRoleBadge from "./DeviceRoleBadge"
+import { formatDate } from "@/utils/helpers"
 
 function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, ...props }) {
     const { t } = useTranslation()
@@ -45,7 +46,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                 </div>
                             </CardTitle>
                             <CardDescription>
-                                {t('lastUpdated')}: {new Date(bin.status.updatedAt).toLocaleString(isRight ? 'en-US' : 'he-IL', { hourCycle: 'h23' })}
+                                {t('lastUpdated')}: {formatDate(bin.status.updatedAt, isRight)}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-5 text-sm">

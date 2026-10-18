@@ -10,6 +10,7 @@ import AIInsights from "./AIInsights"
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Label, Pie, PieChart, XAxis } from "recharts"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
+import { formatDate } from "@/utils/helpers"
 
 function Analytics() {
     const { t } = useTranslation()
@@ -150,24 +151,13 @@ function Analytics() {
                                         tickMargin={8}
                                         minTickGap={32}
                                         reversed={!isRight}
-                                        tickFormatter={(value) => {
-                                            const date = new Date(value)
-                                            return date.toLocaleDateString(isRight ? "en-US" : "he-IL", {
-                                                month: "short",
-                                                day: "numeric",
-                                            })
-                                        }}
+                                        tickFormatter={(value) => formatDate(value, isRight, { month: "short", day: "numeric" })}
                                     />
                                     <ChartTooltip
                                         cursor={false}
                                         content={
                                             <ChartTooltipContent
-                                                labelFormatter={(value) => {
-                                                    return new Date(value).toLocaleDateString(isRight ? "en-US" : "he-IL", {
-                                                        month: "short",
-                                                        day: "numeric",
-                                                    })
-                                                }}
+                                                labelFormatter={(value) => formatDate(value, isRight, { month: "short", day: "numeric" })}
                                                 indicator="dot"
                                             />
                                         }
@@ -285,7 +275,7 @@ function Analytics() {
                                         tickMargin={10}
                                         axisLine={false}
                                         reversed={!isRight}
-                                        tickFormatter={(value) => new Date(value).toLocaleDateString(isRight ? "en-US" : "he-IL", { day: '2-digit', month: 'short' })}
+                                        tickFormatter={(value) => formatDate(value, isRight, { day: '2-digit', month: 'short' })}
                                     />
                                     <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                     <ChartLegend content={<ChartLegendContent />} />
