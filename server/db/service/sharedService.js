@@ -3,8 +3,6 @@ import { binModel, binLogModel, templateModel, userModel, userSettingModel, orga
 import { appendFilter, BINS_ONLY_FILTER, UnionArraysById } from '../../utils/helpers.js'
 import { AI_INSTRUCTIONS } from "../../utils/constants.js";
 import { GoogleGenAI } from "@google/genai";
-import { z } from "zod";
-import { ca } from 'zod/v4/locales';
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 import { DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR } from '../schema/organizationSchema.js';
 

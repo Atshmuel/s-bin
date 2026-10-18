@@ -3,7 +3,7 @@ import { hashPassword, comparePasswords, generateToken, appendFilter, generateOT
 import { sendEmail } from '../../utils/mailService.js'
 import { emailSchema, passwordSchema } from '../../utils/inputValidations.js'
 import { deleteUserRefs, innerGetTemplateByTemplateId, organizationExist } from '../service/sharedService.js'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import { ROLE_LEVEL } from '../../utils/constants.js'
 import mongoose from 'mongoose'
 
@@ -46,7 +46,7 @@ export async function createUser(req, res) {
                 passwordHash,
                 name,
                 accountVerification: {
-                    token: uuidv4(),
+                    token: randomUUID(),
                     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                 }
             });
