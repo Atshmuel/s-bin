@@ -2,6 +2,9 @@
 
 namespace {
 constexpr time_t MIN_VALID_EPOCH = 1735689600;
+// The modem gives a two-digit year, and after losing power its clock restarts
+// at 1980, which reads as 2080: nothing from 2080 on is a real time.
+constexpr time_t MAX_VALID_EPOCH = 3471292800;  // 2080-01-01 UTC
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 constexpr time_t GPS_REFRESH_INTERVAL_SECONDS = 31LL * 24 * 60 * 60;
 constexpr uint32_t FALLBACK_SLEEP_SECONDS = 20;
@@ -71,6 +74,7 @@ bool readNetworkEpoch(time_t& utcEpoch) {
             &second,
             &timezoneOffset) ||
         year < 2025 || month < 1 || month > 12 ||
+        year >= 2080 ||  // the modem's restarted clock, see MAX_VALID_EPOCH
         day < 1 || day > 31 || hour < 0 || hour > 23 ||
         minute < 0 || minute > 59 || second < 0 || second > 60 ||
         timezoneOffset < -14 || timezoneOffset > 14) {
@@ -139,7 +143,8 @@ void sleepOrWaitOnUsb(uint64_t sleepSeconds, uint32_t leadSeconds) {
 }
 
 bool isSystemClockValid() {
-    return time(nullptr) >= MIN_VALID_EPOCH;
+    const time_t now = time(nullptr);
+    return now >= MIN_VALID_EPOCH && now < MAX_VALID_EPOCH;
 }
 
 bool synchronizeClockFromNetwork(unsigned long timeoutMs) {

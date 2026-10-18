@@ -21,6 +21,8 @@ namespace {
 constexpr char ORGANIZATION_ID[] = "699760a44e48dff9a082101e";
 
 constexpr time_t MIN_VALID_EPOCH = 1735689600;
+// A gateway modem's restarted clock reads as 2080 (two-digit year from 1980).
+constexpr time_t MAX_VALID_EPOCH = 3471292800;  // 2080-01-01 UTC
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 // First boot, or after losing the gateway: without a clock or schedule the
 // leaf cannot know when the gateway's short window is, so it listens through
@@ -228,7 +230,8 @@ bool waitForBeacon(uint32_t listenMs, bool atScheduledSlot) {
         const BeaconPacket* beacon = frame.as<BeaconPacket>(PACKET_BEACON);
         // Phase 1 is a star: only beacons straight from a gateway are used.
         if (beacon == nullptr || beacon->hopsToGateway != 0 ||
-            beacon->epochMs < static_cast<uint64_t>(MIN_VALID_EPOCH) * 1000ULL) {
+            beacon->epochMs < static_cast<uint64_t>(MIN_VALID_EPOCH) * 1000ULL ||
+            beacon->epochMs >= static_cast<uint64_t>(MAX_VALID_EPOCH) * 1000ULL) {
             continue;
         }
         char macText[18];
