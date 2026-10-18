@@ -3,7 +3,6 @@ import { handleRegistration } from "./handlers/registration.js";
 import { handleDeviceLog } from "./handlers/telemetry.js";
 import { handleRelay } from "./handlers/relay.js";
 import { handleInstructionCheck, handleInstructionResult } from "./handlers/instructions.js";
-import { handleDeviceError, handleDeviceMaintenance } from "./handlers/commands.js";
 
 export { removeBinConfig } from "./handlers/commands.js";
 
@@ -25,12 +24,6 @@ export async function handleMqttMessage(topic, payload) {
     switch (field) {
         case "log":
             await handleDeviceLog(mac, payload);
-            break;
-        case "error":
-            await handleDeviceError(mac, payload);
-            break;
-        case "maintenance":
-            await handleDeviceMaintenance(mac, payload);
             break;
         case "instructions":
             await handleInstructionCheck(mac, payload);

@@ -2,9 +2,10 @@ import tzLookup from "tz-lookup";
 import { DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR } from "../db/schema/organizationSchema.js";
 
 const MINUTES_PER_DAY = 24 * 60;
-// Device sleep clocks run fast (about +0.5%, so ~4 minutes per 12 hours). A report
-// arriving this close before a slot belongs to that slot, so the next wake is the
-// slot after it instead of a second report minutes later.
+// Device sleep clocks run fast (about +1% measured, minutes per 12 hours), so a
+// report can arrive before its slot; one this close before a slot belongs to that
+// slot, so the next wake is the slot after it instead of a second report minutes
+// later.
 const EARLY_WAKE_TOLERANCE_SECONDS = 600;
 
 const wallClockFormats = new Map();

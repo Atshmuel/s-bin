@@ -3,7 +3,6 @@ import { appendFilter } from '../../utils/helpers.js';
 import { binLogModel } from '../models/models.js'
 import { verifyBinOwner } from '../service/sharedService.js';
 
-
 export async function getBinLog(req, res) {
     const { withBin } = req.query
     const { logId } = req.params;
@@ -37,28 +36,6 @@ export async function getBinLog(req, res) {
         res.status(500).json({ message: error?.message || error })
     }
 }
-
-
-export async function getBinLogs(req, res) {
-    const { binId } = req.params;
-    const { org: ownerId, role } = req.user
-
-    let query = {}
-    query = appendFilter(query, true, 'binId', binId)
-
-    const isBinOwner = role !== process.env.ROLE_OWNER ? await verifyBinOwner(binId, ownerId) : true;
-
-    if (!isBinOwner)
-        return res.status(403).json({ message: 'This bin is not owned by you' })
-
-    try {
-        const logs = await binLogModel.find(query, { __v: 0, updatedAt: 0, binId: 0 }).sort({ createdAt: -1 });
-        res.status(201).json({ logs },)
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-}
-
 
 export async function getAllLogs(req, res) {
     const { org: ownerId, role } = req.user

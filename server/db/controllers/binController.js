@@ -4,7 +4,6 @@ import { appendFilter, BINS_ONLY_FILTER } from '../../utils/helpers.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
-
 export async function getBin(req, res) {
     const { id } = req.params;
     const { org: ownerId, role } = req.user
@@ -113,26 +112,6 @@ export async function getAllUserBins(req, res) {
     }
 }
 
-export async function getBinsByStatus(req, res) {
-    const { org: ownerId, role } = req.user
-    const { level, health } = req.body
-
-    let query = { ...BINS_ONLY_FILTER }
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
-    if (level && typeof level === 'number') {
-        query['status.level'] = { $gt: level }
-        query['status.levelValid'] = { $ne: false }
-    }
-    query = appendFilter(query, health && Array.isArray(health), 'status.health', { $in: health })
-
-    try {
-        const binsData = await binModel.find(query).select('-macAddress')
-        res.status(200).json({ binsData: binsData })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-}
-
 export async function getBinsInUserRadius(req, res) {
     const { org: ownerId, role } = req.user
     const { coordinates, radius, health, minLevel, maxLevel } = req.body
@@ -203,7 +182,6 @@ export async function getRouteBins(req, res) {
         // Gateways need maintenance visits but are never collected.
         query = { ...query, ...BINS_ONLY_FILTER }
     }
-
 
     try {
         let binsData = await binModel.aggregate(
@@ -308,33 +286,6 @@ export async function updateBinMaintenance(req, res) {
         return res.status(500).json({ message: 'Server error' });
     }
 }
-
-/* unimplemented functions
-export async function updateBinName(req,res){
-// if we want to allow updating device name we can implement this function in the future but need to keep in mind to send the new name to the device for it to update its config
-}
- 
-export async function updateBinDeviceKey(req, res) {
-    // if will be used in the future we need to send the new key to the device for it to update its config
-    const { id } = req.params
-    const { id: ownerId, role } = req.user
- 
-    let filter = {}
-    filter = appendFilter(filter, true, '_id', id)
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', ownerId)
- 
-    try {
-        const { deviceKey } = await binModel.findOneAndUpdate(filter, { $set: { deviceKey: generateRandomToken() } }, { new: true, runValidators: true }).select('deviceKey -_id')
- 
-        if (!deviceKey) return res.status(404).json({ message: "Bin not found or not owned by you." });
- 
-        res.status(200).json({ deviceKey })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-}
- 
-*/
 
 export async function deleteBin(req, res) {
     const { id } = req.params;

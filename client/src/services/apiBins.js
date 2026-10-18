@@ -47,18 +47,6 @@ export async function getBestRoute({ coordinates, radius, type, byFoot }) {
     return data;
 }
 
-export async function getUserBinsByStatus({ health, level }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/status`, {
-        method: "POST",
-        mode: "cors",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ level, health }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
-}
 //end 
 
 

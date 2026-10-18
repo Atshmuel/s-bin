@@ -1,8 +1,7 @@
 import { Router } from "express";
 import { authToken, authRole } from "../middlewares/authMiddleware.js";
 import { validateBodyFields, validateParamExist, validateRequestBodyBinIds } from "../middlewares/validationMiddleware.js";
-import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getBinsByStatus, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName, getRouteBins } from "../db/controllers/binController.js";
-import { removeBinConfig } from "../mqtt/mqttHandlers.js";
+import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName, getRouteBins } from "../db/controllers/binController.js";
 import { cancelDeviceInstruction, enqueueDeviceInstruction, listDeviceInstructions } from "../db/controllers/deviceInstructionController.js";
 import { getMeshSettings, updateMeshSettings } from "../db/controllers/organizationController.js";
 
@@ -20,7 +19,6 @@ binRouter.get('/mesh-settings', (req, res, next) => {
 binRouter.patch('/mesh-settings/:orgId', (req, res, next) => {
     authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
 }, updateMeshSettings)
-binRouter.post('/status', validateBodyFields(['level', 'health']), getBinsByStatus) //get bin
 binRouter.get('/:id', validateParamExist(), getBin) //get bin
 binRouter.post('/radius', validateBodyFields(['coordinates', 'radius'], ['health', 'minLevel', 'maxLevel']), getBinsInUserRadius) //get bins
 binRouter.post('/route', validateBodyFields(['coordinates', 'radius', 'type'], ['byFoot']), getRouteBins) //get bins in radius for maintenance or collection route

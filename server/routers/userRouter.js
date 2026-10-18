@@ -5,7 +5,7 @@ import { validateBodyFields, validateParamExist } from "../middlewares/validatio
 import { getSettingsByUserId, updateUserSettings } from "../db/controllers/userSettingsController.js";
 import { authLimiter } from "../middlewares/rateLimiters.js";
 export const userRouter = Router();
-export const userSettingsRouter = Router({ mergeParams: true });
+const userSettingsRouter = Router({ mergeParams: true });
 userRouter.use('/:id/settings', authToken, validateParamExist(), userSettingsRouter);
 
 

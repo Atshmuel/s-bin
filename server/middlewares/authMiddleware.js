@@ -1,36 +1,5 @@
-import { binModel, userModel } from "../db/models/models.js";
+import { userModel } from "../db/models/models.js";
 import { validateToken } from "../utils/helpers.js";
-
-
-export function authBinWithRoleFallback(allowedRoles = []) {
-    return async (req, res, next) => {
-        const authBearer = req.headers.authorization
-        if (authBearer?.startsWith('Bearer ')) {
-            const deviceKey = authBearer.split(" ")[1];
-            try {
-                const bin = await binModel.findOne({ deviceKey })
-                if (!bin) {
-                    return res.status(401).json({ message: "Unauthorized device" });
-                }
-                req.bin = bin
-                return next();
-            } catch (error) {
-                console.error('Failed to authorize the device');
-                return res.status(500).json({ message: "Failed to authorize the device" });
-            }
-        }
-
-        try {
-            await authTokenPromise(req, res)
-            authRole(allowedRoles)(req, res, next)
-        }
-        catch (error) {
-            console.error(error);
-        }
-    }
-
-}
-
 
 export async function authToken(req, res, next) {
     const accessToken = req.cookies?.accessToken
@@ -60,38 +29,6 @@ export async function authToken(req, res, next) {
             org: user.org ? user.org.toString() : null,
         }
         next();
-    } catch (error) {
-        return res.status(403).json({ message: "Invalid or expired token" });
-    }
-}
-
-export async function authTokenPromise(req, res) {
-    const accessToken = req.cookies?.accessToken
-    if (!accessToken)
-        return res.status(401).json({ message: 'Unauthenticated user' })
-
-    try {
-        const data = validateToken(accessToken)
-        if (!data) return res.status(401).json({ message: 'Invalid or expired token' });
-
-        const user = await userModel.findById(data.id);
-        if (!user) return res.status(401).json({ message: 'User not found' });
-
-        if (data.tokenVersion !== user.tokenVersion)
-            return res.status(401).json({ message: "Unauthorized" });
-
-        if (user.status !== 'active')
-            return res.status(401).json({ message: 'User pending activation or user is restricted, please contect our support' });
-
-        req.user = {
-            id: user._id.toString(),
-            role: user.role,
-            email: user.email,
-            name: user.name,
-            status: user.status,
-            org: user.org ? user.org.toString() : null,
-        }
-        return true
     } catch (error) {
         return res.status(403).json({ message: "Invalid or expired token" });
     }
@@ -127,6 +64,4 @@ export function authRole(allowedRoles = []) {
         next();
     }
 }
-
-
 

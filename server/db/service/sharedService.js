@@ -112,19 +112,6 @@ export async function deleteLogsForBins(binIds, session) {
 }
 
 //Users
-export async function getUserShared(userId) {
-    try {
-        if (!userId)
-            throw new Error('userId is mandatory')
-        const user = await userModel.exists({ _id: userId })
-        if (!user) throw new Error('User not found')
-        return true
-    } catch (error) {
-        console.error(error)
-        return false;
-    }
-}
-
 //Emails
 export async function innerGetTemplateByTemplateId(templateId) {
     try {
@@ -567,7 +554,6 @@ export async function updateMaintenance(id, notes, technicianId) {
         return false;
     }
 }
-
 
 //For testing purposes only
 export async function getAllBinsForMqtt() {
