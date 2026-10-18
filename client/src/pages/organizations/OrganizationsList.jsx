@@ -15,6 +15,7 @@ import { useOrganizations } from "@/hooks/organizations/useOrganizations";
 import { useSearchParams } from "react-router-dom";
 import { useAppSide } from "@/contexts/AppSideProvider";
 import OrgSettingsDialog from "@/components/organizations/OrgSettingsDialog";
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 function OrganizationsList() {
     const { t } = useTranslation();
     const { deleteOrgById, isDeleting } = useDeleteOrg();
@@ -77,29 +78,14 @@ function OrganizationsList() {
     ]
 
     function DeleteOrg(orgId) {
-        const [deleteInput, setDeleteInput] = useState('')
-
-        return <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
-            <DialogTrigger asChild>
-                <Button variant='destructive' className={'cursor-pointer'}><Trash /> {t("delete")}</Button>
-            </DialogTrigger>
-            <DialogContent side={side}>
-                <DialogHeader isRight={isRight} className="pt-6">
-                    <DialogTitle>{t("pages.organizationsList.deletion.confirmationTitle")}</DialogTitle>
-                    <DialogDescription isRight={!isRight}>{t("pages.organizationsList.deletion.confirmationDescription")}</DialogDescription>
-                </DialogHeader>
-                <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
-                    onChange={(e) => setDeleteInput(e.target.value)}>{t("pages.organizationsList.deletion.typeDelete")}</InputLabel>
-                <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
-                    <DialogClose asChild>
-                        <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
-                    </DialogClose>
-                    <Button className="cursor-pointer" disabled={(deleteInput.toLowerCase() !== 'מחק' && deleteInput.toLowerCase() !== 'delete') || isDeleting} variant='destructive' onClick={() => deleteOrgById({ orgId })
-                    }>{isDeleting ? <Spinner /> : t("delete")}</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-
+        return <ConfirmDeleteDialog
+            trigger={<Button variant='destructive' className={'cursor-pointer'}><Trash /> {t("delete")}</Button>}
+            title={t("pages.organizationsList.deletion.confirmationTitle")}
+            description={t("pages.organizationsList.deletion.confirmationDescription")}
+            inputLabel={t("pages.organizationsList.deletion.typeDelete")}
+            isDeleting={isDeleting}
+            onConfirm={() => deleteOrgById({ orgId })}
+        />
     }
 
     function RenameOrg(orgId) {

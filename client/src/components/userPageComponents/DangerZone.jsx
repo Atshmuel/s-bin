@@ -1,24 +1,19 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "../ui/button";
-import InputLabel from "../InputLabel";
 import { Label } from "../ui/label";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { useState } from "react";
 import { useDeleteUser } from "@/hooks/users/useDeleteUser";
 import { Spinner } from "../ui/spinner";
 import { useParams } from "react-router-dom";
 import { useDeleteAccount } from "@/hooks/users/useDeleteAccount";
-import { useAppSide } from "@/contexts/AppSideProvider";
 import { useTranslation } from "react-i18next";
+import ConfirmDeleteDialog from "../ConfirmDeleteDialog";
 
 function DangerZone({ user, isAdmin = false }) {
     const { id } = useParams()
-    const { isRight, side } = useAppSide()
     const { t } = useTranslation();
 
     const userName = user.name
-    const [deleteInput, setDeleteInput] = useState("");
     const { deleteUser, isDeleting } = useDeleteUser()
     const { deleteUserAccount, isDeleting: isDeletingAccount } = useDeleteAccount()
     function handleAccountDeletion() {
@@ -41,32 +36,23 @@ function DangerZone({ user, isAdmin = false }) {
                     <Label>
                         {isAdmin ? t('components.dangerZoneCard.deleteUserAccount') : t('components.dangerZoneCard.deleteYourAccount')}
                     </Label>
-                    <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
-                        <DialogTrigger asChild>
+                    <ConfirmDeleteDialog
+                        trigger={
                             <Button disabled={isDeletingAccount || isDeleting} className="cursor-pointer" variant='outline_destructive' size='sm'>
                                 {isDeletingAccount || isDeleting ? <Spinner /> : t("delete")}
                             </Button>
-                        </DialogTrigger>
-                        <DialogContent side={side}>
-                            <DialogHeader className="pt-6" isRight={isRight}>
-                                <DialogTitle>{t('confirmations.confirmationTitle')}</DialogTitle>
-                                <DialogDescription isRight={!isRight}>{isAdmin ? t('confirmations.confirmationDescriptionUser') : t('confirmations.confirmationDescriptionYour')}
-                                    <br />
-                                    {t("confirmations.confirmationUserName", { userName })}</DialogDescription>
-                            </DialogHeader>
-                            <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
-                                onChange={(e) => setDeleteInput(e.target.value)}>
-                                {t("confirmations.typeUserName", { userName })}
-                            </InputLabel>
-                            <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
-                                <DialogClose asChild>
-                                    <Button className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
-                                </DialogClose>
-                                <Button className="cursor-pointer" disabled={deleteInput.toLowerCase() !== userName.toLowerCase() || isDeleting || isDeletingAccount} onClick={handleAccountDeletion} variant='destructive'>
-                                    {isDeleting || isDeletingAccount ? <Spinner /> : t("delete")}</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                        }
+                        title={t('confirmations.confirmationTitle')}
+                        description={<>
+                            {isAdmin ? t('confirmations.confirmationDescriptionUser') : t('confirmations.confirmationDescriptionYour')}
+                            <br />
+                            {t("confirmations.confirmationUserName", { userName })}
+                        </>}
+                        inputLabel={t("confirmations.typeUserName", { userName })}
+                        confirmWords={[userName]}
+                        isDeleting={isDeleting || isDeletingAccount}
+                        onConfirm={handleAccountDeletion}
+                    />
                 </div>
                 <Separator className="mt-6" />
             </CardContent>

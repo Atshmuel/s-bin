@@ -12,18 +12,14 @@ import { useBins } from "@/hooks/bins/useBins";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import InputLabel from "@/components/InputLabel";
-import { Spinner } from "@/components/ui/spinner";
 import { useDeleteBinBatch } from "@/hooks/bins/useDeleteAllBins";
 import { useTranslation } from "react-i18next";
-import { useAppSide } from "@/contexts/AppSideProvider";
 import { useMe } from "@/hooks/users/auth/useMe";
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 
 function BinsList() {
     const { t } = useTranslation();
     const { isAdmin } = useMe();
-    const { isRight, side } = useAppSide();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const pageFromUrl = parseInt(searchParams.get("page")) || 1;
@@ -209,10 +205,8 @@ function BinsList() {
     }
 
     function ActionButton() {
-        const [deleteInput, setDeleteInput] = useState('')
-
-        return <Dialog onOpenChange={(open) => !open && setDeleteInput('')}>
-            <DialogTrigger asChild>
+        return <ConfirmDeleteDialog
+            trigger={
                 <Button variant='destructive' className={'cursor-pointer'}>
                     <Trash />
                     <div className="flex gap-1">
@@ -221,24 +215,13 @@ function BinsList() {
                         <span className="hidden sm:block">{t("bins")}</span>
                     </div>
                 </Button>
-            </DialogTrigger>
-            <DialogContent side={side}>
-                <DialogHeader isRight={isRight} className="pt-6">
-                    <DialogTitle>{t("pages.binsList.deletion.confirmationTitle")}</DialogTitle>
-                    <DialogDescription>{t("pages.binsList.deletion.confirmationDescription")}</DialogDescription>
-                </DialogHeader>
-                <InputLabel id='delete' placeholder=" " type='text' value={deleteInput}
-                    onChange={(e) => setDeleteInput(e.target.value)}>{t("pages.binsList.deletion.typeDelete")}</InputLabel>
-                <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
-                    <DialogClose asChild>
-                        <Button disabled={isDeleting} className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
-                    </DialogClose>
-                    <Button className="cursor-pointer" disabled={(deleteInput.toLowerCase() !== 'מחק' && deleteInput.toLowerCase() !== 'delete') || isDeleting} variant='destructive' onClick={() => deleteBins({ binIds })
-                    }>{isDeleting ? <Spinner /> : t("delete")}</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-
+            }
+            title={t("pages.binsList.deletion.confirmationTitle")}
+            description={t("pages.binsList.deletion.confirmationDescription")}
+            inputLabel={t("pages.binsList.deletion.typeDelete")}
+            isDeleting={isDeleting}
+            onConfirm={() => deleteBins({ binIds })}
+        />
     }
 
 
