@@ -1,14 +1,31 @@
 import { userModel, userSettingModel } from '../models/models.js'
 import { hashPassword, comparePasswords, generateToken, appendFilter, generateOTP, generateVerificationLink } from '../../utils/helpers.js'
-import { sendEmail } from '../../utils/mailService.js'
 import { emailSchema, passwordSchema } from '../../utils/inputValidations.js'
-import { deleteUserRefs, innerGetTemplateByTemplateId, organizationExist } from '../service/sharedService.js'
+import { deleteUserRefs, organizationExist, sendTemplateEmail } from '../service/sharedService.js'
 import { randomUUID } from 'crypto'
 import { ROLES, ROLE_LEVEL } from '../../utils/constants.js'
 import mongoose from 'mongoose'
 
 /** Failed OTP guesses allowed before the code is discarded entirely. */
 const MAX_OTP_ATTEMPTS = 5
+
+// Why an email and password cannot open an account, or null when they can.
+function credentialsError(email, password) {
+    return emailSchema.validate(email ?? '').error?.message ??
+        passwordSchema.validate(password ?? '').error?.message ??
+        null
+}
+
+// Creates the user and their settings inside the session's transaction.
+async function createUserWithSettings(fields, session) {
+    const user = new userModel(fields)
+    await user.save({ session })
+    const settings = new userSettingModel({ userId: user._id })
+    await settings.save({ session })
+    user.settingsId = settings._id
+    await user.save({ session })
+    return user
+}
 
 /**
  * Projection for every user document that leaves the API.
@@ -29,19 +46,15 @@ export async function createUser(req, res) {
     const { email, password, name } = req.body
     const session = await mongoose.startSession();
     let newUser;
-    let settings;
 
     try {
-        const { error: emailError } = emailSchema.validate(email ?? '')
-        if (emailError) throw new Error(emailError.message);
-
-        const { error } = passwordSchema.validate(password ?? '')
-        if (error) return res.status(400).json({ message: error.message });
+        const invalidCredentials = credentialsError(email, password)
+        if (invalidCredentials) return res.status(400).json({ message: invalidCredentials });
 
         const passwordHash = await hashPassword(password)
         if (!passwordHash) return res.status(500).json({ message: "Failed to hash the password, couldn't create the user." })
         await session.withTransaction(async () => {
-            newUser = new userModel({
+            newUser = await createUserWithSettings({
                 email: email.toLowerCase(),
                 passwordHash,
                 name,
@@ -49,25 +62,13 @@ export async function createUser(req, res) {
                     token: randomUUID(),
                     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                 }
-            });
-            await newUser.save({ session });
-
-            settings = new userSettingModel({ userId: newUser._id });
-            await settings.save({ session });
-
-            newUser.settingsId = settings._id;
-            await newUser.save({ session });
+            }, session);
 
 
             const url = generateVerificationLink(newUser.accountVerification.token);
             if (!url) throw new Error('Failed to generate verifiction link')
 
-            const { textTemplate, htmlTemplate, email: senderEmail, subject } = await innerGetTemplateByTemplateId("accountVerification")
-
-            const localText = textTemplate.replaceAll('{{verificationLink}}', url)
-            const localHtml = htmlTemplate.replaceAll('{{verificationLink}}', url)
-
-            await sendEmail(senderEmail, email, subject, localText, localHtml)
+            await sendTemplateEmail("accountVerification", email, { verificationLink: url })
         })
 
         res.status(201).json({
@@ -90,14 +91,10 @@ export async function createUserAsAdmin(req, res) {
 
     const session = await mongoose.startSession();
     let newUser;
-    let settings;
 
     try {
-        const { error: emailError } = emailSchema.validate(email ?? '')
-        if (emailError) throw new Error(emailError.message);
-
-        const { error } = passwordSchema.validate(password ?? '')
-        if (error) return res.status(400).json({ message: error.message });
+        const invalidCredentials = credentialsError(email, password)
+        if (invalidCredentials) return res.status(400).json({ message: invalidCredentials });
 
         const passwordHash = await hashPassword(password)
         if (!passwordHash) return res.status(500).json({ message: "Failed to hash the password, couldn't create the user." })
@@ -136,7 +133,7 @@ export async function createUserAsAdmin(req, res) {
         }
 
         await session.withTransaction(async () => {
-            newUser = new userModel({
+            newUser = await createUserWithSettings({
                 email: email.toLowerCase(),
                 passwordHash,
                 name,
@@ -144,14 +141,7 @@ export async function createUserAsAdmin(req, res) {
                 role,
                 org,
                 manager
-            });
-            await newUser.save({ session });
-
-            settings = new userSettingModel({ userId: newUser._id });
-            await settings.save({ session });
-
-            newUser.settingsId = settings._id;
-            await newUser.save({ session });
+            }, session);
         })
 
         res.status(201).json({
@@ -260,11 +250,11 @@ export async function forgotPassword(req, res) {
         const user = await userModel.findOneAndUpdate({ email: lowerCaseEmail }, update, { new: true });
         if (!user) throw new Error(`Could not find email ${userEmail}, Please verify you email`);
 
-        const { textTemplate, htmlTemplate, email: senderEmail, subject } = await innerGetTemplateByTemplateId('forgotPassword')
-
-        let localHtml = htmlTemplate.replaceAll('{{otp}}', otp).replaceAll('{{expiryMinutes}}', expiryMinutes).replaceAll('{{supportEmail}}', process.env.EMAIL_SUPPORT_USER)
-        let localText = textTemplate.replaceAll('{{otp}}', otp).replaceAll('{{expiryMinutes}}', expiryMinutes).replaceAll('{{supportEmail}}', process.env.EMAIL_SUPPORT_USER);
-        await sendEmail(senderEmail, userEmail, subject, localText, localHtml)
+        await sendTemplateEmail('forgotPassword', userEmail, {
+            otp,
+            expiryMinutes,
+            supportEmail: process.env.EMAIL_SUPPORT_USER,
+        })
         res.status(200).json({ message: 'Email sent successfully' })
     } catch (error) {
         res.status(500).json({ message: error?.message || 'Failed to send the email.' })

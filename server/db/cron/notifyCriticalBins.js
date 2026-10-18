@@ -1,7 +1,6 @@
 import cron from "node-cron";
 import { binLogModel } from "../models/models.js";
-import { sendEmail } from "../../utils/mailService.js";
-import { getOrgAdmins, innerGetTemplateByTemplateId } from "../service/sharedService.js";
+import { getOrgAdmins, sendTemplateEmail } from "../service/sharedService.js";
 
 if (!global.dailyBinsStatusCronStarted) {
     global.dailyBinsStatusCronStarted = true;
@@ -66,13 +65,10 @@ if (!global.dailyBinsStatusCronStarted) {
 
             for (const user of users) {
                 try {
-                    const { textTemplate, htmlTemplate, email: senderEmail, subject } = await innerGetTemplateByTemplateId('notifyCriticalBins');
-                    let localHtml = htmlTemplate.replaceAll('{{criticalCount}}', reportBins.length);
-                    localHtml = localHtml.replaceAll('{{name}}', " " + user.name);
-                    let localText = textTemplate.replaceAll('{{criticalCount}}', reportBins.length);
-                    localText = localText.replaceAll('{{name}}', " " + user.name);
-
-                    await sendEmail(senderEmail, user.email, subject, localText, localHtml);
+                    await sendTemplateEmail('notifyCriticalBins', user.email, {
+                        criticalCount: reportBins.length,
+                        name: " " + user.name,
+                    });
                     console.log(`Email sent to ${user.email}`);
                 } catch (err) {
                     console.error(`[Cron] Error sending daily bins status report to ${user.email}:`, err);

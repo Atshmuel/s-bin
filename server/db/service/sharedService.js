@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import { sendEmail } from '../../utils/mailService.js'
 import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, UnionArraysById, scopeToOrganization } from '../../utils/helpers.js'
 import { ROLES, AI_INSTRUCTIONS } from "../../utils/constants.js";
@@ -113,16 +114,13 @@ export async function deleteLogsForBins(binIds, session) {
 
 //Users
 //Emails
-export async function innerGetTemplateByTemplateId(templateId) {
-    try {
-        if (!templateId || typeof templateId !== 'string')
-            throw new Error('templateId must be string')
-        const template = await templateModel.findOne({ templateId })
-        return template
-    } catch (error) {
-        console.error(error?.message || 'Error in innerGetTemplateByTemplateId: ', error);
-        return null
-    }
+// Sends a stored email template to `to`, each {{key}} replaced by values[key].
+export async function sendTemplateEmail(templateId, to, values) {
+    const template = await templateModel.findOne({ templateId })
+    if (!template) throw new Error(`Email template "${templateId}" not found`)
+    const fill = text => Object.entries(values).reduce(
+        (filled, [key, value]) => filled.replaceAll(`{{${key}}}`, String(value)), text)
+    await sendEmail(template.email, to, template.subject, fill(template.textTemplate), fill(template.htmlTemplate))
 }
 
 //Orgs
