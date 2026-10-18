@@ -10,7 +10,6 @@
 // SbinMesh library.
 
 namespace {
-constexpr time_t MIN_VALID_EPOCH_FOR_DRIFT = 1735689600;
 // Network time has 1 s resolution: 30+ minutes keep a sample within ~±600 ppm.
 constexpr int64_t MIN_DRIFT_MEASUREMENT_SECONDS = 1800;
 // The internal RC oscillator is specified to ±5%; measured so far up to ~1.4%.
@@ -28,7 +27,7 @@ uint64_t applyDriftCorrection(uint64_t sleepSeconds) {
 
 void markSleepStart() {
     const time_t now = time(nullptr);
-    sleepStartedEpoch = now >= MIN_VALID_EPOCH_FOR_DRIFT
+    sleepStartedEpoch = sbinmesh::isValidEpoch(now)
         ? static_cast<uint64_t>(now)
         : 0;
 }
@@ -38,7 +37,7 @@ void markSleepStart() {
 // minus the lead the sleep ended early by on purpose (<0 = early).
 void recordWakeTiming(time_t deviceEpoch, time_t networkEpoch) {
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER ||
-        deviceEpoch < MIN_VALID_EPOCH_FOR_DRIFT) {
+        !sbinmesh::isValidEpoch(deviceEpoch)) {
         return;
     }
     const int64_t error = static_cast<int64_t>(deviceEpoch) - static_cast<int64_t>(networkEpoch);
@@ -63,7 +62,7 @@ void recordWakeTiming(time_t deviceEpoch, time_t networkEpoch) {
 }
 
 void recordClockDrift(time_t deviceEpoch, time_t referenceEpoch) {
-    if (sleepStartedEpoch == 0 || deviceEpoch < MIN_VALID_EPOCH_FOR_DRIFT) {
+    if (sleepStartedEpoch == 0 || !sbinmesh::isValidEpoch(deviceEpoch)) {
         return;
     }
 

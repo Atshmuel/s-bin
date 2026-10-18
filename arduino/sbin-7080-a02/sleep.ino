@@ -1,10 +1,6 @@
 #include "globals.h"
 
 namespace {
-constexpr time_t MIN_VALID_EPOCH = 1735689600;
-// The modem gives a two-digit year, and after losing power its clock restarts
-// at 1980, which reads as 2080: nothing from 2080 on is a real time.
-constexpr time_t MAX_VALID_EPOCH = 3471292800;  // 2080-01-01 UTC
 // A clock set from network time that the server's differs from by more than
 // this was set wrong (see correctClockFromServer()).
 constexpr int64_t SERVER_CLOCK_TOLERANCE_SECONDS = 60;
@@ -45,12 +41,6 @@ time_t firstReadNetworkEpoch = 0;
 int64_t firstReadCorrectionMs = 0;  // how far the first read moved the clock
 uint32_t firstReadMillis = 0;
 
-int64_t epochMsNow() {
-    struct timeval now;
-    gettimeofday(&now, nullptr);
-    return static_cast<int64_t>(now.tv_sec) * 1000LL + now.tv_usec / 1000;
-}
-
 // How early a slot sleep ends on purpose: enough for the drift to change by
 // SLOT_LEAD_PPM over the sleep, plus the time to sync the clock after waking.
 uint32_t slotLeadSeconds(uint64_t sleepSeconds) {
@@ -78,8 +68,7 @@ bool readNetworkEpoch(time_t& utcEpoch) {
             &minute,
             &second,
             &timezoneOffset) ||
-        year < 2025 || month < 1 || month > 12 ||
-        year >= 2080 ||  // the modem's restarted clock, see MAX_VALID_EPOCH
+        month < 1 || month > 12 ||
         day < 1 || day > 31 || hour < 0 || hour > 23 ||
         minute < 0 || minute > 59 || second < 0 || second > 60 ||
         timezoneOffset < -14 || timezoneOffset > 14) {
@@ -96,7 +85,8 @@ bool readNetworkEpoch(time_t& utcEpoch) {
     networkTime.tm_min = minute;
     networkTime.tm_sec = second;
     utcEpoch = mktime(&networkTime) - static_cast<time_t>(timezoneOffset * 3600.0f);
-    return true;
+    // Not a real time when the modem's clock was never set or restarted.
+    return sbinmesh::isValidEpoch(utcEpoch);
 }
 
 // Deep-sleeps until leadSeconds before the end of sleepSeconds; never returns.
@@ -131,18 +121,13 @@ void carryClockFromServer() {
         esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER) {
         return;
     }
-    const int64_t deviceMs = epochMsNow();
+    const int64_t deviceMs = sbinmesh::epochMsNow();
     const int64_t sleptMs = deviceMs - static_cast<int64_t>(millis()) -
                             static_cast<int64_t>(sleepStartedEpoch) * 1000LL;
     const int64_t correctionMs = driftMeasured && sleptMs > 0
-        ? sleptMs * driftPpm / (1000000LL + driftPpm)
+        ? sbinmesh::driftAheadMs(sleptMs, driftPpm)
         : 0;
-    const int64_t correctedMs = deviceMs - correctionMs;
-    struct timeval corrected = {
-        static_cast<time_t>(correctedMs / 1000),
-        static_cast<suseconds_t>((correctedMs % 1000) * 1000),
-    };
-    settimeofday(&corrected, nullptr);
+    sbinmesh::setEpochMs(deviceMs - correctionMs);
     sleepStartedEpoch = 0;
     clockSynced = true;
     slotSyncPending = sleepLeadSeconds > 0 && nextWakeEpoch != 0;
@@ -154,8 +139,7 @@ void carryClockFromServer() {
 }
 
 bool isSystemClockValid() {
-    const time_t now = time(nullptr);
-    return now >= MIN_VALID_EPOCH && now < MAX_VALID_EPOCH;
+    return sbinmesh::isValidEpoch(time(nullptr));
 }
 
 // The server's reply carries its clock: the next wake minus the sleep until it
@@ -163,7 +147,7 @@ bool isSystemClockValid() {
 // the best time there is; with it, the clock is corrected only if the two
 // disagree, as when the modem's own clock was read as network time.
 void correctClockFromServer(time_t serverEpoch) {
-    if (serverEpoch < MIN_VALID_EPOCH || serverEpoch >= MAX_VALID_EPOCH) {
+    if (!sbinmesh::isValidEpoch(serverEpoch)) {
         return;
     }
     const int64_t offset = static_cast<int64_t>(time(nullptr)) - static_cast<int64_t>(serverEpoch);
@@ -171,8 +155,7 @@ void correctClockFromServer(time_t serverEpoch) {
     if (isSystemClockValid() && networkTimeThisBoot && llabs(offset) <= SERVER_CLOCK_TOLERANCE_SECONDS) {
         return;
     }
-    struct timeval serverTime = {serverEpoch, 0};
-    settimeofday(&serverTime, nullptr);
+    sbinmesh::setEpochMs(static_cast<int64_t>(serverEpoch) * 1000LL);
     clockSynced = true;
     clockFromServer = true;
     Serial.printf("🕒 Clock set from the server's (it was off by %+lld s).\n",
@@ -191,7 +174,7 @@ bool synchronizeClockFromNetwork(unsigned long timeoutMs) {
     for (uint8_t attempt = 0; attempt < 5 && millis() - startedAt < timeoutMs; attempt++) {
         time_t utcEpoch = 0;
         if (readNetworkEpoch(utcEpoch)) {
-            const int64_t deviceMs = epochMsNow();
+            const int64_t deviceMs = sbinmesh::epochMsNow();
             const time_t deviceEpoch = static_cast<time_t>(deviceMs / 1000);
             slotSyncPending = esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER &&
                               sleepLeadSeconds > 0 && nextWakeEpoch != 0;
@@ -205,13 +188,11 @@ bool synchronizeClockFromNetwork(unsigned long timeoutMs) {
                 recordWakeTiming(deviceEpoch, utcEpoch);
                 recordClockDrift(deviceEpoch, utcEpoch);
             }
-            struct timeval timeValue = {utcEpoch, 0};
-            if (settimeofday(&timeValue, nullptr) == 0) {
-                clockSynced = true;
-                clockFromServer = false;
-                Serial.println("✅ Clock synchronized from the cellular network.");
-                return true;
-            }
+            sbinmesh::setEpochMs(static_cast<int64_t>(utcEpoch) * 1000LL);
+            clockSynced = true;
+            clockFromServer = false;
+            Serial.println("✅ Clock synchronized from the cellular network.");
+            return true;
         }
         delay(1000);
     }
@@ -278,7 +259,7 @@ void waitForSlotStart() {
     constexpr uint8_t MAX_SLOT_SLEEPS = 3;
     // A clock the server set has no network read to measure the wake against.
     bool measured = !slotSyncFromNetwork;
-    int64_t untilSlotMs = static_cast<int64_t>(nextWakeEpoch) * 1000LL - epochMsNow();
+    int64_t untilSlotMs = static_cast<int64_t>(nextWakeEpoch) * 1000LL - sbinmesh::epochMsNow();
     for (uint8_t round = 0; round < MAX_SLOT_SLEEPS && untilSlotMs <= MAX_SLOT_WAIT_SECONDS * 1000LL; round++) {
         int64_t waitMs = untilSlotMs - SLOT_RESYNC_SECONDS * 1000LL;
         if (round == 0 && slotSyncFromNetwork) {
@@ -309,7 +290,7 @@ void waitForSlotStart() {
             delay(static_cast<uint32_t>(waitMs));
         }
         time_t utcEpoch = 0;
-        const int64_t deviceMs = epochMsNow();
+        const int64_t deviceMs = sbinmesh::epochMsNow();
         if (!readNetworkEpoch(utcEpoch)) {
             Serial.println("⚠️ Could not re-read network time after the wait; using the sleep clock.");
             break;
@@ -321,10 +302,9 @@ void waitForSlotStart() {
             recordClockDrift(deviceEpoch, utcEpoch);
             measured = true;
         }
-        struct timeval timeValue = {utcEpoch, 0};
-        settimeofday(&timeValue, nullptr);
+        sbinmesh::setEpochMs(static_cast<int64_t>(utcEpoch) * 1000LL);
         clockFromServer = false;
-        untilSlotMs = static_cast<int64_t>(nextWakeEpoch) * 1000LL - epochMsNow();
+        untilSlotMs = static_cast<int64_t>(nextWakeEpoch) * 1000LL - sbinmesh::epochMsNow();
     }
     if (!measured) {
         // No re-read: measure against the first read, carried forward to now.

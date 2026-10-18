@@ -1,6 +1,26 @@
 #include "SbinClockDrift.h"
 
+#include <sys/time.h>
+
 namespace sbinmesh {
+
+int64_t epochMsNow() {
+    struct timeval now;
+    gettimeofday(&now, nullptr);
+    return static_cast<int64_t>(now.tv_sec) * 1000LL + now.tv_usec / 1000;
+}
+
+void setEpochMs(int64_t epochMs) {
+    struct timeval value = {
+        static_cast<time_t>(epochMs / 1000),
+        static_cast<suseconds_t>((epochMs % 1000) * 1000),
+    };
+    settimeofday(&value, nullptr);
+}
+
+int64_t driftAheadMs(int64_t sleptMs, int32_t driftPpm) {
+    return sleptMs * driftPpm / (1000000LL + driftPpm);
+}
 
 uint64_t applyDriftCorrection(uint64_t sleepSeconds, int32_t driftPpm) {
     // A clock running fast by r fires after requested / (1 + r) real seconds.

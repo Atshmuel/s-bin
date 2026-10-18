@@ -111,9 +111,7 @@ void sendBeacon() {
     meshRadio.initHeader(beacon.header, PACKET_BEACON);
     beacon.hopsToGateway = 0;
     beacon.beaconSeq = beaconSeq;
-    struct timeval now;
-    gettimeofday(&now, nullptr);
-    beacon.epochMs = static_cast<uint64_t>(now.tv_sec) * 1000ULL + now.tv_usec / 1000;
+    beacon.epochMs = static_cast<uint64_t>(epochMsNow());
     beacon.nextWakeEpoch = leafWakeEpochToAdvertise();
     beacon.meshWindowSeconds = static_cast<uint8_t>(meshAwakeWindowSeconds);
     meshRadio.broadcast(&beacon, sizeof(beacon));

@@ -20,9 +20,6 @@ namespace {
 // of other organizations ignore each other.
 constexpr char ORGANIZATION_ID[] = "699760a44e48dff9a082101e";
 
-constexpr time_t MIN_VALID_EPOCH = 1735689600;
-// A gateway modem's restarted clock reads as 2080 (two-digit year from 1980).
-constexpr time_t MAX_VALID_EPOCH = 3471292800;  // 2080-01-01 UTC
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 // First boot, or after losing the gateway: without a clock or schedule the
 // leaf cannot know when the gateway's short window is, so it listens through
@@ -97,23 +94,8 @@ RTC_DATA_ATTR uint8_t pendingCount = 0;
 MeshRadio radio;
 uint8_t gatewayMac[MAC_LENGTH] = {};
 
-int64_t nowMs() {
-    struct timeval now;
-    gettimeofday(&now, nullptr);
-    return static_cast<int64_t>(now.tv_sec) * 1000 + now.tv_usec / 1000;
-}
-
 bool clockValid() {
-    return time(nullptr) >= MIN_VALID_EPOCH;
-}
-
-void shiftClockMs(int64_t deltaMs) {
-    const int64_t shiftedMs = nowMs() + deltaMs;
-    struct timeval shifted = {
-        static_cast<time_t>(shiftedMs / 1000),
-        static_cast<suseconds_t>((shiftedMs % 1000) * 1000),
-    };
-    settimeofday(&shifted, nullptr);
+    return isValidEpoch(time(nullptr));
 }
 
 void queueReading(const DataPacket& reading) {
@@ -123,7 +105,7 @@ void queueReading(const DataPacket& reading) {
                 sizeof(PendingReading) * (MAX_PENDING_READINGS - 1));
         pendingCount--;
     }
-    pendingReadings[pendingCount++] = {reading, nowMs()};
+    pendingReadings[pendingCount++] = {reading, epochMsNow()};
 }
 
 DataPacket makeFakeReading() {
@@ -148,7 +130,7 @@ DataPacket makeFakeReading() {
 void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool atScheduledSlot) {
     const int64_t beaconNowMs = static_cast<int64_t>(beacon.epochMs) +
                                 (millis() - frame.receivedAtMs);
-    const int64_t deviceNowMs = nowMs();
+    const int64_t deviceNowMs = epochMsNow();
     // The clock as the sleeps left it, before the wake-time drift corrections:
     // drift is measured on this, the error printed is what the estimate missed.
     const int64_t uncorrectedNowMs = deviceNowMs + clockCorrectedSinceSyncMs;
@@ -199,11 +181,7 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
     for (uint8_t i = 0; i < pendingCount; i++) {
         pendingReadings[i].takenAtMs += beaconNowMs - deviceNowMs;
     }
-    struct timeval corrected = {
-        static_cast<time_t>(beaconNowMs / 1000),
-        static_cast<suseconds_t>((beaconNowMs % 1000) * 1000),
-    };
-    settimeofday(&corrected, nullptr);
+    setEpochMs(beaconNowMs);
 
     // A next wake further ahead than any schedule is stale; without one the
     // leaf searches for the gateway again later.
@@ -239,8 +217,7 @@ bool waitForBeacon(uint32_t listenMs, bool atScheduledSlot) {
         const BeaconPacket* beacon = frame.as<BeaconPacket>(PACKET_BEACON);
         // Phase 1 is a star: only beacons straight from a gateway are used.
         if (beacon == nullptr || beacon->hopsToGateway != 0 ||
-            beacon->epochMs < static_cast<uint64_t>(MIN_VALID_EPOCH) * 1000ULL ||
-            beacon->epochMs >= static_cast<uint64_t>(MAX_VALID_EPOCH) * 1000ULL) {
+            !isValidEpoch(static_cast<int64_t>(beacon->epochMs / 1000))) {
             continue;
         }
         char macText[18];
@@ -291,7 +268,7 @@ void sendPendingReadings() {
     while (delivered < pendingCount) {
         PendingReading& pending = pendingReadings[delivered];
         pending.packet.ageSeconds =
-            static_cast<uint32_t>(max<int64_t>(nowMs() - pending.takenAtMs, 0) / 1000);
+            static_cast<uint32_t>(max<int64_t>(epochMsNow() - pending.takenAtMs, 0) / 1000);
         if (!deliverReading(pending.packet)) {
             break;
         }
@@ -314,7 +291,7 @@ void deepSleepFor(uint64_t sleepSeconds) {
     Serial.flush();
     radio.end();
     lastAwakeSeconds = static_cast<uint16_t>((millis() + 999UL) / 1000UL);
-    sleepStartedEpochMs = clockValid() ? nowMs() : 0;
+    sleepStartedEpochMs = clockValid() ? epochMsNow() : 0;
     esp_sleep_enable_timer_wakeup(timerSeconds * MICROSECONDS_PER_SECOND);
     esp_deep_sleep_start();
 }
@@ -367,7 +344,7 @@ void setup() {
     Serial.println("\n=== S-Bin WROVER simulated mesh leaf ===");
     // Add the deep sleep that just ended to the sleep since the last beacon.
     if (sleepStartedEpochMs > 0) {
-        const int64_t sleptMs = nowMs() - static_cast<int64_t>(millis()) - sleepStartedEpochMs;
+        const int64_t sleptMs = epochMsNow() - static_cast<int64_t>(millis()) - sleepStartedEpochMs;
         sleptSinceSyncMs += sleptMs;
         sleepStartedEpochMs = 0;
         // The clock ran fast by about driftPpm over that sleep: the timer was
@@ -375,8 +352,8 @@ void setup() {
         // ahead by the whole drift (minutes after 12 hours). Take the estimate
         // off, so the listen deadline and any rescheduling run on real time.
         if (driftMeasured) {
-            const int64_t correctionMs = sleptMs * driftPpm / (1000000LL + driftPpm);
-            shiftClockMs(-correctionMs);
+            const int64_t correctionMs = driftAheadMs(sleptMs, driftPpm);
+            setEpochMs(epochMsNow() - correctionMs);
             clockCorrectedSinceSyncMs += correctionMs;
         }
     }
@@ -393,7 +370,7 @@ void setup() {
     if (!coldJoin) {
         const int64_t listenUntilMs = (static_cast<int64_t>(nextWakeEpoch) + guardSeconds +
                                        meshWindowSeconds + LISTEN_SLACK_SECONDS) * 1000;
-        listenMs = static_cast<uint32_t>(constrain(listenUntilMs - nowMs(), static_cast<int64_t>(1000),
+        listenMs = static_cast<uint32_t>(constrain(listenUntilMs - epochMsNow(), static_cast<int64_t>(1000),
                                                    static_cast<int64_t>(COLD_JOIN_LISTEN_MS)));
     }
     Serial.printf("%s Listening up to %lu s for a gateway beacon.\n",
