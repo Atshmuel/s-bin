@@ -40,8 +40,11 @@ int32_t clockErrorSeconds = 0;
 bool hasClockError = false;
 int32_t wakeOffsetSeconds = 0;
 bool hasWakeOffset = false;
-// True once this boot set the clock from network time; mesh beacons wait for it.
-bool clockSyncedFromNetwork = false;
+// True once this boot set the clock from network time, or carried over the
+// clock the server set (see synchronizeClockFromNetwork()); mesh beacons wait for it.
+bool clockSynced = false;
+// The clock was last set from the server's reply, with no network time since.
+RTC_DATA_ATTR bool clockFromServer = false;
 RTC_DATA_ATTR uint32_t scheduledSleepDurationSeconds = 0;
 uint32_t meshAwakeWindowSeconds = DEFAULT_MESH_AWAKE_WINDOW_SECONDS;
 // Actual awake time of the previous cycle, reported with the next telemetry.

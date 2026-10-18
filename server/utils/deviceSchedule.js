@@ -104,6 +104,8 @@ export function getNextReportSchedule(
         Math.floor(intervalMinutes * 60 / 4),
     );
     const nextWakeEpoch = nextSlotEpoch(nowSeconds + intervalToleranceSeconds, intervalMinutes, startHour, timeZone);
+    // Gateways read the server's clock from this as nextWakeEpoch minus
+    // sleepDurationSeconds, so both stay measured from the same now.
     const sleepDurationSeconds = nextWakeEpoch - nowSeconds;
     // The slot after next: mesh gateways advertise it to leaves at the next wake,
     // before they have reached the server for that cycle.

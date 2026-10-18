@@ -35,7 +35,10 @@ void setup() {
     // Long enough for a cold cellular attach; the modem is powered off between retries.
     constexpr unsigned long CLOCK_SYNC_TIMEOUT_MS = 120000UL;
     constexpr uint32_t CLOCK_RETRY_SLEEP_SECONDS = 300;
-    if (!synchronizeClockFromNetwork(CLOCK_SYNC_TIMEOUT_MS)) {
+    // On the network but without its time (the modem lost power and the network
+    // has not sent the time yet), the report still goes out: the server's reply
+    // sets the clock.
+    if (!synchronizeClockFromNetwork(CLOCK_SYNC_TIMEOUT_MS) && !modem.isNetworkConnected()) {
         enterDeepSleepForSetupRetry(CLOCK_RETRY_SLEEP_SECONDS, "No valid network time");
     }
 

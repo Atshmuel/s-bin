@@ -171,13 +171,14 @@ void meshGatewayTask(void*) {
 // Opens this cycle's mesh window. Called once the clock is synced at boot and
 // again at the start of each loop() cycle (cycles repeat without a reboot
 // while USB is connected); it does nothing if the window was already opened
-// this cycle. Without network time this cycle no window is opened: leaves
-// would learn this gateway's drifted clock and wake at the wrong time.
+// this cycle. Without network time this cycle (or the clock the server set,
+// carried over) no window is opened: leaves would learn this gateway's
+// drifted clock and wake at the wrong time.
 void beginMeshWindow() {
     if (meshWindowStarted || ownerId.length() == 0) {
         return;
     }
-    if (!clockSyncedFromNetwork) {
+    if (!clockSynced) {
         static bool warned = false;
         if (!warned) {
             Serial.println("⚠️ No network time this cycle; skipping the mesh window.");

@@ -343,6 +343,11 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
             }
         }
 
+        // First, so the wake time below is checked against a corrected clock.
+        if (doc["nextWakeEpoch"].is<uint64_t>() && doc["sleepDurationSeconds"].is<uint32_t>()) {
+            correctClockFromServer(static_cast<time_t>(
+                doc["nextWakeEpoch"].as<uint64_t>() - doc["sleepDurationSeconds"].as<uint32_t>()));
+        }
         if (doc["nextWakeEpoch"].is<uint64_t>()) {
             uint64_t serverNextWakeEpoch = doc["nextWakeEpoch"].as<uint64_t>();
             if (serverNextWakeEpoch > static_cast<uint64_t>(time(nullptr))) {
