@@ -13,8 +13,6 @@ export function isValidTelemetryRecord({
     battery,
     weight,
     message,
-    sleepDurationSeconds,
-    meshAwakeWindowSeconds,
     lastAwakeSeconds,
 }, kind = "bin") {
     return checkPayloadFields({
@@ -25,20 +23,17 @@ export function isValidTelemetryRecord({
         battery,
         weight,
         message,
-        sleepDurationSeconds,
-        meshAwakeWindowSeconds,
         lastAwakeSeconds,
     }, { hasFillSensor: kind !== "gateway" });
 }
 
 // Optional sleep-clock diagnostics. An invalid value is dropped instead of
 // rejecting the report, so a diagnostic field can never cost a reading.
-function clockDiagnostics({ driftPpm, clockErrorSeconds, wakeOffsetSeconds }) {
+function clockDiagnostics({ driftPpm, clockErrorSeconds }) {
     const within = (value, limit) => Number.isInteger(value) && Math.abs(value) <= limit;
     return {
         ...(within(driftPpm, 100000) ? { driftPpm } : {}),
         ...(within(clockErrorSeconds, 86400) ? { clockErrorSeconds } : {}),
-        ...(within(wakeOffsetSeconds, 3600) ? { wakeOffsetSeconds } : {}),
     };
 }
 
@@ -63,12 +58,9 @@ export async function applyDeviceLog(bin, {
     battery,
     weight,
     message: healthMessage,
-    sleepDurationSeconds,
-    meshAwakeWindowSeconds,
     lastAwakeSeconds,
     driftPpm,
     clockErrorSeconds,
-    wakeOffsetSeconds,
 }, { via, gatewayId = null, hops = null, rssi = null, measuredAt, reportIntervalMinutes, reportStartHour }) {
     const schedule = getNextReportSchedule(location, reportIntervalMinutes, reportStartHour);
     const takenAt = measuredAt ?? new Date();
@@ -103,10 +95,8 @@ export async function applyDeviceLog(bin, {
         oldLevel: isGateway ? null : bin.status.level,
         newLevel: levelIsValid ? level : null,
         battery,
-        ...(sleepDurationSeconds === undefined ? {} : { sleepDurationSeconds }),
-        ...(meshAwakeWindowSeconds === undefined ? {} : { meshAwakeWindowSeconds }),
         ...(lastAwakeSeconds === undefined ? {} : { lastAwakeSeconds }),
-        ...clockDiagnostics({ driftPpm, clockErrorSeconds, wakeOffsetSeconds }),
+        ...clockDiagnostics({ driftPpm, clockErrorSeconds }),
         connection: via,
         ...(gatewayId === null ? {} : { gatewayId }),
         ...(hops === null ? {} : { hops }),
@@ -134,12 +124,6 @@ export async function applyDeviceLog(bin, {
         }
     }
     bin.status.battery = battery;
-    if (sleepDurationSeconds !== undefined) {
-        bin.status.deepSleepSeconds = sleepDurationSeconds;
-    }
-    if (meshAwakeWindowSeconds !== undefined) {
-        bin.status.meshAwakeWindowSeconds = meshAwakeWindowSeconds;
-    }
     if (lastAwakeSeconds !== undefined) {
         bin.status.lastAwakeSeconds = lastAwakeSeconds;
     }

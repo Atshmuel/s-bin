@@ -38,8 +38,6 @@ uint32_t slotPeriodSeconds = 0;
 // This boot's clock diagnostics, reported with the telemetry.
 int32_t clockErrorSeconds = 0;
 bool hasClockError = false;
-int32_t wakeOffsetSeconds = 0;
-bool hasWakeOffset = false;
 // True once this boot set the clock from network time, or carried over the
 // clock the server set (see synchronizeClockFromNetwork()); mesh beacons wait for it.
 bool clockSynced = false;
@@ -59,7 +57,6 @@ RTC_DATA_ATTR uint64_t sleepStartedEpoch = 0;
 RTC_DATA_ATTR uint32_t sleepLeadSeconds = 0;
 RTC_DATA_ATTR uint32_t scheduleAckCounter = 0;
 uint32_t instructionCheckCounter = 0;
-bool instructionCheckAllowsSleep = false;
 bool instructionResponseValid = false;
 DeviceInstruction pendingInstructions[MAX_PENDING_INSTRUCTIONS];
 uint8_t pendingInstructionCount = 0;

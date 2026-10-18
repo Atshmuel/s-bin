@@ -16,9 +16,10 @@ constexpr int64_t MIN_DRIFT_MEASUREMENT_SECONDS = 1800;
 constexpr int32_t MAX_ABS_DRIFT_PPM = 60000;
 // Flash is rewritten only when the estimate moves this much.
 constexpr int32_t DRIFT_SAVE_THRESHOLD_PPM = 200;
-// Limits that match the server's validation of the report's diagnostics.
+// A limit that matches the server's validation of the report's clock error.
 constexpr int64_t MAX_REPORTED_CLOCK_ERROR_SECONDS = 86400;
-constexpr int64_t MAX_REPORTED_WAKE_OFFSET_SECONDS = 3600;
+// A wake further off than this is not that slot's wake; it is not logged.
+constexpr int64_t MAX_LOGGED_WAKE_OFFSET_SECONDS = 3600;
 }
 
 uint64_t applyDriftCorrection(uint64_t sleepSeconds) {
@@ -33,8 +34,8 @@ void markSleepStart() {
 }
 
 // Records, for the report, how far the clock was off after the deep sleep that
-// just ended and when this wake happened relative to the planned wake: the slot
-// minus the lead the sleep ended early by on purpose (<0 = early).
+// just ended, and logs when this wake happened relative to the planned wake:
+// the slot minus the lead the sleep ended early by on purpose.
 void recordWakeTiming(time_t deviceEpoch, time_t networkEpoch) {
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER ||
         !sbinmesh::isValidEpoch(deviceEpoch)) {
@@ -52,9 +53,7 @@ void recordWakeTiming(time_t deviceEpoch, time_t networkEpoch) {
     const int64_t wakeEpoch = static_cast<int64_t>(networkEpoch) - static_cast<int64_t>(millis() / 1000UL);
     const int64_t plannedWake = static_cast<int64_t>(nextWakeEpoch) - sleepLeadSeconds;
     const int64_t offset = wakeEpoch - plannedWake;
-    if (llabs(offset) <= MAX_REPORTED_WAKE_OFFSET_SECONDS) {
-        wakeOffsetSeconds = static_cast<int32_t>(offset);
-        hasWakeOffset = true;
+    if (llabs(offset) <= MAX_LOGGED_WAKE_OFFSET_SECONDS) {
         Serial.printf("⏰ Woke %lld s %s the planned wake (clock was off by %+lld s).\n",
                       static_cast<long long>(llabs(offset)), offset < 0 ? "before" : "after",
                       static_cast<long long>(error));

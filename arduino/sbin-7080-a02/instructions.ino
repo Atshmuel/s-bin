@@ -118,7 +118,7 @@ void processPendingInstructions(unsigned long timeoutMs) {
             serviceMqttFor(min(deadline - millis(), 1000UL));
             continue;
         }
-        if (instructionCheckAllowsSleep) {
+        if (pendingInstructionCount == 0) {
             if (!extendedAwakeWindow) {
                 Serial.println("✅ No pending instructions; device may return to sleep.");
                 return;
@@ -132,11 +132,6 @@ void processPendingInstructions(unsigned long timeoutMs) {
             serviceMqttFor(pollDelayMs);
             continue;
         }
-        if (pendingInstructionCount == 0) {
-            Serial.println("⚠️ Server response had no executable instruction; using the sleep fallback.");
-            return;
-        }
-
         for (uint8_t i = 0; i < pendingInstructionCount; i++) {
             if (static_cast<long>(deadline - millis()) <= 0) {
                 Serial.println("⚠️ Instruction processing window expired; remaining instructions stay queued.");

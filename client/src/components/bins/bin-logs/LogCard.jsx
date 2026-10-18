@@ -77,20 +77,6 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 </span>
                             </div>
 
-                            {log.sleepDurationSeconds != null && (
-                                <div className="flex justify-between">
-                                    <span className="font-medium">{t("deepSleepDuration")}:</span>
-                                    <span>{formatSleepDuration(log.sleepDurationSeconds, t)}</span>
-                                </div>
-                            )}
-
-                            {log.meshAwakeWindowSeconds != null && (
-                                <div className="flex justify-between">
-                                    <span className="font-medium">{t("meshAwakeWindow")}:</span>
-                                    <span>{log.meshAwakeWindowSeconds} {t("units.seconds")}</span>
-                                </div>
-                            )}
-
                             {log.lastAwakeSeconds != null && (
                                 <div className="flex justify-between">
                                     <span className="font-medium">{t("lastAwakeTime")}:</span>

@@ -35,7 +35,6 @@ export async function handleInstructionCheck(mac, { deviceKey }) {
         getNextReportSchedule(bin.location.coordinates, reportIntervalMinutes, reportStartHour);
     const response = JSON.stringify({
         status: "instruction_check",
-        canSleep: instructions.length === 0,
         instructions,
         timeZone,
         nextWakeEpoch,

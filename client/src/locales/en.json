@@ -29,8 +29,6 @@
         "minutes":"min",
         "hours":"h"
     },
-    "deepSleepDuration":"Sleep duration",
-    "meshAwakeWindow":"Mesh awake time",
     "lastAwakeTime":"Last awake time",
 "backToBin":"Back to Bin",
 "user":"User",

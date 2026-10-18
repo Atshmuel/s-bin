@@ -21,20 +21,6 @@ function BinDeviceDetails({ bin, handleLocationClick }) {
     return (
         <>
             <div className="flex flex-row justify-between">
-                <span className="font-medium">{t('deepSleepDuration')}:</span>
-                <span>{bin.status.deepSleepSeconds
-                    ? formatSleepDuration(bin.status.deepSleepSeconds, t)
-                    : '-'}</span>
-            </div>
-
-            <div className="flex flex-row justify-between">
-                <span className="font-medium">{t('meshAwakeWindow')}:</span>
-                <span>{bin.status.meshAwakeWindowSeconds
-                    ? `${bin.status.meshAwakeWindowSeconds} ${t('units.seconds')}`
-                    : '-'}</span>
-            </div>
-
-            <div className="flex flex-row justify-between">
                 <span className="font-medium">{t('lastAwakeTime')}:</span>
                 <span>{bin.status.lastAwakeSeconds
                     ? formatSleepDuration(bin.status.lastAwakeSeconds, t)

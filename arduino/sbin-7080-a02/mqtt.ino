@@ -133,7 +133,6 @@ bool requestInstructionCheck(unsigned long timeoutMs) {
     }
 
     const uint32_t previousCheckCount = instructionCheckCounter;
-    instructionCheckAllowsSleep = false;
     Serial.printf("Checking for server instructions (up to %lu seconds)...\n", timeoutMs / 1000);
 
     if (!waitForMqttReply(instructionCheckCounter, previousCheckCount, timeoutMs)) {
@@ -233,10 +232,6 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     if (data.driftPpm != 0) {
         reading["driftPpm"] = data.driftPpm;
     }
-    if (data.meshAwakeWindowSeconds >= 1 &&
-        data.meshAwakeWindowSeconds <= MAX_MESH_AWAKE_WINDOW_SECONDS) {
-        reading["meshAwakeWindowSeconds"] = data.meshAwakeWindowSeconds;
-    }
 
     char payload[768];
     const size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
@@ -275,10 +270,6 @@ bool publishTelemetry(const DeviceReading& reading) {
         doc["level"] = level;
     }
     doc["battery"] = reading.batteryPercent;
-    if (scheduledSleepDurationSeconds > 0) {
-        doc["sleepDurationSeconds"] = scheduledSleepDurationSeconds;
-    }
-    doc["meshAwakeWindowSeconds"] = meshAwakeWindowSeconds;
     if (lastAwakeSeconds > 0) {
         doc["lastAwakeSeconds"] = lastAwakeSeconds;
     }
@@ -287,9 +278,6 @@ bool publishTelemetry(const DeviceReading& reading) {
     }
     if (hasClockError) {
         doc["clockErrorSeconds"] = clockErrorSeconds;
-    }
-    if (hasWakeOffset) {
-        doc["wakeOffsetSeconds"] = wakeOffsetSeconds;
     }
     doc["health"] = reading.health;
     doc["weight"] = 0;
@@ -404,9 +392,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
                 );
             }
         }
-        if (doc["status"] == "instruction_check" &&
-            doc["canSleep"].is<bool>()) {
-            instructionCheckAllowsSleep = doc["canSleep"].as<bool>();
+        if (doc["status"] == "instruction_check") {
             JsonArrayConst instructions = doc["instructions"].as<JsonArrayConst>();
             pendingInstructionCount = 0;
             instructionResponseValid = instructions.size() <= MAX_PENDING_INSTRUCTIONS;
@@ -429,9 +415,6 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
                 }
                 pendingInstructionCount++;
             }
-            instructionResponseValid =
-                instructionResponseValid &&
-                instructionCheckAllowsSleep == (pendingInstructionCount == 0);
             instructionCheckCounter++;
             if (pendingInstructionCount > 0) {
                 Serial.printf(
