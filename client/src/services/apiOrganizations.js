@@ -1,48 +1,18 @@
-import { ORG_EP, SERVER_URL } from "@/utils/constants";
+import { ORG_EP } from "@/utils/constants";
+import { request } from "./request";
 
-export async function getOrganizations() {
-    const res = await fetch(`${SERVER_URL}/${ORG_EP}`, {
-        method: "GET",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function getOrganizations() {
+    return request(ORG_EP);
 }
 
-
-export async function createOrgApi({ name }) {
-    const res = await fetch(`${SERVER_URL}/${ORG_EP}`, {
-        method: "POST",
-        mode: "cors",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function createOrgApi({ name }) {
+    return request(ORG_EP, { method: "POST", body: { name } });
 }
 
-export async function deleteOrgByIdApi({ orgId }) {
-    const res = await fetch(`${SERVER_URL}/${ORG_EP}/${orgId}`, {
-        method: "DELETE",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function deleteOrgByIdApi({ orgId }) {
+    return request(`${ORG_EP}/${orgId}`, { method: "DELETE" });
 }
 
-export async function updateOrgNameApi({ orgId, name }) {
-    const res = await fetch(`${SERVER_URL}/${ORG_EP}/${orgId}`, {
-        method: "PUT",
-        mode: "cors",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function updateOrgNameApi({ orgId, name }) {
+    return request(`${ORG_EP}/${orgId}`, { method: "PUT", body: { name } });
 }

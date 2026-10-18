@@ -1,30 +1,13 @@
-import { BINS_EP, SERVER_URL } from "@/utils/constants";
+import { BINS_EP } from "@/utils/constants";
+import { request } from "./request";
 
-async function parseResponse(response) {
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data?.message || "Request failed.");
-    }
-    return data;
+export function getMeshSettings() {
+    return request(`${BINS_EP}/mesh-settings`);
 }
 
-export async function getMeshSettings() {
-    const response = await fetch(
-        `${SERVER_URL}/${BINS_EP}/mesh-settings`,
-        { credentials: "include" }
-    );
-    return parseResponse(response);
-}
-
-export async function updateMeshSettings({ orgId, meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour }) {
-    const response = await fetch(
-        `${SERVER_URL}/${BINS_EP}/mesh-settings/${orgId}`,
-        {
-            method: "PATCH",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour }),
-        }
-    );
-    return parseResponse(response);
+export function updateMeshSettings({ orgId, meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour }) {
+    return request(`${BINS_EP}/mesh-settings/${orgId}`, {
+        method: "PATCH",
+        body: { meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour },
+    });
 }

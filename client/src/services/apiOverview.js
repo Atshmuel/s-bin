@@ -1,45 +1,24 @@
 import { getAICache, setAICache } from '../utils/aiCache';
-import { OVERVIEW_EP, SERVER_URL } from "@/utils/constants";
+import { OVERVIEW_EP } from "@/utils/constants";
+import { request } from "./request";
 
-export async function getOverviews() {
-    const res = await fetch(`${SERVER_URL}/${OVERVIEW_EP}`, {
-        method: "GET",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function getOverviews() {
+    return request(OVERVIEW_EP);
 }
 
-export async function getBinsStatusOverviews() {
-    const res = await fetch(`${SERVER_URL}/${OVERVIEW_EP}/binstatus`, {
-        method: "GET",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function getBinsStatusOverviews() {
+    return request(`${OVERVIEW_EP}/binstatus`);
 }
 
 export async function getAIOverviewStream() {
     const cached = getAICache()
     if (cached) return cached
 
-    const res = await fetch(`${SERVER_URL}/${OVERVIEW_EP}/ai-ov`, {
-        method: "GET",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
+    const data = await request(`${OVERVIEW_EP}/ai-ov`);
     setAICache(data)
     return data;
 }
-export async function getLogTypeOverviews() {
-    const res = await fetch(`${SERVER_URL}/${OVERVIEW_EP}/logtype`, {
-        method: "GET",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+
+export function getLogTypeOverviews() {
+    return request(`${OVERVIEW_EP}/logtype`);
 }

@@ -1,111 +1,46 @@
-import { BINS_EP, SERVER_URL } from "@/utils/constants";
+import { BINS_EP } from "@/utils/constants";
+import { request } from "./request";
 
 //get bins
-export async function getAllUserBins(page = 1, limit = 10, search = "") {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/all?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, {
-        method: "GET",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
-}
-export async function getBin({ id, withLogs }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/${id}?withLogs=${withLogs}`, {
-        method: "GET",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function getAllUserBins(page = 1, limit = 10, search = "") {
+    return request(`${BINS_EP}/all?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
 }
 
-export async function getBinsInUserRadius({ coordinates, radius, health = null, minLevel = null, maxLevel = null }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/radius`, {
+export function getBin({ id, withLogs }) {
+    return request(`${BINS_EP}/${id}?withLogs=${withLogs}`);
+}
+
+export function getBinsInUserRadius({ coordinates, radius, health = null, minLevel = null, maxLevel = null }) {
+    return request(`${BINS_EP}/radius`, {
         method: "POST",
-        mode: "cors",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coordinates, radius: +radius * 1000, health, minLevel, maxLevel }),
+        body: { coordinates, radius: +radius * 1000, health, minLevel, maxLevel },
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
 }
 
-export async function getBestRoute({ coordinates, radius, type, byFoot }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/route`, {
+export function getBestRoute({ coordinates, radius, type, byFoot }) {
+    return request(`${BINS_EP}/route`, {
         method: "POST",
-        mode: "cors",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coordinates: coordinates.split(',').map(Number), radius: +radius * 1000, type, byFoot }),
+        body: { coordinates: coordinates.split(',').map(Number), radius: +radius * 1000, type, byFoot },
     });
-    const data = await res.json();
+}
+//end
 
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function updateBinMaintenance({ id, notes }) {
+    return request(`${BINS_EP}/maintenance/${id}`, { method: "PATCH", body: { notes } });
 }
 
-//end 
-
-
-export async function updateBinMaintenance({ id, notes }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/maintenance/${id}`, {
-        method: "PATCH",
-        mode: "cors",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function updateBinName({ id, name }) {
+    return request(`${BINS_EP}/name/${id}`, { method: "PATCH", body: { name } });
 }
 
-export async function updateBinName({ id, name }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/name/${id}`, {
-        method: "PATCH",
-        mode: "cors",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function deleteBinsBatch({ binIds = [] }) {
+    return request(BINS_EP, { method: "DELETE", body: { binIds } });
 }
 
-export async function deleteBinsBatch({ binIds = [] }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}`, {
-        method: "DELETE",
-        mode: "cors",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ binIds }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function deleteBinById({ id }) {
+    return request(`${BINS_EP}/${id}`, { method: "DELETE" });
 }
 
-export async function deleteBinById({ id }) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
-}
-
-
-export async function deleteBinViaMac(macId) {
-    const res = await fetch(`${SERVER_URL}/${BINS_EP}/mac/${macId}`, {
-        method: "DELETE",
-        credentials: "include",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.message);
-    return data;
+export function deleteBinViaMac(macId) {
+    return request(`${BINS_EP}/mac/${macId}`, { method: "DELETE" });
 }
