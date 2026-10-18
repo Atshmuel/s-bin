@@ -26,6 +26,26 @@ uint32_t relayResultCounter = 0;
 bool relayResultAccepted = false;
 }
 
+// Services MQTT (delivering replies to mqttCallback) for waitMs.
+void serviceMqttFor(unsigned long waitMs) {
+    const unsigned long startedAt = millis();
+    while (millis() - startedAt < waitMs) {
+        mqttClient.loop();
+        delay(50);
+    }
+}
+
+// Services MQTT until mqttCallback moves counter past previousValue (the
+// awaited reply arrived) or timeoutMs passes; returns whether it arrived.
+bool waitForMqttReply(const uint32_t& counter, uint32_t previousValue, unsigned long timeoutMs) {
+    const unsigned long startedAt = millis();
+    while (counter == previousValue && millis() - startedAt < timeoutMs) {
+        mqttClient.loop();
+        delay(50);
+    }
+    return counter != previousValue;
+}
+
 void setupMqtt() {
     acknowledgementTopic = "bins/ack/" + DeviceMac;
     commandTopic = "bins/command/" + DeviceMac;
@@ -116,14 +136,7 @@ bool requestInstructionCheck(unsigned long timeoutMs) {
     instructionCheckAllowsSleep = false;
     Serial.printf("Checking for server instructions (up to %lu seconds)...\n", timeoutMs / 1000);
 
-    unsigned long waitStartedAt = millis();
-    while (instructionCheckCounter == previousCheckCount &&
-           millis() - waitStartedAt < timeoutMs) {
-        mqttClient.loop();
-        delay(50);
-    }
-
-    if (instructionCheckCounter == previousCheckCount) {
+    if (!waitForMqttReply(instructionCheckCounter, previousCheckCount, timeoutMs)) {
         Serial.println("⚠️ No instruction response before timeout; returning to sleep.");
         return false;
     }
@@ -163,15 +176,10 @@ bool publishInstructionResult(
 
     waitingInstructionResultId = instructionId;
     const uint32_t previousAckCount = instructionResultAckCounter;
-    unsigned long waitStartedAt = millis();
-    while (instructionResultAckCounter == previousAckCount &&
-           millis() - waitStartedAt < 2000UL) {
-        mqttClient.loop();
-        delay(50);
-    }
+    const bool confirmed = waitForMqttReply(instructionResultAckCounter, previousAckCount, 2000UL);
     waitingInstructionResultId = "";
 
-    if (instructionResultAckCounter == previousAckCount) {
+    if (!confirmed) {
         Serial.println("⚠️ No server confirmation for instruction result; it will be retried.");
         return false;
     }
@@ -241,13 +249,9 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     waitingRelayLeafMac = leafMac;
     waitingRelayMessageId = data.header.messageId;
     const uint32_t previousResultCount = relayResultCounter;
-    const unsigned long waitStartedAt = millis();
-    while (relayResultCounter == previousResultCount && millis() - waitStartedAt < timeoutMs) {
-        mqttClient.loop();
-        delay(50);
-    }
+    const bool replied = waitForMqttReply(relayResultCounter, previousResultCount, timeoutMs);
     waitingRelayLeafMac = "";
-    if (relayResultCounter == previousResultCount) {
+    if (!replied) {
         return RELAY_NO_REPLY;
     }
     Serial.printf("%s Relayed reading %08lX of %s.\n",
@@ -256,12 +260,12 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     return relayResultAccepted ? RELAY_ACCEPTED : RELAY_REJECTED;
 }
 
-bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, const String& healthMessage) {
+bool publishTelemetry(const DeviceReading& reading) {
     if (!mqttClient.connected() || !hasGpsFix || deviceKey.length() == 0) {
         return false;
     }
 
-    int level = calculateFillLevel(distanceMm);
+    int level = calculateFillLevel(reading.distanceMm);
     bool sensorOk = level >= 0;
 
     StaticJsonDocument<768> doc;
@@ -270,7 +274,7 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
     if (sensorOk) {
         doc["level"] = level;
     }
-    doc["battery"] = batteryPercent;
+    doc["battery"] = reading.batteryPercent;
     if (scheduledSleepDurationSeconds > 0) {
         doc["sleepDurationSeconds"] = scheduledSleepDurationSeconds;
     }
@@ -287,12 +291,12 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
     if (hasWakeOffset) {
         doc["wakeOffsetSeconds"] = wakeOffsetSeconds;
     }
-    doc["health"] = health;
+    doc["health"] = reading.health;
     doc["weight"] = 0;
     doc["location"][0] = latitude;
     doc["location"][1] = longitude;
-    if (healthMessage.length() > 0) {
-        doc["message"] = healthMessage;
+    if (reading.healthMessage.length() > 0) {
+        doc["message"] = reading.healthMessage;
     }
 
     char payload[768];
@@ -319,14 +323,9 @@ bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, 
 }
 
 void mqttCallback(char* topic, byte* payload, unsigned int length) {
-    String message;
-    message.reserve(length);
-    for (unsigned int i = 0; i < length; i++) {
-        message += static_cast<char>(payload[i]);
-    }
-
     StaticJsonDocument<1536> doc;
-    DeserializationError error = deserializeJson(doc, message);
+    // const: ArduinoJson copies the strings instead of rewriting the buffer.
+    DeserializationError error = deserializeJson(doc, static_cast<const byte*>(payload), length);
     if (error) {
         Serial.print("❌ Invalid MQTT message: ");
         Serial.println(error.c_str());

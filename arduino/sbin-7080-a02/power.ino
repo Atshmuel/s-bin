@@ -33,6 +33,24 @@ void cutModemPower() {
     Serial.println("🔌 Modem power rails turned off.");
 }
 
+// Reads the A02 and the battery and updates the health counters. A sensor not
+// trusted (its calibration just failed) counts as failed whatever it reads.
+DeviceReading takeReading(bool gpsTested, bool gpsOk, bool sensorTrusted) {
+    DeviceReading reading;
+    reading.distanceMm = getDistanceMm();
+    const bool sensorOk = sensorTrusted && reading.distanceMm > 0 &&
+                          calculateFillLevel(reading.distanceMm) >= 0;
+    if (!sensorOk) {
+        Serial.println("⚠️ Sensor Read Error; fill level will be reported as unavailable.");
+    }
+    reading.batteryMillivolts = readBatteryMillivolts();
+    reading.batteryPercent = readBatteryPercent();
+    const bool pmuOk = pmuAvailable && reading.batteryMillivolts > 0;
+    reading.health = updateDeviceHealth(sensorOk, pmuOk, gpsTested, gpsOk);
+    reading.healthMessage = getDeviceHealthMessage(reading.distanceMm);
+    return reading;
+}
+
 uint16_t readBatteryMillivolts() {
     return pmuAvailable && PMU.isBatteryConnect() ? PMU.getBattVoltage() : 0;
 }

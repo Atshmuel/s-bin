@@ -42,71 +42,53 @@ uint32_t processInstruction(const DeviceInstruction& instruction) {
     uint32_t awakeExtensionSeconds = 0;
     if (loadCachedInstructionResult(instruction.id, status, result)) {
         Serial.printf("↩️ Re-sending saved result for instruction %s.\n", instruction.id.c_str());
-    } else if (instruction.type == "report_now") {
-        Serial.printf("📊 Executing report_now instruction %s.\n", instruction.id.c_str());
-        int distanceMm = getDistanceMm();
-        bool sensorOk = distanceMm > 0 && calculateFillLevel(distanceMm) >= 0;
-        uint16_t batteryMillivolts = readBatteryMillivolts();
-        bool pmuOk = pmuAvailable && batteryMillivolts > 0;
-        int batteryPercent = readBatteryPercent();
-        String health = updateDeviceHealth(sensorOk, pmuOk, false, true);
-        String healthMessage = getDeviceHealthMessage(distanceMm);
-
-        if (!sensorOk) {
-            Serial.println("⚠️ A02 reading failed during requested report.");
-        }
-        if (publishTelemetry(distanceMm, batteryPercent, health, healthMessage)) {
-            status = "completed";
-            result = "additional_report_published";
-        } else {
-            status = "failed";
-            result = "additional_report_publish_failed";
-        }
-        saveCachedInstructionResult(instruction.id, status, result);
-    } else if (instruction.type == "stay_awake") {
-        if (instruction.durationSeconds == 0 ||
-            instruction.durationSeconds > MAX_AWAKE_EXTENSION_SECONDS) {
-            status = "failed";
-            result = "invalid_awake_extension_duration";
-        } else {
-            status = "completed";
-            awakeExtensionSeconds = instruction.durationSeconds;
-            result = "awake_window_extended";
-            Serial.printf(
-                "⏱️ Staying awake for an additional %lu seconds.\n",
-                static_cast<unsigned long>(awakeExtensionSeconds)
-            );
-        }
-        saveCachedInstructionResult(instruction.id, status, result);
-    } else if (instruction.type == "calibrate_empty_bin") {
-        Serial.printf("📏 Starting empty-bin calibration for instruction %s.\n",
-                      instruction.id.c_str());
-        const bool calibrated = calibrateBinDepth();
-        if (calibrated) {
-            status = "completed";
-            result = "empty_depth_mm_" + String(binDepthMm);
-        } else {
-            status = "failed";
-            result = "empty_bin_calibration_failed";
-        }
-
-        // Publish refreshed telemetry either way, so the bin's health reflects
-        // the calibration outcome instead of the report sent before it.
-        int distanceMm = getDistanceMm();
-        bool sensorOk = calibrated && distanceMm > 0 && calculateFillLevel(distanceMm) >= 0;
-        uint16_t batteryMillivolts = readBatteryMillivolts();
-        bool pmuOk = pmuAvailable && batteryMillivolts > 0;
-        int batteryPercent = readBatteryPercent();
-        String health = updateDeviceHealth(sensorOk, pmuOk, false, true);
-        String healthMessage = getDeviceHealthMessage(distanceMm);
-        if (!publishTelemetry(distanceMm, batteryPercent, health, healthMessage)) {
-            Serial.println("⚠️ The refreshed telemetry after calibration could not be published.");
-        }
-        saveCachedInstructionResult(instruction.id, status, result);
     } else {
-        Serial.printf("⚠️ Unsupported instruction type: %s.\n", instruction.type.c_str());
-        status = "failed";
-        result = "unsupported_instruction_type";
+        if (instruction.type == "report_now") {
+            Serial.printf("📊 Executing report_now instruction %s.\n", instruction.id.c_str());
+            if (publishTelemetry(takeReading(false, true, true))) {
+                status = "completed";
+                result = "additional_report_published";
+            } else {
+                status = "failed";
+                result = "additional_report_publish_failed";
+            }
+        } else if (instruction.type == "stay_awake") {
+            if (instruction.durationSeconds == 0 ||
+                instruction.durationSeconds > MAX_AWAKE_EXTENSION_SECONDS) {
+                status = "failed";
+                result = "invalid_awake_extension_duration";
+            } else {
+                status = "completed";
+                awakeExtensionSeconds = instruction.durationSeconds;
+                result = "awake_window_extended";
+                Serial.printf(
+                    "⏱️ Staying awake for an additional %lu seconds.\n",
+                    static_cast<unsigned long>(awakeExtensionSeconds)
+                );
+            }
+        } else if (instruction.type == "calibrate_empty_bin") {
+            Serial.printf("📏 Starting empty-bin calibration for instruction %s.\n",
+                          instruction.id.c_str());
+            const bool calibrated = calibrateBinDepth();
+            if (calibrated) {
+                status = "completed";
+                result = "empty_depth_mm_" + String(binDepthMm);
+            } else {
+                status = "failed";
+                result = "empty_bin_calibration_failed";
+            }
+            // Publish refreshed telemetry either way, so the bin's health reflects
+            // the calibration outcome instead of the report sent before it.
+            if (!publishTelemetry(takeReading(false, true, calibrated))) {
+                Serial.println("⚠️ The refreshed telemetry after calibration could not be published.");
+            }
+        } else {
+            Serial.printf("⚠️ Unsupported instruction type: %s.\n", instruction.type.c_str());
+            status = "failed";
+            result = "unsupported_instruction_type";
+        }
+        // Saved before reporting it, so a lost confirmation re-sends this result
+        // instead of running the instruction again.
         saveCachedInstructionResult(instruction.id, status, result);
     }
 
@@ -133,12 +115,7 @@ void processPendingInstructions(unsigned long timeoutMs) {
 
             maintainCellularConnection();
             maintainMqttConnection();
-            const unsigned long retryWaitMs = min(deadline - millis(), 1000UL);
-            const unsigned long waitStartedAt = millis();
-            while (millis() - waitStartedAt < retryWaitMs) {
-                mqttClient.loop();
-                delay(50);
-            }
+            serviceMqttFor(min(deadline - millis(), 1000UL));
             continue;
         }
         if (instructionCheckAllowsSleep) {
@@ -152,11 +129,7 @@ void processPendingInstructions(unsigned long timeoutMs) {
                 "⏳ No pending instructions; checking again in %lu seconds.\n",
                 pollDelayMs / 1000
             );
-            const unsigned long waitStartedAt = millis();
-            while (millis() - waitStartedAt < pollDelayMs) {
-                mqttClient.loop();
-                delay(50);
-            }
+            serviceMqttFor(pollDelayMs);
             continue;
         }
         if (pendingInstructionCount == 0) {

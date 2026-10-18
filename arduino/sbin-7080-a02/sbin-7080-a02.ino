@@ -107,29 +107,13 @@ void loop() {
 
     }
 
-    int distanceMm = getDistanceMm();
-    bool sensorOk = distanceMm > 0 && calculateFillLevel(distanceMm) >= 0;
-    if (!sensorOk) {
-        Serial.println("⚠️ Sensor Read Error; fill level will be reported as unavailable.");
-    }
-
-    uint16_t batteryMillivolts = readBatteryMillivolts();
-    bool pmuOk = pmuAvailable && batteryMillivolts > 0;
-    int batteryPercent = readBatteryPercent();
-    String health = updateDeviceHealth(
-        sensorOk,
-        pmuOk,
-        gpsAttemptDue,
-        !gpsAttemptDue || gpsFixUpdatedThisCycle
-    );
-    String healthMessage = getDeviceHealthMessage(distanceMm);
-
+    const DeviceReading reading = takeReading(gpsAttemptDue, !gpsAttemptDue || gpsFixUpdatedThisCycle, true);
     Serial.printf(
         "Health: %s; battery: %u mV (%d%%), distance: %d mm\n",
-        health.c_str(),
-        batteryMillivolts,
-        batteryPercent,
-        distanceMm
+        reading.health.c_str(),
+        reading.batteryMillivolts,
+        reading.batteryPercent,
+        reading.distanceMm
     );
     if (hasGpsFix) {
         Serial.printf("GPS: %.6f, %.6f\n", latitude, longitude);
@@ -163,36 +147,16 @@ void loop() {
 
     bool reportSent = false;
     if (mqttReady && hasGpsFix) {
+        // A new device registers first; the server's reply carries its device key.
+        while (deviceKey.length() == 0 && millis() - reportStartedAt < MAX_REPORT_WINDOW_MS) {
+            publishRegistration(reading.batteryPercent);
+            serviceMqttFor(250);
+        }
         if (deviceKey.length() > 0) {
-            uint32_t previousAckCount = scheduleAckCounter;
-            reportSent = publishTelemetry(distanceMm, batteryPercent, health, healthMessage);
+            const uint32_t previousAckCount = scheduleAckCounter;
+            reportSent = publishTelemetry(reading);
             if (reportSent) {
-                unsigned long ackWaitStartedAt = millis();
-                while (scheduleAckCounter == previousAckCount &&
-                       millis() - ackWaitStartedAt < 15000UL) {
-                    mqttClient.loop();
-                    delay(100);
-                }
-            }
-        } else {
-            while (millis() - reportStartedAt < MAX_REPORT_WINDOW_MS) {
-                mqttClient.loop();
-                if (deviceKey.length() > 0) {
-                    uint32_t previousAckCount = scheduleAckCounter;
-                    reportSent = publishTelemetry(distanceMm, batteryPercent, health, healthMessage);
-                    if (reportSent) {
-                        unsigned long ackWaitStartedAt = millis();
-                        while (scheduleAckCounter == previousAckCount &&
-                               millis() - ackWaitStartedAt < 15000UL) {
-                            mqttClient.loop();
-                            delay(100);
-                        }
-                    }
-                    break;
-                }
-                publishRegistration(batteryPercent);
-                mqttClient.loop();
-                delay(250);
+                waitForMqttReply(scheduleAckCounter, previousAckCount, 15000UL);
             }
         }
     } else if (!hasGpsFix) {

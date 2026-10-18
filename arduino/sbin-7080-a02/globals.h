@@ -116,7 +116,17 @@ extern unsigned long gpsAcquisitionStartedAt;
 extern bool gpsAttemptDue;
 extern bool gpsFixUpdatedThisCycle;
 
+// One reading of the bin's sensor, battery and health, as a report sends it.
+struct DeviceReading {
+    int distanceMm;
+    uint16_t batteryMillivolts;
+    int batteryPercent;
+    String health;
+    String healthMessage;
+};
+
 bool initializePowerManagement();
+DeviceReading takeReading(bool gpsTested, bool gpsOk, bool sensorTrusted);
 uint16_t readBatteryMillivolts();
 int readBatteryPercent();
 String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk);
@@ -181,8 +191,10 @@ bool stopGpsAcquisition();
 void setupMqtt();
 void maintainMqttConnection();
 void mqttCallback(char* topic, byte* payload, unsigned int length);
+void serviceMqttFor(unsigned long waitMs);
+bool waitForMqttReply(const uint32_t& counter, uint32_t previousValue, unsigned long timeoutMs);
 void publishRegistration(int batteryPercent);
-bool publishTelemetry(int distanceMm, int batteryPercent, const String& health, const String& healthMessage);
+bool publishTelemetry(const DeviceReading& reading);
 bool requestInstructionCheck(unsigned long timeoutMs);
 bool publishInstructionResult(const String& instructionId, const String& status, const String& result);
 void processPendingInstructions(unsigned long timeoutMs);
