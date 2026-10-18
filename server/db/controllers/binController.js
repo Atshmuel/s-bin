@@ -3,6 +3,7 @@ import { binModel, deviceInstructionModel } from '../models/models.js'
 import { appendFilter, BINS_ONLY_FILTER } from '../../utils/helpers.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
+import { ROLES } from "../../utils/constants.js";
 
 export async function getBin(req, res) {
     const { id } = req.params;
@@ -11,7 +12,7 @@ export async function getBin(req, res) {
 
     let query = {}
     query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(id))
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     const pipeline = [
         { $match: query },
@@ -69,7 +70,7 @@ export async function getAllUserBins(req, res) {
     const skip = (pageNum - 1) * limitNum;
 
     let query = {}
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     if (search) {
         query.binName = { $regex: search, $options: 'i' };
@@ -120,7 +121,7 @@ export async function getBinsInUserRadius(req, res) {
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
 
     let query = {};
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, health && health !== "all", 'status.health', health)
     if (minLevel !== undefined || maxLevel !== undefined) {
         query['status.level'] = {
@@ -174,7 +175,7 @@ export async function getRouteBins(req, res) {
     const useWalkingRoute = parseBooleanParam(byFoot);
 
     let query = {};
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, type === 'maintenance', 'status.health', { $in: ['critical'] })
     if (type === 'collection') {
         query['status.level'] = { $gte: 70 }
@@ -257,7 +258,7 @@ export async function updateBinName(req, res) {
 
     let filter = {}
     filter = appendFilter(filter, true, '_id', id)
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const updatedBin = await binModel.findOneAndUpdate(filter, { $set: { binName: name } }, { new: true, runValidators: true }).select('-macAddress')
@@ -292,7 +293,7 @@ export async function deleteBin(req, res) {
     const { org: ownerId, role } = req.user
 
     let query = {}
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, true, '_id', id)
 
     const session = await mongoose.startSession();
@@ -332,7 +333,7 @@ export async function deleteBinsBatch(req, res) {
     const binIds = req.binIds
 
     let query = {}
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
     query = appendFilter(query, true, '_id', { $in: binIds })
 
     const session = await mongoose.startSession();

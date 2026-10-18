@@ -4,7 +4,7 @@ import { sendEmail } from '../../utils/mailService.js'
 import { emailSchema, passwordSchema } from '../../utils/inputValidations.js'
 import { deleteUserRefs, innerGetTemplateByTemplateId, organizationExist } from '../service/sharedService.js'
 import { randomUUID } from 'crypto'
-import { ROLE_LEVEL } from '../../utils/constants.js'
+import { ROLES, ROLE_LEVEL } from '../../utils/constants.js'
 import mongoose from 'mongoose'
 
 /** Failed OTP guesses allowed before the code is discarded entirely. */
@@ -106,7 +106,7 @@ export async function createUserAsAdmin(req, res) {
             return res.status(400).json({ message: 'Invalid role provided' })
         }
 
-        if (currentUserRole !== process.env.ROLE_OWNER && role === process.env.ROLE_OWNER) {
+        if (currentUserRole !== ROLES.OWNER && role === ROLES.OWNER) {
             return res.status(403).json({ message: 'You cannot assign greated role then yours' })
         }
 
@@ -114,7 +114,7 @@ export async function createUserAsAdmin(req, res) {
             return res.status(400).json({ message: 'This status is not allow' })
 
 
-        if (currentUserRole !== process.env.ROLE_OWNER || manager) {
+        if (currentUserRole !== ROLES.OWNER || manager) {
             const orgExist = await organizationExist(org)
 
             if (!orgExist)
@@ -366,7 +366,7 @@ export async function updateUserNameOrEmail(req, res) {
     const { id: userId, role } = req.user
 
     const filter = {
-        _id: role === process.env.ROLE_OWNER ? id : userId
+        _id: role === ROLES.OWNER ? id : userId
     };
 
     const update = {};
@@ -394,14 +394,14 @@ export async function updateUserPassword(req, res) {
     if (nError) return res.status(400).json({ message: nError.message });
 
     const filter = {
-        _id: role === process.env.ROLE_OWNER ? id : userId
+        _id: role === ROLES.OWNER ? id : userId
     };
 
     try {
         const user = await userModel.findOne(filter)
         if (!user) return res.status(401).json({ message: 'User not found' })
 
-        if (role !== process.env.ROLE_OWNER) {
+        if (role !== ROLES.OWNER) {
             const isSamePassword = await comparePasswords(oldPassword, user.passwordHash)
             if (!isSamePassword) return res.status(403).json({ message: 'Invalid password' })
         }
@@ -425,15 +425,15 @@ export async function updateUserRole(req, res) {
     const { role } = req.body
     const { id: userId, role: currentUserRole } = req.user
 
-    if (![process.env.ROLE_USER, process.env.ROLE_TECHNICIAN, process.env.ROLE_ADMIN, process.env.ROLE_OWNER].includes(role))
+    if (![ROLES.USER, ROLES.TECHNICIAN, ROLES.ADMIN, ROLES.OWNER].includes(role))
         return res.status(400).json({ message: 'This role is not allow' })
     if (id === userId) return res.status(400).json({ message: 'User not allow to update his role' })
-    if (currentUserRole === role && currentUserRole !== process.env.ROLE_OWNER) return res.status(400).json({ message: 'User not allow to assign a role equal to his' })
+    if (currentUserRole === role && currentUserRole !== ROLES.OWNER) return res.status(400).json({ message: 'User not allow to assign a role equal to his' })
 
     try {
         const updatedUser = await userModel.findOneAndUpdate({
             $and: [
-                { _id: id }, { role: { $ne: process.env.ROLE_OWNER } }
+                { _id: id }, { role: { $ne: ROLES.OWNER } }
             ]
         }, { $set: { role }, $inc: { tokenVersion: 1 } }, { new: true }).select('-passwordHash -__v -accountVerification -recoveryCode')
         if (!updatedUser)
@@ -451,17 +451,17 @@ export async function updateUserStatus(req, res) {
 
     let query = { _id: id }
 
-    if (id === userId && role !== process.env.ROLE_OWNER)
+    if (id === userId && role !== ROLES.OWNER)
         return res.status(403).json({ message: 'User not allow to update his status' })
-    if (id === userId && role === process.env.ROLE_OWNER) {
+    if (id === userId && role === ROLES.OWNER) {
         return res.status(403).json({ message: 'Owner cant change his own status' })
     }
 
     if (!["pending", "active", "inactive", "suspended"].includes(status))
         return res.status(400).json({ message: 'This status is not allow' })
 
-    if (role !== process.env.ROLE_OWNER) {
-        query.role = { $nin: [process.env.ROLE_OWNER, process.env.ROLE_ADMIN] }
+    if (role !== ROLES.OWNER) {
+        query.role = { $nin: [ROLES.OWNER, ROLES.ADMIN] }
     }
 
 
@@ -481,8 +481,8 @@ export async function updateUserManagerAndOrg(req, res) {
     const { id: userId } = req.params
     const { org, manager } = req.body
     try {
-        let query = appendFilter({}, role === process.env.ROLE_OWNER, 'org', new mongoose.Types.ObjectId(org))
-        query = appendFilter(query, (role === process.env.ROLE_ADMIN || role === process.env.ROLE_OWNER) && manager, 'manager', new mongoose.Types.ObjectId(manager))
+        let query = appendFilter({}, role === ROLES.OWNER, 'org', new mongoose.Types.ObjectId(org))
+        query = appendFilter(query, (role === ROLES.ADMIN || role === ROLES.OWNER) && manager, 'manager', new mongoose.Types.ObjectId(manager))
         const updated = await userModel.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(userId) }, { $set: query }, { new: true });
         if (!updated) throw new Error('User not found or not allowed to update')
         return res.status(200).json({ message: 'Updated successfully' });
@@ -501,7 +501,7 @@ export async function getUser(req, res) {
     // branches were the same id, so there was no scoping at all and any
     // authenticated user could read any user in any organization.
     const isSelf = id === currUserId
-    if (role !== process.env.ROLE_OWNER && !isSelf) {
+    if (role !== ROLES.OWNER && !isSelf) {
         if (!org) return res.status(403).json({ message: "Forbidden" });
         query.org = new mongoose.Types.ObjectId(org)
     }
@@ -521,8 +521,8 @@ export async function getUser(req, res) {
 export async function getAllUsers(req, res) {
     const { role, org } = req.user
     let query = {}
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'role', { $ne: process.env.ROLE_OWNER })
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'org', new mongoose.Types.ObjectId(org))
+    query = appendFilter(query, role !== ROLES.OWNER, 'role', { $ne: ROLES.OWNER })
+    query = appendFilter(query, role !== ROLES.OWNER, 'org', new mongoose.Types.ObjectId(org))
 
     try {
         const users = await userModel.find(query, SAFE_USER_PROJECTION)
@@ -535,11 +535,11 @@ export async function getUserManagers(req, res) {
     const { org, role } = req.user
 
     let query = {
-        role: { $in: [process.env.ROLE_ADMIN, process.env.ROLE_OWNER] }
+        role: { $in: [ROLES.ADMIN, ROLES.OWNER] }
     }
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'org', new mongoose.Types.ObjectId(org))
+    query = appendFilter(query, role !== ROLES.OWNER, 'org', new mongoose.Types.ObjectId(org))
     try {
-        if (!org && role !== process.env.ROLE_OWNER)
+        if (!org && role !== ROLES.OWNER)
             return res.status(400).json({ message: 'User does not belong to an organization' })
         const managers = await userModel.find(query).select('name _id role')
 
@@ -554,7 +554,7 @@ export async function getUserManagersByOrgId(req, res) {
 
     let query = {
         org: new mongoose.Types.ObjectId(id),
-        role: { $in: [process.env.ROLE_ADMIN, process.env.ROLE_OWNER] }
+        role: { $in: [ROLES.ADMIN, ROLES.OWNER] }
     }
     try {
         const managers = await userModel.find(query).select('name _id role')
@@ -576,7 +576,7 @@ export async function deleteUser(req, res) {
         }
 
         const userToDelete = await userModel.findById(id);
-        if (currentUserRole !== process.env.ROLE_OWNER && (!userToDelete || userToDelete.role !== process.env.ROLE_USER)) {
+        if (currentUserRole !== ROLES.OWNER && (!userToDelete || userToDelete.role !== ROLES.USER)) {
             return res.status(403).json({ message: "User not found or cannot delete an owner / admin" });
         }
         await deleteUserRefs(id);

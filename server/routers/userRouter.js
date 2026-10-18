@@ -4,6 +4,7 @@ import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, fo
 import { validateBodyFields, validateParamExist } from "../middlewares/validationMiddleware.js";
 import { getSettingsByUserId, updateUserSettings } from "../db/controllers/userSettingsController.js";
 import { authLimiter } from "../middlewares/rateLimiters.js";
+import { ROLES } from "../utils/constants.js";
 export const userRouter = Router();
 const userSettingsRouter = Router({ mergeParams: true });
 userRouter.use('/:id/settings', authToken, validateParamExist(), userSettingsRouter);
@@ -27,10 +28,10 @@ userRouter.post('/reset', authLimiter, resetToken, validateBodyFields(['password
 //Routes only for auth users
 
 userRouter.get('/all', authToken, (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+    authRole([ROLES.OWNER, ROLES.ADMIN])(req, res, next)
 }, getAllUsers)
 userRouter.get('/managers', authToken, (req, res, next) => {
-    authRole([process.env.ROLE_OWNER])(req, res, next)
+    authRole([ROLES.OWNER])(req, res, next)
 }, getUserManagers);
 userRouter.get('/managers/:id', authToken, validateParamExist(), getUserManagersByOrgId);
 
@@ -43,20 +44,20 @@ userRouter.patch('/password/:id', authToken, validateBodyFields(['oldPassword', 
 
 
 userRouter.patch('/status/:id', authToken, (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+    authRole([ROLES.OWNER, ROLES.ADMIN])(req, res, next)
 }, validateBodyFields(['status']), validateParamExist(), updateUserStatus)
 
 userRouter.patch('/managerAndOrg/:id', authToken, (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+    authRole([ROLES.OWNER, ROLES.ADMIN])(req, res, next)
 }, validateBodyFields(['org'], ['manager']), validateParamExist(), updateUserManagerAndOrg)
 
 //update role (owner only)
 userRouter.patch('/role/:id', authToken, (req, res, next) => {
-    authRole([process.env.ROLE_OWNER])(req, res, next)
+    authRole([ROLES.OWNER])(req, res, next)
 }, validateBodyFields(['role']), validateParamExist(), updateUserRole)
 
 userRouter.delete('/user/:id', authToken, (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+    authRole([ROLES.OWNER, ROLES.ADMIN])(req, res, next)
 }, validateParamExist(), deleteUser)
 
 userRouter.delete('/account', authToken, deleteAccount)
@@ -67,5 +68,5 @@ userSettingsRouter.patch('/', validateBodyFields([], ['isDark', 'notifications',
 
 
 userRouter.post('/admin/register', authToken, (req, res, next) => {
-    authRole([process.env.ROLE_OWNER, process.env.ROLE_ADMIN])(req, res, next)
+    authRole([ROLES.OWNER, ROLES.ADMIN])(req, res, next)
 }, validateBodyFields(['email', 'password', 'name', 'role', 'status', 'org'], ['manager']), createUserAsAdmin)

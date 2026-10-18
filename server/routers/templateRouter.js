@@ -2,13 +2,14 @@ import { Router } from "express";
 import { innerCreateTemplate } from "../db/controllers/templateController.js";
 import { authRole, authToken } from "../middlewares/authMiddleware.js";
 import { validateBodyFields } from "../middlewares/validationMiddleware.js";
+import { ROLES } from "../utils/constants.js";
 
 
 export const templateRouter = Router();
 templateRouter.use(authToken)
 
 templateRouter.post('/', validateBodyFields(['templateId', 'email', 'subject', 'htmlTemplate', 'textTemplate']), (req, res, next) => {
-    authRole([process.env.ROLE_OWNER])(req, res, next)
+    authRole([ROLES.OWNER])(req, res, next)
 }, async (req, res) => {
     try {
         const template = await innerCreateTemplate(req.body)

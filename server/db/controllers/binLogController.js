@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { appendFilter } from '../../utils/helpers.js';
 import { binLogModel } from '../models/models.js'
 import { verifyBinOwner } from '../service/sharedService.js';
+import { ROLES } from "../../utils/constants.js";
 
 export async function getBinLog(req, res) {
     const { withBin } = req.query
@@ -20,12 +21,12 @@ export async function getBinLog(req, res) {
 
         if (!log) return res.status(404).json({ message: "Bin not found." });
 
-        let isBinOwner = role === process.env.ROLE_OWNER
+        let isBinOwner = role === ROLES.OWNER
 
-        if (withBin && role !== process.env.ROLE_OWNER) {
+        if (withBin && role !== ROLES.OWNER) {
             isBinOwner = log.bin.ownerId.toString() === ownerId;
         }
-        else if (!withBin && role !== process.env.ROLE_OWNER) {
+        else if (!withBin && role !== ROLES.OWNER) {
             isBinOwner = await verifyBinOwner(log.binId, ownerId)
         }
         if (!isBinOwner)
@@ -58,7 +59,7 @@ export async function getAllLogs(req, res) {
         { $unwind: '$bin' },
     ];
 
-    if (role !== process.env.ROLE_OWNER) {
+    if (role !== ROLES.OWNER) {
         pipeline.push({
             $match: {
                 'bin.ownerId': new mongoose.Types.ObjectId(ownerId),

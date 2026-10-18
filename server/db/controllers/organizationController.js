@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { organizationModel } from "../models/models.js";
 import { deleteOrgRefs } from "../service/sharedService.js";
 import { MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../schema/organizationSchema.js";
+import { ROLES } from "../../utils/constants.js";
 
 const MESH_SETTINGS_PROJECTION = { name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1 };
 
@@ -58,7 +59,7 @@ export async function updateOrganization(req, res) {
 // Owners manage every organization's mesh settings; admins only their own.
 export async function getMeshSettings(req, res) {
     const { role, org } = req.user;
-    const query = role === process.env.ROLE_OWNER ? {} : { _id: org };
+    const query = role === ROLES.OWNER ? {} : { _id: org };
     try {
         const organizations = await organizationModel.find(query, MESH_SETTINGS_PROJECTION)
             .sort({ name: 1 });
@@ -76,7 +77,7 @@ export async function updateMeshSettings(req, res) {
     if (!mongoose.Types.ObjectId.isValid(orgId)) {
         return res.status(400).json({ message: "Invalid organization ID." });
     }
-    if (role !== process.env.ROLE_OWNER && orgId !== org) {
+    if (role !== ROLES.OWNER && orgId !== org) {
         return res.status(403).json({ message: "You can only change your own organization's settings." });
     }
     if (meshAwakeWindowSeconds === undefined && reportIntervalMinutes === undefined && reportStartHour === undefined) {

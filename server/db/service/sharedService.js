@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
 import { appendFilter, BINS_ONLY_FILTER, UnionArraysById } from '../../utils/helpers.js'
-import { AI_INSTRUCTIONS } from "../../utils/constants.js";
+import { ROLES, AI_INSTRUCTIONS } from "../../utils/constants.js";
 import { GoogleGenAI } from "@google/genai";
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 import { DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR } from '../schema/organizationSchema.js';
@@ -204,7 +204,7 @@ async function getGatewayIds() {
 export async function getAllBins(req, res, next) {
     const { org: ownerId, role } = req.user;
     let filter = { ...BINS_ONLY_FILTER }
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const bins = await binModel.countDocuments(filter);
@@ -223,7 +223,7 @@ export async function getAlmostFullBins(req, res, next) {
         "status.levelValid": { $ne: false }
     }
 
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const almostFullBins = await binModel.find(filter);
@@ -239,7 +239,7 @@ export async function getAvgFillLevel(req, res, next) {
     const { org: ownerId, role } = req.user;
     const aggregation = []
 
-    if (role !== process.env.ROLE_OWNER) {
+    if (role !== ROLES.OWNER) {
         aggregation.push({ $match: { ownerId: new mongoose.Types.ObjectId(ownerId) } })
     }
     aggregation.push({ $match: { ...BINS_ONLY_FILTER, "status.levelValid": { $ne: false } } })
@@ -266,7 +266,7 @@ export async function getRequiringMaintenance(req, res, next) {
         "maintenance.nextServiceAt": { $lt: new Date() }
     }
 
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const RequirinBins = await binModel.find(filter)
@@ -297,7 +297,7 @@ export async function getRequiringAttentionBins(req, res, next) {
         ]
     }
 
-    filter = appendFilter(filter, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    filter = appendFilter(filter, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const requiringAttentionBins = await binModel.find(filter).limit(50);
@@ -321,7 +321,7 @@ export async function getRecentBinLogs(req, res, next) {
 
     try {
         // Logs carry no ownerId; scope them through the organization's bins.
-        if (role !== process.env.ROLE_OWNER) {
+        if (role !== ROLES.OWNER) {
             const userBins = await binModel.find({
                 ...BINS_ONLY_FILTER,
                 ownerId: new mongoose.Types.ObjectId(ownerId)
@@ -353,7 +353,7 @@ export function mapOverviewToResponse(req, res) {
 export async function getBinsStatusOV(req, res) {
     const { role, org: ownerId } = req.user
     let query = { ...BINS_ONLY_FILTER }
-    query = appendFilter(query, role !== process.env.ROLE_OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
+    query = appendFilter(query, role !== ROLES.OWNER, 'ownerId', new mongoose.Types.ObjectId(ownerId))
 
     try {
         const binsCount = await binModel.aggregate([
@@ -401,7 +401,7 @@ export async function getAIOverview(req, res) {
     let query = { binId: { $nin: await getGatewayIds() } }
     let userBins = {}
 
-    if (role !== process.env.ROLE_OWNER) {
+    if (role !== ROLES.OWNER) {
         userBins = await binModel.find({
             ...BINS_ONLY_FILTER,
             ownerId: new mongoose.Types.ObjectId(ownerId)
@@ -477,7 +477,7 @@ export async function getLogTypes(req, res) {
         binId: { $nin: await getGatewayIds() }
     }
 
-    if (role !== process.env.ROLE_OWNER) {
+    if (role !== ROLES.OWNER) {
         const userBins = await binModel.find({
             ...BINS_ONLY_FILTER,
             ownerId: new mongoose.Types.ObjectId(ownerId)

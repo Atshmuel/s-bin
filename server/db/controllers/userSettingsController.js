@@ -1,4 +1,5 @@
 import { userSettingModel } from '../models/models.js'
+import { ROLES } from "../../utils/constants.js";
 
 
 
@@ -7,7 +8,7 @@ export async function getSettingsByUserId(req, res) {
     const { id: userId, role } = req.user
 
     const filter = {
-        userId: role === process.env.ROLE_OWNER ? id : userId
+        userId: role === ROLES.OWNER ? id : userId
     };
 
     try {
@@ -28,10 +29,10 @@ export async function updateUserSettings(req, res) {
     const updates = req.body
 
     const filter = {
-        userId: role === process.env.ROLE_OWNER ? id : userId
+        userId: role === ROLES.OWNER ? id : userId
     };
 
-    if (role !== process.env.ROLE_OWNER && id !== userId) {
+    if (role !== ROLES.OWNER && id !== userId) {
         return res.status(403)
 
     }

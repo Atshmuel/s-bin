@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
+import { ROLES } from "../../utils/constants.js";
 
 export const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     role: {
         type: String,
-        enum: ["owner", "admin", "user", "technician"],
-        default: "user"
+        enum: Object.values(ROLES),
+        default: ROLES.USER
     },
     passwordHash: { type: String, required: true },
     recoveryCode: {

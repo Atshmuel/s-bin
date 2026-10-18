@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { deviceInstructionModel } from "../models/models.js";
 import { getBinShared } from "../service/sharedService.js";
+import { ROLES } from "../../utils/constants.js";
 
 const MAX_AWAKE_EXTENSION_SECONDS = 3600;
 const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin"]);
@@ -49,7 +50,7 @@ export async function enqueueDeviceInstruction(req, res) {
         return res.status(400).json({ message: "Invalid bin ID." });
     }
     const bin = await getBinShared(req.params.id);
-    if (!bin || (req.user.role !== process.env.ROLE_OWNER &&
+    if (!bin || (req.user.role !== ROLES.OWNER &&
         bin.ownerId?.toString() !== req.user.org)) {
         return res.status(404).json({ message: "Bin not found." });
     }
@@ -68,7 +69,7 @@ export async function listDeviceInstructions(req, res) {
         return res.status(400).json({ message: "Invalid bin ID." });
     }
     const bin = await getBinShared(req.params.id);
-    if (!bin || (req.user.role !== process.env.ROLE_OWNER &&
+    if (!bin || (req.user.role !== ROLES.OWNER &&
         bin.ownerId?.toString() !== req.user.org)) {
         return res.status(404).json({ message: "Bin not found." });
     }
@@ -94,7 +95,7 @@ export async function cancelDeviceInstruction(req, res) {
         return res.status(400).json({ message: "Invalid bin ID." });
     }
     const bin = await getBinShared(req.params.id);
-    if (!bin || (req.user.role !== process.env.ROLE_OWNER &&
+    if (!bin || (req.user.role !== ROLES.OWNER &&
         bin.ownerId?.toString() !== req.user.org)) {
         return res.status(404).json({ message: "Bin not found." });
     }

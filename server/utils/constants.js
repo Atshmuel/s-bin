@@ -1,8 +1,16 @@
+// User roles, as stored on users; ROLE_LEVEL ranks them.
+export const ROLES = Object.freeze({
+    OWNER: "owner",
+    ADMIN: "admin",
+    TECHNICIAN: "technician",
+    USER: "user",
+})
+
 export const ROLE_LEVEL = {
-    owner: 4,
-    admin: 3,
-    technician: 2,
-    user: 1
+    [ROLES.OWNER]: 4,
+    [ROLES.ADMIN]: 3,
+    [ROLES.TECHNICIAN]: 2,
+    [ROLES.USER]: 1
 }
 
 export const AI_INSTRUCTIONS = `
