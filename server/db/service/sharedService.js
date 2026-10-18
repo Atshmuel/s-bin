@@ -4,6 +4,7 @@ import { binModel, binLogModel, templateModel, userModel, userSettingModel, orga
 import { BINS_ONLY_FILTER, UnionArraysById, scopeToOrganization } from '../../utils/helpers.js'
 import { ROLES, AI_INSTRUCTIONS } from "../../utils/constants.js";
 import { GoogleGenAI } from "@google/genai";
+import { z } from "zod";
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 import { DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR } from '../schema/organizationSchema.js';
 
