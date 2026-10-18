@@ -57,7 +57,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                                         <Activity size={16} /> {t("components.logCard.weight")}:
                                     </span>
                                     <span>
-                                        {typeof log.weight === 'number' ? `${log.weight.toFixed(1)} ` : '0 '} {t("units.kg")}
+                                        {typeof log.weight === 'number' ? `${log.weight.toFixed(1)} ${t("units.kg")}` : '-'}
                                     </span>
                                 </div>
                             </>}

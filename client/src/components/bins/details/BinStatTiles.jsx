@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Battery from "@/components/bins/Battary"
-import { getColor, isGateway } from "@/utils/binHelpers"
+import { getColor, getFullness, isGateway } from "@/utils/binHelpers"
 
 function StatTile({ title, value, children }) {
     return (
@@ -27,6 +27,10 @@ function BinStatTiles({ bin }) {
     const { level, levelValid, battery, updatedAt, connection } = bin.status
     const leaves = bin.connectedLeaves ?? []
     const viaMesh = connection?.via === "mesh"
+    // With a working scale the tile shows the combined fullness and its parts.
+    const fullness = getFullness(bin.status)
+    const hasWeight = fullness.weightPercent !== null
+    const shown = hasWeight ? fullness.combined : level
 
     return (
         <>
@@ -34,17 +38,25 @@ function BinStatTiles({ bin }) {
                 <StatTile title={t('components.binCard.connectedLeaves')} value={leaves.length} />
             ) : (
                 <StatTile
-                    title={t('fillLevel')}
-                    value={levelValid === false ? t('sensorUnavailable') : `${level}%`}
+                    title={hasWeight ? t('pages.binDetails.tiles.fullness') : t('fillLevel')}
+                    value={levelValid === false ? t('sensorUnavailable') : `${shown}%`}
                 >
                     {levelValid !== false && (
                         <div className="h-2 w-full rounded-full bg-muted">
                             <div
                                 className="h-full rounded-full"
-                                style={{ width: `${Math.min(100, Math.max(0, level))}%`, backgroundColor: getColor(level, 'fill') }}
+                                style={{ width: `${Math.min(100, Math.max(0, shown))}%`, backgroundColor: getColor(bin.status, 'fill') }}
                             />
                         </div>
                     )}
+                    {hasWeight && levelValid !== false && (
+                        <span>{t('pages.binDetails.tiles.levelPart', { percent: fullness.level })}</span>
+                    )}
+                    {hasWeight && (
+                        <span>{t('pages.binDetails.tiles.weight', { kg: bin.status.weight.toFixed(1) })}</span>
+                    )}
+                    {bin.status.scale === "uncalibrated" && <span>{t('components.binCard.scaleUncalibrated')}</span>}
+                    {bin.status.scale === "failed" && <span>{t('components.binCard.scaleFailed')}</span>}
                 </StatTile>
             )}
 

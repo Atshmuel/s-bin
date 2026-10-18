@@ -500,6 +500,9 @@
       },
       "tiles":{
         "battery":"סוללה",
+        "fullness":"מלאות",
+        "levelPart":"רמת מילוי: {{percent}}%",
+        "weight":"משקל: {{kg}} ק״ג",
         "lastReport":"דיווח אחרון",
         "never":"עוד אין דיווחים",
         "connection":"חיבור",
@@ -683,7 +686,10 @@
       "requestQueued":"הפקודה ממתינה לדיווח הבא.",
       "requestCancelled":"הפקודה הממתינה בוטלה.",
       "calibrationConfirmationTitle":"אישור כיול כשהפח ריק",
-      "calibrationConfirmationDescription":"יש לוודא שהפח ריק ונתיב החיישן פנוי למשך כ־20 שניות. המכשיר יכייל מחדש את נקודת הייחוס של פח ריק וישלח מדידה עדכנית.",
+      "calibrationConfirmationDescription":"יש לוודא שהפח ריק ונתיב החיישן פנוי למשך כ־20 שניות. המכשיר יכייל מחדש את נקודת הייחוס של פח ריק, יאפס את המשקל וישלח מדידה עדכנית.",
+      "scaleGrams":"משקל ידוע בתוך הפח (גרם)",
+      "scaleGramsLimit":"קודם יש לאפס את המשקל (כיול מחדש של פח ריק), ואז להניח בפח חפץ שמשקלו ידוע: 100 גרם עד 200 ק״ג. כדי לבדוק את המשקל אחר כך, אפשר להניח משקל ידוע אחר ולבקש דיווח.",
+      "gramsValue":"הונחו {{grams}} גרם",
       "confirmCalibration":"הוסף כיול לתור",
       "results":{
         "additional_report_published":"הדיווח נשלח",
@@ -692,13 +698,21 @@
         "invalid_awake_extension_duration":"זמן ערות לא תקין",
         "emptyDepth":"כויל: עומק פח ריק {{cm}} ס״מ",
         "empty_bin_calibration_failed":"הכיול נכשל",
+        "scaleZeroed":"המשקל אופס",
+        "scaleCalibrated":"המשקל כויל: הונחו {{placed}} גרם, נמדדו {{reads}} גרם",
+        "scale_not_responding":"המשקל לא הגיב",
+        "scale_unstable":"קריאות המשקל לא היו יציבות (הפח זז או חוט רופף)",
+        "scale_not_zeroed":"קודם יש לאפס את המשקל: כיול מחדש של פח ריק",
+        "scale_no_load_change":"המשקל כמעט לא שינה את הקריאה: לא הונח דבר, או שתא עומס לא מחובר",
+        "scale_invalid_weight":"המשקל הידוע צריך להיות בין 100 גרם ל־200 ק״ג",
         "unsupported_instruction_type":"המכשיר לא תומך בפקודה הזו",
         "expired":"פג תוקף לפני שהמכשיר דיווח"
       },
       "types":{
         "report_now":"בקשת דיווח מיידי",
         "stay_awake":"הארכת זמן הערות",
-        "calibrate_empty_bin":"כיול מחדש של פח ריק"
+        "calibrate_empty_bin":"כיול מחדש של פח ריק",
+        "calibrate_scale":"כיול משקל עם משקל ידוע"
       },
       "statuses":{
         "pending":"ממתינה",
@@ -733,6 +747,8 @@
        "deviceKey":"מפתח הגישה של המכשיר",
        "ownerId":"מזהה בעלים",
        "location":"מיקום",
+       "scaleUncalibrated":"המשקל לא מכויל",
+       "scaleFailed":"המשקל לא זמין",
        "locationTooltip":"לחץ כדי לאתר את הפח על המפה",
        "clickToEditName":"לחץ כדי לערוך את שם הפח",
        "deviceType":"סוג מכשיר",

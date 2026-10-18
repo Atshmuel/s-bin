@@ -6,6 +6,22 @@ export const STATUS_COLORS = Object.freeze({
     critical: "oklch(0.577 0.245 27.325)",
 })
 
+// The reference load (kg) a bin's weight is compared against for its fullness.
+const MAX_BIN_WEIGHT_KG = 250
+
+// How full a bin is: whichever of its volume (fill level) and its weight
+// (relative to MAX_BIN_WEIGHT_KG) is closer to full, since running out of
+// either means it needs emptying. Without a working scale it is the fill
+// level. Each part is a percentage, 0-100.
+export function getFullness(status) {
+    const level = Math.min(100, Math.max(0, status?.level ?? 0))
+    if (typeof status?.weight !== 'number') {
+        return { combined: level, level, weightPercent: null }
+    }
+    const weightPercent = Math.min(100, Math.max(0, (status.weight / MAX_BIN_WEIGHT_KG) * 100))
+    return { combined: Math.round(Math.max(level, weightPercent)), level, weightPercent }
+}
+
 export function getColor(levelOrStatus, type = 'fill') {
     // levelOrStatus can be a numeric level (0-100) or an object `{ level, weight, battery }`
     if (type === 'battery') {
@@ -13,17 +29,8 @@ export function getColor(levelOrStatus, type = 'fill') {
         return level > 75 ? STATUS_COLORS.good : level > 50 && level <= 75 ? STATUS_COLORS.warning : STATUS_COLORS.critical
     }
     if (type === 'fill') {
-        let level = typeof levelOrStatus === 'object' ? (levelOrStatus.level ?? 0) : (levelOrStatus ?? 0)
-        // If weight is available, combine it with level to determine fill seriousness.
-        // Weight is expected in kilograms. We normalize it against a MAX_WEIGHT (kg).
-        const statusObj = typeof levelOrStatus === 'object' ? levelOrStatus : null
-        if (statusObj && typeof statusObj.weight === 'number') {
-            const MAX_WEIGHT = 250 // kg — heuristic upper bound for normalization
-            const weightPercent = Math.min(100, Math.max(0, (statusObj.weight / MAX_WEIGHT) * 100))
-            // Combine level and weightPercent — level more important than weight.
-            const combined = Math.round(level * 0.6 + weightPercent * 0.4)
-            level = combined
-        }
+        // A status object also counts its weight (see getFullness).
+        const level = typeof levelOrStatus === 'object' ? getFullness(levelOrStatus).combined : (levelOrStatus ?? 0)
         return level > 75 ? STATUS_COLORS.critical : level > 50 && level <= 75 ? STATUS_COLORS.warning : STATUS_COLORS.good
     }
 }

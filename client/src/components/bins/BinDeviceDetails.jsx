@@ -20,6 +20,18 @@ function BinDeviceDetails({ bin, handleLocationClick }) {
 
     return (
         <>
+            {/* Only a device with a scale reports its state; a leaf has none. */}
+            {bin.status.scale && (
+                <div className="flex flex-row justify-between">
+                    <span className="font-medium">{t('components.logCard.weight')}:</span>
+                    <span>
+                        {bin.status.scale === "ok" && typeof bin.status.weight === 'number'
+                            ? `${bin.status.weight.toFixed(1)} ${t('units.kg')}`
+                            : t(bin.status.scale === "failed" ? 'components.binCard.scaleFailed' : 'components.binCard.scaleUncalibrated')}
+                    </span>
+                </div>
+            )}
+
             <div className="flex flex-row justify-between">
                 <span className="font-medium">{t('lastAwakeTime')}:</span>
                 <span>{bin.status.lastAwakeSeconds

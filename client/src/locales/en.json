@@ -495,6 +495,9 @@
       },
       "tiles":{
         "battery":"Battery",
+        "fullness":"Fullness",
+        "levelPart":"Fill level: {{percent}}%",
+        "weight":"Weight: {{kg}} kg",
         "lastReport":"Last report",
         "never":"No reports yet",
         "connection":"Connection",
@@ -676,7 +679,10 @@
       "requestQueued":"Command queued for the next report.",
       "requestCancelled":"Pending command cancelled.",
       "calibrationConfirmationTitle":"Confirm empty-bin calibration",
-      "calibrationConfirmationDescription":"The bin must be empty and the sensor path unobstructed for about 20 seconds. The device will recalibrate its empty reference and publish a fresh reading.",
+      "calibrationConfirmationDescription":"The bin must be empty and the sensor path unobstructed for about 20 seconds. The device will recalibrate its empty reference, zero its scale and publish a fresh reading.",
+      "scaleGrams":"Known weight in the bin (grams)",
+      "scaleGramsLimit":"Zero the scale first (recalibrate the empty bin), then put an object of known weight in the bin: 100 g to 200 kg. To check the scale afterwards, place a different known weight and request a report.",
+      "gramsValue":"{{grams}} g placed",
       "confirmCalibration":"Queue calibration",
       "results":{
         "additional_report_published":"Report sent",
@@ -685,13 +691,21 @@
         "invalid_awake_extension_duration":"Invalid awake time",
         "emptyDepth":"Calibrated: empty bin depth {{cm}} cm",
         "empty_bin_calibration_failed":"Calibration failed",
+        "scaleZeroed":"scale zeroed",
+        "scaleCalibrated":"Scale calibrated: {{placed}} g placed, reads {{reads}} g",
+        "scale_not_responding":"The scale did not respond",
+        "scale_unstable":"The scale's readings were unstable (bin moving or a loose wire)",
+        "scale_not_zeroed":"Zero the scale first: recalibrate the empty bin",
+        "scale_no_load_change":"The weight barely changed the reading: nothing placed, or a load cell is not connected",
+        "scale_invalid_weight":"The known weight must be 100 g to 200 kg",
         "unsupported_instruction_type":"The device doesn't support this command",
         "expired":"Expired before the device reported"
       },
       "types":{
         "report_now":"Request an immediate report",
         "stay_awake":"Extend awake time",
-        "calibrate_empty_bin":"Recalibrate empty-bin reference"
+        "calibrate_empty_bin":"Recalibrate empty-bin reference",
+        "calibrate_scale":"Calibrate scale with a known weight"
       },
       "statuses":{
         "pending":"Pending",
@@ -726,6 +740,8 @@
        "deviceKey":"Device Access Key",
        "ownerId":"Owner ID",
        "location":"Location",
+       "scaleUncalibrated":"Scale not calibrated",
+       "scaleFailed":"Scale unavailable",
        "locationTooltip":"Click to locate the bin on the map",
        "clickToEditName":"Click to edit the bin name",
        "deviceType":"Device Type",

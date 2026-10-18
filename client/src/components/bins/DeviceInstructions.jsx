@@ -33,8 +33,12 @@ import {
 import { isGateway } from "@/utils/binHelpers";
 import { formatReportSchedule } from "@/utils/orgSettings";
 
-const INSTRUCTION_TYPES = ["report_now", "stay_awake", "calibrate_empty_bin"];
+const INSTRUCTION_TYPES = ["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale"];
+const CALIBRATION_TYPES = ["calibrate_empty_bin", "calibrate_scale"];
 const MAX_AWAKE_MINUTES = 60;
+// The known weight for a scale calibration, in grams (the device checks the same).
+const MIN_SCALE_GRAMS = 100;
+const MAX_SCALE_GRAMS = 200000;
 const PAGE_SIZE = 5;
 const DATE_FORMAT = "yyyy-MM-dd HH:mm";
 // The last report to the second, as on the bin page's tile.
@@ -49,11 +53,22 @@ const STATUS_VARIANTS = {
 // The device reports results as codes (and the server marks stale ones
 // "expired"); unknown codes are shown as they are.
 function formatResult(result, t) {
-    const depth = /^empty_depth_mm_(\d+)$/.exec(result);
+    const code = (key) => t(`components.deviceInstructions.results.${key}`, { defaultValue: key });
+    // An empty-bin calibration also zeroes the scale, if there is one.
+    const depth = /^empty_depth_mm_(\d+)(?:_(scale_\w+))?$/.exec(result) ??
+        /^(empty_bin_calibration_failed)(?:_(scale_\w+))?$/.exec(result);
     if (depth) {
-        return t("components.deviceInstructions.results.emptyDepth", { cm: Math.round(Number(depth[1]) / 10) });
+        const main = depth[1] === "empty_bin_calibration_failed"
+            ? code(depth[1])
+            : t("components.deviceInstructions.results.emptyDepth", { cm: Math.round(Number(depth[1]) / 10) });
+        if (!depth[2]) return main;
+        return `${main} · ${depth[2] === "scale_zeroed" ? code("scaleZeroed") : code(depth[2])}`;
     }
-    return t(`components.deviceInstructions.results.${result}`, { defaultValue: result });
+    const scale = /^scale_calibrated_(\d+)_reads_(-?\d+)$/.exec(result);
+    if (scale) {
+        return t("components.deviceInstructions.results.scaleCalibrated", { placed: scale[1], reads: scale[2] });
+    }
+    return code(result);
 }
 
 // Instructions for one device. They are queued on the server and delivered
@@ -64,10 +79,11 @@ function DeviceInstructions({ bin, className }) {
     // Calibration needs the A02 sensor: every bin has one, including a bin that
     // relays for leaves; only a gateway does not.
     const instructionTypes = isGateway(bin)
-        ? INSTRUCTION_TYPES.filter((type) => type !== "calibrate_empty_bin")
+        ? INSTRUCTION_TYPES.filter((type) => !CALIBRATION_TYPES.includes(type))
         : INSTRUCTION_TYPES;
     const [instructionType, setInstructionType] = useState(instructionTypes[0]);
     const [durationMinutes, setDurationMinutes] = useState("5");
+    const [scaleGrams, setScaleGrams] = useState("1000");
     const [showCalibrationConfirmation, setShowCalibrationConfirmation] = useState(false);
     const [page, setPage] = useState(0);
 
@@ -87,11 +103,15 @@ function DeviceInstructions({ bin, className }) {
     const duration = Number(durationMinutes);
     const durationInvalid = instructionType === "stay_awake" &&
         (!Number.isInteger(duration) || duration < 1 || duration > MAX_AWAKE_MINUTES);
+    const grams = Number(scaleGrams);
+    const gramsInvalid = instructionType === "calibrate_scale" &&
+        (!Number.isInteger(grams) || grams < MIN_SCALE_GRAMS || grams > MAX_SCALE_GRAMS);
 
     const enqueueSelectedInstruction = () => enqueueInstruction({
         binId: bin._id,
         type: instructionType,
         durationMinutes: duration,
+        grams,
     });
 
     return (
@@ -166,10 +186,28 @@ function DeviceInstructions({ bin, className }) {
                                     </div>
                                 )}
 
+                                {instructionType === "calibrate_scale" && (
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-medium" htmlFor="scale-grams">
+                                            {t("components.deviceInstructions.scaleGrams")}
+                                        </label>
+                                        <Input
+                                            id="scale-grams"
+                                            className="w-32"
+                                            type="number"
+                                            min={MIN_SCALE_GRAMS}
+                                            max={MAX_SCALE_GRAMS}
+                                            step={1}
+                                            value={scaleGrams}
+                                            onChange={(event) => setScaleGrams(event.target.value)}
+                                        />
+                                    </div>
+                                )}
+
                                 <Button
                                     type="button"
                                     className="cursor-pointer self-start sm:self-auto"
-                                    disabled={isEnqueuing || durationInvalid}
+                                    disabled={isEnqueuing || durationInvalid || gramsInvalid}
                                     onClick={() => {
                                         if (instructionType === "calibrate_empty_bin") {
                                             setShowCalibrationConfirmation(true);
@@ -185,6 +223,11 @@ function DeviceInstructions({ bin, className }) {
                             {instructionType === "stay_awake" && (
                                 <p className="text-xs text-muted-foreground">
                                     {t("components.deviceInstructions.durationLimit")}
+                                </p>
+                            )}
+                            {instructionType === "calibrate_scale" && (
+                                <p className="text-xs text-muted-foreground">
+                                    {t("components.deviceInstructions.scaleGramsLimit")}
                                 </p>
                             )}
                         </div>
@@ -231,6 +274,12 @@ function DeviceInstructions({ bin, className }) {
                                                     Number.isInteger(instruction.payload?.durationSeconds) && (
                                                         <> · {t("components.deviceInstructions.durationValue", {
                                                             count: instruction.payload.durationSeconds / 60,
+                                                        })}</>
+                                                    )}
+                                                {instruction.type === "calibrate_scale" &&
+                                                    Number.isInteger(instruction.payload?.grams) && (
+                                                        <> · {t("components.deviceInstructions.gramsValue", {
+                                                            grams: instruction.payload.grams,
                                                         })}</>
                                                     )}
                                             </p>
