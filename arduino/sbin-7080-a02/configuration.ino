@@ -12,48 +12,13 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>S-Bin | Device setup</title>
+  <script>
+    // Before the first paint, so a dark system theme never flashes light.
+    document.documentElement.dataset.theme =
+      matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  </script>
   <style>
     :root {
-      color-scheme: light;
-      --page: #f3f7f5;
-      --surface: #ffffff;
-      --surface-muted: #f5f8f6;
-      --text: #17231d;
-      --muted: #5c6c63;
-      --border: #d9e4dc;
-      --green: #16734a;
-      --green-hover: #105c3a;
-      --green-soft: #e7f4ec;
-      --focus: #146c43;
-      --shadow: 0 24px 70px rgba(28, 58, 41, .13);
-      --success-bg: #e7f4ec;
-      --success-text: #145c37;
-      --error-bg: #fff0ee;
-      --error-text: #9c2f25;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        color-scheme: dark;
-        --page: #101914;
-        --surface: #19241e;
-        --surface-muted: #202d25;
-        --text: #f1f6f2;
-        --muted: #b3c2b8;
-        --border: #35463b;
-        --green: #5bc58a;
-        --green-hover: #77d99f;
-        --green-soft: #233d2d;
-        --focus: #83e3a8;
-        --shadow: 0 24px 70px rgba(0, 0, 0, .34);
-        --success-bg: #203c2b;
-        --success-text: #a8edbf;
-        --error-bg: #482b29;
-        --error-text: #ffc0b8;
-      }
-    }
-
-    html[data-theme="light"] {
       color-scheme: light;
       --page: #f3f7f5;
       --surface: #ffffff;
@@ -419,11 +384,7 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
 
     function applyTheme() {
       const isDark = themeOverride === null ? themePreference.matches : themeOverride === "dark";
-      if (themeOverride === null) {
-        document.documentElement.removeAttribute("data-theme");
-      } else {
-        document.documentElement.setAttribute("data-theme", themeOverride);
-      }
+      document.documentElement.dataset.theme = isDark ? "dark" : "light";
       const label = translations[currentLang][isDark ? "switchToLight" : "switchToDark"];
       document.getElementById("themeLabel").textContent = label;
       document.getElementById("themeToggle").setAttribute("aria-label", label);
@@ -489,26 +450,14 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
 }
 
 String getChipMac() {
-    uint64_t mac64 = ESP.getEfuseMac();
-    uint8_t mac[6];
-
-    for (int i = 0; i < 6; i++) {
+    const uint64_t mac64 = ESP.getEfuseMac();
+    uint8_t mac[sbinmesh::MAC_LENGTH];
+    for (size_t i = 0; i < sbinmesh::MAC_LENGTH; i++) {
         mac[i] = (mac64 >> (8 * (5 - i))) & 0xFF;
     }
-
-    char macString[18];
-    snprintf(
-        macString,
-        sizeof(macString),
-        "%02X:%02X:%02X:%02X:%02X:%02X",
-        mac[0],
-        mac[1],
-        mac[2],
-        mac[3],
-        mac[4],
-        mac[5]
-    );
-    return String(macString);
+    char macText[18];
+    sbinmesh::formatMac(mac, macText);
+    return String(macText);
 }
 
 void loadDeviceSettings() {
