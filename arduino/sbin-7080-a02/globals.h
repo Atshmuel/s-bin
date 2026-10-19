@@ -143,6 +143,7 @@ struct DeviceReading {
 };
 
 bool initializePowerManagement();
+void printPmuPowerSources();
 DeviceReading takeReading(bool gpsTested, bool gpsOk, bool sensorTrusted);
 uint16_t readBatteryMillivolts();
 int readBatteryPercent();

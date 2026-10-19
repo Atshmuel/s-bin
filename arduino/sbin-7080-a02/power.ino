@@ -22,6 +22,27 @@ bool initializePowerManagement() {
     return true;
 }
 
+// Why the AXP2101 last turned the board off and on (its PWROFF and PWRON
+// status registers): a cut of the board's own power shows up only here.
+void printPmuPowerSources() {
+    static const char* const OFF_REASONS[] = {
+        "PWRON key pulled low", "software", "PWRON always low", "VSYS under-voltage",
+        "VBUS over-voltage", "DCDC under-voltage", "DCDC over-voltage", "die over-temperature",
+    };
+    const uint8_t off = static_cast<uint8_t>(PMU.getPowerOffSource());
+    const uint8_t on = static_cast<uint8_t>(PMU.getPowerOnSource());
+    String reasons;
+    for (uint8_t bit = 0; bit < 8; bit++) {
+        if (off & (1 << bit)) {
+            reasons += reasons.length() > 0 ? ", " : "";
+            reasons += OFF_REASONS[bit];
+        }
+    }
+    Serial.printf("🔋 PMU last power-off: 0x%02X (%s); power-on: 0x%02X; wake cause %d.\n",
+                  off, reasons.length() > 0 ? reasons.c_str() : "none", on,
+                  static_cast<int>(esp_sleep_get_wakeup_cause()));
+}
+
 // Turns off the SIM7080 main (DC3) and GNSS antenna (BLDO2) rails for when the
 // modem does not answer AT commands; initializePowerManagement() restores them.
 void cutModemPower() {

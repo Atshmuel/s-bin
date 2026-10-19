@@ -16,6 +16,9 @@ void setup() {
     Serial.println("=================================");
     Serial.printf("USB Serial monitor: %s\n", Serial ? "connected" : "not connected");
     Serial.println(pmuReady ? "✅ AXP2101 PMU Ready." : "❌ AXP2101 PMU initialization failed.");
+    if (pmuReady) {
+        printPmuPowerSources();
+    }
 
     initializeSensor();
     initializeScale();
