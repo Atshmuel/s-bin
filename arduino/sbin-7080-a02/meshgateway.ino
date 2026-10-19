@@ -23,6 +23,10 @@ constexpr uint8_t RELAY_MAX_SILENT_REPLIES = 3;
 constexpr unsigned long RELAY_UPLOAD_BUDGET_MS = 60000;
 // A boot this close to the stored slot is the wake-up for that slot.
 constexpr int64_t SLOT_MATCH_SECONDS = 600;
+// A window away from the slot (a reset, a flash) holds its beacons until the
+// server's schedule reply, at most this long: the stored wake time may be from
+// an old schedule, and a leaf follows the first beacon it hears.
+constexpr uint32_t MAX_BEACON_HOLD_MS = 30000;
 
 MeshRadio meshRadio;
 DuplicateFilter duplicateFilter;
@@ -30,8 +34,11 @@ SemaphoreHandle_t relayQueueMutex = nullptr;
 SemaphoreHandle_t meshWindowDone = nullptr;
 volatile bool meshTaskRunning = false;
 bool meshWindowStarted = false;
-uint32_t meshWindowEndMs = 0;
+// Set by the mesh task when held beacons start, read by endMeshWindow().
+volatile uint32_t meshWindowEndMs = 0;
 uint64_t meshWindowSlotEpoch = 0;
+bool beaconsHeld = false;
+uint32_t beaconHoldAckCount = 0;
 // Relay upload time used this cycle, against RELAY_UPLOAD_BUDGET_MS.
 unsigned long relayUploadSpentMs = 0;
 }
@@ -190,9 +197,24 @@ void handleMeshFrame(const ReceivedFrame& frame) {
 }
 
 void meshGatewayTask(void*) {
-    uint32_t lastBeaconAt = millis() - BEACON_INTERVAL_MS;
+    const uint32_t openedAt = millis();
+    uint32_t lastBeaconAt = openedAt - BEACON_INTERVAL_MS;
     ReceivedFrame frame;
     while (static_cast<int32_t>(meshWindowEndMs - millis()) > 0) {
+        if (beaconsHeld) {
+            const bool scheduleReceived = scheduleAckCounter != beaconHoldAckCount;
+            if (!scheduleReceived && millis() - openedAt < MAX_BEACON_HOLD_MS) {
+                meshRadio.receive(frame, 50);  // nothing to answer before a beacon
+                continue;
+            }
+            // The full window starts now; this only shortens the held end time.
+            beaconsHeld = false;
+            meshWindowEndMs = millis() + meshAwakeWindowSeconds * 1000UL;
+            Serial.printf("📡 %s; beaconing for %lu s (leaves wake next at %lu).\n",
+                          scheduleReceived ? "Server schedule received" : "No server schedule yet",
+                          static_cast<unsigned long>(meshAwakeWindowSeconds),
+                          static_cast<unsigned long>(leafWakeEpochToAdvertise()));
+        }
         if (millis() - lastBeaconAt >= BEACON_INTERVAL_MS) {
             sendBeacon();
             lastBeaconAt = millis();
@@ -238,7 +260,11 @@ void beginMeshWindow() {
         isSystemClockValid() && llabs(static_cast<int64_t>(nextWakeEpoch) - now) <= SLOT_MATCH_SECONDS
             ? nextWakeEpoch
             : 0;
-    meshWindowEndMs = millis() + meshAwakeWindowSeconds * 1000UL;
+    beaconsHeld = meshWindowSlotEpoch == 0;
+    beaconHoldAckCount = scheduleAckCounter;
+    // Held, the window may start up to MAX_BEACON_HOLD_MS later; the task
+    // sets the real end once it starts beaconing.
+    meshWindowEndMs = millis() + (beaconsHeld ? MAX_BEACON_HOLD_MS : 0) + meshAwakeWindowSeconds * 1000UL;
     beaconSeq++;
     xSemaphoreTake(meshWindowDone, 0);
     meshTaskRunning = true;
@@ -249,10 +275,15 @@ void beginMeshWindow() {
         Serial.println("❌ Could not start the mesh task.");
         return;
     }
-    Serial.printf("📡 Mesh window open for %lu s (beacon #%lu, leaves wake next at %lu).\n",
-                  static_cast<unsigned long>(meshAwakeWindowSeconds),
-                  static_cast<unsigned long>(beaconSeq),
-                  static_cast<unsigned long>(leafWakeEpochToAdvertise()));
+    if (beaconsHeld) {
+        Serial.printf("📡 Mesh window open off the slot (beacon #%lu); holding beacons for the server's schedule.\n",
+                      static_cast<unsigned long>(beaconSeq));
+    } else {
+        Serial.printf("📡 Mesh window open for %lu s (beacon #%lu, leaves wake next at %lu).\n",
+                      static_cast<unsigned long>(meshAwakeWindowSeconds),
+                      static_cast<unsigned long>(beaconSeq),
+                      static_cast<unsigned long>(leafWakeEpochToAdvertise()));
+    }
 }
 
 // Waits for the window to close, then uploads the readings received in it.
