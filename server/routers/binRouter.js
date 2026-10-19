@@ -4,6 +4,7 @@ import { validateBodyFields, validateParamExist, validateRequestBodyBinIds } fro
 import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName, getRouteBins } from "../db/controllers/binController.js";
 import { cancelDeviceInstruction, enqueueDeviceInstruction, listDeviceInstructions } from "../db/controllers/deviceInstructionController.js";
 import { getMeshSettings, updateMeshSettings } from "../db/controllers/organizationController.js";
+import { getBinAnalytics } from "../db/controllers/analyticsController.js";
 import { ROLES } from "../utils/constants.js";
 
 export const binRouter = Router();
@@ -21,6 +22,7 @@ binRouter.patch('/mesh-settings/:orgId', (req, res, next) => {
     authRole([ROLES.OWNER, ROLES.ADMIN])(req, res, next)
 }, updateMeshSettings)
 binRouter.get('/:id', validateParamExist(), getBin) //get bin
+binRouter.get('/:id/analytics/:section', getBinAnalytics) //one bin page analytics section (?range=7|30|90)
 binRouter.post('/radius', validateBodyFields(['coordinates', 'radius'], ['health', 'minLevel', 'maxLevel']), getBinsInUserRadius) //get bins
 binRouter.post('/route', validateBodyFields(['coordinates', 'radius', 'type'], ['byFoot']), getRouteBins) //get bins in radius for maintenance or collection route
 //updates

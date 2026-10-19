@@ -46,6 +46,9 @@ export const binLogSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
+// Every bin page and analytics query reads one bin's logs by time.
+binLogSchema.index({ binId: 1, createdAt: -1 });
+
 binLogSchema.virtual("bin", {
     ref: "Bin",
     localField: 'binId',
