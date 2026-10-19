@@ -185,6 +185,86 @@ bool publishInstructionResult(
     return true;
 }
 
+// Parses `bytes` bytes written as hex digit pairs, each pair followed by
+// `separator` except the last (0 for none), e.g. a MAC or an ObjectId.
+bool parseHexBytes(const char* text, uint8_t* out, size_t bytes, char separator) {
+    for (size_t i = 0; i < bytes; i++) {
+        for (uint8_t half = 0; half < 2; half++) {
+            const char c = *text++;
+            uint8_t digit;
+            if (c >= '0' && c <= '9') digit = c - '0';
+            else if (c >= 'a' && c <= 'f') digit = c - 'a' + 10;
+            else if (c >= 'A' && c <= 'F') digit = c - 'A' + 10;
+            else return false;
+            out[i] = half == 0 ? digit << 4 : out[i] | digit;
+        }
+        if (separator != 0 && i + 1 < bytes && *text++ != separator) {
+            return false;
+        }
+    }
+    return *text == '\0';
+}
+
+sbinmesh::InstructionType leafInstructionType(const char* type) {
+    if (strcmp(type, "report_now") == 0) return sbinmesh::INSTRUCTION_REPORT_NOW;
+    if (strcmp(type, "calibrate_empty_bin") == 0) return sbinmesh::INSTRUCTION_CALIBRATE_EMPTY_BIN;
+    if (strcmp(type, "calibrate_scale") == 0) return sbinmesh::INSTRUCTION_CALIBRATE_SCALE;
+    return sbinmesh::INSTRUCTION_NONE;
+}
+
+// Replaces the held leaf commands with the instruction check's list; a
+// malformed entry is skipped, so the others still reach their leaves.
+void storeLeafInstructions(JsonArrayConst instructions) {
+    LeafInstruction parsed[MAX_LEAF_INSTRUCTIONS];
+    uint8_t count = 0;
+    for (JsonObjectConst instruction : instructions) {
+        if (count >= MAX_LEAF_INSTRUCTIONS) {
+            break;
+        }
+        const char* leafMac = instruction["leafMac"] | "";
+        const char* id = instruction["id"] | "";
+        LeafInstruction& entry = parsed[count];
+        entry.type = leafInstructionType(instruction["type"] | "");
+        JsonVariantConst grams = instruction["payload"]["grams"];
+        entry.value = grams.is<uint32_t>() ? grams.as<uint32_t>() : 0;
+        if (entry.type == sbinmesh::INSTRUCTION_NONE ||
+            !parseHexBytes(leafMac, entry.leafMac, sbinmesh::MAC_LENGTH, ':') ||
+            !parseHexBytes(id, entry.id, sbinmesh::INSTRUCTION_ID_LENGTH, 0)) {
+            Serial.printf("⚠️ Skipping an invalid leaf command for %s.\n", leafMac);
+            continue;
+        }
+        count++;
+    }
+    setLeafInstructions(parsed, count);
+}
+
+// The server's result text for a leaf's command result (see ResultCode).
+String leafResultText(const sbinmesh::DataPacket& data) {
+    switch (data.resultCode) {
+        case sbinmesh::RESULT_REPORT_SENT:
+            return "additional_report_published";
+        case sbinmesh::RESULT_EMPTY_DEPTH:
+            return "empty_depth_mm_" + String(data.resultValue);
+        case sbinmesh::RESULT_CALIBRATION_FAILED:
+            return "empty_bin_calibration_failed";
+        case sbinmesh::RESULT_SCALE_CALIBRATED:
+            return "scale_calibrated_" + String(data.resultExtra) + "_reads_" + String(data.resultValue);
+        case sbinmesh::RESULT_SCALE_NOT_RESPONDING:
+            return "scale_not_responding";
+        default:
+            return "unsupported_instruction_type";
+    }
+}
+
+const char* leafScaleText(uint8_t scaleState) {
+    switch (scaleState) {
+        case sbinmesh::SCALE_STATE_OK: return "ok";
+        case sbinmesh::SCALE_STATE_UNCALIBRATED: return "uncalibrated";
+        case sbinmesh::SCALE_STATE_FAILED: return "failed";
+        default: return nullptr;
+    }
+}
+
 // Uploads one leaf reading on this gateway's relay topic and waits for the
 // server's relay_result. The server vouches for the leaf through this
 // gateway's device key and creates the leaf bin in this organization.
@@ -215,7 +295,12 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
         reading["level"] = data.level;
     }
     reading["battery"] = data.battery;
-    reading["weight"] = 0;
+    // A leaf without a scale sends no state, and the server keeps no weight.
+    const char* scale = leafScaleText(data.scaleState);
+    reading["weight"] = scale != nullptr && data.scaleState == sbinmesh::SCALE_STATE_OK ? data.weightGrams : 0;
+    if (scale != nullptr) {
+        reading["scale"] = scale;
+    }
     if (data.flags & sbinmesh::DATA_HAS_LOCATION) {
         reading["location"][0] = data.latitude;
         reading["location"][1] = data.longitude;
@@ -231,6 +316,16 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     }
     if (data.driftPpm != 0) {
         reading["driftPpm"] = data.driftPpm;
+    }
+    if (data.resultStatus == sbinmesh::RESULT_COMPLETED || data.resultStatus == sbinmesh::RESULT_FAILED) {
+        char instructionId[sbinmesh::INSTRUCTION_ID_LENGTH * 2 + 1];
+        for (size_t i = 0; i < sbinmesh::INSTRUCTION_ID_LENGTH; i++) {
+            snprintf(instructionId + i * 2, 3, "%02x", data.resultId[i]);
+        }
+        JsonObject result = doc["instructionResult"].to<JsonObject>();
+        result["instructionId"] = instructionId;
+        result["status"] = data.resultStatus == sbinmesh::RESULT_COMPLETED ? "completed" : "failed";
+        result["result"] = leafResultText(data);
     }
 
     char payload[768];
@@ -418,6 +513,9 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
                     break;
                 }
                 pendingInstructionCount++;
+            }
+            if (instructionResponseValid) {
+                storeLeafInstructions(doc["leafInstructions"].as<JsonArrayConst>());
             }
             instructionCheckCounter++;
             if (pendingInstructionCount > 0) {

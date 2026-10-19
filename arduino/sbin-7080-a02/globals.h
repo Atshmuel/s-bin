@@ -166,6 +166,16 @@ struct RelayRecord {
     uint32_t measuredAtEpoch;  // UTC when the leaf took the reading, 0 when unknown
 };
 
+// A server command for a mesh leaf, kept in RTC memory until the ACK to the
+// leaf's next reading hands it over.
+struct LeafInstruction {
+    uint8_t leafMac[sbinmesh::MAC_LENGTH];
+    uint8_t id[sbinmesh::INSTRUCTION_ID_LENGTH];
+    uint8_t type;      // sbinmesh::InstructionType
+    uint32_t value;    // calibrate_scale: the known grams
+};
+constexpr uint8_t MAX_LEAF_INSTRUCTIONS = 4;
+
 enum RelayUploadResult {
     RELAY_ACCEPTED,
     RELAY_REJECTED,
@@ -175,6 +185,7 @@ enum RelayUploadResult {
 void beginMeshWindow();
 void endMeshWindow();
 void uploadRelayedReadings();
+void setLeafInstructions(const LeafInstruction* instructions, uint8_t count);
 RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long timeoutMs);
 bool synchronizeClockFromNetwork(unsigned long timeoutMs);
 void correctClockFromServer(time_t serverEpoch);

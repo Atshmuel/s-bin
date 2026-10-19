@@ -90,6 +90,9 @@ RTC_DATA_ATTR uint8_t fakeLevel = 10;
 RTC_DATA_ATTR uint8_t fakeBattery = 100;
 RTC_DATA_ATTR PendingReading pendingReadings[MAX_PENDING_READINGS];
 RTC_DATA_ATTR uint8_t pendingCount = 0;
+// The last server command run, so a gateway handing it over again (until the
+// server has the result) does not run it twice.
+RTC_DATA_ATTR uint8_t lastInstructionId[INSTRUCTION_ID_LENGTH] = {};
 
 MeshRadio radio;
 uint8_t gatewayMac[MAC_LENGTH] = {};
@@ -122,6 +125,43 @@ DataPacket makeFakeReading() {
     reading.meshAwakeWindowSeconds = meshWindowSeconds;
     reading.driftPpm = driftPpm;
     return reading;
+}
+
+// Runs a command the gateway handed over (simulated: this leaf has no sensor
+// or scale) and queues a fresh reading that carries the result.
+void runInstruction(const AckPacket& ack) {
+    if (ack.instructionType == INSTRUCTION_NONE ||
+        memcmp(ack.instructionId, lastInstructionId, INSTRUCTION_ID_LENGTH) == 0) {
+        return;
+    }
+    memcpy(lastInstructionId, ack.instructionId, INSTRUCTION_ID_LENGTH);
+
+    DataPacket reading = makeFakeReading();
+    memcpy(reading.resultId, ack.instructionId, INSTRUCTION_ID_LENGTH);
+    switch (ack.instructionType) {
+        case INSTRUCTION_REPORT_NOW:
+            // The fresh reading is the extra report.
+            reading.resultStatus = RESULT_COMPLETED;
+            reading.resultCode = RESULT_REPORT_SENT;
+            break;
+        case INSTRUCTION_CALIBRATE_EMPTY_BIN:
+            reading.resultStatus = RESULT_COMPLETED;
+            reading.resultCode = RESULT_EMPTY_DEPTH;
+            reading.resultValue = 1000;
+            break;
+        case INSTRUCTION_CALIBRATE_SCALE:
+            reading.resultStatus = RESULT_FAILED;
+            reading.resultCode = RESULT_SCALE_NOT_RESPONDING;
+            break;
+        default:
+            reading.resultStatus = RESULT_FAILED;
+            reading.resultCode = RESULT_UNSUPPORTED;
+            break;
+    }
+    Serial.printf("🛠️ Ran command type %u: %s; the result rides on reading %08lX.\n",
+                  ack.instructionType, reading.resultStatus == RESULT_COMPLETED ? "completed" : "failed",
+                  static_cast<unsigned long>(reading.header.messageId));
+    queueReading(reading);
 }
 
 // Sets the clock from a gateway beacon and learns drift, guard and schedule.
@@ -232,9 +272,9 @@ bool waitForBeacon(uint32_t listenMs, bool atScheduledSlot) {
     return false;
 }
 
-// Sends one reading and waits for the gateway's ACK; retries reuse the same
-// message ID so the gateway and server can recognise duplicates.
-bool deliverReading(const DataPacket& reading) {
+// Sends one reading and waits for the gateway's ACK, copied to `ack`; retries
+// reuse the same message ID so the gateway and server can recognise duplicates.
+bool deliverReading(const DataPacket& reading, AckPacket& ack) {
     for (uint8_t attempt = 1; attempt <= SEND_ATTEMPTS; attempt++) {
         if (!radio.sendTo(gatewayMac, &reading, sizeof(reading))) {
             Serial.printf("⚠️ Reading %08lX not confirmed by the radio (attempt %u).\n",
@@ -247,14 +287,16 @@ bool deliverReading(const DataPacket& reading) {
             if (!radio.receive(frame, 50)) {
                 continue;
             }
-            const AckPacket* ack = frame.as<AckPacket>(PACKET_ACK);
-            if (ack == nullptr || ack->ackedMessageId != reading.header.messageId ||
-                !macEquals(ack->ackedOrigin, radio.macAddress())) {
+            const AckPacket* received = frame.as<AckPacket>(PACKET_ACK);
+            if (received == nullptr || received->ackedMessageId != reading.header.messageId ||
+                !macEquals(received->ackedOrigin, radio.macAddress())) {
                 continue;
             }
-            Serial.printf("✅ Reading %08lX acknowledged (status %u, level %u%%, taken %lu s ago).\n",
-                          static_cast<unsigned long>(reading.header.messageId), ack->status,
-                          reading.level, static_cast<unsigned long>(reading.ageSeconds));
+            ack = *received;
+            Serial.printf("✅ Reading %08lX acknowledged (status %u, level %u%%, taken %lu s ago)%s.\n",
+                          static_cast<unsigned long>(reading.header.messageId), ack.status,
+                          reading.level, static_cast<unsigned long>(reading.ageSeconds),
+                          ack.instructionType != INSTRUCTION_NONE ? ", with a command" : "");
             return true;  // stored, duplicate or rejected: stop sending it either way
         }
         Serial.printf("⚠️ No ACK for reading %08lX (attempt %u).\n",
@@ -263,20 +305,21 @@ bool deliverReading(const DataPacket& reading) {
     return false;
 }
 
+// Sends the queue oldest first. A command in an ACK queues its result reading
+// at the back, so it goes out in this window too when the gateway answers.
 void sendPendingReadings() {
-    uint8_t delivered = 0;
-    while (delivered < pendingCount) {
-        PendingReading& pending = pendingReadings[delivered];
+    while (pendingCount > 0) {
+        PendingReading& pending = pendingReadings[0];
         pending.packet.ageSeconds =
             static_cast<uint32_t>(max<int64_t>(epochMsNow() - pending.takenAtMs, 0) / 1000);
-        if (!deliverReading(pending.packet)) {
+        AckPacket ack = {};
+        if (!deliverReading(pending.packet, ack)) {
             break;
         }
-        delivered++;
+        memmove(&pendingReadings[0], &pendingReadings[1], sizeof(PendingReading) * (pendingCount - 1));
+        pendingCount--;
+        runInstruction(ack);
     }
-    memmove(&pendingReadings[0], &pendingReadings[delivered],
-            sizeof(PendingReading) * (pendingCount - delivered));
-    pendingCount -= delivered;
     if (pendingCount > 0) {
         Serial.printf("📦 %u reading(s) kept for the next cycle.\n", pendingCount);
     }

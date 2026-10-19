@@ -10,7 +10,7 @@
 namespace sbinmesh {
 
 constexpr uint16_t PACKET_MAGIC = 0x4253;  // "SB"
-constexpr uint8_t PROTOCOL_VERSION = 2;
+constexpr uint8_t PROTOCOL_VERSION = 3;
 constexpr uint8_t RADIO_CHANNEL = 1;
 constexpr uint8_t DEFAULT_TTL = 4;
 constexpr size_t MAX_FRAME_SIZE = 250;
@@ -29,6 +29,42 @@ enum AckStatus : uint8_t {
     ACK_STORED = 1,      // the gateway took custody of the reading
     ACK_DUPLICATE = 2,   // already stored earlier; the sender can drop it
     ACK_REJECTED = 3,    // will never be accepted; the sender should drop it
+};
+
+// A server command's id (a MongoDB ObjectId, as its 12 bytes).
+constexpr size_t INSTRUCTION_ID_LENGTH = 12;
+
+// Commands a gateway hands to a leaf in the ACK to the leaf's reading.
+enum InstructionType : uint8_t {
+    INSTRUCTION_NONE = 0,
+    INSTRUCTION_REPORT_NOW = 1,
+    INSTRUCTION_CALIBRATE_EMPTY_BIN = 2,
+    INSTRUCTION_CALIBRATE_SCALE = 3,   // value: the known weight in grams
+};
+
+enum ResultStatus : uint8_t {
+    RESULT_NONE = 0,                   // no command result in this packet
+    RESULT_COMPLETED = 1,
+    RESULT_FAILED = 2,
+};
+
+// What a leaf's command produced; the gateway turns it into the server's
+// result text (in brackets).
+enum ResultCode : uint8_t {
+    RESULT_REPORT_SENT = 1,            // additional_report_published
+    RESULT_EMPTY_DEPTH = 2,            // empty_depth_mm_<value>
+    RESULT_CALIBRATION_FAILED = 3,     // empty_bin_calibration_failed
+    RESULT_SCALE_CALIBRATED = 4,       // scale_calibrated_<extra>_reads_<value>
+    RESULT_SCALE_NOT_RESPONDING = 5,   // scale_not_responding
+    RESULT_UNSUPPORTED = 6,            // unsupported_instruction_type
+};
+
+// A leaf's scale, as the server's report field "scale".
+enum ScaleState : uint8_t {
+    SCALE_STATE_NONE = 0,              // no scale: the server keeps no weight
+    SCALE_STATE_OK = 1,
+    SCALE_STATE_UNCALIBRATED = 2,
+    SCALE_STATE_FAILED = 3,
 };
 
 enum DataFlags : uint8_t {
@@ -79,6 +115,15 @@ struct __attribute__((packed)) DataPacket {
     // the leaf queued it after missing the gateway. An age rather than a time,
     // so it is right even before the leaf has learned the time.
     uint32_t ageSeconds;
+    int32_t weightGrams;          // valid when scaleState is SCALE_STATE_OK
+    uint8_t scaleState;           // ScaleState
+    // The leaf's result for the last command it ran; it rides on one reading
+    // (the one taken right after running it) until a gateway stores that.
+    uint8_t resultId[INSTRUCTION_ID_LENGTH];
+    uint8_t resultStatus;         // ResultStatus
+    uint8_t resultCode;           // ResultCode
+    int32_t resultValue;          // the depth in mm, or the grams read
+    uint32_t resultExtra;         // the grams placed, for a scale calibration
 };
 
 // Sent back hop by hop along the path the DATA came from.
@@ -87,6 +132,11 @@ struct __attribute__((packed)) AckPacket {
     uint8_t ackedOrigin[MAC_LENGTH];
     uint32_t ackedMessageId;
     uint8_t status;               // AckStatus
+    // A command for the leaf, when its gateway holds one; the leaf runs it once
+    // (it remembers the id) and returns the result in its next reading.
+    uint8_t instructionId[INSTRUCTION_ID_LENGTH];
+    uint8_t instructionType;      // InstructionType; none = no command
+    uint32_t instructionValue;    // calibrate_scale: the known grams
 };
 
 static_assert(sizeof(PacketHeader) == 20, "PacketHeader layout changed");

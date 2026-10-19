@@ -37,6 +37,10 @@ unsigned long relayUploadSpentMs = 0;
 }
 
 RTC_DATA_ATTR RelayRecord relayQueue[RELAY_QUEUE_SIZE];
+// The server's latest list of commands for this gateway's leaves (see
+// setLeafInstructions()); guarded by relayQueueMutex like the relay queue.
+RTC_DATA_ATTR LeafInstruction leafInstructions[MAX_LEAF_INSTRUCTIONS];
+RTC_DATA_ATTR uint8_t leafInstructionCount = 0;
 RTC_DATA_ATTR uint8_t relayQueueCount = 0;
 RTC_DATA_ATTR uint32_t beaconSeq = 0;
 
@@ -44,6 +48,29 @@ namespace {
 bool sameReading(const RelayRecord& record, const uint8_t origin[MAC_LENGTH], uint32_t messageId) {
     return record.data.header.messageId == messageId &&
            macEquals(record.data.header.origin, origin);
+}
+
+// The mutex guarding the relay queue and the leaf commands, shared by the mesh
+// task and the MQTT callbacks; false when it could not be created.
+bool ensureMeshMutex() {
+    if (relayQueueMutex == nullptr) {
+        relayQueueMutex = xSemaphoreCreateMutex();
+    }
+    return relayQueueMutex != nullptr;
+}
+
+// Puts the leaf's pending command, if any, into its ACK.
+void attachLeafInstruction(AckPacket& ack, const uint8_t leafMac[MAC_LENGTH]) {
+    xSemaphoreTake(relayQueueMutex, portMAX_DELAY);
+    for (uint8_t i = 0; i < leafInstructionCount; i++) {
+        if (macEquals(leafInstructions[i].leafMac, leafMac)) {
+            memcpy(ack.instructionId, leafInstructions[i].id, INSTRUCTION_ID_LENGTH);
+            ack.instructionType = leafInstructions[i].type;
+            ack.instructionValue = leafInstructions[i].value;
+            break;
+        }
+    }
+    xSemaphoreGive(relayQueueMutex);
 }
 
 bool relayQueueContains(const uint8_t origin[MAC_LENGTH], uint32_t messageId) {
@@ -148,14 +175,18 @@ void handleMeshFrame(const ReceivedFrame& frame) {
     memcpy(ack.ackedOrigin, origin, MAC_LENGTH);
     ack.ackedMessageId = messageId;
     ack.status = duplicate ? ACK_DUPLICATE : ACK_STORED;
+    attachLeafInstruction(ack, origin);
     const bool acked = meshRadio.sendTo(frame.sender, &ack, sizeof(ack));
 
     char macText[18];
     formatMac(origin, macText);
-    Serial.printf("%s Leaf %s reading %08lX (level %u%%, RSSI %d dBm, taken %lu s ago)%s.\n",
+    Serial.printf("%s Leaf %s reading %08lX (level %u%%, RSSI %d dBm, taken %lu s ago)%s%s%s.\n",
                   duplicate ? "🔁 Duplicate of" : "📥 Stored", macText,
                   static_cast<unsigned long>(messageId), data->level, frame.rssi,
-                  static_cast<unsigned long>(data->ageSeconds), acked ? "" : "; ACK not confirmed");
+                  static_cast<unsigned long>(data->ageSeconds),
+                  data->resultStatus != RESULT_NONE ? ", with a command result" : "",
+                  ack.instructionType != INSTRUCTION_NONE ? "; handed it a command" : "",
+                  acked ? "" : "; ACK not confirmed");
 }
 
 void meshGatewayTask(void*) {
@@ -192,9 +223,7 @@ void beginMeshWindow() {
         return;
     }
     meshWindowStarted = true;
-    if (relayQueueMutex == nullptr) {
-        relayQueueMutex = xSemaphoreCreateMutex();
-    }
+    ensureMeshMutex();
     if (meshWindowDone == nullptr) {
         meshWindowDone = xSemaphoreCreateBinary();
     }
@@ -279,4 +308,20 @@ void uploadRelayedReadings() {
         removeRelayRecord(record.data.header.origin, record.data.header.messageId);
     }
     relayUploadSpentMs += millis() - startedAt;
+}
+
+// Replaces the leaf commands with the server's latest list (from the
+// instruction check), which stays the reference: a command the server has
+// finished or cancelled drops out at the next check.
+void setLeafInstructions(const LeafInstruction* instructions, uint8_t count) {
+    if (!ensureMeshMutex()) {
+        return;
+    }
+    xSemaphoreTake(relayQueueMutex, portMAX_DELAY);
+    leafInstructionCount = min(count, MAX_LEAF_INSTRUCTIONS);
+    memcpy(leafInstructions, instructions, sizeof(LeafInstruction) * leafInstructionCount);
+    xSemaphoreGive(relayQueueMutex);
+    if (leafInstructionCount > 0) {
+        Serial.printf("📥 Holding %u command(s) for leaves until their next reading.\n", leafInstructionCount);
+    }
 }
