@@ -1,13 +1,11 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useLogs } from "@/hooks/bins/binLogs/useBinLogs"
 import { useBinStatusOV } from "@/hooks/overviews/useBinStatusOV"
 import { useLogsTypeOV } from "@/hooks/overviews/useLogsTypeOV"
-import { useState } from "react"
 import AIInsights from "./AIInsights"
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Label, Pie, PieChart, XAxis } from "recharts"
+import { BatteryOutlookCard, CollectionsTrendCard, ConnectivityCard, FullnessDistributionCard, FullSoonCard, HealthCausesCard, WasteCard } from "@/components/analytics/FleetCards"
+import { Bar, BarChart, CartesianGrid, Label, Pie, PieChart, XAxis } from "recharts"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
 import { formatDate } from "@/utils/helpers"
@@ -31,16 +29,6 @@ function Analytics() {
             color: "var(--color-chart-1)",
         }
     }
-    const areaChartConfig = {
-        battery: {
-            label: t("pages.analytics.area.battery"),
-            color: 'var(--chart-1)'
-        },
-        newLevel: {
-            label: t("pages.analytics.area.level"),
-            color: "var(--chart-2)",
-        }
-    }
     const barChartConfig = {
         maintenance: {
             label: t("pages.analytics.bar.maintenance"),
@@ -57,28 +45,10 @@ function Analytics() {
     }
 
 
-    const [timeRange, setTimeRange] = useState("90d")
     const { isRight } = useAppSide()
 
-    const { allLogs, isLoadingLogs, logsError } = useLogs()
     const { binsCount, isLoadingStatusOV, statusOVError } = useBinStatusOV()
     const { logTypes, isLoadingLogTypeOV, logTypeOVError } = useLogsTypeOV()
-
-    const filteredLogs = allLogs?.filter((item) => {
-        // Gateways have no fill level and stay out of fleet statistics.
-        if (item.binKind === 'gateway') return false
-        const date = new Date(item.createdAt)
-        const referenceDate = new Date()
-        let daysToSubtract = 90
-        if (timeRange === "30d") {
-            daysToSubtract = 30
-        } else if (timeRange === "7d") {
-            daysToSubtract = 7
-        }
-        const startDate = new Date(referenceDate)
-        startDate.setDate(startDate.getDate() - daysToSubtract)
-        return date >= startDate
-    }) || []
 
     const binsChartData = binsCount?.byStatus?.map((b, i) => {
         return { ...b, fill: `var(--color-chart-${i + 1})` }
@@ -86,103 +56,13 @@ function Analytics() {
 
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
             <AIInsights />
-            <div className="flex flex-col xl:flex-row gap-6">
-                <Card className="flex-3">
-                    <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-                        <div className="grid flex-1 gap-1">
-                            <CardTitle>{t("pages.analytics.binStatusOverTime.title")}</CardTitle>
-                            < CardDescription >
-                                {t("pages.analytics.binStatusOverTime.description")}
-                            </CardDescription>
-                        </div>
-                        <Select disabled={isLoadingLogs || logsError} value={timeRange} onValueChange={setTimeRange}>
-                            <SelectTrigger
-                                isRight={isRight}
-                                className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
-                                aria-label="Select a value"
-                            >
-                                <SelectValue placeholder={t(`pages.analytics.lastDays`, { count: 90 })} />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                <SelectItem isRight={isRight} value="90d" className="rounded-lg">
-                                    {t(`pages.analytics.lastDays`, { count: 90 })}
-                                </SelectItem>
-                                <SelectItem isRight={isRight} value="30d" className="rounded-lg">
-                                    {t(`pages.analytics.lastDays`, { count: 30 })}
-                                </SelectItem>
-                                <SelectItem isRight={isRight} value="7d" className="rounded-lg">
-                                    {t(`pages.analytics.lastDays`, { count: 7 })}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </CardHeader>
-                    <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-                        {isLoadingLogs && !logsError ?
-                            <div className="flex flex-col space-y-13 pt-6">
-                                <Skeleton className="w-full h-1" />
-                                <Skeleton className="w-full h-1" />
-                                <Skeleton className="w-full h-1" />
-                                <Skeleton className="w-full h-1" />
-                            </div>
-                            :
-                            <ChartContainer
-                                config={areaChartConfig}
-                                className="aspect-auto h-[250px] w-full"
-                            >
-                                <AreaChart data={filteredLogs}>
-                                    <defs>
-                                        <linearGradient id="fillLevel" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.1} />
-                                        </linearGradient>
-                                        <linearGradient id="fillBattery" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.1} />
-
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
-                                        dataKey="createdAt"
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tickMargin={8}
-                                        minTickGap={32}
-                                        reversed={!isRight}
-                                        tickFormatter={(value) => formatDate(value, isRight, { month: "short", day: "numeric" })}
-                                    />
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={
-                                            <ChartTooltipContent
-                                                labelFormatter={(value) => formatDate(value, isRight, { month: "short", day: "numeric" })}
-                                                indicator="dot"
-                                            />
-                                        }
-                                    />
-                                    <Area
-                                        dataKey="battery"
-                                        type="natural"
-                                        fill="url(#fillBattery)"
-                                        stroke="var(--chart-2)"
-                                        stackId='a'
-                                    />
-                                    <Area
-                                        dataKey="newLevel"
-                                        type="natural"
-                                        fill="url(#fillLevel)"
-                                        stroke="var(--chart-1)"
-                                        stackId='a'
-
-                                    />
-                                    <ChartLegend content={<ChartLegendContent />} />
-                                </AreaChart>
-                            </ChartContainer>}
-                    </CardContent>
-                </Card>
-                <Card className="flex flex-col min-w-0 flex-1">
+            {/* Each card below makes its own request, once it scrolls into view. */}
+            <div className="grid gap-6 lg:grid-cols-3">
+                <FullSoonCard />
+                <FullnessDistributionCard />
+                <Card className="flex min-w-0 flex-col">
                     <CardHeader className="items-center pb-0">
                         <CardTitle>{t("pages.analytics.fleetHealthOverview.title")}</CardTitle>
                         <CardDescription>{t("pages.analytics.fleetHealthOverview.description")}</CardDescription>
@@ -246,7 +126,12 @@ function Analytics() {
                     </CardFooter>
                 </Card>
             </div>
-            <div>
+            <div className="grid gap-6 lg:grid-cols-2">
+                <CollectionsTrendCard />
+                <WasteCard />
+                <BatteryOutlookCard />
+                <ConnectivityCard />
+                <HealthCausesCard />
                 <Card>
                     <CardHeader>
                         <CardTitle>{t("pages.analytics.binsEventDistribution.title")}</CardTitle>
@@ -304,14 +189,8 @@ function Analytics() {
 
                 </Card>
             </div>
-
         </div>
     )
 }
 
 export default Analytics
-
-
-
-
-

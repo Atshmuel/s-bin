@@ -8,7 +8,7 @@ import { useAppSide } from "@/contexts/AppSideProvider"
 import { useBinAnalytics } from "@/hooks/analytics/useBinAnalytics"
 import { isGateway } from "@/utils/binHelpers"
 import { formatDate } from "@/utils/helpers"
-import RangeSelect from "./RangeSelect"
+import RangeSelect from "@/components/analytics/RangeSelect"
 
 // Level, weight and battery per report, with a dashed line where the bin was
 // emptied. Level and battery share the % axis; weight has its own kg axis.

@@ -355,10 +355,6 @@
         "noInsightsYet": "No AI-generated insights available at the moment. Please check back later.",
         "waitingForData": "The AI system is currently processing data to generate insights. This may take a few moments."
       },
-      "binStatusOverTime":{
-        "title":"Bin Status Over Time",
-        "description":"Battery level and fill percentage trends based on sensor logs."
-      },
       "fleetHealthOverview":{
         "title":"Fleet Health Overview",
         "description":"Real-time insights into the overall health of your bin fleet.",
@@ -374,16 +370,65 @@
         "warning":"Warning",
         "critical":"Critical"
       },
-      "area":{
-        "battery":"Battery Level",
-        "level":"Fill Level"
-      },
       "bar":{
         "maintenance":"Maintenance",
         "error":"Error",
         "log":"Log"
       },
-      "lastDays":"Last {{count}} Days"
+      "sections":{
+        "bins":"Bins",
+        "devices":"Devices",
+        "fullSoon":{
+          "title":"Full soon",
+          "description":"Bins expected to be full, from how fast each has filled since it was last emptied.",
+          "within":"Within {{count}} hours",
+          "none":"No bin is expected to be full in the next 48 hours."
+        },
+        "fullness":{
+          "title":"Fullness",
+          "description":"Bins by how full they are now (fill level or weight, whichever is higher).",
+          "unknown_one":"1 bin has no working fill sensor or scale.",
+          "unknown_other":"{{count}} bins have no working fill sensor or scale."
+        },
+        "collections":{
+          "title":"Emptyings",
+          "description":"Emptyings per day, found from the drops in fill level or weight.",
+          "summary_one":"1 emptying in this period, at {{percent}}% full on average.",
+          "summary_other":"{{count}} emptyings in this period, at {{percent}}% full on average.",
+          "count":"Emptyings",
+          "fullness":"Fullness before (%)"
+        },
+        "waste":{
+          "title":"Waste collected",
+          "description":"Only bins with a calibrated scale are weighed; none were emptied in this period.",
+          "summary":"{{kg}} kg collected in this period.",
+          "kg":"kg collected"
+        },
+        "battery":{
+          "title":"Battery",
+          "description":"Devices by battery level, and those expected below 20% soon.",
+          "daysLeft_one":"about 1 day to 20%",
+          "daysLeft_other":"about {{count}} days to 20%",
+          "none":"No device is expected below 20% in the next {{count}} days."
+        },
+        "connectivity":{
+          "title":"Connectivity",
+          "description":"How devices reach the server, and their on-time reports over the last {{count}} days.",
+          "onTime":"On time",
+          "gateways":"Gateways",
+          "leaves_one":"1 bin",
+          "leaves_other":"{{count}} bins",
+          "leastReliable":"Missing the most reports"
+        },
+        "healthCauses":{
+          "title":"Health issues",
+          "description":"Reports with a problem per day, by what went wrong.",
+          "fillSensor":"Fill sensor",
+          "battery":"Battery",
+          "scale":"Scale",
+          "gps":"GPS"
+        }
+      }
     },
     "addBin":{
       "toasts":{
