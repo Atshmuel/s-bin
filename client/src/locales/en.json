@@ -477,6 +477,7 @@
       "tabs":{
         "label":"Bin sections",
         "logs":"Logs",
+        "insights":"Insights",
         "details":"Details",
         "connected":"Connected bins",
         "instructions":"Remote commands",
@@ -505,7 +506,10 @@
         "mesh":"Mesh",
         "via":"via",
         "relaysFor_one":"Relays for 1 bin",
-        "relaysFor_other":"Relays for {{count}} bins"
+        "relaysFor_other":"Relays for {{count}} bins",
+        "fillRate":"Fills about {{rate}}% a day · full {{when}}",
+        "fillRateUnknown":"Fill rate: needs a few more reports",
+        "notFilling":"Not filling up since it was last emptied"
       },
       "logsTable":{
         "title":"Log Overview",
@@ -523,10 +527,42 @@
       },
       "areaChart":{
         "title":"Bin Status Over Time",
-        "description":"Battery level and fill percentage trends based on sensor logs.",
+        "description":"Fill level, weight and battery from each report; a dashed line marks an emptying.",
         "battery":"Battery Level",
         "level":"Fill Level",
-        "lastDays":"Last {{count}} Days"
+        "weight":"Weight (kg)",
+        "range":"Time range",
+        "lastDays":"Last {{count}} Days",
+        "collectionsNote_one":"Emptied once in this period.",
+        "collectionsNote_other":"Emptied {{count}} times in this period."
+      },
+      "analytics":{
+        "noReports":"No reports in this period.",
+        "collections":{
+          "title":"Emptyings",
+          "description":"Found from a drop of 30 points in fill level or of half the weight between two reports.",
+          "none":"No emptyings in this period.",
+          "fullnessBefore":"{{percent}}% full",
+          "kgRemoved":"{{kg}} kg removed"
+        },
+        "battery":{
+          "title":"Battery",
+          "awake":"Awake time (s)",
+          "daysLeft_one":"About 1 day until 20%.",
+          "daysLeft_other":"About {{count}} days until 20%.",
+          "notDraining":"Not draining at the current rate.",
+          "notEnoughData":"A forecast needs a few more reports."
+        },
+        "reliability":{
+          "title":"On-time reports",
+          "description":"Reports received against the reports the schedule expects.",
+          "counts":"{{received}} of {{expected}} reports",
+          "notEnoughData":"Not enough reports yet"
+        },
+        "connection":{
+          "title":"Mesh signal",
+          "description":"Signal strength (RSSI) and hops to the gateway, per report."
+        }
       }
     },
     "userProfile":{

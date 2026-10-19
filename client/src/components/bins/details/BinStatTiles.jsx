@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Battery from "@/components/bins/Battary"
 import { getColor, getFullness, isGateway } from "@/utils/binHelpers"
+import { useBinAnalytics } from "@/hooks/analytics/useBinAnalytics"
 
 function StatTile({ title, value, children }) {
     return (
@@ -15,6 +16,23 @@ function StatTile({ title, value, children }) {
             </CardHeader>
             {children && <CardContent className="flex flex-col gap-1 text-xs text-muted-foreground">{children}</CardContent>}
         </Card>
+    )
+}
+
+// How fast the bin fills since it was last emptied, and when it will be full.
+function FillForecast({ bin }) {
+    const { t, i18n } = useTranslation()
+    const { data } = useBinAnalytics(bin._id, "fill-rate")
+    if (!data?.applicable) return null
+    if (data.ratePerDay === null) return <span>{t('pages.binDetails.tiles.fillRateUnknown')}</span>
+    if (!(data.ratePerDay > 0) || !data.expectedFullAt) return <span>{t('pages.binDetails.tiles.notFilling')}</span>
+    return (
+        <span>
+            {t('pages.binDetails.tiles.fillRate', {
+                rate: data.ratePerDay.toFixed(1),
+                when: formatDistanceToNow(new Date(data.expectedFullAt), { addSuffix: true, locale: i18n.language === 'he' ? he : undefined }),
+            })}
+        </span>
     )
 }
 
@@ -57,6 +75,7 @@ function BinStatTiles({ bin }) {
                     )}
                     {bin.status.scale === "uncalibrated" && <span>{t('components.binCard.scaleUncalibrated')}</span>}
                     {bin.status.scale === "failed" && <span>{t('components.binCard.scaleFailed')}</span>}
+                    {levelValid !== false && <FillForecast bin={bin} />}
                 </StatTile>
             )}
 

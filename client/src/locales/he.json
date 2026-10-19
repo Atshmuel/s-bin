@@ -482,6 +482,7 @@
       "tabs":{
         "label":"חלקי דף הפח",
         "logs":"תיעודים",
+        "insights":"תובנות",
         "details":"פרטים",
         "connected":"פחים מחוברים",
         "instructions":"פקודות מרחוק",
@@ -511,7 +512,10 @@
         "via":"דרך",
         "relaysFor_one":"מעביר דיווחים של פח אחד",
         "relaysFor_two":"מעביר דיווחים של שני פחים",
-        "relaysFor_other":"מעביר דיווחים של {{count}} פחים"
+        "relaysFor_other":"מעביר דיווחים של {{count}} פחים",
+        "fillRate":"מתמלא בכ־{{rate}}% ביום · יתמלא {{when}}",
+        "fillRateUnknown":"קצב מילוי: נדרשים עוד כמה דיווחים",
+        "notFilling":"לא מתמלא מאז שרוקן לאחרונה"
       },
       "logsTable":{
         "title":"סקירת התיעודים של הפח",
@@ -529,10 +533,44 @@
       },
       "areaChart":{
         "title":"מגמות רמת סוללה ומילוי",
-        "description":"מגמות ברמת הסוללה ואחוז המילוי בהתבסס על תיעודים מהחיישנים.",
+        "description":"רמת מילוי, משקל וסוללה מכל דיווח; קו מקווקו מסמן ריקון.",
         "battery":"רמת סוללה",
         "level":"רמת מילוי",
-        "lastDays":"{{count}} ימים אחרונים"
+        "weight":"משקל (ק״ג)",
+        "range":"טווח זמן",
+        "lastDays":"{{count}} ימים אחרונים",
+        "collectionsNote_one":"רוקן פעם אחת בתקופה הזו.",
+        "collectionsNote_two":"רוקן פעמיים בתקופה הזו.",
+        "collectionsNote_other":"רוקן {{count}} פעמים בתקופה הזו."
+      },
+      "analytics":{
+        "noReports":"אין דיווחים בתקופה הזו.",
+        "collections":{
+          "title":"ריקונים",
+          "description":"מזוהים לפי ירידה של 30 נקודות ברמת המילוי או של חצי מהמשקל בין שני דיווחים.",
+          "none":"אין ריקונים בתקופה הזו.",
+          "fullnessBefore":"מלא ב־{{percent}}%",
+          "kgRemoved":"{{kg}} ק״ג פונו"
+        },
+        "battery":{
+          "title":"סוללה",
+          "awake":"זמן ערות (שניות)",
+          "daysLeft_one":"עוד כיום אחד עד 20%.",
+          "daysLeft_two":"עוד כיומיים עד 20%.",
+          "daysLeft_other":"עוד כ־{{count}} ימים עד 20%.",
+          "notDraining":"הסוללה לא מתרוקנת בקצב הנוכחי.",
+          "notEnoughData":"לתחזית נדרשים עוד כמה דיווחים."
+        },
+        "reliability":{
+          "title":"דיווחים בזמן",
+          "description":"דיווחים שהתקבלו לעומת הדיווחים שלוח הזמנים מצפה להם.",
+          "counts":"{{received}} מתוך {{expected}} דיווחים",
+          "notEnoughData":"עוד אין מספיק דיווחים"
+        },
+        "connection":{
+          "title":"אות הרשת",
+          "description":"עוצמת האות (RSSI) ומספר הקפיצות עד לשער, לפי דיווח."
+        }
       }
     },
   "userProfile":{

@@ -18,15 +18,12 @@ import { useBin } from "@/hooks/bins/useBin"
 import { Link, useParams, useSearchParams } from "react-router-dom"
 import { LinkIcon } from "lucide-react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import BinInsights from "@/components/bins/analytics/BinInsights"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
 import DeviceInstructions from "@/components/bins/DeviceInstructions"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { formatDate } from "@/utils/helpers"
 
 function BinDetails() {
     const { isRight } = useAppSide()
@@ -166,19 +163,6 @@ function BinDetails() {
         },
     ]
 
-    const chartConfig = {
-        battery: {
-            label: t("pages.binDetails.areaChart.battery"),
-            color: 'var(--chart-1)'
-        },
-        ...(gateway ? {} : {
-            newLevel: {
-                label: t("pages.binDetails.areaChart.level"),
-                color: "var(--chart-2)",
-            }
-        })
-    }
-    const [timeRange, setTimeRange] = useState("90d")
     // The tab lives in the URL (?tab=…), so a refresh or a shared link opens the
     // same section; replace keeps tab changes out of the back history.
     const [searchParams, setSearchParams] = useSearchParams()
@@ -197,6 +181,7 @@ function BinDetails() {
     // managing for everyone but regular users.
     const tabs = useMemo(() => [
         "logs",
+        "insights",
         "details",
         ...(gateway || connectedCount > 0 ? ["connected"] : []),
         ...(isAdmin ? ["instructions"] : []),
@@ -226,20 +211,6 @@ function BinDetails() {
         }
         if (carouselApi) hasPositionedRef.current = true
     }, [carouselApi, tabs, activeTab])
-    const filteredData = bin?.logs.filter((item) => {
-        const date = new Date(item.createdAt)
-        const referenceDate = new Date()
-        let daysToSubtract = 90
-        if (timeRange === "30d") {
-            daysToSubtract = 30
-        } else if (timeRange === "7d") {
-            daysToSubtract = 7
-        }
-        const startDate = new Date(referenceDate)
-        startDate.setDate(startDate.getDate() - daysToSubtract)
-        return date >= startDate
-    })
-
 
     return (
         // A one-column grid (minmax(0, 1fr)): the wide logs table and the tab row
@@ -261,92 +232,6 @@ function BinDetails() {
                     <BinStatTiles bin={bin} />
                 </div>
             )}
-            <Card>
-                <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-                    <div className="grid flex-1 gap-1">
-                        <CardTitle>{t("pages.binDetails.areaChart.title")}</CardTitle>
-                        <CardDescription>
-                            {t("pages.binDetails.areaChart.description")}
-                        </CardDescription>
-                    </div>
-                    <Select isRight={isRight} value={timeRange} onValueChange={setTimeRange}>
-                        <SelectTrigger isRight={isRight}
-                            className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
-                            aria-label="Select a value"
-                        >
-                            <SelectValue placeholder="Last 3 months" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                            <SelectItem isRight={isRight} value="90d" className="rounded-lg">
-                                {t("pages.binDetails.areaChart.lastDays", { count: 90 })}
-                            </SelectItem>
-                            <SelectItem isRight={isRight} value="30d" className="rounded-lg">
-                                {t("pages.binDetails.areaChart.lastDays", { count: 30 })}
-                            </SelectItem>
-                            <SelectItem isRight={isRight} value="7d" className="rounded-lg">
-                                {t("pages.binDetails.areaChart.lastDays", { count: 7 })}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
-                </CardHeader>
-                <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-                    <ChartContainer
-                        config={chartConfig}
-                        className="aspect-auto h-[300px] w-full"
-                    >
-                        <AreaChart
-                            data={filteredData}>
-                            <defs>
-                                <linearGradient id="fillLevel" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.1} />
-                                </linearGradient>
-                                <linearGradient id="fillBattery" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.8} />
-                                    <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.1} />
-
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid vertical={false} />
-                            <XAxis
-                                dataKey="createdAt"
-                                tickLine={false}
-                                axisLine={false}
-                                tickMargin={8}
-                                minTickGap={32}
-                                reversed={!isRight}
-                                tickFormatter={(value) => formatDate(value, isRight, { month: "short", day: "numeric" })}
-                            />
-                            <ChartTooltip
-                                cursor={false}
-                                content={
-                                    <ChartTooltipContent
-                                        labelFormatter={(value) => formatDate(value, isRight, { month: "short", day: "numeric" })}
-                                        indicator="dot"
-                                    />
-                                }
-                            />
-                            <Area
-                                dataKey="battery"
-                                type="natural"
-                                fill="url(#fillBattery)"
-                                stroke="var(--chart-2)"
-                                stackId='a'
-                            />
-                            {!gateway && <Area
-                                dataKey="newLevel"
-                                type="natural"
-                                fill="url(#fillLevel)"
-                                stroke="var(--chart-1)"
-                                stackId='a'
-
-                            />}
-                            <ChartLegend content={<ChartLegendContent />} />
-                        </AreaChart>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
-
             {bin && (
                 <div className="flex flex-col gap-4">
                     <div className="overflow-x-auto">
@@ -396,6 +281,7 @@ function BinDetails() {
                                             </CardContent>
                                         </Card>
                                     )}
+                                    {name === "insights" && <BinInsights key={bin._id} bin={bin} active={activeTab === "insights"} />}
                                     {name === "instructions" && <DeviceInstructions key={bin._id} bin={bin} />}
                                     {name === "details" && (
                                         <div className="grid gap-4 lg:grid-cols-2">
