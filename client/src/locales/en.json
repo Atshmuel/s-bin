@@ -667,7 +667,7 @@
       "deliveryNote":"A command reaches the device at its next report.",
       "schedule":"Reports: {{schedule}}.",
       "lastReport":"Last report:",
-      "meshNotSupported":"This bin reports through another bin over the mesh, and commands can't reach it that way yet.",
+      "meshDeliveryNote":"This bin gets commands through its gateway, so a command can take up to two reports to reach it.",
       "instruction":"Command",
       "send":"Send",
       "duration":"Additional awake time (minutes)",
