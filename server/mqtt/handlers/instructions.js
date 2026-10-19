@@ -2,8 +2,54 @@ import mongoose from "mongoose";
 import { getBinByMacAndKeyShared, getOrgDeviceSettingsShared } from "../../db/service/sharedService.js";
 import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
-import { deviceInstructionModel } from "../../db/models/models.js";
+import { binModel, deviceInstructionModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
+import { LEAF_INSTRUCTION_TYPES } from "../../utils/constants.js";
+
+// Leaf commands per check, one per leaf (its oldest), so each leaf runs its
+// commands in order and the reply stays small for the device.
+const MAX_LEAF_INSTRUCTIONS = 4;
+
+// The oldest pending command of each leaf this gateway relays for.
+async function pendingLeafInstructions(gateway) {
+    const leaves = await binModel.find(
+        { ownerId: gateway.ownerId, "status.connection.via": "mesh", "status.connection.gatewayId": gateway._id },
+        { macAddress: 1 }
+    ).lean();
+    if (leaves.length === 0) return [];
+    const macByLeaf = new Map(leaves.map(leaf => [leaf._id.toString(), leaf.macAddress]));
+    const pending = await deviceInstructionModel.find({
+        binId: { $in: leaves.map(leaf => leaf._id) },
+        status: "pending",
+        type: { $in: LEAF_INSTRUCTION_TYPES },
+    }).sort({ createdAt: 1 }).lean();
+    const oldestPerLeaf = new Map();
+    for (const instruction of pending) {
+        const leafId = instruction.binId.toString();
+        if (!oldestPerLeaf.has(leafId)) oldestPerLeaf.set(leafId, instruction);
+    }
+    return [...oldestPerLeaf.values()].slice(0, MAX_LEAF_INSTRUCTIONS)
+        .map(instruction => ({ ...instruction, leafMac: macByLeaf.get(instruction.binId.toString()) }));
+}
+
+// Records a device's result for one of its commands; a repeat of a result
+// already recorded is accepted, another final status is not. Returns the
+// instruction, or null when the result does not apply.
+export async function applyInstructionResult(binId, { instructionId, status, result }) {
+    if (!mongoose.Types.ObjectId.isValid(instructionId) ||
+        !["completed", "failed"].includes(status) ||
+        (result !== undefined && (typeof result !== "string" || result.length > 256))) {
+        return null;
+    }
+    const instruction = await deviceInstructionModel.findOneAndUpdate(
+        { _id: instructionId, binId, status: "pending" },
+        { $set: { status, completedAt: new Date(), ...(result === undefined ? {} : { result }) } },
+        { new: true }
+    );
+    if (instruction) return instruction;
+    const existing = await deviceInstructionModel.findOne({ _id: instructionId, binId });
+    return existing?.status === status ? existing : null;
+}
 
 export async function handleInstructionCheck(mac, { deviceKey }) {
     if (!deviceKey) {
@@ -29,6 +75,7 @@ export async function handleInstructionCheck(mac, { deviceKey }) {
         type,
         payload
     }));
+    const leafInstructions = await pendingLeafInstructions(bin);
 
     const { meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour } = await getOrgDeviceSettingsShared(bin.ownerId);
     const { timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds } =
@@ -36,6 +83,12 @@ export async function handleInstructionCheck(mac, { deviceKey }) {
     const response = JSON.stringify({
         status: "instruction_check",
         instructions,
+        leafInstructions: leafInstructions.map(({ _id, leafMac, type, payload }) => ({
+            leafMac,
+            id: _id.toString(),
+            type,
+            payload,
+        })),
         timeZone,
         nextWakeEpoch,
         followingWakeEpoch,
@@ -47,11 +100,12 @@ export async function handleInstructionCheck(mac, { deviceKey }) {
             console.error(`Failed to reply to instruction check for ${mac}:`, error);
             return;
         }
-        if (pendingInstructions.length > 0) {
+        const delivered = [...pendingInstructions, ...leafInstructions];
+        if (delivered.length > 0) {
             try {
                 await deviceInstructionModel.updateMany(
                     {
-                        _id: { $in: pendingInstructions.map(instruction => instruction._id) },
+                        _id: { $in: delivered.map(instruction => instruction._id) },
                         status: "pending"
                     },
                     {
@@ -67,9 +121,7 @@ export async function handleInstructionCheck(mac, { deviceKey }) {
 }
 
 export async function handleInstructionResult(mac, { deviceKey, instructionId, status, result }) {
-    if (!deviceKey || !mongoose.Types.ObjectId.isValid(instructionId) ||
-        !["completed", "failed"].includes(status) ||
-        (result !== undefined && (typeof result !== "string" || result.length > 256))) {
+    if (!deviceKey) {
         console.warn(`Invalid instruction result received for ${mac}.`);
         return;
     }
@@ -80,23 +132,10 @@ export async function handleInstructionResult(mac, { deviceKey, instructionId, s
         return;
     }
 
-    let instruction = await deviceInstructionModel.findOneAndUpdate(
-        { _id: instructionId, binId: bin._id, status: "pending" },
-        {
-            $set: {
-                status,
-                completedAt: new Date(),
-                ...(result === undefined ? {} : { result })
-            }
-        },
-        { new: true }
-    );
+    const instruction = await applyInstructionResult(bin._id, { instructionId, status, result });
     if (!instruction) {
-        instruction = await deviceInstructionModel.findOne({ _id: instructionId, binId: bin._id });
-        if (instruction?.status !== status) {
-            console.warn(`Instruction result ignored for ${mac}: instruction is missing or has a different final status.`);
-            return;
-        }
+        console.warn(`Instruction result ignored for ${mac}: invalid, missing, or a different final status.`);
+        return;
     }
 
     mqttClient.publish(`${BIN_ACK_TOPIC}/${mac}`, JSON.stringify({

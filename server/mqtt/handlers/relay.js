@@ -5,6 +5,7 @@ import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { binModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
 import { applyDeviceLog, isValidTelemetryRecord } from "./telemetry.js";
+import { applyInstructionResult } from "./instructions.js";
 
 const MAC_ADDRESS_PATTERN = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
 const MAX_MESH_HOPS = 8;
@@ -69,7 +70,7 @@ async function findOrCreateLeafBin(leafMac, gateway, record) {
 // A mesh gateway uploads a reading it took custody of from a leaf without a SIM.
 // The leaf has no device key, so the authenticated gateway vouches for it; leaves
 // are created in, and limited to, the gateway's organization.
-export async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, hops, rssi, measuredAt, record }) {
+export async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, hops, rssi, measuredAt, record, instructionResult }) {
     const gateway = await getBinByMacAndKeyShared(gatewayMac, deviceKey);
     if (!gateway) {
         console.warn(`Relay rejected for ${gatewayMac}: invalid gateway credentials.`);
@@ -107,6 +108,17 @@ export async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, h
         console.warn(`Relay rejected: leaf ${leafMac} belongs to another organization than gateway ${gatewayMac}.`);
         publishRelayResult(gatewayMac, leafMac, messageId, false, "organization_mismatch");
         return;
+    }
+
+    // A reading can carry the leaf's result for a command its gateway handed
+    // over. Applied before the duplicate check, so a re-sent reading (its
+    // first reply lost) still records it; an invalid result is only logged.
+    if (instructionResult !== undefined) {
+        const applied = instructionResult && typeof instructionResult === "object" &&
+            await applyInstructionResult(leaf._id, instructionResult);
+        if (!applied) {
+            console.warn(`Ignoring the command result relayed for ${leafMac}.`);
+        }
     }
 
     // Claim the message ID first so two gateways uploading the same reading

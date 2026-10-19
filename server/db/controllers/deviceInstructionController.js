@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { deviceInstructionModel } from "../models/models.js";
 import { getBinShared } from "../service/sharedService.js";
-import { ROLES } from "../../utils/constants.js";
+import { LEAF_INSTRUCTION_TYPES, ROLES } from "../../utils/constants.js";
 
 const MAX_AWAKE_EXTENSION_SECONDS = 3600;
 // The known weight for calibrate_scale, in grams (the device checks the same range).
@@ -63,6 +63,10 @@ export async function enqueueDeviceInstruction(req, res) {
     if (!bin || (req.user.role !== ROLES.OWNER &&
         bin.ownerId?.toString() !== req.user.org)) {
         return res.status(404).json({ message: "Bin not found." });
+    }
+    // A bin reporting through a gateway gets commands at its gateway's mesh window.
+    if (bin.status?.connection?.via === "mesh" && !LEAF_INSTRUCTION_TYPES.includes(type)) {
+        return res.status(400).json({ message: `${type} is not available for a bin that reports through a gateway.` });
     }
 
     const instruction = await deviceInstructionModel.create({
