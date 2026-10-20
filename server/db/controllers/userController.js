@@ -3,11 +3,8 @@ import { hashPassword, comparePasswords, generateToken, appendFilter, generateOT
 import { emailSchema, passwordSchema } from '../../utils/inputValidations.js'
 import { deleteUserRefs, organizationExist, sendTemplateEmail } from '../service/sharedService.js'
 import { randomUUID } from 'crypto'
-import { ROLES, ROLE_LEVEL } from '../../utils/constants.js'
+import { MAX_OTP_ATTEMPTS, ROLES, ROLE_LEVEL } from '../../utils/constants.js'
 import mongoose from 'mongoose'
-
-/** Failed OTP guesses allowed before the code is discarded entirely. */
-const MAX_OTP_ATTEMPTS = 5
 
 // Why an email and password cannot open an account, or null when they can.
 function credentialsError(email, password) {

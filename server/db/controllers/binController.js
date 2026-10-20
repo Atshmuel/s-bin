@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { binModel, deviceInstructionModel } from '../models/models.js'
 import { appendFilter, BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
+import { DEFAULT_COLLECTION_FULLNESS } from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
@@ -162,8 +163,6 @@ export async function getBinsInUserRadius(req, res) {
     }
 }
 
-// Without a range from the map's search, a collection takes bins this full.
-const DEFAULT_COLLECTION_FULLNESS = [70, 100]
 const HEALTH_FILTERS = ['good', 'warning', 'critical', 'all']
 
 export async function getRouteBins(req, res) {

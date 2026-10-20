@@ -6,15 +6,12 @@ import { binModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
 import { applyDeviceLog, isValidTelemetryRecord } from "./telemetry.js";
 import { applyInstructionResult } from "./instructions.js";
+import { MAX_MESH_HOPS, MAX_READING_AGE_MS, MAX_READING_AHEAD_MS, RECENT_MESH_MESSAGE_IDS } from "../../utils/constants.js";
 
 const MAC_ADDRESS_PATTERN = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
-const MAX_MESH_HOPS = 8;
-const RECENT_MESH_MESSAGE_IDS = 8;
 // A leaf that missed its gateway sends queued readings later, and the gateway
-// stamps each with when it was taken. A time beyond these limits is not
-// trusted, and the reading is logged at its arrival instead.
-const MAX_READING_AGE_MS = 7 * 24 * 60 * 60 * 1000;
-const MAX_READING_AHEAD_MS = 2 * 60 * 1000;
+// stamps each with when it was taken; a time beyond MAX_READING_AGE_MS or
+// MAX_READING_AHEAD_MS is not trusted, and the reading is logged at its arrival.
 
 // measuredAt is in UTC seconds; returns undefined when the arrival time should be used.
 function readingTime(measuredAt, leafMac) {

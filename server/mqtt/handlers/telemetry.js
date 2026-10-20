@@ -4,6 +4,10 @@ import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { binLogModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
+import { fullnessPercent } from "../../utils/analytics.js";
+import {
+    BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT,
+} from "../../utils/constants.js";
 
 export function isValidTelemetryRecord({
     location,
@@ -75,23 +79,28 @@ export async function applyDeviceLog(bin, {
         level = undefined;
     }
 
-    const severity = level >= 80 || battery <= 20 || health === 'critical'
-        ? 'critical'
-        : level >= 50 || battery <= 50 || health === 'warning'
-            ? 'warning'
-            : 'info';
-    const messages = [];
-    if (sensorOk !== false && level >= 80) messages.push('Bin fill level is critical.');
-    else if (sensorOk !== false && level >= 50) messages.push('Bin fill level requires attention.');
-    if (battery <= 20) messages.push('Battery level is critical.');
-    else if (battery <= 50) messages.push('Battery level is low.');
-    if (healthMessage) messages.push(healthMessage);
-    const message = messages.length > 0 ? messages.join(' ') : null;
-
     // The device sends grams. A weight counts only from a calibrated scale that
     // read fine; otherwise (or with no scale at all) it is null, not 0.
     const scaleState = SCALE_STATES.includes(scale) ? scale : null;
     const weightKg = scaleState === "ok" ? Math.max(weight, 0) / 1000 : null;
+
+    // Severity follows fullness (fill level or weight, whichever is higher),
+    // as the map and the dashboard do; null for a gateway.
+    const fullness = fullnessPercent(sensorOk !== false ? level : null, weightKg);
+    const fullnessCritical = fullness !== null && fullness >= FULLNESS_CRITICAL_PERCENT;
+    const fullnessWarning = fullness !== null && fullness >= FULLNESS_WARNING_PERCENT;
+    const severity = fullnessCritical || battery <= BATTERY_CRITICAL_PERCENT || health === 'critical'
+        ? 'critical'
+        : fullnessWarning || battery <= BATTERY_WARNING_PERCENT || health === 'warning'
+            ? 'warning'
+            : 'info';
+    const messages = [];
+    if (fullnessCritical) messages.push('Bin is almost full.');
+    else if (fullnessWarning) messages.push('Bin is filling up.');
+    if (battery <= BATTERY_CRITICAL_PERCENT) messages.push('Battery level is critical.');
+    else if (battery <= BATTERY_WARNING_PERCENT) messages.push('Battery level is low.');
+    if (healthMessage) messages.push(healthMessage);
+    const message = messages.length > 0 ? messages.join(' ') : null;
 
     const levelIsValid = !isGateway && sensorOk !== false;
     let query = {

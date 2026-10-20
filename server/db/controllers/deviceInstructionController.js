@@ -1,12 +1,10 @@
 import mongoose from "mongoose";
 import { deviceInstructionModel } from "../models/models.js";
 import { getBinShared } from "../service/sharedService.js";
-import { LEAF_INSTRUCTION_TYPES, ROLES } from "../../utils/constants.js";
+import {
+    LEAF_INSTRUCTION_TYPES, MAX_AWAKE_EXTENSION_SECONDS, MAX_SCALE_CALIBRATION_GRAMS, MIN_SCALE_CALIBRATION_GRAMS, ROLES,
+} from "../../utils/constants.js";
 
-const MAX_AWAKE_EXTENSION_SECONDS = 3600;
-// The known weight for calibrate_scale, in grams (the device checks the same range).
-const MIN_SCALE_CALIBRATION_GRAMS = 100;
-const MAX_SCALE_CALIBRATION_GRAMS = 200000;
 const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale"]);
 
 function isValidInstructionPayload(type, payload) {

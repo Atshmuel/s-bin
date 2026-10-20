@@ -1,6 +1,13 @@
 import cron from "node-cron";
 import { binLogModel } from "../models/models.js";
 import { getOrgAdmins, sendTemplateEmail } from "../service/sharedService.js";
+import { BATTERY_CRITICAL_PERCENT, FULLNESS_CRITICAL_PERCENT, WEIGHT_REFERENCE_KG } from "../../utils/constants.js";
+
+// A log's fullness: its fill level or its weight (kg) against the reference,
+// whichever is higher; null when it has neither.
+const LOG_FULLNESS = {
+    $max: ['$newLevel', { $cond: [{ $isNumber: '$weight' }, { $multiply: [{ $divide: ['$weight', WEIGHT_REFERENCE_KG] }, 100] }, null] }],
+};
 
 if (!global.dailyBinsStatusCronStarted) {
     global.dailyBinsStatusCronStarted = true;
@@ -20,8 +27,8 @@ if (!global.dailyBinsStatusCronStarted) {
                 {
                     $match: {
                         $or: [
-                            { newLevel: { $gte: 80 } },
-                            { battery: { $lte: 20 } },
+                            { $expr: { $gte: [LOG_FULLNESS, FULLNESS_CRITICAL_PERCENT] } },
+                            { battery: { $lte: BATTERY_CRITICAL_PERCENT } },
                             { health: "critical" }
                         ]
                     }

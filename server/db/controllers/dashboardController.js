@@ -2,21 +2,16 @@ import { binLogModel, binModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared } from '../service/sharedService.js'
 import { fullnessPercent } from '../../utils/analytics.js'
+import {
+    ATTENTION_LIST_LIMIT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
+    OFFLINE_GRACE_MS, RECENT_LOGS_LIMIT,
+} from '../../utils/constants.js'
 
 // The dashboard's sections, served like the analytics page's (one request
 // each, /api/overviews/<section>). Bins go out without their device key or
 // MAC address: the key is what a device authenticates with.
 
 const HOUR_MS = 60 * 60 * 1000;
-// A bin this full needs collecting (fill level or weight, whichever is higher).
-const ALMOST_FULL_PERCENT = 80;
-const LOW_BATTERY_PERCENT = 40;
-// A device is offline once it has missed this many reports in a row; the grace
-// covers a report that arrives a little late.
-const OFFLINE_AFTER_MISSED_REPORTS = 2;
-const OFFLINE_GRACE_MS = 10 * 60 * 1000;
-const ATTENTION_LIST_LIMIT = 50;
-const RECENT_LOGS_LIMIT = 50;
 const BIN_PUBLIC_PROJECTION = Object.freeze({ deviceKey: 0, macAddress: 0, 'status.recentMeshMessageIds': 0 });
 
 function isGatewayBin(bin) {
@@ -52,12 +47,12 @@ async function devicesWithReasons(user) {
     return devices.map(device => {
         const fullness = isGatewayBin(device) ? null : binFullness(device);
         const reasons = [];
-        if (fullness !== null && fullness >= ALMOST_FULL_PERCENT) reasons.push('full');
+        if (fullness !== null && fullness >= FULLNESS_CRITICAL_PERCENT) reasons.push('full');
         if (device.maintenance?.nextServiceAt && new Date(device.maintenance.nextServiceAt) < new Date(now)) {
             reasons.push('maintenance');
         }
         if (isOffline(device, intervals.get(String(device.ownerId)), now)) reasons.push('offline');
-        if (Number.isFinite(device.status?.battery) && device.status.battery <= LOW_BATTERY_PERCENT) reasons.push('battery');
+        if (Number.isFinite(device.status?.battery) && device.status.battery <= BATTERY_WARNING_PERCENT) reasons.push('battery');
         if (['warning', 'critical'].includes(device.status?.health)) reasons.push('health');
         return { ...device, fullness, reasons };
     });

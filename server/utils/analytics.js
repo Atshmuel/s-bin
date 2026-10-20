@@ -3,22 +3,12 @@
 // first, each { at: Date, level, weight, battery }, level in % and weight in
 // kg, either null when the device had none.
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+import {
+    BATTERY_CRITICAL_PERCENT, COLLECTION_LEVEL_DROP, COLLECTION_WEIGHT_DROP_RATIO, MIN_TREND_POINTS,
+    MIN_TREND_SPAN_MS, WEIGHT_REFERENCE_KG,
+} from './constants.js';
 
-export const ANALYTICS_RANGES_DAYS = Object.freeze([7, 30, 90]);
-export const DEFAULT_RANGE_DAYS = 30;
-// A drop this large between two reports means the bin was emptied.
-export const COLLECTION_LEVEL_DROP = 30;
-export const COLLECTION_WEIGHT_DROP_RATIO = 0.5;
-// The weight that counts as a full bin, as on the client.
-export const WEIGHT_REFERENCE_KG = 250;
-// The fill rate needs this many reports over this long since the last collection.
-export const FILL_RATE_WINDOW_DAYS = 14;
-export const MIN_TREND_POINTS = 3;
-export const MIN_TREND_SPAN_MS = DAY_MS;
-// The battery level at which a battery counts as needing replacement.
-export const BATTERY_REPLACE_PERCENT = 20;
-export const BATTERY_TREND_DAYS = 14;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function rangeStart(days, now = Date.now()) {
     return new Date(now - days * DAY_MS);
@@ -114,11 +104,11 @@ export function expectedFullAt(level, ratePerDay, now = Date.now()) {
     return new Date(now + (100 - level) / ratePerDay * DAY_MS);
 }
 
-// Days until the battery reaches BATTERY_REPLACE_PERCENT at its recent trend;
+// Days until the battery reaches BATTERY_CRITICAL_PERCENT at its recent trend;
 // null when it is not draining (or charging, or too little data).
 export function batteryDaysLeft(battery, ratePerDay) {
     if (!Number.isFinite(battery) || !(ratePerDay < 0)) return null;
-    return Math.max((battery - BATTERY_REPLACE_PERCENT) / -ratePerDay, 0);
+    return Math.max((battery - BATTERY_CRITICAL_PERCENT) / -ratePerDay, 0);
 }
 
 // Reports received against the slots in the window, counted from the

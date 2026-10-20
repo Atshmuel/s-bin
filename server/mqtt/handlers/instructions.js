@@ -4,11 +4,7 @@ import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { binModel, deviceInstructionModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
-import { LEAF_INSTRUCTION_TYPES } from "../../utils/constants.js";
-
-// Leaf commands per check, one per leaf (its oldest), so each leaf runs its
-// commands in order and the reply stays small for the device.
-const MAX_LEAF_INSTRUCTIONS = 4;
+import { LEAF_INSTRUCTION_TYPES, MAX_LEAF_INSTRUCTIONS } from "../../utils/constants.js";
 
 // The oldest pending command of each leaf this gateway relays for.
 async function pendingLeafInstructions(gateway) {

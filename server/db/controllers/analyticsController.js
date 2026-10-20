@@ -4,7 +4,12 @@ import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared } from '../service/sharedService.js'
 import { DASHBOARD_SECTIONS } from './dashboardController.js'
 import {
-    ANALYTICS_RANGES_DAYS, BATTERY_TREND_DAYS, DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, HEALTH_CAUSE_NAMES,
+    ANALYTICS_RANGES_DAYS, BATTERY_BUCKETS, BATTERY_SOON_DAYS, BATTERY_SOON_LIST_LIMIT, BATTERY_TREND_DAYS,
+    DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, FULL_SOON_HOURS, FULL_SOON_LIST_LIMIT, FULLNESS_BUCKETS,
+    LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS,
+} from '../../utils/constants.js'
+import {
+    HEALTH_CAUSE_NAMES,
     batteryDaysLeft, dayKey, daysBetween, detectCollections, expectedFullAt, fillRatePerDay, fullnessPercent,
     healthCauses, isValidTimeZone, rangeStart, reportReliability, trendPerDay,
 } from '../../utils/analytics.js'
@@ -16,14 +21,6 @@ import {
 const HOUR_MS = 60 * 60 * 1000;
 // Only device reports: maintenance notes and system entries carry no readings.
 const READINGS_FILTER = Object.freeze({ type: 'log', source: 'sensor' });
-const FULL_SOON_HOURS = [24, 48];
-const FULL_SOON_LIST_LIMIT = 20;
-const BATTERY_SOON_DAYS = 30;
-const BATTERY_SOON_LIST_LIMIT = 10;
-const RELIABILITY_DAYS = [7, 30];
-const LEAST_RELIABLE_LIMIT = 5;
-const FULLNESS_BUCKETS = [[0, 25], [25, 50], [50, 75], [75, 101]];
-const BATTERY_BUCKETS = [[0, 20], [20, 50], [50, 80], [80, 101]];
 
 function parseRangeDays(value) {
     const days = Number(value);

@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { binLogModel, binModel, deviceInstructionModel } from "../models/models.js"
+import { INSTRUCTION_RETENTION_MS } from "../../utils/constants.js"
 
-const RETENTION_MS = 3 * 24 * 60 * 60 * 1000;
 const FINISHED_STATUSES = ["completed", "failed", "cancelled"];
 
 // A device checks for instructions on every report, so a request still pending
@@ -50,7 +50,7 @@ if (!global.deviceInstructionCleanupCronStarted) {// To prevent multi crons on d
 
     cron.schedule('15 * * * *', async () => {
         try {
-            const cutoff = new Date(Date.now() - RETENTION_MS);
+            const cutoff = new Date(Date.now() - INSTRUCTION_RETENTION_MS);
             await expireStalePendingInstructions(cutoff);
 
             const result = await deviceInstructionModel.deleteMany({

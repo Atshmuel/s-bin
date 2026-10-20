@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { organizationModel } from "../models/models.js";
 import { deleteOrgRefs } from "../service/sharedService.js";
-import { MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../schema/organizationSchema.js";
+import { MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../../utils/constants.js";
 import { ROLES } from "../../utils/constants.js";
 
 const MESH_SETTINGS_PROJECTION = { name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1 };
