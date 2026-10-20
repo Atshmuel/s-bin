@@ -7,8 +7,11 @@ export const AUTH_EP = 'api/auth'
 export const OVERVIEW_EP = 'api/overviews'
 export const ORG_EP = 'api/organizations'
 
-export const CACHE_KEY = 'aiCache'
-export const CACHE_TTL = 24 * 60 * 60 * 1000
+// The AI overview is kept in the browser this long (it is slow and costs a
+// model call); renaming the key drops overviews made from older instructions.
+export const CACHE_KEY = 'aiOverview'
+export const LEGACY_CACHE_KEYS = Object.freeze(['aiCache'])
+export const CACHE_TTL = 60 * 60 * 1000
 // ---- Thresholds and limits. Every number that decides behaviour lives here;
 // the shared ones match the server's (server/utils/constants.js).
 

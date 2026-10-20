@@ -1,4 +1,4 @@
-import { CACHE_KEY, CACHE_TTL } from "./constants"
+import { CACHE_KEY, CACHE_TTL, LEGACY_CACHE_KEYS } from "./constants"
 
 export function getAICache() {
     const obj = localStorage.getItem(CACHE_KEY)
@@ -31,6 +31,8 @@ export function setAICache(data) {
     )
 }
 
+// On a language change and on logout, so no one sees an overview made for
+// someone else or in the other language.
 export function clearAICache() {
-    localStorage.removeItem(CACHE_KEY)
+    for (const key of [CACHE_KEY, ...LEGACY_CACHE_KEYS]) localStorage.removeItem(key)
 }
