@@ -1,8 +1,10 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CircleAlert, Clock, InfoIcon, LinkIcon, WifiOff } from "lucide-react"
+import { CircleAlert, Clock, InfoIcon, LinkIcon, WifiOff, X } from "lucide-react"
+import { useRef, useState } from "react"
 import { Link } from "react-router-dom"
+import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { useTranslation } from "react-i18next"
 import BinMap from "../bins/BinMap"
@@ -15,12 +17,15 @@ const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm"
 // Reasons that call for a visit; the map shows only these bins.
 const VISIT_REASONS = ["full", "maintenance", "offline"]
 const REASON_VARIANTS = { full: "inactive", maintenance: "suspended", offline: "destructive", battery: "outline", health: "outline" }
+// Reports arrive hours apart; a dashboard left open still shows the current state.
+const DASHBOARD_REFRESH_MS = 2 * 60 * 1000
 
-// A count tile; each loads with its own request and waits on its own.
-function Tile({ title, value, footer, icon, badgeVariant, isLoading, error }) {
+// A count tile; each loads with its own request and waits on its own. A tile
+// opens its list: `onSelect` filters the table below, `to` links elsewhere.
+function Tile({ title, value, footer, icon, badgeVariant, isLoading, error, onSelect, to, selected }) {
     const Icon = icon
-    return (
-        <Card className="min-w-72 flex-1">
+    const card = (
+        <Card className={`h-full transition-colors hover:bg-muted/50 ${selected ? "ring-2 ring-primary" : ""}`}>
             <CardHeader className="flex flex-row items-start justify-between gap-3">
                 <div className="flex flex-col gap-1.5">
                     <CardDescription>{title}</CardDescription>
@@ -37,11 +42,18 @@ function Tile({ title, value, footer, icon, badgeVariant, isLoading, error }) {
             </CardFooter>
         </Card>
     )
+    return to ? (
+        <Link to={to} className="min-w-72 flex-1 text-start">{card}</Link>
+    ) : (
+        <button type="button" onClick={onSelect} aria-pressed={selected} className="min-w-72 flex-1 cursor-pointer text-start">
+            {card}
+        </button>
+    )
 }
 
-function TableCard({ title, description, children }) {
+function TableCard({ ref, title, description, children }) {
     return (
-        <Card className="min-w-0 flex-1">
+        <Card ref={ref} className="min-w-0 flex-1">
             <CardHeader>
                 <CardTitle className="text-2xl font-semibold">{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
@@ -59,13 +71,26 @@ function Dashboard() {
     const { t } = useTranslation()
     // The tiles, the map and the tables each make their own request, so the
     // page fills in as they arrive and a failure stays in its own card.
-    const summary = useOverviewSection("summary")
-    const offline = useOverviewSection("offline")
-    const fullSoon = useOverviewSection("full-soon")
-    const attention = useOverviewSection("attention")
-    const recentLogs = useOverviewSection("recent-logs")
+    const refresh = { refreshMs: DASHBOARD_REFRESH_MS }
+    const summary = useOverviewSection("summary", refresh)
+    const offline = useOverviewSection("offline", refresh)
+    const fullSoon = useOverviewSection("full-soon", refresh)
+    const attention = useOverviewSection("attention", refresh)
+    const recentLogs = useOverviewSection("recent-logs", refresh)
+
+    // A tile's reason filters the "Needs attention" table; again clears it.
+    const [reasonFilter, setReasonFilter] = useState(null)
+    const attentionRef = useRef(null)
+    const selectReason = (reason) => {
+        const next = reasonFilter === reason ? null : reason
+        setReasonFilter(next)
+        if (next) attentionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
 
     const attentionDevices = attention.data?.devices ?? []
+    const shownDevices = reasonFilter
+        ? attentionDevices.filter((device) => device.reasons.includes(reasonFilter))
+        : attentionDevices
     const mapBins = attentionDevices.filter((device) => device.reasons.some((reason) => VISIT_REASONS.includes(reason)))
 
     const attentionColumns = [
@@ -148,6 +173,8 @@ function Dashboard() {
             footer: t("pages.dashboard.cards.offline.description", { count: offline.data?.missedReports ?? 2 }),
             icon: WifiOff,
             badgeVariant: "destructive",
+            onSelect: () => selectReason("offline"),
+            selected: reasonFilter === "offline",
             isLoading: offline.isLoading,
             error: offline.error,
         },
@@ -157,6 +184,7 @@ function Dashboard() {
             footer: t("pages.dashboard.cards.fullSoon.description", { count: fullSoon.data?.counts?.within48h ?? 0 }),
             icon: Clock,
             badgeVariant: "pending",
+            to: "/analytics",
             isLoading: fullSoon.isLoading,
             error: fullSoon.error,
         },
@@ -168,6 +196,8 @@ function Dashboard() {
                 : t("pages.dashboard.cards.almostFull.description"),
             icon: InfoIcon,
             badgeVariant: "inactive",
+            onSelect: () => selectReason("full"),
+            selected: reasonFilter === "full",
             isLoading: summary.isLoading,
             error: summary.error,
         },
@@ -177,6 +207,8 @@ function Dashboard() {
             footer: t("pages.dashboard.cards.requiredMaintenance.description"),
             icon: CircleAlert,
             badgeVariant: "suspended",
+            onSelect: () => selectReason("maintenance"),
+            selected: reasonFilter === "maintenance",
             isLoading: summary.isLoading,
             error: summary.error,
         },
@@ -207,8 +239,19 @@ function Dashboard() {
                     <p className="text-sm text-muted-foreground">{t("pages.dashboard.titles.binOverview.description")}</p>
                 </div>
                 <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap">
-                    <TableCard title={t("pages.dashboard.tables.attention.title")} description={t("pages.dashboard.tables.attention.description")}>
-                        <DataTable data={attentionDevices} columns={attentionColumns} maxLength={5}
+                    <TableCard ref={attentionRef} title={t("pages.dashboard.tables.attention.title")}
+                        description={t("pages.dashboard.tables.attention.description")}>
+                        {reasonFilter && (
+                            <div className="mb-3 flex items-center gap-2 text-sm">
+                                <span>{t("pages.dashboard.tables.attention.filtered")}</span>
+                                <Badge variant={REASON_VARIANTS[reasonFilter]}>{t(`pages.dashboard.reasons.${reasonFilter}`)}</Badge>
+                                <Button type="button" variant="ghost" size="sm" onClick={() => setReasonFilter(null)}>
+                                    <X data-icon="inline-start" />
+                                    {t("pages.dashboard.tables.attention.showAll")}
+                                </Button>
+                            </div>
+                        )}
+                        <DataTable data={shownDevices} columns={attentionColumns} maxLength={5}
                             error={attention.error} isLoading={attention.isLoading} />
                     </TableCard>
                     <TableCard title={t("pages.dashboard.tables.recentLogs.title")} description={t("pages.dashboard.tables.recentLogs.description")}>

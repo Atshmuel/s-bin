@@ -291,6 +291,8 @@
       },
       "tables": {
         "attention": {
+          "filtered": "Showing only:",
+          "showAll": "Show all",
           "title": "Needs attention",
           "description": "Devices that are almost full, due for maintenance, offline, low on battery or reporting a problem.",
           "columns": {
