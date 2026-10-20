@@ -15,14 +15,16 @@ import {
 import { useAppSide } from "@/contexts/AppSideProvider";
 import { updateMeshSettings } from "@/services/apiMeshSettings";
 import {
-    DEFAULT_REPORT_INTERVAL_MINUTES,
-    DEFAULT_REPORT_START_HOUR,
-    MAX_MESH_AWAKE_WINDOW_SECONDS,
-    REPORT_INTERVAL_OPTIONS_MINUTES,
     formatHour,
     formatReportInterval,
     formatReportSchedule,
 } from "@/utils/orgSettings";
+import {
+    DEFAULT_REPORT_INTERVAL_MINUTES,
+    DEFAULT_REPORT_START_HOUR,
+    MAX_MESH_AWAKE_WINDOW_SECONDS,
+    REPORT_INTERVAL_OPTIONS_MINUTES,
+} from "@/utils/constants";
 
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 

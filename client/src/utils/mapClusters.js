@@ -1,9 +1,6 @@
 import L from "leaflet"
 import { STATUS_COLORS } from "./binHelpers"
 
-// Below street level the map groups nearby devices into one marker with their
-// count; from this zoom on every device shows on its own.
-export const CLUSTER_UNTIL_ZOOM = 16
 
 const STATUS_RANK = {
     [STATUS_COLORS.good]: 0,

@@ -1,8 +1,7 @@
 import { getOverviewSection } from "@/services/apiAnalytics";
 import { useQuery } from "@tanstack/react-query";
+import { ANALYTICS_STALE_MS } from "@/utils/constants";
 
-// Reports arrive hours apart, so a section stays fresh for a few minutes.
-const ANALYTICS_STALE_MS = 5 * 60 * 1000;
 
 // One overview section; `enabled` lets it load only once it is shown, and
 // `refreshMs` reloads it on that interval (a dashboard left open).

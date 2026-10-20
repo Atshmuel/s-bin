@@ -12,13 +12,12 @@ import DataTable from "@/components/DataTable"
 import Battery from "@/components/bins/Battary"
 import { getVariant, isGateway } from "@/utils/binHelpers"
 import { useOverviewSection } from "@/hooks/analytics/useOverviewSection"
+import { DASHBOARD_REFRESH_MS } from "@/utils/constants"
 
 const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm"
 // Reasons that call for a visit; the map shows only these bins.
 const VISIT_REASONS = ["full", "maintenance", "offline"]
 const REASON_VARIANTS = { full: "inactive", maintenance: "suspended", offline: "destructive", battery: "outline", health: "outline" }
-// Reports arrive hours apart; a dashboard left open still shows the current state.
-const DASHBOARD_REFRESH_MS = 2 * 60 * 1000
 
 // A count tile; each loads with its own request and waits on its own. A tile
 // opens its list: `onSelect` filters the table below, `to` links elsewhere.

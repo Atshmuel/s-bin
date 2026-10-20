@@ -1,8 +1,3 @@
-export const MAX_MESH_AWAKE_WINDOW_SECONDS = 60;
-// Matches the server's options: every interval divides 24 hours.
-export const REPORT_INTERVAL_OPTIONS_MINUTES = [15, 30, 60, 120, 180, 240, 360, 720, 1440];
-export const DEFAULT_REPORT_INTERVAL_MINUTES = 720;
-export const DEFAULT_REPORT_START_HOUR = 8;
 const MINUTES_PER_DAY = 24 * 60;
 // Up to this many reports a day are listed by time; more are described.
 const MAX_LISTED_REPORT_TIMES = 4;

@@ -8,8 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import DeleteBinDialog from "@/components/bins/DeleteBinDialog"
 import { useUpdateBinMaintenance, useUpdateBinName } from "@/hooks/bins/useUpdateBin"
 import { useMe } from "@/hooks/users/auth/useMe"
-
-const MAX_NAME_LENGTH = 25
+import { MAX_BIN_NAME_LENGTH as MAX_NAME_LENGTH } from "@/utils/constants"
 
 // What can be done to the device: rename it and delete it (admins), and add a
 // maintenance note (anyone but a regular user). Each card keeps its button at

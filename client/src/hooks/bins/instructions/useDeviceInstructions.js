@@ -6,10 +6,10 @@ import {
     enqueueDeviceInstruction,
     getDeviceInstructions,
 } from "@/services/apiDeviceInstructions";
+import { PENDING_INSTRUCTIONS_REFRESH_MS as PENDING_REFRESH_MS } from "@/utils/constants";
 
 // Devices pick instructions up only when they report (every 15 minutes to a
 // day), so the queue is refreshed only while one is still pending.
-const PENDING_REFRESH_MS = 30000;
 
 export function useDeviceInstructions(binId) {
     const { data, isPending: isLoadingInstructions, error: instructionsError } = useQuery({

@@ -9,11 +9,10 @@ import { Polyline } from "react-leaflet";
 import polyline from "@mapbox/polyline";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
-import { CLUSTER_UNTIL_ZOOM, createClusterIcon } from "@/utils/mapClusters";
+import { createClusterIcon } from "@/utils/mapClusters";
+import { CLUSTER_UNTIL_ZOOM, MAP_BINS_LIMIT } from "@/utils/constants";
 import { useMapSettings } from "@/contexts/mapContext";
 
-// The map page shows every device, not one page of the list.
-const MAP_BINS_LIMIT = 1000
 
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
     // A caller with its own bins (the dashboard's) needs no request of its own.

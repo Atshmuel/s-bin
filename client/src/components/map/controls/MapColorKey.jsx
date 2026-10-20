@@ -1,8 +1,10 @@
 import { useTranslation } from "react-i18next"
 import DeviceRoleIcon from "@/components/bins/DeviceRoleIcon"
 import { STATUS_COLORS } from "@/utils/binHelpers"
+import { FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT } from "@/utils/constants"
 
-// The marker colors by fullness, as getColor() picks them.
+// The marker colors by fullness, as getColor() picks them; the texts take the
+// cut-offs from the constants.
 const FULLNESS_KEYS = [
     ["good", "fullnessLow"],
     ["warning", "fullnessMid"],
@@ -24,7 +26,11 @@ function MapColorKey() {
                 {FULLNESS_KEYS.map(([status, key]) => (
                     <li key={status} className="flex items-center gap-2">
                         <Swatch color={STATUS_COLORS[status]} />
-                        {t(`mapLegend.key.${key}`)}
+                        {t(`mapLegend.key.${key}`, {
+                            warning: FULLNESS_WARNING_PERCENT,
+                            belowCritical: FULLNESS_CRITICAL_PERCENT - 1,
+                            critical: FULLNESS_CRITICAL_PERCENT,
+                        })}
                     </li>
                 ))}
             </ul>

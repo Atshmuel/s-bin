@@ -1,16 +1,14 @@
 import { getAllLogs } from "@/services/apiLogs";
 import { useQuery } from "@tanstack/react-query";
+import { LIST_REFRESH_MS } from "@/utils/constants";
 
 
-// Reports arrive hours apart; a minute between refreshes is plenty, and none
-// while the tab is hidden.
-const LOGS_REFRESH_MS = 60 * 1000
 
 export function useLogs(page = 1, limit = 10, search = "") {
     const { data, isPending: isLoadingLogs, error: logsError } = useQuery({
         queryKey: ['all-logs', page, limit, search],
         queryFn: () => getAllLogs(page, limit, search),
-        refetchInterval: LOGS_REFRESH_MS,
+        refetchInterval: LIST_REFRESH_MS,
     })
 
 

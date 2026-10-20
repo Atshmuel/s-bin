@@ -32,14 +32,10 @@ import {
 } from "@/hooks/bins/instructions/useDeviceInstructions";
 import { isGateway } from "@/utils/binHelpers";
 import { formatReportSchedule } from "@/utils/orgSettings";
+import { INSTRUCTIONS_PAGE_SIZE as PAGE_SIZE, MAX_AWAKE_MINUTES, MAX_SCALE_GRAMS, MIN_SCALE_GRAMS } from "@/utils/constants";
 
 const INSTRUCTION_TYPES = ["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale"];
 const CALIBRATION_TYPES = ["calibrate_empty_bin", "calibrate_scale"];
-const MAX_AWAKE_MINUTES = 60;
-// The known weight for a scale calibration, in grams (the device checks the same).
-const MIN_SCALE_GRAMS = 100;
-const MAX_SCALE_GRAMS = 200000;
-const PAGE_SIZE = 5;
 const DATE_FORMAT = "yyyy-MM-dd HH:mm";
 // The last report to the second, as on the bin page's tile.
 const REPORT_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";

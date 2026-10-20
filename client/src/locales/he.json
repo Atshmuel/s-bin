@@ -247,9 +247,9 @@
          "open": "מה מוצג במפה",
          "close": "סגור את המקרא",
          "title": "מה מוצג במפה",
-         "fullnessLow": "מלא עד 50%",
-         "fullnessMid": "מלא 51–75%",
-         "fullnessHigh": "מלא מעל 75%",
+         "fullnessLow": "מלא פחות מ־{{warning}}%",
+         "fullnessMid": "מלא {{warning}}–{{belowCritical}}%",
+         "fullnessHigh": "מלא {{critical}}% ומעלה",
          "gatewayBattery": "מלאות היא רמת המילוי או המשקל, הגבוה מביניהם. לשער אין מלאות; הצבע שלו מראה את הסוללה.",
          "cluster": "קבוצה של מכשירים קרובים, בצבע של הדחוף מביניהם"
        }

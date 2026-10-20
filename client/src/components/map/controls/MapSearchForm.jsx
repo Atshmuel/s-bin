@@ -12,14 +12,10 @@ import { Switch } from "@/components/ui/switch"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { getBestRoute } from "@/services/apiBins"
+import { DEFAULT_COLLECTION_FULLNESS as DEFAULT_FULLNESS, DEFAULT_RADIUS_KM, MAX_RADIUS_KM } from "@/utils/constants"
 
 const HEALTH_OPTIONS = ["good", "warning", "critical", "all"]
 const ROUTE_TYPES = ["collection", "maintenance"]
-const DEFAULT_RADIUS_KM = 5
-// Starts at the bins worth collecting, so a route without touching the range
-// is a normal collection round; widen it to see every bin.
-const DEFAULT_FULLNESS = [70, 100]
-const MAX_RADIUS_KM = 100
 
 // A single-choice row of toggles that never ends up with nothing chosen.
 function ChoiceGroup({ value, onChange, options, label }) {

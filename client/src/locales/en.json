@@ -244,9 +244,9 @@
       "open": "What the map shows",
       "close": "Close the map key",
       "title": "What the map shows",
-      "fullnessLow": "Up to 50% full",
-      "fullnessMid": "51–75% full",
-      "fullnessHigh": "Over 75% full",
+      "fullnessLow": "Under {{warning}}% full",
+      "fullnessMid": "{{warning}}–{{belowCritical}}% full",
+      "fullnessHigh": "{{critical}}% full or more",
       "gatewayBattery": "Fullness is the fill level or the weight, whichever is higher. A gateway has no fullness; its color shows its battery.",
       "cluster": "A group of nearby devices, in the color of the most urgent one"
     }

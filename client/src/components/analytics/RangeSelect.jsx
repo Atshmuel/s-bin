@@ -1,9 +1,8 @@
 import { useTranslation } from "react-i18next"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAppSide } from "@/contexts/AppSideProvider"
+import { ANALYTICS_RANGES_DAYS as ANALYTICS_RANGES } from "@/utils/constants"
 
-// The ranges the analytics endpoints accept, in days.
-const ANALYTICS_RANGES = [7, 30, 90]
 
 // The range picker of the analytics charts.
 function RangeSelect({ value, onChange, className }) {

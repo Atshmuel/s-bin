@@ -7,11 +7,10 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useMapSettings } from "@/contexts/mapContext"
+import { USER_MARKER_MS } from "@/utils/constants"
 import MapDisplayOptions from "./MapDisplayOptions"
 import MapSearchForm from "./MapSearchForm"
 
-// The user's location marker stays this long after "My location".
-const USER_MARKER_MS = 60000
 const LOCATION_ERRORS = { 1: "locationDenied", 2: "locationUnavailable", 3: "locationTimeout" }
 
 // The map's actions: search and route (where the page allows them) and display
