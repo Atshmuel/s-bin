@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { binLogModel, binModel, deviceInstructionModel } from "../models/models.js"
-import { INSTRUCTION_RETENTION_MS } from "../../utils/constants.js"
+import { INSTRUCTION_RETENTION_MS, CRON_SCHEDULES } from "../../utils/constants.js"
 
 const FINISHED_STATUSES = ["completed", "failed", "cancelled"];
 
@@ -48,7 +48,7 @@ if (!global.deviceInstructionCleanupCronStarted) {// To prevent multi crons on d
     global.deviceInstructionCleanupCronStarted = true;
     console.log("deviceInstructionCleanupCronStarted");
 
-    cron.schedule('15 * * * *', async () => {
+    cron.schedule(CRON_SCHEDULES.instructionCleanup, async () => {
         try {
             const cutoff = new Date(Date.now() - INSTRUCTION_RETENTION_MS);
             await expireStalePendingInstructions(cutoff);

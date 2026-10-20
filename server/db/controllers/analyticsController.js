@@ -2,11 +2,13 @@ import mongoose from 'mongoose'
 import { binLogModel, binModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared } from '../service/sharedService.js'
-import { DASHBOARD_SECTIONS } from './dashboardController.js'
+import { DASHBOARD_SECTIONS, devicesWithReasons } from './dashboardController.js'
 import {
     ANALYTICS_RANGES_DAYS, BATTERY_BUCKETS, BATTERY_SOON_DAYS, BATTERY_SOON_LIST_LIMIT, BATTERY_TREND_DAYS,
     DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, FULL_SOON_HOURS, FULL_SOON_LIST_LIMIT, FULLNESS_BUCKETS,
-    LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS,
+    LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS, BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT,
+    FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
+    AI_BRIEFING_DAYS, AI_BRIEFING_DEVICE_LIMIT, DAY_MS, HOUR_MS,
 } from '../../utils/constants.js'
 import {
     HEALTH_CAUSE_NAMES,
@@ -18,7 +20,6 @@ import {
 // sections load in parallel and a slow one holds up nothing else. Every
 // response is aggregated to what its chart draws; raw logs never leave.
 
-const HOUR_MS = 60 * 60 * 1000;
 // Only device reports: maintenance notes and system entries carry no readings.
 const READINGS_FILTER = Object.freeze({ type: 'log', source: 'sensor' });
 
@@ -404,4 +405,124 @@ export async function getOverviewSection(req, res) {
     } catch (error) {
         res.status(500).json({ message: error?.message || 'Failed to load the analytics.' });
     }
+}
+
+// ---- The AI overview's input: GET /api/overviews/ai-ov ----
+
+function roundTo(value, decimals = 0) {
+    if (!Number.isFinite(value)) return null;
+    const factor = 10 ** decimals;
+    return Math.round(value * factor) / factor;
+}
+
+// What the fleet looks like now and how it is heading, for the AI overview:
+// the numbers the dashboard and analytics already compute, per device by
+// name, without ids or internal fields. Devices needing attention come first.
+export async function buildFleetBriefing(user) {
+    const now = Date.now();
+    const devices = await devicesWithReasons(user);
+    if (devices.length === 0) return null;
+    const names = new Map(devices.map(device => [String(device._id), device.binName]));
+    const ids = devices.map(device => device._id);
+    const weekStart = rangeStart(AI_BRIEFING_DAYS, now);
+
+    const [readings, firstReports, weekCounts, problemLogs, intervals] = await Promise.all([
+        readingsByBin(ids, rangeStart(Math.max(FILL_RATE_WINDOW_DAYS, BATTERY_TREND_DAYS), now)),
+        firstReportTimes(ids),
+        binLogModel.aggregate([
+            { $match: { binId: { $in: ids }, ...READINGS_FILTER, createdAt: { $gte: weekStart } } },
+            { $group: { _id: '$binId', count: { $sum: 1 } } },
+        ]),
+        binLogModel.find(
+            { binId: { $in: ids }, ...READINGS_FILTER, createdAt: { $gte: weekStart }, message: { $exists: true, $ne: null } },
+            { message: 1 },
+        ).lean(),
+        intervalsByOrg(devices),
+    ]);
+    const reportsThisWeek = new Map(weekCounts.map(count => [String(count._id), count.count]));
+
+    let emptyings = 0;
+    let kgCollected = 0;
+    const fullnessAtEmptying = [];
+    const briefed = devices.map(device => {
+        const id = String(device._id);
+        const isGatewayDevice = device.kind === 'gateway';
+        const deviceReadings = readings.get(id) ?? [];
+        const weekReadings = deviceReadings.filter(reading => reading.at >= weekStart);
+        const collections = isGatewayDevice ? [] : detectCollections(weekReadings);
+        emptyings += collections.length;
+        for (const collection of collections) {
+            if (collection.kgRemoved !== null) kgCollected += collection.kgRemoved;
+            if (collection.fullnessBefore !== null) fullnessAtEmptying.push(collection.fullnessBefore);
+        }
+        const ratePerDay = isGatewayDevice ? null : fillRatePerDay(deviceReadings.filter(
+            reading => reading.at >= rangeStart(FILL_RATE_WINDOW_DAYS, now)));
+        // Hours until the bin needs collecting (the critical fullness), 0 if it
+        // already does; null without a rising trend.
+        const hoursUntilCollection = isGatewayDevice || !Number.isFinite(device.fullness) ? null
+            : device.fullness >= FULLNESS_CRITICAL_PERCENT ? 0
+                : ratePerDay > 0 ? (FULLNESS_CRITICAL_PERCENT - device.fullness) / ratePerDay * DAY_MS / HOUR_MS : null;
+        const batteryRate = trendPerDay(deviceReadings.filter(
+            reading => reading.at >= rangeStart(BATTERY_TREND_DAYS, now)), 'battery');
+        const lastReport = device.status?.updatedAt ?? null;
+        const reliability = reportReliability(reportsThisWeek.get(id) ?? 0, weekStart, new Date(now),
+            intervals.get(String(device.ownerId)), firstReports.get(id));
+        const via = device.status?.connection?.via;
+        return {
+            name: device.binName,
+            type: isGatewayDevice ? 'gateway' : via === 'mesh' ? 'bin reporting through a gateway' : 'bin with its own cellular connection',
+            ...(via === 'mesh' ? { gateway: names.get(String(device.status.connection.gatewayId)) ?? null } : {}),
+            needsAttention: device.reasons,
+            ...(isGatewayDevice ? {} : {
+                fullnessPercent: device.fullness,
+                weightKg: device.status?.scale === 'ok' ? roundTo(device.status.weight, 1) : null,
+                fillRatePercentPerDay: roundTo(ratePerDay, 1),
+                hoursUntilCollectionNeeded: roundTo(hoursUntilCollection),
+                emptiedThisWeek: collections.length,
+            }),
+            batteryPercent: device.status?.battery ?? null,
+            batteryDaysUntilCritical: roundTo(batteryDaysLeft(device.status?.battery, batteryRate)),
+            health: device.status?.health ?? null,
+            reportedProblem: device.status?.healthMessage || null,
+            hoursSinceLastReport: lastReport ? roundTo((now - new Date(lastReport).getTime()) / HOUR_MS, 1) : null,
+            onTimeReportsPercentThisWeek: reliability.percent,
+        };
+    });
+    // The most urgent first: most reasons, then the fullest; the rest may be cut.
+    briefed.sort((a, b) => b.needsAttention.length - a.needsAttention.length ||
+        (b.fullnessPercent ?? -1) - (a.fullnessPercent ?? -1));
+
+    const problemsByCause = Object.fromEntries(HEALTH_CAUSE_NAMES.map(cause => [cause, 0]));
+    for (const log of problemLogs) {
+        for (const cause of healthCauses(log.message)) problemsByCause[cause]++;
+    }
+
+    return {
+        generatedAt: new Date(now).toISOString(),
+        rules: {
+            fullnessMeans: 'the fill level or the weight against the bin\'s reference load, whichever is higher',
+            fullnessWarningPercent: FULLNESS_WARNING_PERCENT,
+            fullnessCriticalPercent: FULLNESS_CRITICAL_PERCENT,
+            batteryWarningPercent: BATTERY_WARNING_PERCENT,
+            batteryCriticalPercent: BATTERY_CRITICAL_PERCENT,
+            offlineMeans: `missed ${OFFLINE_AFTER_MISSED_REPORTS} scheduled reports in a row`,
+            gatewayNote: 'a gateway relays the reports of the bins that report through it; when it is offline, they go silent too',
+        },
+        totals: {
+            bins: devices.filter(device => device.kind !== 'gateway').length,
+            gateways: devices.filter(device => device.kind === 'gateway').length,
+            almostFull: devices.filter(device => device.reasons.includes('full')).length,
+            offline: devices.filter(device => device.reasons.includes('offline')).length,
+            maintenanceDue: devices.filter(device => device.reasons.includes('maintenance')).length,
+            lowBattery: devices.filter(device => device.reasons.includes('battery')).length,
+        },
+        lastSevenDays: {
+            emptyings,
+            averageFullnessAtEmptyingPercent: average(fullnessAtEmptying),
+            kgCollected: roundTo(kgCollected, 1),
+            problemReportsByCause: problemsByCause,
+        },
+        devices: briefed.slice(0, AI_BRIEFING_DEVICE_LIMIT),
+        devicesOmitted: Math.max(briefed.length - AI_BRIEFING_DEVICE_LIMIT, 0),
+    };
 }

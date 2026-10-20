@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authToken } from "../middlewares/authMiddleware.js";
-import { getBinsStatusOV, getAIOverview, getLogTypes } from "../db/service/sharedService.js";
+import { getBinsStatusOV, getLogTypes } from "../db/service/sharedService.js";
+import { getAIOverview } from "../db/controllers/aiOverviewController.js";
 import { getOverviewSection } from "../db/controllers/analyticsController.js";
 
 export const overViewRouter = Router();

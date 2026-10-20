@@ -5,10 +5,8 @@
 
 import {
     BATTERY_CRITICAL_PERCENT, COLLECTION_LEVEL_DROP, COLLECTION_WEIGHT_DROP_RATIO, MIN_TREND_POINTS,
-    MIN_TREND_SPAN_MS, WEIGHT_REFERENCE_KG,
+    MIN_TREND_SPAN_MS, WEIGHT_REFERENCE_KG, DAY_MS, MINUTE_MS,
 } from './constants.js';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function rangeStart(days, now = Date.now()) {
     return new Date(now - days * DAY_MS);
@@ -119,7 +117,7 @@ export function reportReliability(received, windowStart, windowEnd, intervalMinu
     const firstMs = new Date(firstReportAt).getTime();
     const start = Math.max(windowStart.getTime(), firstMs);
     // The first report is a slot of its own when it falls in the window.
-    const expected = Math.floor((windowEnd.getTime() - start) / (intervalMinutes * 60 * 1000)) +
+    const expected = Math.floor((windowEnd.getTime() - start) / (intervalMinutes * MINUTE_MS)) +
         (firstMs >= windowStart.getTime() ? 1 : 0);
     if (expected <= 0) return { received, expected: 0, percent: null };
     return { received, expected, percent: Math.round(Math.min(received / expected, 1) * 100) };

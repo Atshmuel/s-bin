@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from './constants.js'
 
 export const emailSchema = Joi.string().email({
     tlds: { allow: false }
@@ -7,13 +8,13 @@ export const emailSchema = Joi.string().email({
     "string.email": "Email must be a valid email address"
 })
 export const passwordSchema = Joi.string()
-    .min(8)
-    .max(30)
+    .min(PASSWORD_MIN_LENGTH)
+    .max(PASSWORD_MAX_LENGTH)
     .required()
     .messages({
         "string.empty": "Password is required",
-        "string.min": "Password must be at least 8 characters long",
-        "string.max": "Password must not exceed 30 characters",
+        "string.min": `Password must be at least ${PASSWORD_MIN_LENGTH} characters long`,
+        "string.max": `Password must not exceed ${PASSWORD_MAX_LENGTH} characters`,
     })
     .custom((value, helpers) => {
         if (!/[a-z]/.test(value)) {

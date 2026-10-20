@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 import { binModel, deviceInstructionModel } from '../models/models.js'
 import { appendFilter, BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
-import { DEFAULT_COLLECTION_FULLNESS } from '../../utils/constants.js'
+import { DEFAULT_COLLECTION_FULLNESS, DEFAULT_PAGE_SIZE, ROUTE_MAX_BINS, ROUTE_STOP_SECONDS } from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
@@ -65,7 +65,7 @@ export async function getAllUserBins(req, res) {
     const { withLogs, page, limit, search } = req.query
 
     const pageNum = Number(page) || 1;
-    const limitNum = Number(limit) || 10;
+    const limitNum = Number(limit) || DEFAULT_PAGE_SIZE;
     const skip = (pageNum - 1) * limitNum;
 
     let query = {}
@@ -224,7 +224,7 @@ export async function getRouteBins(req, res) {
                     },
                 },
                 ...fullnessStages,
-                { $limit: limit || 100 },
+                { $limit: limit || ROUTE_MAX_BINS },
                 { $project: { _id: 1, location: 1, status: 1 } }
             ]
         )
@@ -236,7 +236,7 @@ export async function getRouteBins(req, res) {
             return {
                 id: i,
                 location: [bin.location.coordinates[1], bin.location.coordinates[0]],
-                service: type === 'maintenance' ? 1800 : 120, //assuming 30 mins for maintenance and 2 mins for collection per bin, can be adjusted based on real data in the future
+                service: ROUTE_STOP_SECONDS[type] ?? ROUTE_STOP_SECONDS.collection,
                 description: bin._id.toString()
             }
         });

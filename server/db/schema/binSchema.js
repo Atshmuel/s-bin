@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { add } from 'date-fns'
+import { DAY_MS, FIRST_SERVICE_AFTER_DAYS, MAX_LAST_AWAKE_SECONDS, SERVICE_INTERVAL_DAYS } from '../../utils/constants.js'
 export const binSchema = new mongoose.Schema({
     binName: {
         type: String,
@@ -47,7 +48,7 @@ export const binSchema = new mongoose.Schema({
         // one (a leaf, or firmware before the scale).
         scale: { type: String, enum: ["ok", "uncalibrated", "failed"], default: null },
         battery: { type: Number, default: 0, required: true },
-        lastAwakeSeconds: { type: Number, min: 1, max: 86400, default: null },
+        lastAwakeSeconds: { type: Number, min: 1, max: MAX_LAST_AWAKE_SECONDS, default: null },
         // How the last report arrived: the bin's own cellular link or a mesh gateway.
         connection: {
             via: { type: String, enum: ["cellular", "mesh"], default: null },
@@ -70,7 +71,7 @@ export const binSchema = new mongoose.Schema({
     },
     maintenance: {
         lastServiceAt: { type: Date, default: Date.now },
-        nextServiceAt: { type: Date, default: () => add(new Date(), { days: 90 }) },
+        nextServiceAt: { type: Date, default: () => add(new Date(), { days: FIRST_SERVICE_AFTER_DAYS }) },
         notes: String,
         technicianId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     },
@@ -87,7 +88,7 @@ export const binSchema = new mongoose.Schema({
 binSchema.methods.recordService = function (notes, technicianId) {
     const now = new Date();
     this.maintenance.lastServiceAt = now;
-    this.maintenance.nextServiceAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    this.maintenance.nextServiceAt = new Date(now.getTime() + SERVICE_INTERVAL_DAYS * DAY_MS);
     if (notes) this.maintenance.notes = notes;
     if (technicianId) this.maintenance.technicianId = technicianId;
     return this.save();

@@ -2,9 +2,7 @@ import mongoose from 'mongoose'
 import { sendEmail } from '../../utils/mailService.js'
 import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
-import { ROLES, AI_INSTRUCTIONS } from "../../utils/constants.js";
-import { GoogleGenAI } from "@google/genai";
-import { z } from "zod";
+import { DAY_MS, LOG_TYPES_DAYS, ROLES } from "../../utils/constants.js";
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 import { DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR } from '../../utils/constants.js'
 
@@ -243,85 +241,11 @@ export async function getBinsStatusOV(req, res) {
     }
 }
 
-//ai-ov
-export async function getAIOverview(req, res) {
-    const { id, role, org: ownerId } = req.user
-    let query = { binId: { $nin: await getGatewayIds() } }
-    let userBins = {}
-
-    if (role !== ROLES.OWNER) {
-        userBins = await binModel.find({
-            ...BINS_ONLY_FILTER,
-            ownerId: new mongoose.Types.ObjectId(ownerId)
-        }).select('_id binName');
-
-        const binIds = userBins.map(bin => bin._id);
-
-        query = { binId: { $in: binIds } };
-    }
-
-    const logs = await binLogModel.find(query, { source: 0, message: 0, updatedAt: 0 }).limit(250)
-
-    if (logs.length === 0) {
-        return res.status(200).json({ insights: [] });
-    }
-    const { appLanguage } = await userSettingModel.findOne({ userId: id }).select('appLanguage -_id')
-
-    let intstuction = AI_INSTRUCTIONS.replaceAll('{{language}}', appLanguage === 'he' ? 'Hebrew' : 'English')
-
-    let lastError;
-
-    const feedBackScheme = z.object({
-        insights: z.array(
-            z.object({
-                title: z.string().describe('The title of the insight according to the logs and the instructions'),
-                content: z.string().describe('The content of the insight according to the logs and the instructions'),
-            })
-        )
-    })
-    const apiKeys = [
-        process.env.GEMINI_API_KEY,
-        process.env.GEMINI_API_SECOND_KEY,
-        process.env.GEMINI_API_THIRD_KEY,
-        process.env.GEMINI_API_FOURTH_KEY
-    ].filter(Boolean);
-
-    for (let i = 0; i < apiKeys.length; i++) {
-        try {
-            const aiModel = new GoogleGenAI({ apiKey: apiKeys[i] })
-            const modelResponse = await aiModel.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: intstuction + JSON.stringify(logs) + JSON.stringify(userBins),
-                config: {
-                    responseMimeType: 'application/json',
-                    responseJsonSchema: feedBackScheme.toJSONSchema(),
-                }
-            })
-
-            const response = modelResponse?.candidates?.[0]?.content?.parts?.[0]?.text
-            const insights = JSON.parse(response)?.insights || []
-
-            return res.status(200).json({ insights })
-
-        } catch (error) {
-            lastError = error;
-
-            if (i < apiKeys.length - 1) {
-                console.warn(`API Key ${i + 1} failed. Trying next key...`, lastError);
-                continue;
-            }
-            break;
-        }
-    }
-    res.status(500).json({ message: lastError?.message || 'Error in getAIOverview' })
-}
-
 export async function getLogTypes(req, res) {
     const { role, org: ownerId } = req.user
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const since = new Date(Date.now() - LOG_TYPES_DAYS * DAY_MS)
     let query = {
-        createdAt: { $gt: thirtyDaysAgo },
+        createdAt: { $gt: since },
         binId: { $nin: await getGatewayIds() }
     }
 

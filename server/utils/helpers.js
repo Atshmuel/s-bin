@@ -2,15 +2,18 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import mongoose from 'mongoose'
-import { ROLES } from './constants.js'
+import {
+    MAX_LAST_AWAKE_SECONDS, MINUTE_MS, OTP_EXPIRY_MINUTES, OTP_LENGTH, PASSWORD_HASH_ROUNDS, RANDOM_TOKEN_BYTES,
+    REPORT_MESSAGE_MAX_LENGTH, ROLES,
+} from './constants.js'
 
-export async function generateOTP(expiryMinutes = 5, length = 6) {
+export async function generateOTP(expiryMinutes = OTP_EXPIRY_MINUTES, length = OTP_LENGTH) {
     let otp = '';
     const digits = '0123456789';
     for (let i = 0; i < length; i++) {
         otp += digits[Math.floor(Math.random() * digits.length)];
     }
-    const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
+    const expiresAt = new Date(Date.now() + expiryMinutes * MINUTE_MS);
 
     return { otp, expiresAt, expiryMinutes };
 }
@@ -20,7 +23,7 @@ export function generateVerificationLink(token) {
     return `${process.env.CLIENT_BASE_URL_PROD}/user/verify?token=${token}`
 }
 
-export async function hashPassword(password, rounds = 10) {
+export async function hashPassword(password, rounds = PASSWORD_HASH_ROUNDS) {
     if (!password || !password.length) return null
     try {
         const hashed = await bcrypt.hash(password, rounds)
@@ -60,7 +63,7 @@ export function validateToken(token) {
     }
 }
 
-export function generateRandomToken(bytes = 32) {
+export function generateRandomToken(bytes = RANDOM_TOKEN_BYTES) {
     return crypto.randomBytes(bytes).toString('hex');
 }
 
@@ -111,10 +114,10 @@ export function checkPayloadFields({
     }
     if (typeof battery !== "number" || battery < 0 || battery > 100) return false
     if (typeof weight !== "number") return false
-    if (message !== undefined && (typeof message !== "string" || message.length > 256)) return false
+    if (message !== undefined && (typeof message !== "string" || message.length > REPORT_MESSAGE_MAX_LENGTH)) return false
     if (lastAwakeSeconds !== undefined &&
         (!Number.isInteger(lastAwakeSeconds) ||
-            lastAwakeSeconds < 1 || lastAwakeSeconds > 86400)) return false
+            lastAwakeSeconds < 1 || lastAwakeSeconds > MAX_LAST_AWAKE_SECONDS)) return false
 
     return true;
 }

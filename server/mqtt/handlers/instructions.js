@@ -4,7 +4,7 @@ import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { binModel, deviceInstructionModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
-import { LEAF_INSTRUCTION_TYPES, MAX_LEAF_INSTRUCTIONS } from "../../utils/constants.js";
+import { INSTRUCTION_RESULT_MAX_LENGTH, LEAF_INSTRUCTION_TYPES, MAX_LEAF_INSTRUCTIONS } from "../../utils/constants.js";
 
 // The oldest pending command of each leaf this gateway relays for.
 async function pendingLeafInstructions(gateway) {
@@ -34,7 +34,7 @@ async function pendingLeafInstructions(gateway) {
 export async function applyInstructionResult(binId, { instructionId, status, result }) {
     if (!mongoose.Types.ObjectId.isValid(instructionId) ||
         !["completed", "failed"].includes(status) ||
-        (result !== undefined && (typeof result !== "string" || result.length > 256))) {
+        (result !== undefined && (typeof result !== "string" || result.length > INSTRUCTION_RESULT_MAX_LENGTH))) {
         return null;
     }
     const instruction = await deviceInstructionModel.findOneAndUpdate(

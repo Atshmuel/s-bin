@@ -3,7 +3,10 @@ import { hashPassword, comparePasswords, generateToken, appendFilter, generateOT
 import { emailSchema, passwordSchema } from '../../utils/inputValidations.js'
 import { deleteUserRefs, organizationExist, sendTemplateEmail } from '../service/sharedService.js'
 import { randomUUID } from 'crypto'
-import { MAX_OTP_ATTEMPTS, ROLES, ROLE_LEVEL } from '../../utils/constants.js'
+import {
+    ACCOUNT_VERIFICATION_HOURS, DAY_MS, HOUR_MS, MAX_OTP_ATTEMPTS, MINUTE_MS, RESET_TOKEN_MINUTES, ROLES, ROLE_LEVEL,
+    SESSION_DAYS,
+} from '../../utils/constants.js'
 import mongoose from 'mongoose'
 
 // Why an email and password cannot open an account, or null when they can.
@@ -57,7 +60,7 @@ export async function createUser(req, res) {
                 name,
                 accountVerification: {
                     token: randomUUID(),
-                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                    expiresAt: new Date(Date.now() + ACCOUNT_VERIFICATION_HOURS * HOUR_MS)
                 }
             }, session);
 
@@ -195,11 +198,11 @@ export async function loginUser(req, res) {
         const isSamePassword = await comparePasswords(password, dbPassword)
         if (!isSamePassword) return res.status(401).json({ message: 'Unauthorized' })
 
-        const accessToken = generateToken({ id: _id, role, tokenVersion }, '3d');
+        const accessToken = generateToken({ id: _id, role, tokenVersion }, `${SESSION_DAYS}d`);
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 3 * 24 * 60 * 60 * 1000,
+            maxAge: SESSION_DAYS * DAY_MS,
             sameSite: 'strict',
         })
 
@@ -297,11 +300,11 @@ export async function verifyRecoveryCode(req, res) {
 
         // Must carry the normalised address: emails are stored lowercased, and
         // updateUserForgotenPassword looks the user up by this exact value.
-        const resetPasswordToken = generateToken({ email: lowerCaseEmail, reset: true }, '5m')
+        const resetPasswordToken = generateToken({ email: lowerCaseEmail, reset: true }, `${RESET_TOKEN_MINUTES}m`)
         res.cookie('resetToken', resetPasswordToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 5 * 1000,
+            maxAge: RESET_TOKEN_MINUTES * MINUTE_MS,
             sameSite: 'strict',
         })
 

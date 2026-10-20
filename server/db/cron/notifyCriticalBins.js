@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { binLogModel } from "../models/models.js";
 import { getOrgAdmins, sendTemplateEmail } from "../service/sharedService.js";
-import { BATTERY_CRITICAL_PERCENT, FULLNESS_CRITICAL_PERCENT, WEIGHT_REFERENCE_KG } from "../../utils/constants.js";
+import { BATTERY_CRITICAL_PERCENT, FULLNESS_CRITICAL_PERCENT, WEIGHT_REFERENCE_KG, CRON_SCHEDULES } from "../../utils/constants.js";
 
 // A log's fullness: its fill level or its weight (kg) against the reference,
 // whichever is higher; null when it has neither.
@@ -13,7 +13,7 @@ if (!global.dailyBinsStatusCronStarted) {
     global.dailyBinsStatusCronStarted = true;
     console.log("dailyBinsStatusCronStarted");
 
-    cron.schedule("0 8 * * *", async () => {
+    cron.schedule(CRON_SCHEDULES.criticalBinsEmail, async () => {
         try {
             const reportBins = await binLogModel.aggregate([
                 { $sort: { createdAt: -1 } },

@@ -1,12 +1,13 @@
 import mqtt from "mqtt";
 import { handleMqttMessage } from "./mqttHandlers.js";
 import { BIN_REGISTER_TOPIC, BIN_UPDATE_TOPIC } from "./mqttTopics.js";
+import { MQTT_BROKER_URL, MQTT_CONNECT_TIMEOUT_MS, MQTT_RECONNECT_MS } from '../utils/constants.js'
 
-export const mqttClient = mqtt.connect("mqtt://broker.hivemq.com:1883", {
+export const mqttClient = mqtt.connect(MQTT_BROKER_URL, {
     clientId: "sbin_server_" + Math.random().toString(16).slice(2),
     protocolVersion: 4,
-    connectTimeout: 5000,
-    reconnectPeriod: 1000,
+    connectTimeout: MQTT_CONNECT_TIMEOUT_MS,
+    reconnectPeriod: MQTT_RECONNECT_MS,
 });
 
 export function initMqtt() {

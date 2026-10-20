@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { INSTRUCTION_RESULT_MAX_LENGTH, INSTRUCTION_TYPE_MAX_LENGTH } from '../../utils/constants.js'
 
 export const deviceInstructionSchema = new mongoose.Schema({
     binId: {
@@ -11,7 +12,7 @@ export const deviceInstructionSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        maxlength: 64,
+        maxlength: INSTRUCTION_TYPE_MAX_LENGTH,
     },
     payload: {
         type: mongoose.Schema.Types.Mixed,
@@ -31,7 +32,7 @@ export const deviceInstructionSchema = new mongoose.Schema({
     completedAt: Date,
     result: {
         type: String,
-        maxlength: 256,
+        maxlength: INSTRUCTION_RESULT_MAX_LENGTH,
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,

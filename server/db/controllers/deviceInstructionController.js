@@ -3,6 +3,7 @@ import { deviceInstructionModel } from "../models/models.js";
 import { getBinShared } from "../service/sharedService.js";
 import {
     LEAF_INSTRUCTION_TYPES, MAX_AWAKE_EXTENSION_SECONDS, MAX_SCALE_CALIBRATION_GRAMS, MIN_SCALE_CALIBRATION_GRAMS, ROLES,
+    INSTRUCTION_PAYLOAD_MAX_BYTES, INSTRUCTIONS_LIST_LIMIT,
 } from "../../utils/constants.js";
 
 const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale"]);
@@ -44,14 +45,14 @@ export async function enqueueDeviceInstruction(req, res) {
         const message = type === "report_now"
             ? "report_now does not accept a payload."
             : type === "stay_awake"
-                ? "stay_awake requires durationSeconds between 1 and 3600."
+                ? `stay_awake requires durationSeconds between 1 and ${MAX_AWAKE_EXTENSION_SECONDS}.`
                 : `${type} does not accept a payload.`;
         return res.status(400).json({ message });
     }
 
     const serializedPayload = JSON.stringify(payload);
-    if (Buffer.byteLength(serializedPayload, "utf8") > 256) {
-        return res.status(400).json({ message: "Instruction payload must not exceed 256 bytes." });
+    if (Buffer.byteLength(serializedPayload, "utf8") > INSTRUCTION_PAYLOAD_MAX_BYTES) {
+        return res.status(400).json({ message: `Instruction payload must not exceed ${INSTRUCTION_PAYLOAD_MAX_BYTES} bytes.` });
     }
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -97,7 +98,7 @@ export async function listDeviceInstructions(req, res) {
 
     const instructions = await deviceInstructionModel.find(filter)
         .sort({ createdAt: -1 })
-        .limit(100)
+        .limit(INSTRUCTIONS_LIST_LIMIT)
         .lean();
     return res.status(200).json({ instructions });
 }

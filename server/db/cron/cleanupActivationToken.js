@@ -1,11 +1,12 @@
 import cron from "node-cron";
 import { userModel } from "../models/models.js"
+import { CRON_SCHEDULES } from '../../utils/constants.js'
 
 if (!global.activationTokenCronStarted) {// To prevent multi crons on activation token
     global.activationTokenCronStarted = true;
     console.log("activationTokenCronStarted");
 
-    cron.schedule('0 0 * * *', async () => {
+    cron.schedule(CRON_SCHEDULES.activationTokenCleanup, async () => {
         try {
             const now = new Date();
             const result = await userModel.updateMany(

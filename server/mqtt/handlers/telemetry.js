@@ -7,6 +7,7 @@ import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
 import { fullnessPercent } from "../../utils/analytics.js";
 import {
     BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT,
+    MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM,
 } from "../../utils/constants.js";
 
 export function isValidTelemetryRecord({
@@ -38,8 +39,8 @@ const SCALE_STATES = ["ok", "uncalibrated", "failed"];
 function clockDiagnostics({ driftPpm, clockErrorSeconds }) {
     const within = (value, limit) => Number.isInteger(value) && Math.abs(value) <= limit;
     return {
-        ...(within(driftPpm, 100000) ? { driftPpm } : {}),
-        ...(within(clockErrorSeconds, 86400) ? { clockErrorSeconds } : {}),
+        ...(within(driftPpm, MAX_ABS_DRIFT_PPM) ? { driftPpm } : {}),
+        ...(within(clockErrorSeconds, MAX_ABS_CLOCK_ERROR_SECONDS) ? { clockErrorSeconds } : {}),
     };
 }
 

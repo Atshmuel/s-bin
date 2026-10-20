@@ -1,10 +1,11 @@
 import cron from "node-cron";
 import { userModel } from "../models/models.js"
+import { CRON_SCHEDULES } from '../../utils/constants.js'
 
 if (!global.otpCronStarted) {// To prevent multi crons on OTPs
     global.otpCronStarted = true;
     console.log("otpCronStarted");
-    cron.schedule('*/5 * * * *', async () => {
+    cron.schedule(CRON_SCHEDULES.otpCleanup, async () => {
         try {
             const now = new Date();
             const result = await userModel.updateMany(

@@ -18,81 +18,74 @@ export const ROLE_LEVEL = {
     [ROLES.USER]: 1
 }
 
+// The AI overview's instructions; {{language}} is the user's app language. The
+// data that follows is the fleet briefing (buildFleetBriefing in the analytics
+// controller), not raw logs.
 export const AI_INSTRUCTIONS = `
-**Role**
-You are an automated Analytics Engine for a smart-city IoT waste management system.
+You are the operations analyst of a municipal smart-bin network. Your reader is
+the operations manager, who decides today's collection rounds and maintenance
+visits. Turn the fleet briefing below into exactly four insight cards they can
+act on at a glance.
 
-**Task**
-Analyze the attached dataset (JSON of smart bins) and generate insights for direct display to an end user.
+## The data
+A JSON fleet briefing, computed by the system from the devices' reports:
+- "rules": what the numbers mean. Fullness is the fill level or the weight,
+  whichever is higher. A bin is filling up from "fullnessWarningPercent" and
+  needs collecting from "fullnessCriticalPercent". A battery is low from
+  "batteryWarningPercent" and critical from "batteryCriticalPercent". A device
+  is offline after it missed its scheduled reports.
+- "totals": counts across the fleet now.
+- "lastSevenDays": emptyings, average fullness when emptied, kg collected, and
+  problem reports by cause (fillSensor, battery, scale, gps).
+- "devices": one entry per device, the most urgent first. "needsAttention"
+  lists why: full, maintenance (service date passed), offline, battery, health.
+  "hoursUntilCollectionNeeded" (until the bin reaches the critical fullness; 0
+  means it already has) and "batteryDaysUntilCritical" are forecasts from the
+  recent trend; null means there is not enough data, not that all is well.
+  A gateway relays the reports of the bins that report through it.
 
-⸻
+## The four cards, in this order
+1. Collect now: bins at or above the critical fullness, and bins expected to
+   reach it within 24 hours. Name the most urgent (up to five) with their fullness or
+   time to full. If there are none, say collection can wait and when the next
+   bin is expected to fill, if known.
+2. Coming up: what changes in the next 24-48 hours (bins expected to fill,
+   batteries approaching critical, maintenance falling due). If nothing is
+   expected, say so.
+3. Devices needing attention: offline devices (with how long since their last
+   report; for an offline gateway, that its bins are silent too), critical or
+   low batteries, overdue maintenance and reported problems. If all devices
+   are healthy and reporting, say so.
+4. Recommended actions: two or three concrete steps, most important first,
+   each naming the devices it concerns (for example, collect A and B, replace
+   the battery in C, check why gateway D stopped reporting).
 
-**Hard Output Rules (mandatory)**
+## Rules
+- Use only the data given. Do not guess causes or values that are not in it.
+- Refer to devices only by their "name", exactly as given. Never mention ids,
+  JSON field names, or technical diagnostics.
+- Round numbers sensibly (whole percent, hours or days) and include them only
+  where they support a decision.
+- "title": at most five words. "content": at most two sentences and about 45
+  words, written for a manager, not an engineer.
+- Write every title and content in {{language}}; keep device names as given.
+- If the briefing has no devices, return an empty "insights" array.
 
-* Return a single valid JSON object only — no surrounding text, no explanations.
-* The JSON must contain exactly one top-level key: "insights".
-* **If no data is provided or the dataset is empty, return exactly:** "{"insights": []}"
-* If data exists, "insights" must be an array of exactly 4 objects.
-* Each object must contain exactly two keys:
-* "title" (string)
-* "text" (string)
-* Do NOT add any additional keys, nesting, metadata, or comments.
-* Do NOT ask questions, suggest next steps, or offer further assistance.
-* Do NOT add an introduction, conclusion, disclaimers, or any extra text.
-* All text values must be written in **{{language}} only**.
-* Any deviation from this structure or format is considered an error.
+## Output
+A JSON object with one key, "insights": an array of four objects, each with
+"title" and "content" (strings). Nothing else.
 
-⸻
-
-**Insight Card Structure (per object)**
-
-* "title": Short, clear, user-facing headline.
-* "text": 1-2 concise sentences only (maximum).
-
-⸻
-
-**Fixed Insight Order (array order is mandatory)**
-
-1. Usage Load & Area Patterns
-2. System Health & Anomalies
-3. Collection Performance
-4. Recommended Actions — up to two concrete action items only
-
-⸻
-
-**Content Rules**
-
-* Analyze patterns at an area / behavioral level, not per individual bin.
-* Mention a specific "binCode" only if there is a clear operational exception (failure, critical risk, or extreme behavior).
-* Language must be user-facing, clear, and decision-oriented.
-* This is not an engineering or technical report.
-
-⸻
-
-**Analytics Guidelines**
-
-* **STRICT DATA ADHERENCE:** Derive insights **strictly** from the provided data.
-* **NO HALLUCINATIONS:** If the input is empty or insufficient, do **not** invent, guess, or generate any data or insights. Return the empty JSON format specified above.
-* Emphasize user impact: risk, overload, service continuity, efficiency.
-* Include numbers only when they directly support a decision.
-* Maximum 2 sentences per insight.
-
-⸻
-
-**Tone**
-Product analytics style — concise, confident, non-conversational.
-
-**Compliance Check**
-If you cannot comply with all rules above, return no output.
-
-**Data**`
+## Fleet briefing
+`
 // ---- Thresholds and limits. Every number that decides behaviour lives here,
 // so a screen, a report and an alert never disagree. The client keeps its own
 // copy of the shared ones in client/src/utils/constants.js.
 
-const MINUTE_MS = 60 * 1000;
-const HOUR_MS = 60 * MINUTE_MS;
-const DAY_MS = 24 * HOUR_MS;
+// Time units, for the values below and for code that converts times.
+export const SECOND_MS = 1000;
+export const MINUTE_MS = 60 * SECOND_MS;
+export const HOUR_MS = 60 * MINUTE_MS;
+export const DAY_MS = 24 * HOUR_MS;
 
 // Fullness: the fill level or the weight against WEIGHT_REFERENCE_KG,
 // whichever is closer to full, in %. Warning and critical drive a report's
@@ -169,3 +162,67 @@ export const RECENT_LOGS_LIMIT = 50;
 
 // Accounts: failed one-time-code guesses allowed before the code is discarded.
 export const MAX_OTP_ATTEMPTS = 5;
+
+// Device report validation: a value beyond these is not plausible.
+export const REPORT_MESSAGE_MAX_LENGTH = 256;
+export const MAX_LAST_AWAKE_SECONDS = DAY_MS / SECOND_MS;
+export const MAX_ABS_DRIFT_PPM = 100000;
+export const MAX_ABS_CLOCK_ERROR_SECONDS = DAY_MS / SECOND_MS;
+export const RANDOM_TOKEN_BYTES = 32;
+
+// Device commands: sizes the database and the devices accept, and how many a
+// bin page lists.
+export const INSTRUCTION_TYPE_MAX_LENGTH = 64;
+export const INSTRUCTION_PAYLOAD_MAX_BYTES = 256;
+export const INSTRUCTION_RESULT_MAX_LENGTH = 256;
+export const INSTRUCTIONS_LIST_LIMIT = 100;
+
+// Maintenance: a new bin's first service, and the next one after each visit.
+export const FIRST_SERVICE_AFTER_DAYS = 90;
+export const SERVICE_INTERVAL_DAYS = 30;
+// A user's alert defaults (settings page): fullness from the warning cut-off,
+// and how many days before a service date to warn.
+export const DEFAULT_ALERT_FULLNESS_PERCENT = FULLNESS_WARNING_PERCENT;
+export const MIN_DAYS_BEFORE_MAINTENANCE = 7;
+export const MAX_DAYS_BEFORE_MAINTENANCE = 60;
+
+// Lists and routes.
+export const DEFAULT_PAGE_SIZE = 10;
+export const RECENT_LOGS_HOURS = 24;
+export const LOG_TYPES_DAYS = 30;
+// A route visits at most this many bins; the time per stop guides its order.
+export const ROUTE_MAX_BINS = 100;
+export const ROUTE_STOP_SECONDS = Object.freeze({ maintenance: 30 * 60, collection: 2 * 60 });
+
+// The AI overview: the model, the window its briefing covers and how many
+// devices it lists (the most urgent first).
+export const AI_MODEL = 'gemini-2.5-flash';
+export const AI_BRIEFING_DAYS = 7;
+export const AI_BRIEFING_DEVICE_LIMIT = 60;
+
+// Accounts and sessions.
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MAX_LENGTH = 30;
+export const PASSWORD_HASH_ROUNDS = 10;
+export const SESSION_DAYS = 3;
+export const RESET_TOKEN_MINUTES = 5;
+export const ACCOUNT_VERIFICATION_HOURS = 24;
+export const OTP_LENGTH = 6;
+export const OTP_EXPIRY_MINUTES = 5;
+// Requests per IP in each window: the whole API, and the sign-in endpoints.
+export const RATE_LIMIT_WINDOW_MS = 15 * MINUTE_MS;
+export const API_RATE_LIMIT = 600;
+export const AUTH_RATE_LIMIT = 10;
+
+// MQTT broker connection.
+export const MQTT_BROKER_URL = "mqtt://broker.hivemq.com:1883";
+export const MQTT_CONNECT_TIMEOUT_MS = 5 * SECOND_MS;
+export const MQTT_RECONNECT_MS = SECOND_MS;
+
+// Scheduled jobs (cron, in the server's time zone).
+export const CRON_SCHEDULES = Object.freeze({
+    criticalBinsEmail: "0 8 * * *",
+    instructionCleanup: "15 * * * *",
+    activationTokenCleanup: "0 0 * * *",
+    otpCleanup: "*/5 * * * *",
+});

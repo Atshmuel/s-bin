@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { DEFAULT_ALERT_FULLNESS_PERCENT, MAX_DAYS_BEFORE_MAINTENANCE, MIN_DAYS_BEFORE_MAINTENANCE } from '../../utils/constants.js'
 
 export const userSettingsSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -10,8 +11,8 @@ export const userSettingsSchema = new mongoose.Schema({
     alertLevel: {
         health: { type: String, enum: ["good", "warning", "critical"], default: "warning" },
         severity: { type: String, enum: ["info", "warning", "critical"], default: "warning" },
-        level: { type: Number, min: 0, max: 100, default: 50 },
-        daysBeforeMaintenance: { type: Number, min: 7, max: 60, default: 60 }
+        level: { type: Number, min: 0, max: 100, default: DEFAULT_ALERT_FULLNESS_PERCENT },
+        daysBeforeMaintenance: { type: Number, min: MIN_DAYS_BEFORE_MAINTENANCE, max: MAX_DAYS_BEFORE_MAINTENANCE, default: MAX_DAYS_BEFORE_MAINTENANCE }
     },
     timezone: { type: String, default: 'Asia/Jerusalem' },
     appLanguage: { type: String, enum: ["en", "he"], default: "en" }

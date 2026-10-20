@@ -1,4 +1,5 @@
 import { rateLimit } from 'express-rate-limit'
+import { API_RATE_LIMIT, AUTH_RATE_LIMIT, RATE_LIMIT_WINDOW_MS } from '../utils/constants.js'
 
 /**
  * Rate limiters.
@@ -17,8 +18,8 @@ const jsonMessage = (message) => ({ message })
 
 /** Broad safety net for the whole API. Generous enough not to affect normal use. */
 export const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 600,
+    windowMs: RATE_LIMIT_WINDOW_MS,
+    limit: API_RATE_LIMIT,
     standardHeaders: true,
     legacyHeaders: false,
     message: jsonMessage('Too many requests, please try again later'),
@@ -30,8 +31,8 @@ export const apiLimiter = rateLimit({
  * additionally caps attempts per account so rotating IPs does not help.
  */
 export const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 10,
+    windowMs: RATE_LIMIT_WINDOW_MS,
+    limit: AUTH_RATE_LIMIT,
     standardHeaders: true,
     legacyHeaders: false,
     message: jsonMessage('Too many attempts, please try again in a few minutes'),

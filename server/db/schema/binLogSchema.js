@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM, MAX_LAST_AWAKE_SECONDS } from '../../utils/constants.js'
 
 export const binLogSchema = new mongoose.Schema({
     binId: {
@@ -20,11 +21,11 @@ export const binLogSchema = new mongoose.Schema({
     oldLevel: Number,
     newLevel: { type: Number, default: null },
     battery: { type: Number, required: true },
-    lastAwakeSeconds: { type: Number, min: 1, max: 86400 },
+    lastAwakeSeconds: { type: Number, min: 1, max: MAX_LAST_AWAKE_SECONDS },
     // Sleep-clock diagnostics: the device's drift estimate and how far its
     // clock was off when it synced.
-    driftPpm: { type: Number, min: -100000, max: 100000 },
-    clockErrorSeconds: { type: Number, min: -86400, max: 86400 },
+    driftPpm: { type: Number, min: -MAX_ABS_DRIFT_PPM, max: MAX_ABS_DRIFT_PPM },
+    clockErrorSeconds: { type: Number, min: -MAX_ABS_CLOCK_ERROR_SECONDS, max: MAX_ABS_CLOCK_ERROR_SECONDS },
     connection: { type: String, enum: ["cellular", "mesh"] },
     gatewayId: { type: mongoose.Schema.Types.ObjectId, ref: "Bin" },
     hops: { type: Number, min: 1, max: 8 },

@@ -4,14 +4,13 @@ import { getOrgDeviceSettingsShared } from '../service/sharedService.js'
 import { fullnessPercent } from '../../utils/analytics.js'
 import {
     ATTENTION_LIST_LIMIT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
-    OFFLINE_GRACE_MS, RECENT_LOGS_LIMIT,
+    OFFLINE_GRACE_MS, RECENT_LOGS_LIMIT, HOUR_MS, MINUTE_MS, RECENT_LOGS_HOURS,
 } from '../../utils/constants.js'
 
 // The dashboard's sections, served like the analytics page's (one request
 // each, /api/overviews/<section>). Bins go out without their device key or
 // MAC address: the key is what a device authenticates with.
 
-const HOUR_MS = 60 * 60 * 1000;
 const BIN_PUBLIC_PROJECTION = Object.freeze({ deviceKey: 0, macAddress: 0, 'status.recentMeshMessageIds': 0 });
 
 function isGatewayBin(bin) {
@@ -35,12 +34,12 @@ async function intervalsByOrg(bins) {
 // Whether a device has missed OFFLINE_AFTER_MISSED_REPORTS reports in a row.
 function isOffline(bin, intervalMinutes, now) {
     const lastReport = bin.status?.updatedAt ?? bin.createdAt;
-    const allowedMs = OFFLINE_AFTER_MISSED_REPORTS * intervalMinutes * 60 * 1000 + OFFLINE_GRACE_MS;
+    const allowedMs = OFFLINE_AFTER_MISSED_REPORTS * intervalMinutes * MINUTE_MS + OFFLINE_GRACE_MS;
     return !lastReport || now - new Date(lastReport).getTime() > allowedMs;
 }
 
 // The user's devices, each with why it needs attention (possibly none).
-async function devicesWithReasons(user) {
+export async function devicesWithReasons(user) {
     const now = Date.now();
     const devices = await binModel.find(scopeToOrganization({}, user), BIN_PUBLIC_PROJECTION).lean();
     const intervals = await intervalsByOrg(devices);
@@ -103,7 +102,7 @@ async function recentLogs(user) {
     const bins = await binModel.find(scopeToOrganization({ ...BINS_ONLY_FILTER }, user), { binName: 1 }).lean();
     const names = new Map(bins.map(bin => [String(bin._id), bin.binName]));
     const logs = await binLogModel.find(
-        { binId: { $in: bins.map(bin => bin._id) }, createdAt: { $gte: new Date(Date.now() - 24 * HOUR_MS) } },
+        { binId: { $in: bins.map(bin => bin._id) }, createdAt: { $gte: new Date(Date.now() - RECENT_LOGS_HOURS * HOUR_MS) } },
         { binId: 1, type: 1, severity: 1, newLevel: 1, weight: 1, health: 1, message: 1, createdAt: 1 },
     ).sort({ createdAt: -1 }).limit(RECENT_LOGS_LIMIT).lean();
     return { logs: logs.map(log => ({ ...log, binName: names.get(String(log.binId)) ?? null })) };
