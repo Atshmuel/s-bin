@@ -1,3 +1,5 @@
+import os from "node:os";
+
 // User roles, as stored on users; ROLE_LEVEL ranks them.
 export const ROLES = Object.freeze({
     OWNER: "owner",
@@ -213,6 +215,19 @@ export const OTP_EXPIRY_MINUTES = 5;
 export const RATE_LIMIT_WINDOW_MS = 15 * MINUTE_MS;
 export const API_RATE_LIMIT = 600;
 export const AUTH_RATE_LIMIT = 10;
+
+// A developer's machine leaves the devices, the scheduled jobs and real emails
+// to the deployed server (running them too would store every device report
+// twice and send every email twice), and accepts the local client's origin.
+// It is marked by SBIN_DEV_MACHINE in its shell profile, set to the computer's
+// own name: a copy of the setting on any other computer (the VM) does nothing
+// there. Read from the process environment, which exists before the server
+// starts, unlike .env.
+const shortHostname = (name) => String(name ?? "").trim().toLowerCase().replace(/\.local$/, "");
+export const IS_DEV_MACHINE = Boolean(process.env.SBIN_DEV_MACHINE) &&
+    shortHostname(process.env.SBIN_DEV_MACHINE) === shortHostname(os.hostname());
+// The client's dev server, allowed only on a developer's machine.
+export const LOCAL_CLIENT_ORIGIN = "http://localhost:5173";
 
 // MQTT broker connection.
 export const MQTT_BROKER_URL = "mqtt://broker.hivemq.com:1883";

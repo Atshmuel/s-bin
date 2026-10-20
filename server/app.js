@@ -16,6 +16,7 @@ import { templateRouter } from './routers/templateRouter.js';
 import { organizationRouter } from './routers/organizationRouter.js';
 import { setEmailServiceCredentials } from './utils/mailService.js';
 import { initMqtt } from './mqtt/mqttClient.js';
+import { IS_DEV_MACHINE as isDevMachine, LOCAL_CLIENT_ORIGIN } from './utils/constants.js';
 import { apiLimiter } from './middlewares/rateLimiters.js';
 
 const { SERVER_PORT, DB_URL, CLIENT_BASE_URL, CLIENT_BASE_URL_PROD, CLIENT_BASE_URL_3 } = process.env
@@ -27,7 +28,7 @@ app.use(
             CLIENT_BASE_URL,
             CLIENT_BASE_URL_PROD,
             CLIENT_BASE_URL_3,
-            // "http://localhost:5173"
+            isDevMachine && LOCAL_CLIENT_ORIGIN
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,
@@ -74,13 +75,19 @@ app.use((err, req, res, next) => {
 
 const main = async () => {
     try {
-        initMqtt();
+        if (isDevMachine) {
+            console.log(`Developer machine (${process.env.SBIN_DEV_MACHINE}): MQTT, scheduled jobs and real emails are left to the deployed server.`);
+        } else {
+            initMqtt();
+        }
         await mongoose.connect(`${DB_URL}`);
-        await import("./db/cron/cleanupOTP.js");
-        await import("./db/cron/cleanupActivationToken.js");
-        await import("./db/cron/cleanupDeviceInstructions.js");
-        setEmailServiceCredentials()
-        await import("./db/cron/notifyCriticalBins.js");
+        if (!isDevMachine) {
+            setEmailServiceCredentials()
+            await import("./db/cron/cleanupOTP.js");
+            await import("./db/cron/cleanupActivationToken.js");
+            await import("./db/cron/cleanupDeviceInstructions.js");
+            await import("./db/cron/notifyCriticalBins.js");
+        }
         app.listen(SERVER_PORT, () => {
             console.log(mongoose.connection.readyState === 1 && `Connected to DB..`);
             console.log(`Listening on port ${SERVER_PORT}`);
