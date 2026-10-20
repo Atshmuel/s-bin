@@ -3,8 +3,9 @@
 void setup() {
     Serial.begin(115200);
     const bool pmuReady = initializePowerManagement();
-    // Only on USB power: a board on battery has no monitor to wait for.
-    if (pmuReady && PMU.isVbusIn() && esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER) {
+    // Only on USB power: a board on battery has no monitor to wait for. Also
+    // after a power-on, whose first lines (why the PMU cut power) matter most.
+    if (pmuReady && PMU.isVbusIn()) {
         const uint32_t waitStartedAt = millis();
         while (!Serial && millis() - waitStartedAt < USB_LOG_RECONNECT_WAIT_MS) {
             delay(10);
@@ -17,7 +18,8 @@ void setup() {
     Serial.printf("USB Serial monitor: %s\n", Serial ? "connected" : "not connected");
     Serial.println(pmuReady ? "✅ AXP2101 PMU Ready." : "❌ AXP2101 PMU initialization failed.");
     if (pmuReady) {
-        printPmuPowerSources();
+        readPmuPowerSources();
+        Serial.println(pmuPowerSources);
     }
 
     initializeSensor();
@@ -168,6 +170,10 @@ void loop() {
     }
 
     Serial.println(reportSent ? "✅ Reporting cycle completed." : "⚠️ Reporting cycle ended without a telemetry report.");
+    // Again mid-cycle: the boot and pre-sleep lines often miss a monitor.
+    if (pmuPowerSources.length() > 0) {
+        Serial.println(pmuPowerSources);
+    }
     if (mqttReady) {
         uploadRelayedReadings();
     }

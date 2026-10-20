@@ -24,7 +24,11 @@ bool initializePowerManagement() {
 
 // Why the AXP2101 last turned the board off and on (its PWROFF and PWRON
 // status registers): a cut of the board's own power shows up only here.
-void printPmuPowerSources() {
+// Read at boot and printed again before deep sleep, since a monitor often
+// connects only after the first lines of a power-on.
+String pmuPowerSources;
+
+void readPmuPowerSources() {
     static const char* const OFF_REASONS[] = {
         "PWRON key pulled low", "software", "PWRON always low", "VSYS under-voltage",
         "VBUS over-voltage", "DCDC under-voltage", "DCDC over-voltage", "die over-temperature",
@@ -38,9 +42,46 @@ void printPmuPowerSources() {
             reasons += OFF_REASONS[bit];
         }
     }
-    Serial.printf("🔋 PMU last power-off: 0x%02X (%s); power-on: 0x%02X; wake cause %d.\n",
-                  off, reasons.length() > 0 ? reasons.c_str() : "none", on,
-                  static_cast<int>(esp_sleep_get_wakeup_cause()));
+    char text[160];
+    snprintf(text, sizeof(text), "🔋 PMU last power-off: 0x%02X (%s); power-on: 0x%02X; wake cause %d.",
+             off, reasons.length() > 0 ? reasons.c_str() : "none", on,
+             static_cast<int>(esp_sleep_get_wakeup_cause()));
+    pmuPowerSources = text;
+    pmuPowerSources += "\n" + pmuRailsText();
+}
+
+// Which AXP2101 rails are on and at what voltage, to spot one that is on
+// without a load (a candidate for the DCDC over-voltage power-off).
+String pmuRailsText() {
+    struct Rail {
+        const char* name;
+        bool on;
+        uint16_t millivolts;
+    };
+    const Rail rails[] = {
+        {"DC1", PMU.isEnableDC1(), PMU.getDC1Voltage()},
+        {"DC2", PMU.isEnableDC2(), PMU.getDC2Voltage()},
+        {"DC3", PMU.isEnableDC3(), PMU.getDC3Voltage()},
+        {"DC4", PMU.isEnableDC4(), PMU.getDC4Voltage()},
+        {"DC5", PMU.isEnableDC5(), PMU.getDC5Voltage()},
+        {"ALDO1", PMU.isEnableALDO1(), PMU.getALDO1Voltage()},
+        {"ALDO2", PMU.isEnableALDO2(), PMU.getALDO2Voltage()},
+        {"ALDO3", PMU.isEnableALDO3(), PMU.getALDO3Voltage()},
+        {"ALDO4", PMU.isEnableALDO4(), PMU.getALDO4Voltage()},
+        {"BLDO1", PMU.isEnableBLDO1(), PMU.getBLDO1Voltage()},
+        {"BLDO2", PMU.isEnableBLDO2(), PMU.getBLDO2Voltage()},
+        {"CPUSLDO", PMU.isEnableCPUSLDO(), PMU.getCPUSLDOVoltage()},
+        {"DLDO1", PMU.isEnableDLDO1(), PMU.getDLDO1Voltage()},
+        {"DLDO2", PMU.isEnableDLDO2(), PMU.getDLDO2Voltage()},
+    };
+    String text = "🔌 PMU rails on:";
+    for (const Rail& rail : rails) {
+        if (rail.on) {
+            text += " " + String(rail.name) + " " + String(rail.millivolts) + " mV,";
+        }
+    }
+    text.remove(text.length() - 1);
+    return text;
 }
 
 // Turns off the SIM7080 main (DC3) and GNSS antenna (BLDO2) rails for when the

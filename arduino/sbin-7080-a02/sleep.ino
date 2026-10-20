@@ -94,6 +94,9 @@ void enterDeepSleep(uint64_t sleepSeconds, uint32_t leadSeconds) {
     if (modem.testAT(1000) && !modem.poweroff()) {
         Serial.println("⚠️ Modem did not confirm power-off before ESP32 deep sleep.");
     }
+    // The modem is off and starts cold at every wake anyway, so its rails
+    // (main supply and GNSS antenna) need not stay on through the sleep.
+    cutModemPower();
 
     sleepLeadSeconds = leadSeconds < sleepSeconds ? leadSeconds : 0;
     sleepSeconds -= sleepLeadSeconds;
@@ -106,6 +109,11 @@ void enterDeepSleep(uint64_t sleepSeconds, uint32_t leadSeconds) {
         static_cast<unsigned long>(sleepLeadSeconds)
     );
 
+    if (pmuPowerSources.length() > 0) {
+        Serial.println(pmuPowerSources);
+    }
+    Serial.flush();
+    delay(200);  // lets a monitor read the last lines before USB goes down
     lastAwakeSeconds = (millis() - lightSleptMs + 999UL) / 1000UL;
     markSleepStart();
     esp_sleep_enable_timer_wakeup(correctedSleepSeconds * MICROSECONDS_PER_SECOND);
