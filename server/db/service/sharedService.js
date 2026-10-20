@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { sendEmail } from '../../utils/mailService.js'
 import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
-import { BINS_ONLY_FILTER, UnionArraysById, scopeToOrganization } from '../../utils/helpers.js'
+import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { ROLES, AI_INSTRUCTIONS } from "../../utils/constants.js";
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
@@ -197,61 +197,6 @@ export async function getOrgAdmins(orgs) {
 // Logs carry no kind; log-based stats exclude gateways by their bin IDs.
 async function getGatewayIds() {
     return binModel.distinct('_id', { kind: 'gateway' })
-}
-
-//overview
-// The average fill level of the user's bins (gateways and broken sensors left out).
-async function averageFillLevel(user) {
-    const [result] = await binModel.aggregate([
-        { $match: scopeToOrganization({ ...BINS_ONLY_FILTER, "status.levelValid": { $ne: false } }, user) },
-        { $group: { _id: null, avgLevel: { $avg: "$status.level" } } },
-    ])
-    return result?.avgLevel > 0 ? result.avgLevel : 0
-}
-
-// The last day's logs (up to 50), without gateways'. Logs carry no ownerId,
-// so a non-owner's are found through their organization's bins.
-async function recentBinLogs(user) {
-    const filter = { createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } }
-    if (user.role === ROLES.OWNER) {
-        filter.binId = { $nin: await getGatewayIds() }
-    } else {
-        const userBins = await binModel.find(scopeToOrganization({ ...BINS_ONLY_FILTER }, user)).select('_id')
-        filter.binId = { $in: userBins.map(bin => bin._id) }
-    }
-    return binLogModel.find(filter).sort({ createdAt: -1 }).limit(50)
-}
-
-// The dashboard's numbers and lists; the queries are independent and run together.
-export async function getOverview(req, res) {
-    const scoped = filter => scopeToOrganization(filter, req.user)
-    try {
-        const [totalBins, almostFullBins, average, maintenanceBins, attentionBins, recentLogs] = await Promise.all([
-            binModel.countDocuments(scoped({ ...BINS_ONLY_FILTER })),
-            binModel.find(scoped({ ...BINS_ONLY_FILTER, "status.level": { $gte: 80 }, "status.levelValid": { $ne: false } })),
-            averageFillLevel(req.user),
-            binModel.find(scoped({ "maintenance.nextServiceAt": { $lt: new Date() } })),
-            binModel.find(scoped({
-                $or: [
-                    { "status.battery": { $lte: 40 } },
-                    { "status.health": { $in: ["warning", "critical"] } }
-                ]
-            })).limit(50),
-            recentBinLogs(req.user),
-        ])
-        const criticalBins = UnionArraysById(almostFullBins, maintenanceBins)
-        res.status(200).json({
-            totalBins,
-            totalAlmostFullBins: almostFullBins.length,
-            averageFillLevel: average,
-            totalRequiringMaintenance: maintenanceBins.length,
-            criticalBins,
-            requiringAttentionBins: UnionArraysById(criticalBins, attentionBins),
-            recentBinLogs: recentLogs,
-        })
-    } catch (error) {
-        res.status(500).json({ message: error?.message || 'Failed to load the overview' })
-    }
 }
 
 export async function getBinsStatusOV(req, res) {

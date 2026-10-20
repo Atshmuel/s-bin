@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { binLogModel, binModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared } from '../service/sharedService.js'
+import { DASHBOARD_SECTIONS } from './dashboardController.js'
 import {
     ANALYTICS_RANGES_DAYS, BATTERY_TREND_DAYS, DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, HEALTH_CAUSE_NAMES,
     batteryDaysLeft, dayKey, daysBetween, detectCollections, expectedFullAt, fillRatePerDay, fullnessPercent,
@@ -392,6 +393,7 @@ const OVERVIEW_SECTIONS = {
     battery: batteryOverview,
     connectivity: connectivityOverview,
     'health-causes': healthCausesOverview,
+    ...DASHBOARD_SECTIONS,
 };
 
 export async function getOverviewSection(req, res) {
