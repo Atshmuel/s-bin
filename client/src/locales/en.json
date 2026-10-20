@@ -14,8 +14,6 @@
     "map":"Map",
     "logs":"Logs",
     "analytics":"Analytics",
-    "coordinates":"Coordinates",
-    "zoom":"Zoom",
     "units":{
         "kg":"kg",
         "seconds":"seconds",
@@ -208,30 +206,49 @@
     }
   },
   "mapLegend":{
-  "search":{
-        "binRadius":"Bins within radius of",
-        "fillLevel":"Fill level between",
-        "healthStatus":"Bin health status",
-        "kilometers":"kilometers",
-        "clearFilters":"Clear filters"
-      },
-      "route":{
-        "type":"Route Type",
-        "maintenance":"Maintenance",
-        "collection":"Collection",
-        "byFoot":"Walking Route"
-      },
-      "locations":{
-        "myLocation":"My Location",
-        "flyToLocation":"Fly to Location",
-        "toggleMapType":"Toggle Map Type"
-      },
-    "errors":{
-        "gepError":"Geolocation is not supported by your browser",
-        "locationDenied":"Location access is denied. Please enable it in your browser settings.",
-        "locationUnavailable":"Location information is unavailable.",
-        "locationTimeout":"Location request timed out. Try again.",
-        "unknownError":"An unknown error occurred while retrieving location."
+    "search": {
+      "binRadius": "Bins within radius of",
+      "fillLevel": "Fullness between",
+      "healthStatus": "Bin health status",
+      "kilometers": "km",
+      "clearFilters": "Clear filters",
+      "title": "Find bins"
+    },
+    "route": {
+      "type": "Route Type",
+      "maintenance": "Maintenance",
+      "collection": "Collection",
+      "byFoot": "Walking Route",
+      "title": "Plan a route",
+      "description": "Through the bins the search above finds: a collection by fullness, a maintenance visit by health (gateways included).",
+      "noBinsCollection": "No bins within {{radius}} km are {{min}}–{{max}}% full.",
+      "noBinsMaintenance": "No devices within {{radius}} km match the health filter ({{health}}).",
+      "clear": "Clear route"
+    },
+    "locations": {
+      "myLocation": "My Location",
+      "flyToLocation": "Fly to Location",
+      "toggleMapType": "Toggle Map Type",
+      "youAreHere": "You are here"
+    },
+    "errors": {
+      "gepError": "Geolocation is not supported by your browser",
+      "locationDenied": "Location access is denied. Please enable it in your browser settings.",
+      "locationUnavailable": "Location information is unavailable.",
+      "locationTimeout": "Location request timed out. Try again.",
+      "unknownError": "An unknown error occurred while retrieving location."
+    },
+    "open": "Map options",
+    "close": "Close map options",
+    "key": {
+      "open": "What the map shows",
+      "close": "Close the map key",
+      "title": "What the map shows",
+      "fullnessLow": "Up to 50% full",
+      "fullnessMid": "51–75% full",
+      "fullnessHigh": "Over 75% full",
+      "gatewayBattery": "Fullness is the fill level or the weight, whichever is higher. A gateway has no fullness; its color shows its battery.",
+      "cluster": "A group of nearby devices, in the color of the most urgent one"
     }
   },
   "globalTable":{

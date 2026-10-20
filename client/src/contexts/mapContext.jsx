@@ -6,7 +6,9 @@ const MapContext = createContext(null);
 function MapProvider({ children }) {
     const [tile, setTile] = useState("default")
     const [flyEnabled, setFlyEnabled] = useState(true)
-    const [isOpen, setIsOpen] = useState(false);
+    // Which of the map's corner panels is open ("controls" or "key"); one at
+    // a time, so they never cover each other on a small map.
+    const [openPanel, setOpenPanel] = useState(null);
 
     const [map, setMap] = useState(null);
     const mapContainerRef = useRef(null);
@@ -29,8 +31,8 @@ function MapProvider({ children }) {
 
     return (
         <MapContext.Provider value={{
-            tile, setTile, flyEnabled, setFlyEnabled, isOpen,
-            setIsOpen, map, setMap, mapContainerRef, scrollToMap
+            tile, setTile, flyEnabled, setFlyEnabled, openPanel,
+            setOpenPanel, map, setMap, mapContainerRef, scrollToMap
         }}>
             {children}
         </MapContext.Provider>

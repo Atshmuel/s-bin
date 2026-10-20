@@ -1,5 +1,6 @@
-import { MapContainer, TileLayer } from "react-leaflet"
-import MapLegend from "./MapLegend"
+import { AttributionControl, MapContainer, TileLayer } from "react-leaflet"
+import MapControls from "./controls/MapControls"
+import MapKeyPanel from "./controls/MapKeyPanel"
 import { useMapSettings } from "@/contexts/mapContext"
 import { Card } from "../ui/card"
 import { Skeleton } from "../ui/skeleton"
@@ -23,9 +24,14 @@ function MapComponent({ children, center, zoom = 13, legend = false, legendForm 
     }
 
     return (
-        <MapContainer center={center} zoom={zoom} minZoom={4} className="h-full w-full relative" ref={setMap} {...props}>
+        // The attribution sits at the top right, leaving both bottom corners to
+        // the map's panel buttons at the same height.
+        <MapContainer center={center} zoom={zoom} minZoom={4} className="h-full w-full relative" ref={setMap}
+            attributionControl={false} {...props}>
+            <AttributionControl position="topright" />
             <TileLayer attribution={attribution} url={tileUrl} />
-            {legend ? <MapLegend legendForm={legendForm} /> : null}
+            {legend ? <MapControls legendForm={legendForm} /> : null}
+            {legend ? <MapKeyPanel /> : null}
             {children}
         </MapContainer>
     )

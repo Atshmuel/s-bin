@@ -14,8 +14,6 @@
     "submit":"שלח",
     "logs":"תיעודים",
     "analytics":"אנליטיקות",
-    "coordinates":"קואורדינטות",
-    "zoom":"זום",
         "units":{
         "kg":"ק״ג",
         "seconds":"שניות",
@@ -211,33 +209,51 @@
 
     },
      "mapLegend":{
-      "search":{
-        "binRadius":"פחים ברדיוס של",
-        "fillLevel":"רמת מלאי בין",
-        "healthStatus":"מצב בריאות הפחים",
-        "meters":"מטרים",
-        "clearFilters":"נקה מסננים"
-      },
-            "route":{
-        "type":"סוג מסלול",
-        "maintenance":"תחזוקה",
-        "collection":"איסוף",
-        "byFoot":"מסלול רגלי"
-
-      },
-      "locations":{
-        "myLocation":"המיקום שלי",
-        "flyToLocation":"עבור למיקום זה",
-        "toggleMapType":"החלף סוג מפה"
-      },
-    "errors":{
-        "gepError":"מיקום אינו נתמך על ידי הדפדפן שלך",
-        "locationDenied":"גישה למיקום נדחתה. אנא אפשר זאת בהגדרות הדפדפן שלך.",
-        "locationUnavailable":"מידע על המיקום אינו זמין.",
-        "locationTimeout":"בקשת המיקום פגה. נסה שוב.",
-        "unknownError":"אירעה שגיאה לא ידועה בעת קבלת המיקום."
-    }
-    },
+       "search": {
+         "binRadius": "פחים ברדיוס של",
+         "fillLevel": "מלאות בין",
+         "healthStatus": "מצב בריאות הפחים",
+         "clearFilters": "נקה מסננים",
+         "title": "חיפוש פחים",
+         "kilometers": "ק״מ"
+       },
+       "route": {
+         "type": "סוג מסלול",
+         "maintenance": "תחזוקה",
+         "collection": "איסוף",
+         "byFoot": "מסלול רגלי",
+         "title": "תכנון מסלול",
+         "description": "דרך מה שהחיפוש שלמעלה מוצא: איסוף לפי מלאות, תחזוקה לפי מצב בריאות (כולל שערים).",
+         "noBinsCollection": "אין פחים ברדיוס {{radius}} ק״מ שמלאים {{min}}–{{max}}%.",
+         "noBinsMaintenance": "אין מכשירים ברדיוס {{radius}} ק״מ שמתאימים לסינון הבריאות ({{health}}).",
+         "clear": "נקה מסלול"
+       },
+       "locations": {
+         "myLocation": "המיקום שלי",
+         "flyToLocation": "עבור למיקום זה",
+         "toggleMapType": "החלף סוג מפה",
+         "youAreHere": "את/ה כאן"
+       },
+       "errors": {
+         "gepError": "מיקום אינו נתמך על ידי הדפדפן שלך",
+         "locationDenied": "גישה למיקום נדחתה. אנא אפשר זאת בהגדרות הדפדפן שלך.",
+         "locationUnavailable": "מידע על המיקום אינו זמין.",
+         "locationTimeout": "בקשת המיקום פגה. נסה שוב.",
+         "unknownError": "אירעה שגיאה לא ידועה בעת קבלת המיקום."
+       },
+       "open": "אפשרויות מפה",
+       "close": "סגור את אפשרויות המפה",
+       "key": {
+         "open": "מה מוצג במפה",
+         "close": "סגור את המקרא",
+         "title": "מה מוצג במפה",
+         "fullnessLow": "מלא עד 50%",
+         "fullnessMid": "מלא 51–75%",
+         "fullnessHigh": "מלא מעל 75%",
+         "gatewayBattery": "מלאות היא רמת המילוי או המשקל, הגבוה מביניהם. לשער אין מלאות; הצבע שלו מראה את הסוללה.",
+         "cluster": "קבוצה של מכשירים קרובים, בצבע של הדחוף מביניהם"
+       }
+     },
       "globalTable":{
     "next":"הבא",
     "previous":"הקודם",

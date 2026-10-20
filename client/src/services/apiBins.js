@@ -17,10 +17,12 @@ export function getBinsInUserRadius({ coordinates, radius, health = null, minLev
     });
 }
 
-export function getBestRoute({ coordinates, radius, type, byFoot }) {
+// The route visits the bins the map's search finds: a collection those in the
+// fullness range, a maintenance visit those in the health filter.
+export function getBestRoute({ coordinates, radius, type, byFoot, minLevel, maxLevel, health }) {
     return request(`${BINS_EP}/route`, {
         method: "POST",
-        body: { coordinates: coordinates.split(',').map(Number), radius: +radius * 1000, type, byFoot },
+        body: { coordinates: coordinates.split(',').map(Number), radius: +radius * 1000, type, byFoot, minLevel, maxLevel, health },
     });
 }
 //end
