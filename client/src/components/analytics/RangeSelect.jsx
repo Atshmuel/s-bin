@@ -5,7 +5,7 @@ import { useAppSide } from "@/contexts/AppSideProvider"
 // The ranges the analytics endpoints accept, in days.
 const ANALYTICS_RANGES = [7, 30, 90]
 
-// The range picker shared by the bin page's charts.
+// The range picker of the analytics charts.
 function RangeSelect({ value, onChange, className }) {
     const { t } = useTranslation()
     const { isRight } = useAppSide()
