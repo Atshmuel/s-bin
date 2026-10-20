@@ -1,11 +1,16 @@
 import { getAllUserBins, getBinsInUserRadius } from "@/services/apiBins";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 
-export function useBins(page = 1, limit = 10, search = "") {
+// Devices report every few hours, so a minute between refreshes is plenty;
+// nothing is fetched while the tab is hidden, and returning to it refreshes.
+const BINS_REFRESH_MS = 60 * 1000
+
+// `enabled` lets a caller that already has its bins skip the request.
+export function useBins(page = 1, limit = 10, search = "", { enabled = true } = {}) {
     const [searchParams] = useSearchParams();
     const { t } = useTranslation()
 
@@ -21,8 +26,11 @@ export function useBins(page = 1, limit = 10, search = "") {
                 return getAllUserBins(page, limit, search)
             }
         },
-        refetchInterval: 3000,
-        refetchIntervalInBackground: true,
+        enabled,
+        refetchInterval: BINS_REFRESH_MS,
+        // A new search or route changes the URL and so the query; the bins on
+        // the map stay until the new ones arrive, instead of a loading blink.
+        placeholderData: keepPreviousData,
     })
 
 

@@ -12,8 +12,13 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import { CLUSTER_UNTIL_ZOOM, createClusterIcon } from "@/utils/mapClusters";
 import { useMapSettings } from "@/contexts/mapContext";
 
+// The map page shows every device, not one page of the list.
+const MAP_BINS_LIMIT = 1000
+
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
-    const { allBins, isLoadingBins } = useBins()
+    // A caller with its own bins (the dashboard's) needs no request of its own.
+    const hasOwnBins = binsToUse !== null
+    const { allBins, isLoadingBins } = useBins(1, MAP_BINS_LIMIT, "", { enabled: !hasOwnBins })
     const { map } = useMapSettings()
 
     if (!binsToUse) {
@@ -57,7 +62,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
 
     return (
         <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
-            <MapComponent center={locationFromUrl ? locationFromUrl : center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} isLoading={isLoadingBins} >
+            <MapComponent center={locationFromUrl ? locationFromUrl : center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} isLoading={!hasOwnBins && isLoadingBins} >
                 <MarkerClusterGroup
                     chunkedLoading
                     showCoverageOnHover={false}
