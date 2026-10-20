@@ -254,53 +254,68 @@
   },
   "pages":{
     "dashboard":{
-       "titles":{
-        "quickOverview":{
-          "title":"סקירה מהירה",
-          "description":"מדדים מרכזיים עבור הפחים שלך במבט חטוף, כולל רמות מילוי, סך כל הפחים וצרכי תחזוקה, המפה תציג רק את הפחים שדורשים תשומת לב."
+      "titles": {
+        "quickOverview": {
+          "title": "סקירה מהירה",
+          "description": "מה צריך לטפל בו עכשיו: מכשירים שהפסיקו לדווח, פחים שמתמלאים ותחזוקה שהגיע מועדה. המפה מציגה את הפחים שדורשים ביקור."
         },
-        "binOverview":{
-          "title":"סקירת פחים",
-          "description":"תצוגה מפורטת של התראות פחים נוכחיות ויומני פעילות אחרונים במערכת."
+        "binOverview": {
+          "title": "סקירת פחים",
+          "description": "כל המכשירים שדורשים תשומת לב, והדיווחים והאירועים של היממה האחרונה."
         }
       },
-      "cards":{
-        "almostFull":{
-          "title":"פחים כמעט מלאים",
-          "description":"בדוק את הפחים האלה לפני שהם יתמלאו."
+      "cards": {
+        "offline": {
+          "title": "מכשירים לא מחוברים",
+          "description_one": "החמיצו דיווח אחד ברצף.",
+          "description_two": "החמיצו שני דיווחים ברצף, כולל שערים.",
+          "description_other": "החמיצו {{count}} דיווחים ברצף, כולל שערים."
         },
-        "requiredMaintenance":{
-          "title":"פחים הדורשים תחזוקה",
-          "description":"פחים אלה זקוקים לתשומת לב מהטכנאי."
+        "fullSoon": {
+          "title": "יתמלאו תוך 24 שעות",
+          "description_one": "פח אחד תוך 48 שעות.",
+          "description_two": "שני פחים תוך 48 שעות.",
+          "description_other": "{{count}} פחים תוך 48 שעות."
         },
-        "totalBins":{
-          "title":"סך כל הפחים",
-          "description":"מספר כולל של פחים במערכת."
+        "almostFull": {
+          "title": "פחים כמעט מלאים",
+          "description": "בדוק את הפחים האלה לפני שהם יתמלאו.",
+          "average": "מלאות ממוצעת: {{percent}}%."
         },
-        "avgFillLevel":{
-          "title":"רמת מילוי ממוצעת",
-          "description":"רמת המילוי הממוצעת של כל הפחים."
+        "requiredMaintenance": {
+          "title": "פחים הדורשים תחזוקה",
+          "description": "מועד הטיפול המתוכנן שלהם עבר."
         }
       },
-      "tables":{
-        "recentLogs":{
-          "title":"תיעודים אחרונים של פחים",
-          "description":"סיכום של פעולות, תחזוקה ואירועים הקשורים לפחים ב-24 השעות האחרונות.",
-          "columns":{
-            "binName":"שם הפח",
-            "fillLevel":"רמת מילוי",
-            "healthStatus":"מצב בריאות",
-            "batteryLevel":"רמת סוללה",
-            "lastUpdated":"עודכן לאחרונה"
+      "reasons": {
+        "full": "כמעט מלא",
+        "maintenance": "דורש תחזוקה",
+        "offline": "לא מחובר",
+        "battery": "סוללה חלשה",
+        "health": "תקלה"
+      },
+      "tables": {
+        "attention": {
+          "title": "דורשים תשומת לב",
+          "description": "מכשירים כמעט מלאים, שהגיע מועד התחזוקה שלהם, לא מחוברים, עם סוללה חלשה או שמדווחים על תקלה.",
+          "columns": {
+            "bin": "פח",
+            "reasons": "סיבה",
+            "fullness": "מלאות",
+            "battery": "סוללה",
+            "lastReport": "דיווח אחרון"
           }
         },
-        "topFilledBins":{
-          "columns":{
-            "createdAt":"נוצר בתאריך",
-            "type":"סוג",
-            "severity":"חומרה",
-            "viewLog":"הצג תיעוד",
-            "viewBin":"הצג פח"
+        "recentLogs": {
+          "title": "תיעודים אחרונים של פחים",
+          "description": "דיווחים ואירועים מ־24 השעות האחרונות.",
+          "columns": {
+            "time": "זמן",
+            "bin": "פח",
+            "fillLevel": "רמת מילוי",
+            "severity": "חומרה",
+            "type": "סוג",
+            "viewLog": "הצג תיעוד"
           }
         }
       }

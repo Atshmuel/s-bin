@@ -251,53 +251,66 @@
   },
   "pages":{
     "dashboard":{
-      "titles":{
-        "quickOverview":{
-          "title":"Quick Overview",
-          "description":"Key metrics for your bins at a glance, including fill levels, total bins, and maintenance needs, the map will display only the bins that require attention."
+      "titles": {
+        "quickOverview": {
+          "title": "Quick Overview",
+          "description": "What needs doing now: devices that stopped reporting, bins filling up and maintenance due. The map shows the bins that need a visit."
         },
-        "binOverview":{
-          "title":"Bin Overview",
-          "description":"A detailed view of current bin alerts and recent activity logs across the system."
+        "binOverview": {
+          "title": "Bin Overview",
+          "description": "Every device that needs attention, and the last day's reports and events."
         }
       },
-      "cards":{
-        "almostFull":{
-          "title":"Almost Full Bins",
-          "description":"Check these bins before they overflow."
+      "cards": {
+        "offline": {
+          "title": "Offline devices",
+          "description_one": "Missed {{count}} report in a row.",
+          "description_other": "Missed {{count}} reports in a row, gateways included."
         },
-        "requiredMaintenance":{
-          "title":"Bins Requiring Maintenance",
-          "description":"These bins need attention from the technician."
+        "fullSoon": {
+          "title": "Full within 24 hours",
+          "description_one": "{{count}} bin within 48 hours.",
+          "description_other": "{{count}} bins within 48 hours."
         },
-        "totalBins":{
-          "title":"Total Bins",
-          "description":"Total number of bins in the system."
+        "almostFull": {
+          "title": "Almost Full Bins",
+          "description": "Check these bins before they overflow.",
+          "average": "Average fullness: {{percent}}%."
         },
-        "avgFillLevel":{
-          "title":"Average Fill Level",
-          "description":"Average fill level across all bins."
+        "requiredMaintenance": {
+          "title": "Bins Requiring Maintenance",
+          "description": "Their scheduled service date has passed."
         }
       },
-      "tables":{
-        "recentLogs":{
-          "title":"Recent Bin Logs",
-          "description":"A summary of bin-related actions, maintenance, and events from the past 24 hours.",
-          "columns":{
-            "binName":"Bin Name",
-            "fillLevel":"Fill Level",
-            "healthStatus":"Health Status",
-            "batteryLevel":"Battery Level",
-            "lastUpdated":"Last Updated"
+      "reasons": {
+        "full": "Almost full",
+        "maintenance": "Maintenance due",
+        "offline": "Offline",
+        "battery": "Low battery",
+        "health": "Health issue"
+      },
+      "tables": {
+        "attention": {
+          "title": "Needs attention",
+          "description": "Devices that are almost full, due for maintenance, offline, low on battery or reporting a problem.",
+          "columns": {
+            "bin": "Bin",
+            "reasons": "Why",
+            "fullness": "Fullness",
+            "battery": "Battery",
+            "lastReport": "Last report"
           }
         },
-        "topFilledBins":{
-          "columns":{
-            "createdAt":"Created At",
-            "type":"Type",
-            "severity":"Severity",
-            "viewLog":"View Log",
-            "viewBin":"View Bin"
+        "recentLogs": {
+          "title": "Recent Bin Logs",
+          "description": "Reports and events from the past 24 hours.",
+          "columns": {
+            "time": "Time",
+            "bin": "Bin",
+            "fillLevel": "Fill Level",
+            "severity": "Severity",
+            "type": "Type",
+            "viewLog": "View Log"
           }
         }
       }

@@ -2,10 +2,6 @@ import { getAICache, setAICache } from '../utils/aiCache';
 import { OVERVIEW_EP } from "@/utils/constants";
 import { request } from "./request";
 
-export function getOverviews() {
-    return request(OVERVIEW_EP);
-}
-
 export function getBinsStatusOverviews() {
     return request(`${OVERVIEW_EP}/binstatus`);
 }
