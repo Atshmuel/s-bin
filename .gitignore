@@ -32,3 +32,6 @@ Thumbs.db
 # Third-party Arduino libraries are installed locally; our own mesh library is tracked.
 **/libraries/*
 !arduino/libraries/SbinMesh/
+
+# Claude Code settings are per developer.
+.claude/
