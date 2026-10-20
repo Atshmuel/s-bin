@@ -17,6 +17,16 @@ function useCarousel() {
   return context
 }
 
+function startsInHorizontalScroller(event, root) {
+  for (let element = event.target; element && element !== root; element = element.parentElement) {
+    const { overflowX } = window.getComputedStyle(element)
+    if ((overflowX === "auto" || overflowX === "scroll") && element.scrollWidth > element.clientWidth) {
+      return true
+    }
+  }
+  return false
+}
+
 const Carousel = React.forwardRef((
   {
     orientation = "horizontal",
@@ -33,7 +43,11 @@ const Carousel = React.forwardRef((
   const [carouselRef, api] = useEmblaCarousel({
     ...opts,
     axis: orientation === "horizontal" ? "x" : "y",
+    // A drag that starts inside something that scrolls sideways (a wide
+    // table) scrolls it instead of moving to another slide.
     watchDrag: allowDrag
+      ? (emblaApi, event) => !startsInHorizontalScroller(event, emblaApi.rootNode())
+      : false
   }, plugins)
 
 
