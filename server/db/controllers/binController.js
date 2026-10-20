@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { binModel, deviceInstructionModel } from '../models/models.js'
 import { appendFilter, BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
+import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
@@ -119,14 +120,23 @@ export async function getBinsInUserRadius(req, res) {
     let query = {};
     query = scopeToOrganization(query, req.user)
     query = appendFilter(query, health && health !== "all", 'status.health', health)
+    // The range is on fullness (level or weight, whichever is higher), the
+    // value the markers are colored by.
+    const fullnessStages = []
     if (minLevel !== undefined || maxLevel !== undefined) {
-        query['status.level'] = {
-            $gte: minLevel !== undefined ? Number(minLevel) : 0,
-            $lte: maxLevel !== undefined ? Number(maxLevel) : 100
-        };
-        query['status.levelValid'] = { $ne: false }
-        // Gateways have no fill level; without a level filter they stay on the map.
+        // Gateways have no fullness; without a range filter they stay on the map.
         query = { ...query, ...BINS_ONLY_FILTER }
+        fullnessStages.push(
+            { $addFields: { fullness: FULLNESS_EXPRESSION } },
+            {
+                $match: {
+                    fullness: {
+                        $gte: minLevel !== undefined ? Number(minLevel) : 0,
+                        $lte: maxLevel !== undefined ? Number(maxLevel) : 100,
+                    },
+                },
+            },
+        )
     }
 
     try {
@@ -141,7 +151,8 @@ export async function getBinsInUserRadius(req, res) {
                         query,
                     },
                 },
-                { $project: { macAddress: 0 } }
+                ...fullnessStages,
+                { $project: { macAddress: 0, deviceKey: 0 } }
             ]
         )
 
@@ -151,8 +162,12 @@ export async function getBinsInUserRadius(req, res) {
     }
 }
 
+// Without a range from the map's search, a collection takes bins this full.
+const DEFAULT_COLLECTION_FULLNESS = [70, 100]
+const HEALTH_FILTERS = ['good', 'warning', 'critical', 'all']
+
 export async function getRouteBins(req, res) {
-    const { coordinates, radius, type, limit, byFoot } = req.body
+    const { coordinates, radius, type, limit, byFoot, minLevel, maxLevel, health } = req.body
     if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
@@ -169,14 +184,32 @@ export async function getRouteBins(req, res) {
 
     const useWalkingRoute = parseBooleanParam(byFoot);
 
+    // The route visits what the map's search finds: a collection the bins in
+    // the fullness range (level or weight, whichever is higher), a maintenance
+    // visit the devices, gateways included, in the health filter.
+    const fullnessRange = [minLevel, maxLevel].map((value, i) =>
+        value === undefined ? DEFAULT_COLLECTION_FULLNESS[i] : Number(value))
+    if (fullnessRange.some(value => !Number.isFinite(value) || value < 0 || value > 100) ||
+        fullnessRange[0] > fullnessRange[1]) {
+        return res.status(400).json({ message: 'minLevel and maxLevel must be 0-100, minLevel first.' })
+    }
+    // Maintenance without a health filter keeps its old meaning: critical devices.
+    const healthFilter = health ?? (type === 'maintenance' ? 'critical' : 'all')
+    if (!HEALTH_FILTERS.includes(healthFilter)) {
+        return res.status(400).json({ message: `health must be one of ${HEALTH_FILTERS.join(', ')}.` })
+    }
+
     let query = {};
     query = scopeToOrganization(query, req.user)
-    query = appendFilter(query, type === 'maintenance', 'status.health', { $in: ['critical'] })
+    query = appendFilter(query, healthFilter !== 'all', 'status.health', healthFilter)
+    const fullnessStages = []
     if (type === 'collection') {
-        query['status.level'] = { $gte: 70 }
-        query['status.levelValid'] = { $ne: false }
         // Gateways need maintenance visits but are never collected.
         query = { ...query, ...BINS_ONLY_FILTER }
+        fullnessStages.push(
+            { $addFields: { fullness: FULLNESS_EXPRESSION } },
+            { $match: { fullness: { $gte: fullnessRange[0], $lte: fullnessRange[1] } } },
+        )
     }
 
     try {
@@ -191,6 +224,7 @@ export async function getRouteBins(req, res) {
                         query,
                     },
                 },
+                ...fullnessStages,
                 { $limit: limit || 100 },
                 { $project: { _id: 1, location: 1, status: 1 } }
             ]

@@ -33,6 +33,21 @@ export function fullnessPercent(level, weightKg) {
     return parts.length > 0 ? Math.round(Math.max(...parts)) : null;
 }
 
+// fullnessPercent() as a MongoDB expression over a bin's status, for queries
+// that filter on it; null for a device with neither (a gateway).
+export const FULLNESS_EXPRESSION = Object.freeze({
+    $max: [
+        { $cond: [{ $ne: ['$status.levelValid', false] }, '$status.level', null] },
+        {
+            $cond: [
+                { $and: [{ $eq: ['$status.scale', 'ok'] }, { $isNumber: '$status.weight' }] },
+                { $min: [100, { $multiply: [{ $divide: ['$status.weight', WEIGHT_REFERENCE_KG] }, 100] }] },
+                null,
+            ],
+        },
+    ],
+});
+
 // Emptyings: a level drop of COLLECTION_LEVEL_DROP points or a weight drop of
 // COLLECTION_WEIGHT_DROP_RATIO, each against the last report that had that
 // value, so a report without a level does not hide a collection.

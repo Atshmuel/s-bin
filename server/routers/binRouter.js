@@ -24,7 +24,7 @@ binRouter.patch('/mesh-settings/:orgId', (req, res, next) => {
 binRouter.get('/:id', validateParamExist(), getBin) //get bin
 binRouter.get('/:id/analytics/:section', getBinAnalytics) //one bin page analytics section (?range=7|30|90)
 binRouter.post('/radius', validateBodyFields(['coordinates', 'radius'], ['health', 'minLevel', 'maxLevel']), getBinsInUserRadius) //get bins
-binRouter.post('/route', validateBodyFields(['coordinates', 'radius', 'type'], ['byFoot']), getRouteBins) //get bins in radius for maintenance or collection route
+binRouter.post('/route', validateBodyFields(['coordinates', 'radius', 'type'], ['byFoot', 'minLevel', 'maxLevel', 'health']), getRouteBins) //get bins in radius for maintenance or collection route
 //updates
 binRouter.patch('/maintenance/:id', (req, res, next) => {
     authRole([ROLES.OWNER, ROLES.ADMIN, ROLES.TECHNICIAN])(req, res, next) //update bin maintenance by id
