@@ -8,6 +8,7 @@
 //
 // Board: "ESP32 Dev Module" (esp32:esp32:esp32). Serial monitor: 115200 baud.
 
+#include <Preferences.h>
 #include <SbinMesh.h>
 #include <esp_sleep.h>
 #include <sys/time.h>
@@ -68,6 +69,10 @@ constexpr uint8_t MAX_PENDING_READINGS = 4;
 constexpr int64_t MIN_DRIFT_MEASUREMENT_MS = 10LL * 60 * 1000;
 // Above the RC oscillator's ±5%: a larger value means a bad reference time.
 constexpr int32_t MAX_ABS_DRIFT_PPM = 60000;
+// The drift is a property of the board, so it is also kept in flash (as on
+// the gateway), rewritten only when the estimate moves this much.
+constexpr char PREFERENCES_NAMESPACE[] = "leaf";
+constexpr int32_t DRIFT_SAVE_THRESHOLD_PPM = 200;
 }  // namespace
 
 // A reading waiting for the gateway, and when it was taken by the device clock.
@@ -76,7 +81,9 @@ struct PendingReading {
     int64_t takenAtMs;
 };
 
-// State kept across deep sleep (lost on power loss, which means a cold join).
+// State kept across deep sleep (lost on power loss or a reset, which means a
+// cold join; only the drift is reloaded from flash).
+RTC_DATA_ATTR bool driftLoaded = false;
 RTC_DATA_ATTR uint32_t nextWakeEpoch = 0;
 RTC_DATA_ATTR uint32_t schedulePeriodSeconds = 0;
 RTC_DATA_ATTR uint32_t guardSeconds = MIN_GUARD_SECONDS;  // of the current sleep
@@ -101,10 +108,40 @@ RTC_DATA_ATTR uint8_t pendingCount = 0;
 RTC_DATA_ATTR uint8_t lastInstructionId[INSTRUCTION_ID_LENGTH] = {};
 
 MeshRadio radio;
+Preferences preferences;
 uint8_t gatewayMac[MAC_LENGTH] = {};
 
 bool clockValid() {
     return isValidEpoch(time(nullptr));
+}
+
+// After a power loss or a reset RTC memory starts over, but the board's drift
+// is still known: it is loaded from flash, as uncertain as a first measurement.
+// The schedule is not kept, so the leaf still cold-joins to find its slot; it
+// then sleeps with a drift-corrected timer and a narrower guard than unknown
+// drift needs, instead of learning the drift again over about two days.
+void loadSavedDrift() {
+    if (driftLoaded) {
+        return;
+    }
+    driftLoaded = true;
+    preferences.begin(PREFERENCES_NAMESPACE, false);
+    if (preferences.isKey("driftPpm")) {
+        driftPpm = preferences.getInt("driftPpm", 0);
+        driftMeasured = true;
+        residualPpm = FIRST_RESIDUAL_PPM;
+        Serial.printf("⏱️ Clock drift %+ld ppm loaded from flash.\n", static_cast<long>(driftPpm));
+    }
+    preferences.end();
+}
+
+void saveDrift() {
+    preferences.begin(PREFERENCES_NAMESPACE, false);
+    if (!preferences.isKey("driftPpm") ||
+        abs(driftPpm - preferences.getInt("driftPpm", 0)) > DRIFT_SAVE_THRESHOLD_PPM) {
+        preferences.putInt("driftPpm", driftPpm);
+    }
+    preferences.end();
 }
 
 void queueReading(const DataPacket& reading) {
@@ -209,6 +246,7 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
                 : FIRST_RESIDUAL_PPM;
             driftPpm = blendDriftPpm(driftPpm, driftMeasured, measuredPpm);
             driftMeasured = true;
+            saveDrift();
             Serial.printf("⏱️ Clock drift: measured %+ld ppm over %lld s; using %+ld ppm, residual %lu ppm.\n",
                           static_cast<long>(measuredPpm),
                           static_cast<long long>(realSleptMs / 1000),
@@ -391,6 +429,7 @@ void sleepUntilNextSlot() {
 void setup() {
     Serial.begin(115200);
     Serial.println("\n=== S-Bin WROVER simulated mesh leaf ===");
+    loadSavedDrift();
     // Add the deep sleep that just ended to the sleep since the last beacon.
     if (sleepStartedEpochMs > 0) {
         const int64_t sleptMs = epochMsNow() - static_cast<int64_t>(millis()) - sleepStartedEpochMs;
