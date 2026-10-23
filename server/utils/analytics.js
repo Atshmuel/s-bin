@@ -96,12 +96,16 @@ export function trendPerDay(readings, key) {
     return variance > 0 ? covariance / variance : null;
 }
 
-// How fast the bin fills since its last collection, in % per day.
+// How fast the bin's fullness rises since its last collection, in % per day,
+// so a bin that fills by weight more than by level is forecast by its weight.
 export function fillRatePerDay(readings) {
     const collections = detectCollections(readings);
     const since = collections.length > 0 ? collections[collections.length - 1].at : null;
     const sinceCollection = since ? readings.filter(reading => reading.at >= since) : readings;
-    return trendPerDay(sinceCollection, "level");
+    return trendPerDay(sinceCollection.map(reading => ({
+        at: reading.at,
+        fullness: fullnessPercent(reading.level, reading.weight),
+    })), "fullness");
 }
 
 // When the bin reaches FULLNESS_CRITICAL_PERCENT and needs collecting at its
