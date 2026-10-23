@@ -955,20 +955,8 @@
       "sectionTwo":{
         "title":"Notification Settings",
         "fieldOne":{
-          "label":"Email Notifications"
-        },
-        "fieldTwo":{
-          "label":"Bin health alerts",
-          "description":"Health level of the bin that {{entity}} want to get notified from."
-        },"fieldThree":{
-          "label":"Fill level alerts",
-          "description":"Fill level of the bin that you want to get notified from."
-        },"fieldFour":{
-          "label":"Log severity alerts",
-          "description":"Bin log severity that you want to get notified from."
-        },"fieldFive":{
-          "label":"Maintenance reminders (days before)",
-          "description":"Number of days before the scheduled maintenance to get a reminder notification."
+          "label":"Email Notifications",
+          "description":"One email each morning about the organization: devices that stopped reporting, bins to collect, low batteries, health problems and overdue maintenance. Nothing is sent on a day without any."
         }
       }
     },

@@ -187,11 +187,6 @@ export const INSTRUCTIONS_LIST_LIMIT = 100;
 // Maintenance: a new bin's first service, and the next one after each visit.
 export const FIRST_SERVICE_AFTER_DAYS = 90;
 export const SERVICE_INTERVAL_DAYS = 30;
-// A user's alert defaults (settings page): fullness from the warning cut-off,
-// and how many days before a service date to warn.
-export const DEFAULT_ALERT_FULLNESS_PERCENT = FULLNESS_WARNING_PERCENT;
-export const MIN_DAYS_BEFORE_MAINTENANCE = 7;
-export const MAX_DAYS_BEFORE_MAINTENANCE = 60;
 
 // Lists and routes.
 export const DEFAULT_PAGE_SIZE = 10;
