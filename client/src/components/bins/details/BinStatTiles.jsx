@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Battery from "@/components/bins/Battary"
 import { getColor, getFullness, isGateway } from "@/utils/binHelpers"
 import { useBinAnalytics } from "@/hooks/analytics/useBinAnalytics"
+import { FULLNESS_CRITICAL_PERCENT } from "@/utils/constants"
 
 function StatTile({ title, value, children }) {
     return (
@@ -19,11 +20,13 @@ function StatTile({ title, value, children }) {
     )
 }
 
-// How fast the bin fills since it was last emptied, and when it will be full.
+// How fast the bin fills since it was last emptied, and when it will need
+// collecting (the critical fullness).
 function FillForecast({ bin }) {
     const { t, i18n } = useTranslation()
     const { data } = useBinAnalytics(bin._id, "fill-rate")
     if (!data?.applicable) return null
+    if (data.fullness >= FULLNESS_CRITICAL_PERCENT) return <span>{t('pages.binDetails.tiles.collectNow')}</span>
     if (data.ratePerDay === null) return <span>{t('pages.binDetails.tiles.fillRateUnknown')}</span>
     if (!(data.ratePerDay > 0) || !data.collectionDueAt) return <span>{t('pages.binDetails.tiles.notFilling')}</span>
     return (

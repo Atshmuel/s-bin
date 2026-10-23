@@ -8,6 +8,7 @@ import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartToo
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useOverviewSection } from "@/hooks/analytics/useOverviewSection"
 import { useInView } from "@/hooks/use-in-view"
+import { FULLNESS_CRITICAL_PERCENT } from "@/utils/constants"
 import { formatDate } from "@/utils/helpers"
 import RangeSelect from "./RangeSelect"
 import SectionCard, { Muted } from "./SectionCard"
@@ -89,7 +90,8 @@ export function FullSoonCard() {
 
     return (
         <SectionCard ref={ref} title={t("pages.analytics.sections.fullSoon.title")}
-            description={t("pages.analytics.sections.fullSoon.description")} isLoading={isLoading} error={error}>
+            description={t("pages.analytics.sections.fullSoon.description", { percent: FULLNESS_CRITICAL_PERCENT })}
+            isLoading={isLoading} error={error}>
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-2 gap-4">
                     <BigNumber label={t("pages.analytics.sections.fullSoon.within", { count: 24 })} value={data?.counts?.within24h ?? 0} />

@@ -285,7 +285,7 @@
           "description_other": "Missed {{count}} reports in a row, gateways included."
         },
         "fullSoon": {
-          "title": "Full within 24 hours",
+          "title": "Collection due within 24 hours",
           "description_one": "{{count}} bin within 48 hours.",
           "description_other": "{{count}} bins within 48 hours."
         },
@@ -411,10 +411,10 @@
         "bins":"Bins",
         "devices":"Devices",
         "fullSoon":{
-          "title":"Full soon",
-          "description":"Bins expected to be full, from how fast each has filled since it was last emptied.",
+          "title":"Collection due soon",
+          "description":"Bins expected to reach {{percent}}% fullness and need collecting, from how fast each has filled since it was last emptied.",
           "within":"Within {{count}} hours",
-          "none":"No bin is expected to be full in the next 48 hours."
+          "none":"No bin is expected to need collecting in the next 48 hours."
         },
         "fullness":{
           "title":"Fullness",
@@ -584,7 +584,8 @@
         "via":"via",
         "relaysFor_one":"Relays for 1 bin",
         "relaysFor_other":"Relays for {{count}} bins",
-        "fillRate":"Fills about {{rate}}% a day · full {{when}}",
+        "fillRate":"Fills about {{rate}}% a day · needs collecting {{when}}",
+        "collectNow":"Needs collecting now",
         "fillRateUnknown":"Fill rate: needs a few more reports",
         "notFilling":"Not filling up since it was last emptied"
       },
