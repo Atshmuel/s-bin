@@ -1,10 +1,11 @@
 import { binLogModel, binModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
-import { getOrgDeviceSettingsShared } from '../service/sharedService.js'
+import { intervalsByOrg } from '../service/sharedService.js'
 import { binFullness } from '../../utils/analytics.js'
+import { lastReportAt, offlineCauses } from '../../utils/offline.js'
 import {
     ATTENTION_LIST_LIMIT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
-    OFFLINE_GRACE_MS, RECENT_LOGS_LIMIT, HOUR_MS, MINUTE_MS, RECENT_LOGS_HOURS,
+    RECENT_LOGS_LIMIT, HOUR_MS, RECENT_LOGS_HOURS,
 } from '../../utils/constants.js'
 
 // The dashboard's sections, served like the analytics page's (one request
@@ -17,36 +18,36 @@ function isGatewayBin(bin) {
     return bin.kind === 'gateway';
 }
 
-// Report intervals per organization, fetched once each.
-async function intervalsByOrg(bins) {
-    const orgIds = [...new Set(bins.map(bin => String(bin.ownerId)))];
-    const settings = await Promise.all(orgIds.map(orgId => getOrgDeviceSettingsShared(orgId)));
-    return new Map(orgIds.map((orgId, i) => [orgId, settings[i].reportIntervalMinutes]));
-}
-
-// Whether a device has missed OFFLINE_AFTER_MISSED_REPORTS reports in a row.
-function isOffline(bin, intervalMinutes, now) {
-    const lastReport = bin.status?.updatedAt ?? bin.createdAt;
-    const allowedMs = OFFLINE_AFTER_MISSED_REPORTS * intervalMinutes * MINUTE_MS + OFFLINE_GRACE_MS;
-    return !lastReport || now - new Date(lastReport).getTime() > allowedMs;
-}
-
-// The user's devices, each with why it needs attention (possibly none).
+// The user's devices, each with why it needs attention (possibly none); an
+// offline device also says why it is: { cause: 'self' } or, for a leaf behind
+// a silent gateway, { cause: 'gateway', gatewayId, gatewayName }.
 export async function devicesWithReasons(user) {
     const now = Date.now();
     const devices = await binModel.find(scopeToOrganization({}, user), BIN_PUBLIC_PROJECTION).lean();
     const intervals = await intervalsByOrg(devices);
+    const causes = offlineCauses(devices, intervals, now);
+    const names = new Map(devices.map(device => [String(device._id), device.binName]));
     return devices.map(device => {
         const fullness = isGatewayBin(device) ? null : binFullness(device);
+        const cause = causes.get(String(device._id));
         const reasons = [];
         if (fullness !== null && fullness >= FULLNESS_CRITICAL_PERCENT) reasons.push('full');
         if (device.maintenance?.nextServiceAt && new Date(device.maintenance.nextServiceAt) < new Date(now)) {
             reasons.push('maintenance');
         }
-        if (isOffline(device, intervals.get(String(device.ownerId)), now)) reasons.push('offline');
+        if (cause) reasons.push('offline');
         if (Number.isFinite(device.status?.battery) && device.status.battery <= BATTERY_WARNING_PERCENT) reasons.push('battery');
         if (['warning', 'critical'].includes(device.status?.health)) reasons.push('health');
-        return { ...device, fullness, reasons };
+        return {
+            ...device,
+            fullness,
+            reasons,
+            ...(cause ? {
+                offlineCause: cause.cause === 'gateway'
+                    ? { ...cause, gatewayName: names.get(String(cause.gatewayId)) ?? null }
+                    : cause,
+            } : {}),
+        };
     });
 }
 
@@ -69,14 +70,13 @@ async function summary(user) {
 // silences every leaf behind it.
 async function offline(user) {
     const devices = (await devicesWithReasons(user)).filter(device => device.reasons.includes('offline'));
-    const lastReport = device => device.status?.updatedAt ?? device.createdAt ?? null;
     return {
         count: devices.length,
         missedReports: OFFLINE_AFTER_MISSED_REPORTS,
         devices: devices
-            .sort((a, b) => new Date(lastReport(a)) - new Date(lastReport(b)))
+            .sort((a, b) => new Date(lastReportAt(a)) - new Date(lastReportAt(b)))
             .slice(0, ATTENTION_LIST_LIMIT)
-            .map(device => ({ _id: device._id, binName: device.binName, kind: device.kind, lastReport: lastReport(device) })),
+            .map(device => ({ _id: device._id, binName: device.binName, kind: device.kind, lastReport: lastReportAt(device) })),
     };
 }
 

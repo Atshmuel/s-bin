@@ -153,7 +153,17 @@ export async function getOrgDeviceSettingsShared(orgId) {
     }
 }
 
-export async function getOrgAdmins(orgs) {
+// Report intervals by organization id, for the organizations of these
+// devices, fetched once each.
+export async function intervalsByOrg(devices) {
+    const orgIds = [...new Set(devices.map(device => String(device.ownerId)))];
+    const settings = await Promise.all(orgIds.map(orgId => getOrgDeviceSettingsShared(orgId)));
+    return new Map(orgIds.map((orgId, i) => [orgId, settings[i].reportIntervalMinutes]));
+}
+
+// The users of these organizations who get emails: any role, as long as
+// email notifications are on in their settings.
+export async function getNotificationRecipients(orgs) {
     try {
         if (!Array.isArray(orgs) || orgs.length === 0)
             throw new Error('orgs must be a non-empty array')
@@ -181,7 +191,8 @@ export async function getOrgAdmins(orgs) {
                 $project: {
                     _id: 0,
                     name: 1,
-                    email: 1
+                    email: 1,
+                    org: 1
                 }
             }
         ]);

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import { binLogModel, binModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
-import { getOrgDeviceSettingsShared } from '../service/sharedService.js'
+import { getOrgDeviceSettingsShared, intervalsByOrg } from '../service/sharedService.js'
 import { DASHBOARD_SECTIONS, devicesWithReasons } from './dashboardController.js'
 import {
     ANALYTICS_RANGES_DAYS, BATTERY_BUCKETS, BATTERY_SOON_DAYS, BATTERY_SOON_LIST_LIMIT, BATTERY_TREND_DAYS,
@@ -81,13 +81,6 @@ async function firstReportTimes(binIds) {
         { binId, ...READINGS_FILTER }, { createdAt: 1 },
     ).sort({ createdAt: 1 }).lean()));
     return new Map(binIds.map((binId, i) => [String(binId), firsts[i]?.createdAt ?? null]));
-}
-
-// Report intervals per organization, fetched once each.
-async function intervalsByOrg(bins) {
-    const orgIds = [...new Set(bins.map(bin => String(bin.ownerId)))];
-    const settings = await Promise.all(orgIds.map(orgId => getOrgDeviceSettingsShared(orgId)));
-    return new Map(orgIds.map((orgId, i) => [orgId, settings[i].reportIntervalMinutes]));
 }
 
 // ---- Bin page: GET /api/bins/:id/analytics/:section ----
@@ -205,7 +198,7 @@ export async function getBinAnalytics(req, res) {
 
 // Bins expected to need collecting soon. Bins that already do are left out:
 // the dashboard's "almost full" tile counts them.
-async function fullSoon(user) {
+export async function fullSoon(user) {
     const now = Date.now();
     const bins = await scopedBins(user, BINS_ONLY_FILTER,
         { binName: 1, 'status.level': 1, 'status.levelValid': 1, 'status.weight': 1, 'status.scale': 1 });

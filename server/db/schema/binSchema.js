@@ -58,7 +58,10 @@ export const binSchema = new mongoose.Schema({
         },
         // Relayed message IDs already stored, so gateway retries are not stored twice.
         recentMeshMessageIds: { type: [Number], default: [] },
-        updatedAt: { type: Date, default: Date.now }
+        updatedAt: { type: Date, default: Date.now },
+        // When the daily offline email named this device for its current
+        // outage; null while it reports (the job clears it once it is back).
+        offlineAlertSentAt: { type: Date, default: null },
     },
     ownerId: {
         type: mongoose.Schema.Types.ObjectId,

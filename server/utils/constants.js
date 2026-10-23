@@ -150,6 +150,8 @@ export const BATTERY_TREND_DAYS = 14;
 export const MIN_TREND_POINTS = 3;
 export const MIN_TREND_SPAN_MS = DAY_MS;
 export const FULL_SOON_HOURS = Object.freeze([24, 48]);
+// The daily report names bins that will need collecting within this long.
+export const DAILY_REPORT_DUE_WITHIN_HOURS = 24;
 export const BATTERY_SOON_DAYS = 30;
 export const RELIABILITY_DAYS = Object.freeze([7, 30]);
 export const FULLNESS_BUCKETS = Object.freeze([[0, 25], [25, 50], [50, 75], [75, 101]]);
@@ -239,7 +241,7 @@ export const MQTT_RECONNECT_MS = SECOND_MS;
 
 // Scheduled jobs (cron, in the server's time zone).
 export const CRON_SCHEDULES = Object.freeze({
-    criticalBinsEmail: "0 8 * * *",
+    dailyReportEmail: "0 8 * * *",
     instructionCleanup: "15 * * * *",
     activationTokenCleanup: "0 0 * * *",
     otpCleanup: "*/5 * * * *",

@@ -1,0 +1,164 @@
+import { binModel, organizationModel } from '../models/models.js'
+import { getNotificationRecipients, sendTemplateEmail } from './sharedService.js'
+import { devicesWithReasons } from '../controllers/dashboardController.js'
+import { fullSoon } from '../controllers/analyticsController.js'
+import { isValidTimeZone } from '../../utils/analytics.js'
+import { lastReportAt, upstreamId } from '../../utils/offline.js'
+import { DAILY_REPORT_DUE_WITHIN_HOURS, HOUR_MS, ROLES } from '../../utils/constants.js'
+
+// The daily report: one email per organization to each of its users with
+// email notifications on, listing what the dashboard's "Needs attention"
+// lists, by name. Nothing is sent on a day without anything to list.
+//
+// An outage is reported once: status.offlineAlertSentAt is set when a report
+// names the device and cleared once it reports again. A leaf behind a silent
+// gateway is no fault of its own; the gateway's entry names it instead.
+// Devices that never reported (no connection yet) are not reported offline.
+
+function escapeHtml(text) {
+    return String(text).replace(/[&<>"']/g, char => `&#${char.charCodeAt(0)};`);
+}
+
+const DATE_PARTS = Object.freeze({ day: 'numeric', month: 'short', year: 'numeric' });
+const TIME_PARTS = Object.freeze({ ...DATE_PARTS, hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+
+// A device's time in its own time zone, e.g. "23 Oct 2026, 08:00 GMT+3".
+function formatTime(date, timeZone, parts = TIME_PARTS) {
+    return new Intl.DateTimeFormat('en-GB', { ...parts, timeZone: isValidTimeZone(timeZone) ? timeZone : 'UTC' })
+        .format(new Date(date));
+}
+
+function deviceLabel(device) {
+    return device.kind === 'gateway' ? `Gateway ${device.binName}` : device.binName;
+}
+
+function offlineLine(device, devices) {
+    const parts = [`${deviceLabel(device)}: last report ${formatTime(lastReportAt(device), device.timezone)}.`];
+    const leaves = devices.filter(other => String(upstreamId(other)) === String(device._id));
+    if (leaves.length === 1) {
+        parts.push(`${leaves[0].binName} reports through it and cannot report until it is back.`);
+    } else if (leaves.length > 1) {
+        parts.push(`${leaves.length} bins report through it and cannot report until it is back: ` +
+            `${leaves.map(leaf => leaf.binName).join(', ')}.`);
+    }
+    const upstream = devices.find(other => String(other._id) === String(upstreamId(device)));
+    if (upstream) {
+        parts.push(`Its gateway ${upstream.binName} kept reporting after it, so the fault is at this bin ` +
+            '(battery, radio range or lost sync).');
+    }
+    return parts.join(' ');
+}
+
+// The report's sections for one organization, each { title, lines }, empty
+// ones left out; and the devices it reports offline for the first time.
+export function reportSections(devices, dueSoon, now = Date.now()) {
+    const offline = devices.filter(device => device.offlineCause?.cause === 'self' && device.status?.connection?.via);
+    const newlyOffline = offline.filter(device => !device.status.offlineAlertSentAt);
+    const stillOffline = offline.length - newlyOffline.length;
+    const withReason = reason => devices.filter(device => device.reasons.includes(reason));
+    const dueWithin = dueSoon.filter(bin => new Date(bin.collectionDueAt).getTime() <= now + DAILY_REPORT_DUE_WITHIN_HOURS * HOUR_MS);
+
+    const sections = [
+        { title: 'Stopped reporting', lines: newlyOffline.map(device => offlineLine(device, devices)) },
+        {
+            title: 'Needs collecting',
+            lines: [
+                ...withReason('full').map(bin => `${bin.binName}: ${bin.fullness}% full, needs collecting now.`),
+                ...dueWithin.map(bin => `${bin.binName}: ${bin.fullness}% full, needs collecting in about ` +
+                    `${Math.max(Math.round((new Date(bin.collectionDueAt).getTime() - now) / HOUR_MS), 1)} hours.`),
+            ],
+        },
+        {
+            title: 'Low battery',
+            lines: withReason('battery').map(device => `${deviceLabel(device)}: battery ${device.status.battery}%.`),
+        },
+        {
+            title: 'Health problems',
+            lines: withReason('health').map(device => `${deviceLabel(device)}: ${device.status.health}` +
+                (device.status.healthMessage ? `, ${device.status.healthMessage}` : '.')),
+        },
+        {
+            title: 'Maintenance overdue',
+            lines: withReason('maintenance').map(device => `${deviceLabel(device)}: service was due ` +
+                `${formatTime(device.maintenance.nextServiceAt, device.timezone, DATE_PARTS)}.`),
+        },
+    ].filter(section => section.lines.length > 0);
+    // Outages named before only make a footnote in a report sent anyway.
+    if (sections.length > 0 && stillOffline > 0) {
+        const note = `${stillOffline === 1 ? '1 device is' : `${stillOffline} devices are`} still offline, named in earlier reports.`;
+        if (sections[0].title === 'Stopped reporting') sections[0].lines.push(note);
+        else sections.unshift({ title: 'Stopped reporting', lines: [note] });
+    }
+    return { sections, newlyOffline };
+}
+
+function sectionsText(sections) {
+    return sections.map(section => `${section.title}\n${section.lines.map(line => `- ${line}`).join('\n')}`).join('\n\n');
+}
+
+function sectionsHtml(sections) {
+    return sections.map(section =>
+        `<h3 style='margin:24px 0 8px 0; font-size:16px; color:#333;'>${escapeHtml(section.title)}</h3>` +
+        `<ul style='margin:0; padding-left:20px; color:#555; line-height:1.6; font-size:15px;'>` +
+        section.lines.map(line => `<li style='margin:0 0 6px 0;'>${escapeHtml(line)}</li>`).join('') +
+        '</ul>').join('');
+}
+
+// Builds and sends each organization's report, then records which outages
+// it named and forgets those that are over.
+export async function sendDailyReports(now = Date.now()) {
+    const orgIds = await binModel.distinct('ownerId');
+    if (orgIds.length === 0) return;
+    const recipients = await getNotificationRecipients(orgIds);
+    for (const orgId of orgIds) {
+        try {
+            await sendOrganizationReport(orgId, recipients.filter(user => String(user.org) === String(orgId)), now);
+        } catch (error) {
+            console.error(`[Cron] Daily report for organization ${orgId} failed:`, error);
+        }
+    }
+}
+
+async function sendOrganizationReport(orgId, users, now) {
+    const scope = { role: ROLES.ADMIN, org: orgId };
+    const [devices, { bins: dueSoon }, org] = await Promise.all([
+        devicesWithReasons(scope),
+        fullSoon(scope),
+        organizationModel.findById(orgId, { name: 1 }).lean(),
+    ]);
+
+    const recovered = devices.filter(device => device.status?.offlineAlertSentAt && !device.offlineCause);
+    if (recovered.length > 0) {
+        await binModel.updateMany({ _id: { $in: recovered.map(device => device._id) } },
+            { $set: { 'status.offlineAlertSentAt': null } });
+    }
+
+    const { sections, newlyOffline } = reportSections(devices, dueSoon, now);
+    if (sections.length === 0) return;
+
+    // Nobody to tell still counts as reported, so a later reader is not sent
+    // every old outage at once; a failed send is retried the next day.
+    let reported = users.length === 0;
+    for (const user of users) {
+        try {
+            await sendTemplateEmail('dailyReport', user.email, {
+                name: ` ${user.name}`,
+                orgName: org?.name ?? 'your organization',
+                sectionsText: sectionsText(sections),
+                sectionsHtml: sectionsHtml(sections),
+            });
+            reported = true;
+        } catch (error) {
+            console.error(`[Cron] Daily report to ${user.email} failed:`, error);
+        }
+    }
+    if (!reported || newlyOffline.length === 0) return;
+    // Only devices still silent since they were read: one that reported in
+    // the meantime keeps no flag.
+    await binModel.bulkWrite(newlyOffline.map(device => ({
+        updateOne: {
+            filter: { _id: device._id, 'status.updatedAt': device.status.updatedAt },
+            update: { $set: { 'status.offlineAlertSentAt': new Date(now) } },
+        },
+    })));
+}
