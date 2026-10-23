@@ -307,6 +307,7 @@
         "full": "כמעט מלא",
         "maintenance": "דורש תחזוקה",
         "offline": "לא מחובר",
+        "offlineByGateway": "לא מחובר: השער {{name}} לא מחובר",
         "battery": "סוללה חלשה",
         "health": "תקלה"
       },

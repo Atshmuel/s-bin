@@ -66,6 +66,22 @@ function BinLink({ id, name }) {
     return <Link className="text-primary underline-offset-4 hover:underline" to={`/bins/${id}`}>{name ?? "-"}</Link>
 }
 
+// A reason's badge; a leaf offline because its gateway is names that gateway
+// and links to it, the device to check first.
+function ReasonBadge({ reason, offlineCause }) {
+    const { t } = useTranslation()
+    if (reason === "offline" && offlineCause?.cause === "gateway") {
+        return (
+            <Link to={`/bins/${offlineCause.gatewayId}`}>
+                <Badge variant={REASON_VARIANTS.offline}>
+                    {t("pages.dashboard.reasons.offlineByGateway", { name: offlineCause.gatewayName ?? "-" })}
+                </Badge>
+            </Link>
+        )
+    }
+    return <Badge variant={REASON_VARIANTS[reason]}>{t(`pages.dashboard.reasons.${reason}`)}</Badge>
+}
+
 function Dashboard() {
     const { t } = useTranslation()
     // The tiles, the map and the tables each make their own request, so the
@@ -104,7 +120,7 @@ function Dashboard() {
             cell: ({ row }) => (
                 <div className="flex flex-wrap gap-1">
                     {row.original.reasons.map((reason) => (
-                        <Badge key={reason} variant={REASON_VARIANTS[reason]}>{t(`pages.dashboard.reasons.${reason}`)}</Badge>
+                        <ReasonBadge key={reason} reason={reason} offlineCause={row.original.offlineCause} />
                     ))}
                 </div>
             ),

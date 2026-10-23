@@ -303,6 +303,7 @@
         "full": "Almost full",
         "maintenance": "Maintenance due",
         "offline": "Offline",
+        "offlineByGateway": "Offline: gateway {{name}} is offline",
         "battery": "Low battery",
         "health": "Health issue"
       },
