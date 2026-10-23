@@ -32,9 +32,13 @@ constexpr uint32_t MIN_SCHEDULE_PERIOD_SECONDS = 60;
 constexpr uint32_t MAX_SCHEDULE_PERIOD_SECONDS = 24UL * 60UL * 60UL;
 // Never schedule a wake closer than this; it means the schedule is stale.
 constexpr uint32_t MIN_SLEEP_TO_SLOT_SECONDS = 15;
-// After a missed beacon the leaf keeps following the slot pattern; only this
-// many misses in a row send it back to a cold join.
-constexpr uint8_t MAX_MISSED_CYCLES = 6;
+// After this many missed beacons in a row the leaf stops following its slot
+// pattern and listens until it hears the gateway again (a cold join). One:
+// a miss usually means the schedule changed (an interval change reaches the
+// gateway only after its next report, so leaves keep the old pattern for a
+// cycle) or the gateway was down, and guessing the old pattern again only
+// misses again; drift alone is covered by the guard.
+constexpr uint8_t MAX_MISSED_CYCLES = 1;
 // The guard is how much before the slot the leaf wakes and how long after the
 // slot (plus the gateway's window) it keeps listening. Clock error grows with
 // all the sleep since the last beacon, so the guard is a fraction of it: the
@@ -46,9 +50,11 @@ constexpr uint32_t GUARD_MARGIN_SECONDS = 5;
 // Uncertainty while the drift is unknown, and the most missed beacons widen it
 // to: the RC oscillator is specified to ±5%, and this board measured +1.3-3.5%.
 constexpr uint32_t UNKNOWN_DRIFT_PPM = 50000;
-// Residual assumed right after the first drift measurement: the WROVER's drift
-// changed by up to ~9,000 ppm between cycles, and the guard covers twice this.
-constexpr uint32_t FIRST_RESIDUAL_PPM = 5000;
+// Residual assumed right after the first drift measurement, which can be off by
+// far more than later ones: the WROVER measured +29,400 ppm over 80 minutes,
+// then ran at +40,300 ppm for the next 3 hours (5,000 here missed that slot).
+// The guard covers twice this; each catch halves it toward the measured error.
+constexpr uint32_t FIRST_RESIDUAL_PPM = 15000;
 // Floor for the residual: temperature and the gateway's own clock still vary.
 constexpr uint32_t MIN_RESIDUAL_PPM = 500;
 constexpr uint32_t LISTEN_SLACK_SECONDS = 5;
