@@ -20,7 +20,7 @@
         "minutes":"min",
         "hours":"h"
     },
-    "lastAwakeTime":"Last awake time",
+    "lastAwakeTime":"Awake time, previous cycle",
 "backToBin":"Back to Bin",
 "user":"User",
 "your":"Your",
