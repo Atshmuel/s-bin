@@ -25,12 +25,12 @@ function FillForecast({ bin }) {
     const { data } = useBinAnalytics(bin._id, "fill-rate")
     if (!data?.applicable) return null
     if (data.ratePerDay === null) return <span>{t('pages.binDetails.tiles.fillRateUnknown')}</span>
-    if (!(data.ratePerDay > 0) || !data.expectedFullAt) return <span>{t('pages.binDetails.tiles.notFilling')}</span>
+    if (!(data.ratePerDay > 0) || !data.collectionDueAt) return <span>{t('pages.binDetails.tiles.notFilling')}</span>
     return (
         <span>
             {t('pages.binDetails.tiles.fillRate', {
                 rate: data.ratePerDay.toFixed(1),
-                when: formatDistanceToNow(new Date(data.expectedFullAt), { addSuffix: true, locale: i18n.language === 'he' ? he : undefined }),
+                when: formatDistanceToNow(new Date(data.collectionDueAt), { addSuffix: true, locale: i18n.language === 'he' ? he : undefined }),
             })}
         </span>
     )

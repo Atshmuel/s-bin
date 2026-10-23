@@ -101,7 +101,7 @@ export function FullSoonCard() {
                             <li key={bin._id} className="flex items-center justify-between gap-3 py-2 text-sm">
                                 <BinLink bin={bin} />
                                 <span className="shrink-0 text-muted-foreground">
-                                    {bin.level}% · {formatDistanceToNow(new Date(bin.expectedFullAt), { addSuffix: true, locale })}
+                                    {bin.fullness}% · {formatDistanceToNow(new Date(bin.collectionDueAt), { addSuffix: true, locale })}
                                 </span>
                             </li>
                         ))}

@@ -8,12 +8,12 @@ import {
     DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, FULL_SOON_HOURS, FULL_SOON_LIST_LIMIT, FULLNESS_BUCKETS,
     LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS, BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT,
     FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
-    AI_BRIEFING_DAYS, AI_BRIEFING_DEVICE_LIMIT, DAY_MS, HOUR_MS,
+    AI_BRIEFING_DAYS, AI_BRIEFING_DEVICE_LIMIT, HOUR_MS,
 } from '../../utils/constants.js'
 import {
     HEALTH_CAUSE_NAMES,
-    batteryDaysLeft, dayKey, daysBetween, detectCollections, expectedFullAt, fillRatePerDay, fullnessPercent,
-    healthCauses, isValidTimeZone, rangeStart, reportReliability, trendPerDay,
+    batteryDaysLeft, binFullness, collectionDueAt, dayKey, daysBetween, detectCollections, fillRatePerDay,
+    fullnessPercent, healthCauses, isValidTimeZone, rangeStart, reportReliability, trendPerDay,
 } from '../../utils/analytics.js'
 
 // Each section of the bin page and the analytics page is its own request, so
@@ -95,13 +95,13 @@ async function intervalsByOrg(bins) {
 async function binFillRate(bin) {
     if (bin.kind === 'gateway') return { applicable: false };
     const readings = (await binReadings(bin._id, rangeStart(FILL_RATE_WINDOW_DAYS))).map(toReading);
-    const level = bin.status?.levelValid === false ? null : bin.status?.level ?? null;
+    const fullness = binFullness(bin);
     const ratePerDay = fillRatePerDay(readings);
     return {
         applicable: true,
-        level,
+        fullness,
         ratePerDay,
-        expectedFullAt: expectedFullAt(level, ratePerDay),
+        collectionDueAt: collectionDueAt(fullness, ratePerDay),
     };
 }
 
@@ -203,29 +203,32 @@ export async function getBinAnalytics(req, res) {
 
 // ---- Analytics page: GET /api/overviews/:section ----
 
+// Bins expected to need collecting soon. Bins that already do are left out:
+// the dashboard's "almost full" tile counts them.
 async function fullSoon(user) {
     const now = Date.now();
-    const bins = await scopedBins(user, { ...BINS_ONLY_FILTER, 'status.levelValid': { $ne: false } },
-        { binName: 1, 'status.level': 1 });
+    const bins = await scopedBins(user, BINS_ONLY_FILTER,
+        { binName: 1, 'status.level': 1, 'status.levelValid': 1, 'status.weight': 1, 'status.scale': 1 });
     const readings = await readingsByBin(bins.map(bin => bin._id), rangeStart(FILL_RATE_WINDOW_DAYS));
     const forecasts = bins.map(bin => {
+        const fullness = binFullness(bin);
         const ratePerDay = fillRatePerDay(readings.get(String(bin._id)) ?? []);
         return {
             _id: bin._id,
             binName: bin.binName,
-            level: bin.status?.level ?? null,
+            fullness,
             ratePerDay,
-            expectedFullAt: expectedFullAt(bin.status?.level, ratePerDay, now),
+            collectionDueAt: collectionDueAt(fullness, ratePerDay, now),
         };
-    }).filter(forecast => forecast.expectedFullAt !== null);
+    }).filter(forecast => forecast.collectionDueAt !== null && forecast.fullness < FULLNESS_CRITICAL_PERCENT);
     const lastHours = FULL_SOON_HOURS[FULL_SOON_HOURS.length - 1];
     const soon = forecasts
-        .filter(forecast => forecast.expectedFullAt.getTime() <= now + lastHours * HOUR_MS)
-        .sort((a, b) => a.expectedFullAt - b.expectedFullAt);
+        .filter(forecast => forecast.collectionDueAt.getTime() <= now + lastHours * HOUR_MS)
+        .sort((a, b) => a.collectionDueAt - b.collectionDueAt);
     return {
         counts: Object.fromEntries(FULL_SOON_HOURS.map(hours => [
             `within${hours}h`,
-            soon.filter(forecast => forecast.expectedFullAt.getTime() <= now + hours * HOUR_MS).length,
+            soon.filter(forecast => forecast.collectionDueAt.getTime() <= now + hours * HOUR_MS).length,
         ])),
         bins: soon.slice(0, FULL_SOON_LIST_LIMIT),
     };
@@ -457,11 +460,10 @@ export async function buildFleetBriefing(user) {
         }
         const ratePerDay = isGatewayDevice ? null : fillRatePerDay(deviceReadings.filter(
             reading => reading.at >= rangeStart(FILL_RATE_WINDOW_DAYS, now)));
-        // Hours until the bin needs collecting (the critical fullness), 0 if it
-        // already does; null without a rising trend.
-        const hoursUntilCollection = isGatewayDevice || !Number.isFinite(device.fullness) ? null
-            : device.fullness >= FULLNESS_CRITICAL_PERCENT ? 0
-                : ratePerDay > 0 ? (FULLNESS_CRITICAL_PERCENT - device.fullness) / ratePerDay * DAY_MS / HOUR_MS : null;
+        // Hours until the bin needs collecting, 0 if it already does; null
+        // without a rising trend.
+        const dueAt = isGatewayDevice ? null : collectionDueAt(device.fullness, ratePerDay, now);
+        const hoursUntilCollection = dueAt === null ? null : (dueAt.getTime() - now) / HOUR_MS;
         const batteryRate = trendPerDay(deviceReadings.filter(
             reading => reading.at >= rangeStart(BATTERY_TREND_DAYS, now)), 'battery');
         const lastReport = device.status?.updatedAt ?? null;

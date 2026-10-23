@@ -1,7 +1,7 @@
 import { binLogModel, binModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared } from '../service/sharedService.js'
-import { fullnessPercent } from '../../utils/analytics.js'
+import { binFullness } from '../../utils/analytics.js'
 import {
     ATTENTION_LIST_LIMIT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
     OFFLINE_GRACE_MS, RECENT_LOGS_LIMIT, HOUR_MS, MINUTE_MS, RECENT_LOGS_HOURS,
@@ -15,13 +15,6 @@ const BIN_PUBLIC_PROJECTION = Object.freeze({ deviceKey: 0, macAddress: 0, 'stat
 
 function isGatewayBin(bin) {
     return bin.kind === 'gateway';
-}
-
-function binFullness(bin) {
-    return fullnessPercent(
-        bin.status?.levelValid === false ? null : bin.status?.level,
-        bin.status?.scale === 'ok' ? bin.status?.weight : null,
-    );
 }
 
 // Report intervals per organization, fetched once each.

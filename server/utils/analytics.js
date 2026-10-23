@@ -4,8 +4,8 @@
 // kg, either null when the device had none.
 
 import {
-    BATTERY_CRITICAL_PERCENT, COLLECTION_LEVEL_DROP, COLLECTION_WEIGHT_DROP_RATIO, MIN_TREND_POINTS,
-    MIN_TREND_SPAN_MS, WEIGHT_REFERENCE_KG, DAY_MS, MINUTE_MS,
+    BATTERY_CRITICAL_PERCENT, COLLECTION_LEVEL_DROP, COLLECTION_WEIGHT_DROP_RATIO, FULLNESS_CRITICAL_PERCENT,
+    MIN_TREND_POINTS, MIN_TREND_SPAN_MS, WEIGHT_REFERENCE_KG, DAY_MS, MINUTE_MS,
 } from './constants.js';
 
 export function rangeStart(days, now = Date.now()) {
@@ -19,6 +19,15 @@ export function fullnessPercent(level, weightKg) {
     if (Number.isFinite(level)) parts.push(level);
     if (Number.isFinite(weightKg)) parts.push(Math.min(weightKg / WEIGHT_REFERENCE_KG * 100, 100));
     return parts.length > 0 ? Math.round(Math.max(...parts)) : null;
+}
+
+// A bin's fullness now, from the values its status trusts: a level the
+// sensor read fine and a weight from a scale that read fine.
+export function binFullness(bin) {
+    return fullnessPercent(
+        bin.status?.levelValid === false ? null : bin.status?.level,
+        bin.status?.scale === 'ok' ? bin.status?.weight : null,
+    );
 }
 
 // fullnessPercent() as a MongoDB expression over a bin's status, for queries
@@ -95,11 +104,13 @@ export function fillRatePerDay(readings) {
     return trendPerDay(sinceCollection, "level");
 }
 
-export function expectedFullAt(level, ratePerDay, now = Date.now()) {
-    if (!Number.isFinite(level)) return null;
-    if (level >= 100) return new Date(now);
+// When the bin reaches FULLNESS_CRITICAL_PERCENT and needs collecting at its
+// fill rate; now if it already has, null without a rising trend.
+export function collectionDueAt(fullness, ratePerDay, now = Date.now()) {
+    if (!Number.isFinite(fullness)) return null;
+    if (fullness >= FULLNESS_CRITICAL_PERCENT) return new Date(now);
     if (!(ratePerDay > 0)) return null;
-    return new Date(now + (100 - level) / ratePerDay * DAY_MS);
+    return new Date(now + (FULLNESS_CRITICAL_PERCENT - fullness) / ratePerDay * DAY_MS);
 }
 
 // Days until the battery reaches BATTERY_CRITICAL_PERCENT at its recent trend;
