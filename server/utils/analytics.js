@@ -4,8 +4,8 @@
 // kg, either null when the device had none.
 
 import {
-    BATTERY_CRITICAL_PERCENT, COLLECTION_LEVEL_DROP, COLLECTION_WEIGHT_DROP_RATIO, FULLNESS_CRITICAL_PERCENT,
-    MIN_TREND_POINTS, MIN_TREND_SPAN_MS, WEIGHT_REFERENCE_KG, DAY_MS, MINUTE_MS,
+    BATTERY_CRITICAL_PERCENT, COLLECTION_LEVEL_DROP, COLLECTION_WEIGHT_DROP_MIN_KG, COLLECTION_WEIGHT_DROP_RATIO,
+    FULLNESS_CRITICAL_PERCENT, MIN_TREND_POINTS, MIN_TREND_SPAN_MS, WEIGHT_REFERENCE_KG, DAY_MS, MINUTE_MS,
 } from './constants.js';
 
 export function rangeStart(days, now = Date.now()) {
@@ -46,8 +46,9 @@ export const FULLNESS_EXPRESSION = Object.freeze({
 });
 
 // Emptyings: a level drop of COLLECTION_LEVEL_DROP points or a weight drop of
-// COLLECTION_WEIGHT_DROP_RATIO, each against the last report that had that
-// value, so a report without a level does not hide a collection.
+// COLLECTION_WEIGHT_DROP_RATIO and at least COLLECTION_WEIGHT_DROP_MIN_KG,
+// each against the last report that had that value, so a report without a
+// level does not hide a collection.
 export function detectCollections(readings) {
     const collections = [];
     let lastLevel = null;
@@ -55,7 +56,8 @@ export function detectCollections(readings) {
     for (const reading of readings) {
         const levelDropped = lastLevel !== null && Number.isFinite(reading.level) &&
             lastLevel - reading.level >= COLLECTION_LEVEL_DROP;
-        const weightDropped = lastWeight !== null && lastWeight > 0 && Number.isFinite(reading.weight) &&
+        const weightDropped = lastWeight !== null && Number.isFinite(reading.weight) &&
+            lastWeight - reading.weight >= COLLECTION_WEIGHT_DROP_MIN_KG &&
             reading.weight <= lastWeight * (1 - COLLECTION_WEIGHT_DROP_RATIO);
         if (levelDropped || weightDropped) {
             collections.push({

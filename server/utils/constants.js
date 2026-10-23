@@ -136,12 +136,15 @@ export const MAX_SCALE_CALIBRATION_GRAMS = 200000;
 // A command still pending this long means its device has not checked in.
 export const INSTRUCTION_RETENTION_MS = 3 * DAY_MS;
 
-// Analytics. A drop this large between two reports means the bin was emptied;
-// a trend (fill rate, battery drain) needs this many reports over this long.
+// Analytics. A drop this large between two reports means the bin was emptied
+// (a weight drop needs both the ratio and the kg, so scale noise near empty
+// is no emptying); a trend (fill rate, battery drain) needs this many reports
+// over this long.
 export const ANALYTICS_RANGES_DAYS = Object.freeze([7, 30, 90]);
 export const DEFAULT_RANGE_DAYS = 30;
 export const COLLECTION_LEVEL_DROP = 30;
 export const COLLECTION_WEIGHT_DROP_RATIO = 0.5;
+export const COLLECTION_WEIGHT_DROP_MIN_KG = 2;
 export const FILL_RATE_WINDOW_DAYS = 14;
 export const BATTERY_TREND_DAYS = 14;
 export const MIN_TREND_POINTS = 3;
