@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 export const userSettingsSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    isDark: { type: Boolean, default: false },
+    // Dark (true), light (false), or null to follow the device's setting.
+    isDark: { type: Boolean, default: null },
     notifications: {
         // The daily report email (db/cron/dailyReport.js).
         email: { type: Boolean, default: true },
