@@ -253,22 +253,16 @@ export async function getBinsStatusOV(req, res) {
 }
 
 export async function getLogTypes(req, res) {
-    const { role, org: ownerId } = req.user
     const since = new Date(Date.now() - LOG_TYPES_DAYS * DAY_MS)
     let query = {
         createdAt: { $gt: since },
         binId: { $nin: await getGatewayIds() }
     }
 
-    if (role !== ROLES.OWNER) {
-        const userBins = await binModel.find({
-            ...BINS_ONLY_FILTER,
-            ownerId: new mongoose.Types.ObjectId(ownerId)
-        }).select('_id');
-
-        const binIds = userBins.map(bin => bin._id);
-
-        query.binId = { $in: binIds };
+    // Narrowed to one organization's bins unless an owner looks at all of them.
+    if (req.user.role !== ROLES.OWNER || req.user.selectedOrg) {
+        const userBins = await binModel.find(scopeToOrganization({ ...BINS_ONLY_FILTER }, req.user)).select('_id');
+        query.binId = { $in: userBins.map(bin => bin._id) };
     }
 
     try {

@@ -399,7 +399,7 @@ export async function getOverviewSection(req, res) {
             timeZone: requestTimeZone(req),
         }));
     } catch (error) {
-        res.status(500).json({ message: error?.message || 'Failed to load the analytics.' });
+        res.status(error?.status ?? 500).json({ message: error?.message || 'Failed to load the analytics.' });
     }
 }
 

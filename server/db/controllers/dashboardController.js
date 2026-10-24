@@ -1,11 +1,11 @@
-import { binLogModel, binModel } from '../models/models.js'
+import { binLogModel, binModel, organizationModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { intervalsByOrg } from '../service/sharedService.js'
 import { binFullness } from '../../utils/analytics.js'
 import { lastReportAt, offlineCauses } from '../../utils/offline.js'
 import {
     ATTENTION_LIST_LIMIT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
-    RECENT_LOGS_LIMIT, HOUR_MS, RECENT_LOGS_HOURS,
+    RECENT_LOGS_LIMIT, HOUR_MS, RECENT_LOGS_HOURS, ROLES,
 } from '../../utils/constants.js'
 
 // The dashboard's sections, served like the analytics page's (one request
@@ -51,19 +51,52 @@ export async function devicesWithReasons(user) {
     });
 }
 
+// The bins' average fullness, rounded; null when none reported one.
+function averageFullness(bins) {
+    const fullnesses = bins.map(bin => bin.fullness).filter(value => value !== null);
+    return fullnesses.length > 0
+        ? Math.round(fullnesses.reduce((sum, value) => sum + value, 0) / fullnesses.length)
+        : null;
+}
+
 // The tiles' counts: almost full, overdue maintenance and the average fullness.
 async function summary(user) {
     const devices = await devicesWithReasons(user);
     const bins = devices.filter(device => !isGatewayBin(device));
-    const fullnesses = bins.map(bin => bin.fullness).filter(value => value !== null);
     return {
         totalBins: bins.length,
         almostFull: bins.filter(bin => bin.reasons.includes('full')).length,
         requiringMaintenance: devices.filter(device => device.reasons.includes('maintenance')).length,
-        averageFullness: fullnesses.length > 0
-            ? Math.round(fullnesses.reduce((sum, value) => sum + value, 0) / fullnesses.length)
-            : null,
+        averageFullness: averageFullness(bins),
     };
+}
+
+// Owners only: each organization's numbers in one row, those with the most
+// devices needing attention first, so the one to look at stands out.
+async function organizations(user) {
+    if (user.role !== ROLES.OWNER) {
+        throw Object.assign(new Error('Only an owner sees every organization.'), { status: 403 });
+    }
+    const [devices, orgs] = await Promise.all([
+        devicesWithReasons(user),
+        organizationModel.find(user.selectedOrg ? { _id: user.selectedOrg } : {}, { name: 1 }).lean(),
+    ]);
+    const rows = orgs.map(org => {
+        const own = devices.filter(device => String(device.ownerId) === String(org._id));
+        const bins = own.filter(device => !isGatewayBin(device));
+        return {
+            _id: org._id,
+            name: org.name,
+            bins: bins.length,
+            gateways: own.length - bins.length,
+            needsAttention: own.filter(device => device.reasons.length > 0).length,
+            offline: own.filter(device => device.reasons.includes('offline')).length,
+            almostFull: bins.filter(bin => bin.reasons.includes('full')).length,
+            averageFullness: averageFullness(bins),
+        };
+    });
+    rows.sort((a, b) => b.needsAttention - a.needsAttention || a.name.localeCompare(b.name));
+    return { organizations: rows };
 }
 
 // Devices that stopped reporting, gateways included: a silent gateway also
@@ -106,4 +139,5 @@ export const DASHBOARD_SECTIONS = {
     offline,
     attention,
     'recent-logs': recentLogs,
+    organizations,
 };

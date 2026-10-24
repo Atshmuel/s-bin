@@ -1,11 +1,14 @@
 import { Router } from "express";
 import { authToken } from "../middlewares/authMiddleware.js";
+import { selectOrganization } from "../middlewares/validationMiddleware.js";
 import { getBinsStatusOV, getLogTypes } from "../db/service/sharedService.js";
 import { getAIOverview } from "../db/controllers/aiOverviewController.js";
 import { getOverviewSection } from "../db/controllers/analyticsController.js";
 
 export const overViewRouter = Router();
 overViewRouter.use(authToken);
+// Every overview takes ?org=<id> from an owner, to look at one organization.
+overViewRouter.use(selectOrganization);
 
 overViewRouter.get("/binstatus", getBinsStatusOV)
 

@@ -74,9 +74,14 @@ export function appendFilter(baseQuery, condition, field, value) {
     return condition ? { ...baseQuery, [field]: value } : baseQuery
 }
 
-// Limits a bin query to the user's organization; an owner sees every organization.
-export function scopeToOrganization(filter, { role, org }) {
-    return role === ROLES.OWNER ? filter : { ...filter, ownerId: new mongoose.Types.ObjectId(org) }
+// Limits a bin query to the user's organization; an owner sees every
+// organization, or the one picked on the page (selectedOrg, see the
+// selectOrganization middleware).
+export function scopeToOrganization(filter, { role, org, selectedOrg }) {
+    if (role === ROLES.OWNER) {
+        return selectedOrg ? { ...filter, ownerId: new mongoose.Types.ObjectId(selectedOrg) } : filter
+    }
+    return { ...filter, ownerId: new mongoose.Types.ObjectId(org) }
 }
 
 export function checkPayloadFields({

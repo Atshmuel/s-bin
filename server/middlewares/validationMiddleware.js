@@ -1,4 +1,26 @@
 import mongoose from "mongoose";
+import { organizationModel } from "../db/models/models.js";
+import { ROLES } from "../utils/constants.js";
+
+// An owner sees every organization; ?org=<id> narrows the request to one
+// (scopeToOrganization reads it as req.user.selectedOrg). Other users are
+// always limited to their own, so the parameter means nothing for them.
+export async function selectOrganization(req, res, next) {
+    const org = req.query.org;
+    if (!org || req.user?.role !== ROLES.OWNER) return next();
+    if (!mongoose.Types.ObjectId.isValid(org)) {
+        return res.status(400).json({ message: `Invalid org: '${org}'` });
+    }
+    try {
+        if (!await organizationModel.exists({ _id: org })) {
+            return res.status(404).json({ message: 'Organization not found.' });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: error?.message || 'Failed to check the organization.' });
+    }
+    req.user.selectedOrg = org;
+    next();
+}
 
 export function validateParamExist(paramName = "id", verifyObjectId = true) {
     return (req, res, next) => {
