@@ -9,6 +9,8 @@ import { Bar, BarChart, CartesianGrid, Label, Pie, PieChart, XAxis } from "recha
 import { useAppSide } from "@/contexts/AppSideProvider"
 import { useTranslation } from "react-i18next"
 import { formatDate } from "@/utils/helpers"
+import OrganizationSelect from "@/components/OrganizationSelect"
+import { useMe } from "@/hooks/users/auth/useMe"
 
 function Analytics() {
     const { t } = useTranslation()
@@ -46,6 +48,7 @@ function Analytics() {
 
 
     const { isRight } = useAppSide()
+    const { isOwner } = useMe()
 
     const { binsCount, isLoadingStatusOV, statusOVError } = useBinStatusOV()
     const { logTypes, isLoadingLogTypeOV, logTypeOVError } = useLogsTypeOV()
@@ -57,6 +60,11 @@ function Analytics() {
 
     return (
         <div className="flex flex-col gap-6">
+            {isOwner && (
+                <div className="flex justify-end">
+                    <OrganizationSelect />
+                </div>
+            )}
             <AIInsights />
             {/* Each card below makes its own request, once it scrolls into view. */}
             <div className="grid gap-6 lg:grid-cols-3">

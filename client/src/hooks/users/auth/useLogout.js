@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { clearAICache } from "@/utils/aiCache";
+import { storeOrg } from "@/contexts/organizationScopeContext";
 
 export function useLogout() {
     const queryClient = useQueryClient();
@@ -12,6 +13,7 @@ export function useLogout() {
         onSuccess: () => {
             queryClient.removeQueries();
             clearAICache();
+            storeOrg(null);
             navigate("/login", { replace: true });
         },
         onError: (error) => {

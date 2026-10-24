@@ -29,6 +29,7 @@ import AddBin from './pages/bins/AddBin';
 import { BreadcrumbProvider } from './contexts/breadcrumbsContext';
 import AccountVerify from './pages/auth/AccountVerify';
 import { AppSideProvider } from './contexts/AppSideProvider';
+import { OrganizationScopeProvider } from './contexts/OrganizationScopeProvider';
 import Organizations from './pages/organizations/Organizations';
 
 const queryClient = new QueryClient({
@@ -48,7 +49,9 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <MapProvider>
-                      <AppLayout />
+                      <OrganizationScopeProvider>
+                        <AppLayout />
+                      </OrganizationScopeProvider>
                     </MapProvider>
                   </ProtectedRoute>
                 }

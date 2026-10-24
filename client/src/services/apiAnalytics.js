@@ -7,9 +7,14 @@ export function getBinAnalytics({ binId, section, range }) {
     return request(`${BINS_EP}/${binId}/analytics/${section}${query}`);
 }
 
-// The viewer's time zone sets the day boundaries of the page's charts.
-export function getOverviewSection({ section, range }) {
+// The viewer's time zone sets the day boundaries of the page's charts; an
+// owner's picked organization narrows the section to it.
+export function getOverviewSection({ section, range, orgId }) {
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const params = new URLSearchParams({ ...(range ? { range: String(range) } : {}), tz: timeZone });
+    const params = new URLSearchParams({
+        ...(range ? { range: String(range) } : {}),
+        tz: timeZone,
+        ...(orgId ? { org: orgId } : {}),
+    });
     return request(`${OVERVIEW_EP}/${section}?${params}`);
 }

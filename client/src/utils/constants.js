@@ -8,10 +8,13 @@ export const OVERVIEW_EP = 'api/overviews'
 export const ORG_EP = 'api/organizations'
 
 // The AI overview is kept in the browser this long (it is slow and costs a
-// model call); renaming the key drops overviews made from older instructions.
-export const CACHE_KEY = 'aiOverview'
-export const LEGACY_CACHE_KEYS = Object.freeze(['aiCache'])
+// model call), one per organization an owner looks at; renaming the key drops
+// overviews made from older instructions.
+export const CACHE_KEY = 'aiOverviews'
+export const LEGACY_CACHE_KEYS = Object.freeze(['aiCache', 'aiOverview'])
 export const CACHE_TTL = 60 * 60 * 1000
+// The organization an owner last picked on the dashboard and analytics page.
+export const SELECTED_ORG_STORAGE_KEY = 'selectedOrganization'
 // ---- Thresholds and limits. Every number that decides behaviour lives here;
 // the shared ones match the server's (server/utils/constants.js).
 

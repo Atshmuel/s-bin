@@ -13,6 +13,8 @@ import Battery from "@/components/bins/Battary"
 import { getVariant, isGateway } from "@/utils/binHelpers"
 import { useOverviewSection } from "@/hooks/analytics/useOverviewSection"
 import { DASHBOARD_REFRESH_MS } from "@/utils/constants"
+import OrganizationSelect from "@/components/OrganizationSelect"
+import { useSelectedOrg } from "@/hooks/organizations/useSelectedOrg"
 
 const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm"
 // Reasons that call for a visit; the map shows only these bins.
@@ -82,8 +84,50 @@ function ReasonBadge({ reason, offlineCause }) {
     return <Badge variant={REASON_VARIANTS[reason]}>{t(`pages.dashboard.reasons.${reason}`)}</Badge>
 }
 
+// An owner's view of every organization at once, one row each, those needing
+// the most attention first; a name opens the dashboard of that organization.
+function OrganizationsCard({ refresh }) {
+    const { t } = useTranslation()
+    const { setSelectedOrgId } = useSelectedOrg()
+    const { data, isLoading, error } = useOverviewSection("organizations", refresh)
+    const count = (key) => ({
+        header: t(`pages.dashboard.tables.organizations.columns.${key}`),
+        accessorKey: key,
+        cell: ({ row }) => <span className="tabular-nums">{row.original[key]}</span>,
+    })
+    const columns = [
+        {
+            header: t("pages.dashboard.tables.organizations.columns.name"),
+            accessorKey: "name",
+            cell: ({ row }) => (
+                <button type="button" className="cursor-pointer text-primary underline-offset-4 hover:underline"
+                    onClick={() => setSelectedOrgId(row.original._id)}>
+                    {row.original.name}
+                </button>
+            ),
+        },
+        count("bins"),
+        count("gateways"),
+        count("needsAttention"),
+        count("offline"),
+        count("almostFull"),
+        {
+            header: t("pages.dashboard.tables.organizations.columns.averageFullness"),
+            accessorKey: "averageFullness",
+            cell: ({ row }) => row.original.averageFullness === null ? "-" : `${row.original.averageFullness}%`,
+        },
+    ]
+    return (
+        <TableCard title={t("pages.dashboard.tables.organizations.title")}
+            description={t("pages.dashboard.tables.organizations.description")}>
+            <DataTable data={data?.organizations ?? []} columns={columns} maxLength={5} error={error} isLoading={isLoading} />
+        </TableCard>
+    )
+}
+
 function Dashboard() {
     const { t } = useTranslation()
+    const { selectedOrgId, isOwner } = useSelectedOrg()
     // The tiles, the map and the tables each make their own request, so the
     // page fills in as they arrive and a failure stays in its own card.
     const refresh = { refreshMs: DASHBOARD_REFRESH_MS }
@@ -232,9 +276,12 @@ function Dashboard() {
     return (
         <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-4">
-                <div>
-                    <h3 className="text-xl md:text-2xl">{t("pages.dashboard.titles.quickOverview.title")}</h3>
-                    <p className="text-sm text-muted-foreground">{t("pages.dashboard.titles.quickOverview.description")}</p>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h3 className="text-xl md:text-2xl">{t("pages.dashboard.titles.quickOverview.title")}</h3>
+                        <p className="text-sm text-muted-foreground">{t("pages.dashboard.titles.quickOverview.description")}</p>
+                    </div>
+                    <OrganizationSelect />
                 </div>
                 <div className="flex flex-col gap-4 lg:flex-row">
                     <div className="flex flex-wrap gap-4 lg:w-1/2">
@@ -253,6 +300,7 @@ function Dashboard() {
                     <h3 className="text-xl md:text-2xl">{t("pages.dashboard.titles.binOverview.title")}</h3>
                     <p className="text-sm text-muted-foreground">{t("pages.dashboard.titles.binOverview.description")}</p>
                 </div>
+                {isOwner && !selectedOrgId && <OrganizationsCard refresh={refresh} />}
                 <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap">
                     <TableCard ref={attentionRef} title={t("pages.dashboard.tables.attention.title")}
                         description={t("pages.dashboard.tables.attention.description")}>

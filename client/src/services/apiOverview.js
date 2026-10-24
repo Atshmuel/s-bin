@@ -2,19 +2,24 @@ import { getAICache, setAICache } from '../utils/aiCache';
 import { OVERVIEW_EP } from "@/utils/constants";
 import { request } from "./request";
 
-export function getBinsStatusOverviews() {
-    return request(`${OVERVIEW_EP}/binstatus`);
+// An owner's picked organization narrows every overview (?org=<id>).
+function orgQuery(orgId) {
+    return orgId ? `?${new URLSearchParams({ org: orgId })}` : "";
 }
 
-export async function getAIOverviewStream() {
-    const cached = getAICache()
+export function getBinsStatusOverviews(orgId) {
+    return request(`${OVERVIEW_EP}/binstatus${orgQuery(orgId)}`);
+}
+
+export async function getAIOverviewStream(orgId) {
+    const cached = getAICache(orgId)
     if (cached) return cached
 
-    const data = await request(`${OVERVIEW_EP}/ai-ov`);
-    setAICache(data)
+    const data = await request(`${OVERVIEW_EP}/ai-ov${orgQuery(orgId)}`);
+    setAICache(data, orgId)
     return data;
 }
 
-export function getLogTypeOverviews() {
-    return request(`${OVERVIEW_EP}/logtype`);
+export function getLogTypeOverviews(orgId) {
+    return request(`${OVERVIEW_EP}/logtype${orgQuery(orgId)}`);
 }

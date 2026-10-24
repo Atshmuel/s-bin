@@ -312,6 +312,19 @@
         "health": "תקלה"
       },
       "tables": {
+        "organizations": {
+          "title": "ארגונים",
+          "description": "כל ארגון במבט אחד, אלה שדורשים הכי הרבה תשומת לב קודם. בחרו ארגון כדי לראות רק את המכשירים שלו.",
+          "columns": {
+            "name": "ארגון",
+            "bins": "פחים",
+            "gateways": "שערים",
+            "needsAttention": "דורשים תשומת לב",
+            "offline": "לא מחוברים",
+            "almostFull": "כמעט מלאים",
+            "averageFullness": "מלאות ממוצעת"
+          }
+        },
         "attention": {
           "filtered": "מוצגים רק:",
           "showAll": "הצג הכול",
@@ -976,6 +989,10 @@
         "error":"טעינת המנהלים נכשלה"
       },
       "updateButton":"עדכן"
+    },
+          "organizationSelect":{
+      "label":"ארגון",
+      "all":"כל הארגונים"
     },
           "userSettingsCard":{
       "title":"הגדרות והעדפות",

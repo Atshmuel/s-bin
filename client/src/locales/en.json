@@ -308,6 +308,19 @@
         "health": "Health issue"
       },
       "tables": {
+        "organizations": {
+          "title": "Organizations",
+          "description": "Each organization at a glance, those needing the most attention first. Pick one to see only its devices.",
+          "columns": {
+            "name": "Organization",
+            "bins": "Bins",
+            "gateways": "Gateways",
+            "needsAttention": "Need attention",
+            "offline": "Offline",
+            "almostFull": "Almost full",
+            "averageFullness": "Avg. fullness"
+          }
+        },
         "attention": {
           "filtered": "Showing only:",
           "showAll": "Show all",
@@ -937,6 +950,10 @@
       "passwordsDoNotMatch": "Passwords do not match",
       "button": "Update Password",
       "requirementsTitle": "Password Requirements"
+    },
+    "organizationSelect":{
+      "label":"Organization",
+      "all":"All organizations"
     },
     "userSettingsCard":{
       "title":"Preferences & Settings",
