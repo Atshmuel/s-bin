@@ -27,7 +27,8 @@ function OrganizationSelect() {
                 <Building2 />
                 <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            {/* Above the dashboard's map, whose controls Leaflet layers at 1000. */}
+            <SelectContent className="z-[1000]">
                 <SelectGroup>
                     <SelectItem isRight={isRight} value={ALL}>{t("components.organizationSelect.all")}</SelectItem>
                     {!orgsError && organizations?.map(org => (
