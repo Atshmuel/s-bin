@@ -903,14 +903,6 @@
       "description":"Oops, it looks like the page you're looking for doesn't exist.",
       "buttonText":"Go To Homepage"
     },
-    "dangerZoneCard":{
-      "title":"Danger Zone",
-      "subTitle":"This section contains actions that will affect many other variables, Please act carefully.",
-      "deleteUserAccount":"Delete User account",
-      "deleteYourAccount":"Delete Your account",
-      "note":"Note",
-      "warning":"All actions above cannot be undone. Please keep that in mind."
-    },
     "profileFormCard":{
       "userProfile":"User Profile",
       "myProfile":"My Profile",
@@ -951,32 +943,95 @@
       "button": "Update Password",
       "requirementsTitle": "Password Requirements"
     },
+    "accountPage":{
+      "nav": {
+        "label": "Account sections",
+        "profile": "Profile",
+        "preferences": "Preferences",
+        "notifications": "Notifications",
+        "security": "Security",
+        "access": "Access",
+        "danger": "Danger zone"
+      },
+      "header": {
+        "self": "Your account",
+        "other": "User account"
+      },
+      "save": "Save",
+      "cancel": "Cancel",
+      "profile": {
+        "title": "Profile",
+        "description": "The name others see and the email used to sign in.",
+        "readOnly": "Only an owner can change another user's name.",
+        "name": "Full name",
+        "nameHint": "First and last name.",
+        "email": "Email address",
+        "emailHint": "Used to sign in and for the daily email; it cannot be changed."
+      },
+      "preferences": {
+        "title": "Preferences",
+        "description": "How the app looks for you. Changes are saved automatically.",
+        "theme": "Theme",
+        "themeHint": "System follows your device's light or dark setting.",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System",
+        "language": "Language",
+        "languageHint": "The app's language and reading direction."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "What the app emails you.",
+        "descriptionOther": "What the app emails this user.",
+        "dailyEmail": "Daily email report",
+        "dailyEmailHint": "One email each morning about the organization: devices that stopped reporting, bins to collect, low batteries, health problems and overdue maintenance. Nothing is sent on a day without any.",
+        "dailyEmailOwner": "One email each morning covering every organization: devices that stopped reporting, bins to collect, low batteries, health problems and overdue maintenance. Nothing is sent on a day without any.",
+        "loadError": "Could not load the settings."
+      },
+      "security": {
+        "title": "Security",
+        "description": "Your password.",
+        "descriptionOther": "This user's password.",
+        "password": "Password",
+        "passwordHint": "After changing it, you sign in again with the new one.",
+        "passwordHintOther": "Set a new one without the old; the user then signs in with it.",
+        "change": "Change password",
+        "set": "Set a new password",
+        "oldPassword": "Current password",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm new password",
+        "show": "Show passwords",
+        "hide": "Hide passwords",
+        "update": "Update password",
+        "rulesTitle": "The new password needs",
+        "rulesNotMet": "The password does not meet every requirement.",
+        "rules": {
+          "minLength": "At least {{min}} characters",
+          "maxLength": "At most {{max}} characters",
+          "lowercase": "A lowercase letter (a-z)",
+          "uppercase": "An uppercase letter (A-Z)",
+          "number": "A number (0-9)",
+          "special": "A special character (!@#$%^&*)"
+        }
+      },
+      "access": {
+        "title": "Access",
+        "description": "Role, account status, organization and manager.",
+        "organizationHint": "The organization whose devices the user sees.",
+        "managerHint": "Who this user reports to."
+      },
+      "danger": {
+        "title": "Danger zone",
+        "description": "Permanent actions; they cannot be undone.",
+        "deleteSelf": "Delete your account",
+        "deleteSelfHint": "Removes your account for good.",
+        "deleteOther": "Delete this user",
+        "deleteOtherHint": "Removes this user's account for good."
+      }
+    },
     "organizationSelect":{
       "label":"Organization",
       "all":"All organizations"
-    },
-    "userSettingsCard":{
-      "title":"Preferences & Settings",
-      "description":"Customize {{entity}} experience by updating {{entity}} settings",
-      "settingsError":"Failed to get {{entity}} settings, please try to reload the page in few seconds",
-      "updateButton":"Update Settings",
-      "sectionOne":{
-        "title":"Interface Settings",
-        "fieldOne":{
-          "label":"Enable Dark Mode",
-          "description":"This will change the default theme for {{entity}} interface between light and dark mode."
-        },
-        "fieldTwo":{
-          "label":"Language Preference"
-        }
-      },
-      "sectionTwo":{
-        "title":"Notification Settings",
-        "fieldOne":{
-          "label":"Email Notifications",
-          "description":"One email each morning about the organization: devices that stopped reporting, bins to collect, low batteries, health problems and overdue maintenance. Nothing is sent on a day without any."
-        }
-      }
     },
     "userManagementCard":{
       "updateErrorSameUser":"You cannot change your own role or status.",

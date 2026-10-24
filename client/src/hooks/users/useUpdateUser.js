@@ -1,4 +1,4 @@
-import { updateUserPassword, updateUserRole, updateUserStatus, updateUserNameOrEmail, updateUserOrgAndManager } from "@/services/apiUsers";
+import { updateUserPassword, updateUserRole, updateUserStatus, updateUserName, updateUserOrgAndManager } from "@/services/apiUsers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ export function useUpdateUserInfo() {
     const { t } = useTranslation();
 
     const { mutate: updateInfo, isPending: isUpdatingInfo } = useMutation({
-        mutationFn: updateUserNameOrEmail,
+        mutationFn: updateUserName,
         onSuccess: () => {
             toast.success(t('toasts.updatedInformationSuccessfully'))
             queryClient.invalidateQueries({ queryKey: ["user"] });

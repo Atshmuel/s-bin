@@ -59,8 +59,8 @@ export function getOrgManagers({ org }) {
 //end
 
 //Updates
-export function updateUserNameOrEmail({ name, email, id }) {
-    return request(`${USERS_EP}/info/${id}`, { method: "PATCH", body: { name, email } });
+export function updateUserName({ name, id }) {
+    return request(`${USERS_EP}/info/${id}`, { method: "PATCH", body: { name } });
 }
 
 export function updateUserPassword({ oldPassword, newPassword, id }) {

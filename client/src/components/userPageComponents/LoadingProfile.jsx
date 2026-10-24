@@ -1,39 +1,31 @@
 import { Card } from "../ui/card"
 import { Skeleton } from "../ui/skeleton"
 
+// The account page's shape while the account loads: header, then sections.
 function LoadingProfile() {
-    return (<div className="h-full flex flex-wrap gap-6 justify-center px-4 py-2 max-w-[1800px]">
-        <Card className="min-w-[330px] flex flex-col items-center justify-start gap-8 p-5 h-[400px] max-w-[400px] ">
-            <div className="flex justify-between w-full">
-                <Skeleton className={'w-16 h-5 rounded-full'} />
-                <Skeleton className={'size-20 rounded-full'} />
-                <Skeleton className={'w-16 h-5 rounded-full'} />
+    return (
+        <div className="mx-auto flex w-full max-w-5xl gap-8 px-1 py-2">
+            <div className="hidden w-44 shrink-0 flex-col gap-2 lg:flex">
+                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
             </div>
-            <Skeleton className={'w-80 h-15 rounded-full'} />
-            <div className="flex flex-col gap-5 mt-6">
-                <Skeleton className={'w-80 h-7'} />
-                <Skeleton className={'w-80 h-7'} />
+            <div className="flex min-w-0 max-w-3xl flex-1 flex-col gap-6">
+                <div className="flex items-center gap-4">
+                    <Skeleton className="size-16 rounded-full" />
+                    <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-7 w-48" />
+                        <Skeleton className="h-4 w-40" />
+                    </div>
+                </div>
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <Card key={i} className="flex flex-col gap-5 p-6">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-4 w-2/3" />
+                        <Skeleton className="h-9 w-full" />
+                    </Card>
+                ))}
             </div>
-            <Skeleton className={'w-80 h-10'} />
-        </Card>
-        <Card className="min-w-[330px] flex flex-col items-center justify-start gap-10 p-5 h-[400px] max-w-[400px] ">
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-        </Card>
-        <Card className="min-w-[330px] flex flex-col items-center justify-start gap-10 p-5 h-[400px] max-w-[400px] ">
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-            <Skeleton className={'w-80 h-7'} />
-        </Card>
-
-    </div>
+        </div>
     )
 }
 

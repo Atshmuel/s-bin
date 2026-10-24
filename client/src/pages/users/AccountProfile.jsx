@@ -1,35 +1,30 @@
-import DangerZone from "@/components/userPageComponents/DangerZone"
+import AccountLayout from "@/components/userPageComponents/AccountLayout"
+import DangerZoneSection from "@/components/userPageComponents/DangerZoneSection"
 import LoadingProfile from "@/components/userPageComponents/LoadingProfile"
-import PasswordForm from "@/components/userPageComponents/PasswordForm"
-import ProfileForm from "@/components/userPageComponents/ProfileForm"
-import UserSettingForm from "@/components/userPageComponents/UserSettingForm"
+import NotificationsSection from "@/components/userPageComponents/NotificationsSection"
+import PreferencesSection from "@/components/userPageComponents/PreferencesSection"
+import ProfileSection from "@/components/userPageComponents/ProfileSection"
+import SecuritySection from "@/components/userPageComponents/SecuritySection"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { useUser } from "@/hooks/users/useUser"
 import ErrorPage from "../generals/ErrorPage"
 
-
+// The signed-in user's own account.
 function AccountProfile() {
-    const { me, isAdmin } = useMe()
+    const { me } = useMe()
     const { user, isLoadingUser, userError } = useUser(me.id)
 
-
-    if (isLoadingUser) {
-        return <LoadingProfile />
-    }
-
-    if (!isLoadingUser && userError) {
-        return <ErrorPage />
-    }
+    if (isLoadingUser) return <LoadingProfile />
+    if (userError) return <ErrorPage />
 
     return (
-        <div className="h-full flex flex-wrap gap-6 justify-center px-4 py-2 max-w-[1800px] ">
-            <div className="flex flex-col gap-4">
-                <ProfileForm user={user} isAdmin={isAdmin} />
-                <DangerZone user={user} isAdmin={isAdmin} />
-            </div>
-            <UserSettingForm user={user} isAdmin={isAdmin} isSelf={true} />
-            <PasswordForm user={user} />
-        </div>
+        <AccountLayout user={user} isSelf sections={[
+            { id: "profile", element: <ProfileSection id="profile" user={user} canEdit /> },
+            { id: "preferences", element: <PreferencesSection id="preferences" user={user} /> },
+            { id: "notifications", element: <NotificationsSection id="notifications" user={user} isSelf /> },
+            { id: "security", element: <SecuritySection id="security" user={user} isSelf /> },
+            { id: "danger", element: <DangerZoneSection id="danger" user={user} isSelf /> },
+        ]} />
     )
 }
 

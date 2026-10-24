@@ -11,7 +11,11 @@ export function useUpdateUserSettings() {
     const { mutate: updateSettings, isPending: isUpdatingSettings } = useMutation({
         mutationFn: ({ configToServerModel, id }) =>
             updateUserSettings(configToServerModel, id),
+        // A setting saved as it is changed (`silent`, see useAutoSaveSettings)
+        // is already in the cache: no toast, and no reload that could bring
+        // back an older value while a newer change waits to be sent.
         onSuccess: (_, variables) => {
+            if (variables?.silent) return
             toast.success(t('toasts.settingsUpdatedSuccessfully'))
             if (variables?.isSelf)
                 queryClient.invalidateQueries({ queryKey: ["user-settings"] });

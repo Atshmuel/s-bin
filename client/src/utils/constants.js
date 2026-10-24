@@ -47,6 +47,20 @@ export const MIN_SCALE_GRAMS = 100
 export const MAX_SCALE_GRAMS = 200000
 export const MAX_BIN_NAME_LENGTH = 25
 export const INSTRUCTIONS_PAGE_SIZE = 5
+// Settings saved as they change wait this long after the last change, so
+// quick clicks go out as one request.
+export const SETTINGS_SAVE_DELAY_MS = 800
+// The account page's section list marks the last section whose top passed a
+// line this far below the top of the screen. Over the last stretch of
+// scrolling (this share of the screen) the line slides down to the bottom,
+// so short sections at the end each get their turn. A clicked section stays
+// marked this long while the page scrolls to it.
+export const SECTION_LINE_OFFSET_PX = 96
+export const SECTION_LINE_SLIDE_SHARE = 0.6
+export const SECTION_CLICK_HOLD_MS = 1000
+// Password length, as the server checks it.
+export const PASSWORD_MIN_LENGTH = 8
+export const PASSWORD_MAX_LENGTH = 30
 
 // Map. Below CLUSTER_UNTIL_ZOOM nearby devices group into one marker; the
 // user's location marker stays USER_MARKER_MS after "My location".
