@@ -28,7 +28,7 @@ import { Search, X } from "lucide-react"
 import { useAppSide } from "@/hooks/useAppSide"
 import { useTranslation } from "react-i18next"
 
-export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null, initialSearch = "", manualPagination = false, pageCount, pagination, onPaginationChange, manualFiltering = false, onSearchChange }) {
+export default function DataTable({ data = [], columns, title, maxLength = 10, isLoading = true, error = null, sortingBy, ActionButton = null, initialSearch = "", manualPagination = false, pageCount, pagination, onPaginationChange, manualFiltering = false, onSearchChange, manualSorting = false, onSortChange }) {
     const { t } = useTranslation()
 
     const { isRight } = useAppSide()
@@ -51,6 +51,15 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
         }
     }, [initialSearch])
 
+    const handleSortingChange = (updater) => {
+        const next = typeof updater === "function" ? updater(sorting) : updater
+        setSorting(next)
+        if (!manualSorting || !onSortChange) return
+        const [first] = next
+        const sortKey = first && table.getColumn(first.id)?.columnDef.meta?.sortKey
+        onSortChange(sortKey ? { sort: sortKey, order: first.desc ? "desc" : "asc" } : null)
+    }
+
     const table = useReactTable({
         data,
         columns,
@@ -59,11 +68,15 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
             globalFilter: searching,
             ...(pagination ? { pagination } : {})
         },
-        onSortingChange: setSorting,
+        onSortingChange: handleSortingChange,
         onGlobalFilterChange: setSearching,
         ...(onPaginationChange ? { onPaginationChange } : {}),
         manualPagination: manualPagination,
         manualFiltering: manualFiltering,
+        // A server-sorted table sorts the whole list, not the page shown, and
+        // only by the columns that name a server sort key (meta.sortKey).
+        manualSorting: manualSorting,
+        ...(manualSorting ? { enableMultiSort: false, defaultColumn: { enableSorting: false } } : {}),
         pageCount: manualPagination ? pageCount : undefined,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
@@ -134,8 +147,8 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                                     <TableHead
                                         key={header.id}
                                         style={{ width: header.getSize() }}
-                                        onClick={hasData ? header.column.getToggleSortingHandler() : undefined}
-                                        className={hasData ? "cursor-pointer" : ""}
+                                        onClick={hasData && header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined}
+                                        className={hasData && header.column.getCanSort() ? "cursor-pointer" : ""}
                                     >
                                         <div className="capitalize flex items-center gap-2 text-foreground">
                                             {flexRender(

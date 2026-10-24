@@ -98,5 +98,9 @@ binSchema.methods.recordService = function (notes, technicianId) {
 }
 
 binSchema.index({ ownerId: 1 });
+// The bins page's sorts within an organization, _id breaking ties.
+binSchema.index({ ownerId: 1, 'status.level': -1, _id: -1 });
+binSchema.index({ ownerId: 1, 'status.weight': -1, _id: -1 });
+binSchema.index({ ownerId: 1, 'status.battery': -1, _id: -1 });
 binSchema.index({ macAddress: 1, deviceKey: 1 });
 binSchema.index({ location: "2dsphere" });

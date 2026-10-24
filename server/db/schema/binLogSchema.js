@@ -49,6 +49,11 @@ export const binLogSchema = new mongoose.Schema({
 
 // Every bin page and analytics query reads one bin's logs by time.
 binLogSchema.index({ binId: 1, createdAt: -1 });
+// The logs page's sorts (newest first by default), _id breaking ties.
+binLogSchema.index({ createdAt: -1, _id: -1 });
+binLogSchema.index({ newLevel: -1, _id: -1 });
+binLogSchema.index({ weight: -1, _id: -1 });
+binLogSchema.index({ battery: -1, _id: -1 });
 
 binLogSchema.virtual("bin", {
     ref: "Bin",

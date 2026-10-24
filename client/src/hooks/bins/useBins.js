@@ -7,21 +7,22 @@ import { useErrorToast } from "@/hooks/useErrorToast";
 
 
 
-// `enabled` lets a caller that already has its bins skip the request.
-export function useBins(page = 1, limit = 10, search = "", { enabled = true } = {}) {
+// `enabled` lets a caller that already has its bins skip the request; `sort`
+// is { sort, order } for the server to sort the list by.
+export function useBins(page = 1, limit = 10, search = "", { enabled = true, sort = null } = {}) {
     const [searchParams] = useSearchParams();
     const { t } = useTranslation()
 
     let { radius, minLevel, maxLevel, health, coordinates } = Object.fromEntries([...searchParams]);
 
     const { data, isPending: isLoadingBins, error: binsError } = useQuery({
-        queryKey: ['all-bins', page, limit, search, { radius, minLevel, maxLevel, health, coordinates }],
+        queryKey: ['all-bins', page, limit, search, sort, { radius, minLevel, maxLevel, health, coordinates }],
         queryFn: () => {
             if (coordinates !== undefined && radius !== undefined && minLevel !== undefined && maxLevel !== undefined && health !== undefined) {
 
                 return getBinsInUserRadius({ coordinates: coordinates.split(',').map(Number), radius: +radius, minLevel: +minLevel, maxLevel: +maxLevel, health })
             } else {
-                return getAllUserBins(page, limit, search)
+                return getAllUserBins(page, limit, search, sort)
             }
         },
         enabled,

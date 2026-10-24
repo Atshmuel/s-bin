@@ -25,10 +25,11 @@ function BinsList() {
     const pageFromUrl = parseInt(searchParams.get("page")) || 1;
     const [pagination, setPagination] = useState({ pageIndex: pageFromUrl - 1, pageSize: 10 });
     const [searchTerm, setSearchTerm] = useState("");
+    const [sort, setSort] = useState(null);
 
     const { allBins, totalBins, isLoadingBins, binsError } = useBins(pagination.pageIndex + 1,
         pagination.pageSize,
-        searchTerm);
+        searchTerm, { sort });
 
     const { deleteBins, isDeleting } = useDeleteBinBatch()
     const [binIds, setBinIds] = useState([]);
@@ -52,6 +53,12 @@ function BinsList() {
             return prev;
         });
     }, [searchTerm, setSearchParams]);
+
+    // The server sorts the whole list; a new order starts again at page 1.
+    const handleSortChange = useCallback((newSort) => {
+        setSort(newSort);
+        setPagination(prev => ({ ...prev, pageIndex: 0 }));
+    }, []);
 
     const pageCount = useMemo(() => {
         return totalBins ? Math.ceil(totalBins / pagination.pageSize) : 0;
@@ -77,8 +84,6 @@ function BinsList() {
             header: t('pages.binsList.columns.binName'),
             accessorKey: 'binName',
             id: 'Bin name',
-
-            enableSorting: true,
             cell: ({ row }) => {
                 const id = row.original._id;
 
@@ -96,7 +101,6 @@ function BinsList() {
             header: t('pages.binsList.columns.type'),
             id: 'type',
             accessorFn: (bin) => t(`deviceRoles.${getDeviceRole(bin)}`),
-            enableSorting: true,
             cell: ({ row }) => <DeviceRoleBadge bin={row.original} />,
         },
         {
@@ -128,6 +132,8 @@ function BinsList() {
             header: t('pages.binsList.columns.fillLevel'),
             id: 'Fill level',
             accessorKey: 'status.level',
+            meta: { sortKey: 'level' },
+            enableSorting: true,
             cell: ({ row }) => {
                 if (isGateway(row.original)) return '-';
                 return row.original.status.levelValid === false
@@ -138,6 +144,8 @@ function BinsList() {
         {
             header: t('components.logCard.weight'),
             accessorKey: 'Weight',
+            meta: { sortKey: 'weight' },
+            enableSorting: true,
             cell: ({ row }) => {
                 const weight = row.original.status?.weight;
                 return !isGateway(row.original) && typeof weight === 'number' ? `${weight}` : '-';
@@ -146,6 +154,8 @@ function BinsList() {
         {
             header: t('pages.binsList.columns.healthStatus'),
             accessorKey: 'Health',
+            meta: { sortKey: 'health' },
+            enableSorting: true,
             cell: ({ row }) => {
                 return (
                     <HealthBadge
@@ -158,6 +168,8 @@ function BinsList() {
         {
             header: t('pages.binsList.columns.batteryLevel'),
             accessorKey: 'Battery',
+            meta: { sortKey: 'battery' },
+            enableSorting: true,
             cell: ({ row }) => {
                 return <Battery level={row.original.status.battery} />
             }
@@ -228,7 +240,7 @@ function BinsList() {
     return (
         <div className="sm:p-10">
             <DataTable columns={columns} data={allBins ?? []} isLoading={isLoadingBins} error={binsError} title={t('pages.binsList.title')} manualPagination={true} manualFiltering={true} pageCount={pageCount} pagination={pagination} onPaginationChange={setPagination}
-                onSearchChange={handleSearchChange} ActionButton={allBins?.length && binIds?.length ? ActionButton : null} />
+                onSearchChange={handleSearchChange} manualSorting={true} onSortChange={handleSortChange} ActionButton={allBins?.length && binIds?.length ? ActionButton : null} />
         </div>
     )
 }

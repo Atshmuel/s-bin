@@ -1,10 +1,19 @@
 import mongoose from 'mongoose'
 import { binModel, deviceInstructionModel } from '../models/models.js'
-import { appendFilter, BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
+import { appendFilter, BINS_ONLY_FILTER, healthRank, listSortStages, scopeToOrganization } from '../../utils/helpers.js'
 import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
 import { DEFAULT_COLLECTION_FULLNESS, DEFAULT_PAGE_SIZE, ROUTE_MAX_BINS, ROUTE_STOP_SECONDS } from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
+
+// The bins page's sortable columns (see listSortStages). The plain fields have
+// indexes per organization; the health rank is computed per bin.
+const BIN_SORT_FIELDS = Object.freeze({
+    level: 'status.level',
+    weight: 'status.weight',
+    battery: 'status.battery',
+    health: healthRank('$status.health'),
+});
 
 export async function getBin(req, res) {
     const { id } = req.params;
@@ -74,10 +83,14 @@ export async function getAllUserBins(req, res) {
     if (search) {
         query.binName = { $regex: search, $options: 'i' };
     }
+    // Sorted and paged before anything is joined, so only the page's bins
+    // are read in full.
     const pipeline = [
         { $match: query },
-        { $project: { macAddress: 0 } }
-
+        ...listSortStages(req.query, BIN_SORT_FIELDS, { _id: 1 }),
+        { $skip: skip },
+        { $limit: limitNum },
+        { $project: { macAddress: 0, _sortRank: 0 } },
     ]
     if (withLogs) {
         pipeline.push({
@@ -91,22 +104,12 @@ export async function getAllUserBins(req, res) {
     }
 
     try {
+        const [binsData, total] = await Promise.all([
+            binModel.aggregate(pipeline),
+            binModel.countDocuments(query),
+        ]);
 
-        const facetedPipeline = [
-            ...pipeline,
-            {
-                $facet: {
-                    total: [{ $count: "total" }],
-                    data: [{ $skip: skip }, { $limit: limitNum }]
-                }
-            }
-        ];
-
-        const results = await binModel.aggregate(facetedPipeline);
-        const binsData = results[0].data || [];
-        const total = results[0].total[0]?.total || 0;
-
-        res.status(200).json({ binsData: binsData || [], total: total })
+        res.status(200).json({ binsData, total })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
     }

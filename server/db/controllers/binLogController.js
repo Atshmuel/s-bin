@@ -1,8 +1,19 @@
 import mongoose from 'mongoose';
-import { appendFilter } from '../../utils/helpers.js';
-import { binLogModel } from '../models/models.js'
+import { appendFilter, healthRank, listSortStages } from '../../utils/helpers.js';
+import { binLogModel, binModel } from '../models/models.js'
 import { verifyBinOwner } from '../service/sharedService.js';
 import { DEFAULT_PAGE_SIZE, ROLES } from "../../utils/constants.js";
+
+// The logs page's sortable columns (see listSortStages). The plain fields have
+// indexes, so a page is read in order; the ranks are computed per log.
+const LOG_SORT_FIELDS = Object.freeze({
+    createdAt: 'createdAt',
+    newLevel: 'newLevel',
+    weight: 'weight',
+    battery: 'battery',
+    severity: healthRank('$severity'),
+    health: healthRank('$health'),
+});
 
 export async function getBinLog(req, res) {
     const { withBin } = req.query
@@ -40,64 +51,40 @@ export async function getBinLog(req, res) {
 
 export async function getAllLogs(req, res) {
     const { org: ownerId, role } = req.user
-    const page = Number(req.query.page) || 0;
+    const page = Math.max(Number(req.query.page) || 1, 1);
     const limit = Number(req.query.limit) || DEFAULT_PAGE_SIZE;
     const skip = (page - 1) * limit;
 
     const searchRaw = req.query.search;
     const search = (searchRaw !== undefined && searchRaw !== "") ? Number(searchRaw) : NaN;
 
-    const pipeline = [
-        {
-            $lookup: {
-                from: 'bins',
-                localField: 'binId',
-                foreignField: '_id',
-                as: 'bin',
-            },
-        },
-        { $unwind: '$bin' },
-    ];
-
-    if (role !== ROLES.OWNER) {
-        pipeline.push({
-            $match: {
-                'bin.ownerId': new mongoose.Types.ObjectId(ownerId),
-            },
-        });
-    }
-
-    if (!isNaN(search)) {
-        pipeline.push({
-            $match: {
-                'newLevel': search,
-            },
-        });
-    }
-
-    pipeline.push(
-        { $addFields: { binName: '$bin.binName', binKind: '$bin.kind' } },
-        { $project: { bin: 0 } }
-    );
-
-    pipeline.push({
-        $sort: { createdAt: -1 }
-    });
-
     try {
-        const facetedPipeline = [
-            ...pipeline,
-            {
-                $facet: {
-                    total: [{ $count: "total" }],
-                    data: [{ $skip: skip }, { $limit: limit }]
-                }
-            }
-        ];
+        // Filter and page the logs first, then name only the page's bins:
+        // joining every log to its bin before sorting does not fit in memory.
+        const filter = {};
+        if (role !== ROLES.OWNER) {
+            const bins = await binModel.find({ ownerId: new mongoose.Types.ObjectId(ownerId) }, { _id: 1 }).lean();
+            filter.binId = { $in: bins.map(bin => bin._id) };
+        }
+        if (!isNaN(search)) filter.newLevel = search;
 
-        const results = await binLogModel.aggregate(facetedPipeline);
-        const total = results[0]?.total[0]?.total || 0;
-        const logs = results[0]?.data || [];
+        const [pageLogs, total] = await Promise.all([
+            binLogModel.aggregate([
+                { $match: filter },
+                ...listSortStages(req.query, LOG_SORT_FIELDS, { createdAt: -1, _id: -1 }),
+                { $skip: skip },
+                { $limit: limit },
+                { $project: { __v: 0, _sortRank: 0 } },
+            ]),
+            binLogModel.countDocuments(filter),
+        ]);
+        const bins = await binModel.find({ _id: { $in: pageLogs.map(log => log.binId) } }, { binName: 1, kind: 1 }).lean();
+        const byId = new Map(bins.map(bin => [String(bin._id), bin]));
+        const logs = pageLogs.map(log => ({
+            ...log,
+            binName: byId.get(String(log.binId))?.binName ?? null,
+            binKind: byId.get(String(log.binId))?.kind ?? null,
+        }));
 
         res.status(201).json({ logs, total })
     } catch (error) {

@@ -2,8 +2,9 @@ import { BINS_EP } from "@/utils/constants";
 import { request } from "./request";
 
 //get bins
-export function getAllUserBins(page = 1, limit = 10, search = "") {
-    return request(`${BINS_EP}/all?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
+export function getAllUserBins(page = 1, limit = 10, search = "", sort = null) {
+    const order = sort ? `&sort=${sort.sort}&order=${sort.order}` : "";
+    return request(`${BINS_EP}/all?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}${order}`);
 }
 
 export function getBin({ id, withLogs }) {

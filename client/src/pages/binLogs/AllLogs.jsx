@@ -18,6 +18,7 @@ function AllLogs() {
 
     const [pagination, setPagination] = useState({ pageIndex: pageFromUrl - 1, pageSize: 10 })
     const [searchTerm, setSearchTerm] = useState("");
+    const [sort, setSort] = useState(null);
 
     useEffect(() => {
         const newPage = pagination.pageIndex + 1;
@@ -40,7 +41,13 @@ function AllLogs() {
         });
     }, [searchTerm, setSearchParams]);
 
-    const { allLogs, totalLogs, isLoadingLogs, logsError } = useLogs(pagination.pageIndex + 1, pagination.pageSize, searchTerm)
+    // The server sorts the whole list; a new order starts again at page 1.
+    const handleSortChange = useCallback((newSort) => {
+        setSort(newSort);
+        setPagination(prev => ({ ...prev, pageIndex: 0 }));
+    }, []);
+
+    const { allLogs, totalLogs, isLoadingLogs, logsError } = useLogs(pagination.pageIndex + 1, pagination.pageSize, searchTerm, sort)
 
     const pageCount = useMemo(() => {
         return totalLogs ? Math.ceil(totalLogs / pagination.pageSize) : 0
@@ -63,6 +70,7 @@ function AllLogs() {
         {
             header: t('pages.logList.columns.createAt'),
             accessorKey: 'Created At',
+            meta: { sortKey: 'createdAt' },
             cell: ({ row }) => {
                 return format(new Date(row.original.createdAt), 'yyyy-MM-dd HH:mm')
             },
@@ -71,6 +79,8 @@ function AllLogs() {
         {
             header: t('pages.logList.columns.severity'),
             accessorKey: 'Severity',
+            meta: { sortKey: 'severity' },
+            enableSorting: true,
             cell: ({ row }) => {
                 const severity = row.original.severity;
                 return (
@@ -85,6 +95,8 @@ function AllLogs() {
             header: t('pages.logList.columns.fillLevel'),
             id: 'Fill level',
             accessorKey: 'newLevel',
+            meta: { sortKey: 'newLevel' },
+            enableSorting: true,
             cell: ({ row }) => {
                 if (row.original.binKind === 'gateway') return '-';
                 return row.original.newLevel == null
@@ -96,6 +108,8 @@ function AllLogs() {
             header: t('components.logCard.weight'),
             id: 'Weight',
             accessorKey: 'weight',
+            meta: { sortKey: 'weight' },
+            enableSorting: true,
             cell: ({ row }) => {
                 return row.original.binKind === 'gateway' ? '-' : row.original.weight ?? '-'
             }
@@ -103,6 +117,8 @@ function AllLogs() {
         {
             header: t('pages.logList.columns.batteryLevel'),
             accessorKey: 'Battery',
+            meta: { sortKey: 'battery' },
+            enableSorting: true,
             cell: ({ row }) => {
                 return <Battery level={row.original.battery} />
             }
@@ -110,6 +126,9 @@ function AllLogs() {
         {
             header: t('pages.logList.columns.healthStatus'),
             id: 'Health',
+            accessorKey: 'health',
+            meta: { sortKey: 'health' },
+            enableSorting: true,
             cell: ({ row }) => {
                 return (
                     <HealthBadge
@@ -144,7 +163,7 @@ function AllLogs() {
     ]
     return (
         <div>
-            <DataTable columns={columns} data={allLogs ?? []} isLoading={isLoadingLogs} error={logsError} title={t('pages.logList.title')} manualPagination={true} pageCount={pageCount} pagination={pagination} onPaginationChange={setPagination} manualFiltering={true} onSearchChange={handleSearchChange} />
+            <DataTable columns={columns} data={allLogs ?? []} isLoading={isLoadingLogs} error={logsError} title={t('pages.logList.title')} manualPagination={true} pageCount={pageCount} pagination={pagination} onPaginationChange={setPagination} manualFiltering={true} onSearchChange={handleSearchChange} manualSorting={true} onSortChange={handleSortChange} />
         </div >
     )
 }

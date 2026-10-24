@@ -74,6 +74,33 @@ export function appendFilter(baseQuery, condition, field, value) {
     return condition ? { ...baseQuery, [field]: value } : baseQuery
 }
 
+// A health or severity as a number, worst highest, so sorting by it orders
+// by how bad it is rather than alphabetically.
+export function healthRank(field) {
+    return {
+        $switch: {
+            branches: [
+                { case: { $eq: [field, 'critical'] }, then: 2 },
+                { case: { $eq: [field, 'warning'] }, then: 1 },
+            ],
+            default: 0,
+        },
+    };
+}
+
+// The sort stages of a paged list, from ?sort=<key>&order=asc|desc. `fields`
+// maps each sortable key to its field, or to an expression to sort by (see
+// healthRank); any other key gets `fallback`. _id breaks ties, so a page
+// never repeats a row of the one before. The stages leave a _sortRank field,
+// which the caller drops after the page is cut.
+export function listSortStages({ sort, order }, fields, fallback) {
+    const field = Object.hasOwn(fields, sort) ? fields[sort] : null;
+    const direction = order === 'asc' ? 1 : -1;
+    if (!field) return [{ $sort: fallback }];
+    if (typeof field === 'string') return [{ $sort: { [field]: direction, _id: direction } }];
+    return [{ $addFields: { _sortRank: field } }, { $sort: { _sortRank: direction, _id: direction } }];
+}
+
 // Limits a bin query to the user's organization; an owner sees every
 // organization, or the one picked on the page (selectedOrg, see the
 // selectOrganization middleware).
