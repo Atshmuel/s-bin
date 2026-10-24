@@ -4,7 +4,7 @@ import { deleteOrgRefs } from "../service/sharedService.js";
 import { MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../../utils/constants.js";
 import { ROLES } from "../../utils/constants.js";
 
-const MESH_SETTINGS_PROJECTION = { name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1 };
+const MESH_SETTINGS_PROJECTION = { name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1, fleet: 1, depot: 1 };
 
 
 export async function getOrganizations(req, res) {
@@ -121,5 +121,48 @@ export async function updateMeshSettings(req, res) {
         return res.status(200).json({ organization });
     } catch (error) {
         return res.status(500).json({ message: error?.message || "Internal server error 'updateMeshSettings'" });
+    }
+}
+
+// The organization's trucks and depot, which its routes are planned for:
+// owners for any organization, admins for their own. `fleet` replaces the
+// whole list; `depot` is { location: [lat, lng], address } or null.
+export async function updateFleetSettings(req, res) {
+    const { id } = req.params;
+    const { fleet, depot } = req.body ?? {};
+    const { role, org } = req.user;
+
+    if (role !== ROLES.OWNER && id !== org) {
+        return res.status(403).json({ message: "You can only change your own organization's settings." });
+    }
+    if (fleet !== undefined && !Array.isArray(fleet)) {
+        return res.status(400).json({ message: "fleet must be a list of truck types." });
+    }
+    if (depot !== undefined && depot !== null && typeof depot !== "object") {
+        return res.status(400).json({ message: "depot must be { location: [lat, lng], address } or null." });
+    }
+
+    try {
+        const organization = await organizationModel.findByIdAndUpdate(
+            id,
+            {
+                $set: {
+                    ...(fleet === undefined ? {} : {
+                        fleet: fleet.map(({ _id, name, preset, count, capacityKg }) => ({
+                            ...(mongoose.Types.ObjectId.isValid(_id) ? { _id } : {}), name, preset, count, capacityKg,
+                        })),
+                    }),
+                    ...(depot === undefined ? {} : { depot: depot && { location: depot.location, address: depot.address ?? "" } }),
+                },
+            },
+            { new: true, runValidators: true, projection: MESH_SETTINGS_PROJECTION }
+        );
+        if (!organization) return res.status(404).json({ message: "Organization not found." });
+        return res.status(200).json({ organization });
+    } catch (error) {
+        if (error?.name === "ValidationError" || error?.name === "CastError") {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: error?.message || "Internal server error 'updateFleetSettings'" });
     }
 }

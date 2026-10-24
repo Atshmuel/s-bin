@@ -13,9 +13,10 @@ export function getMapBins({ south, west, north, east, zoom }) {
     return request(`${BINS_EP}/map?${new URLSearchParams({ south, west, north, east, zoom })}`);
 }
 
-// The box around all the user's devices, where the map opens: { extent }.
-export function getMapExtent() {
-    return request(`${BINS_EP}/map/extent`);
+// The box around all the user's devices, where the map opens: { extent };
+// `orgId` narrows an owner's to one organization.
+export function getMapExtent(orgId) {
+    return request(`${BINS_EP}/map/extent${orgId ? `?org=${orgId}` : ""}`);
 }
 
 export function getBin({ id }) {

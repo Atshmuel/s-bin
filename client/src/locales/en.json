@@ -872,7 +872,9 @@
         "label": "Settings sections",
         "general": "General",
         "reporting": "Reporting",
-        "danger": "Danger zone"
+        "danger": "Danger zone",
+        "fleet": "Fleet",
+        "depot": "Depot"
       },
       "general": {
         "title": "General",
@@ -886,6 +888,34 @@
       },
       "danger": {
           "delete": "Delete this organization"
+        },
+        "fleet": {
+          "title": "Fleet",
+          "description": "The trucks the daily collection routes are planned for. Add the types the organization runs.",
+          "total": "{{trucks}} trucks, carrying up to {{tons}} t per round.",
+          "add": "Add a truck type",
+          "name": "Name",
+          "count": "Trucks",
+          "capacity": "Load capacity (kg)",
+          "remove": "Remove this truck type",
+          "custom": "Custom truck",
+          "presetHint": "{{axles}} axles, up to {{tons}} t in all",
+          "presetOption": "{{axles}} axles · up to {{tons}} t · {{kg}} kg of waste",
+          "invalid": "Needs a name, 1 to {{max}} trucks and a load of {{minKg}} to {{maxKg}} kg.",
+          "presets": {
+            "small": "Small / urban truck",
+            "medium": "Medium-heavy truck",
+            "large": "Very large truck"
+          }
+        },
+        "depot": {
+          "title": "Depot",
+          "description": "Where the trucks start and end their routes. Not set yet.",
+          "at": "The trucks start and end at {{lat}}, {{lng}}.",
+          "hint": "Click the map where the trucks are kept.",
+          "address": "Address",
+          "addressHint": "Optional, to recognise the place.",
+          "remove": "Remove the depot"
         },
         "reporting": {
         "title": "Reporting",

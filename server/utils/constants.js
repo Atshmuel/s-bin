@@ -193,6 +193,21 @@ export const SERVICE_INTERVAL_DAYS = 30;
 export const DEFAULT_PAGE_SIZE = 10;
 export const RECENT_LOGS_HOURS = 24;
 export const LOG_TYPES_DAYS = 30;
+// An organization's garbage trucks, which its daily routes are planned for.
+// The presets are the common classes (axles, maximum total weight in tons and
+// a payload in kg at the low end of the class's range, so a plan does not
+// overload a truck); the organization edits them.
+export const TRUCK_PRESETS = Object.freeze({
+    small: Object.freeze({ axles: 2, maxTotalTons: 18, capacityKg: 5000 }),
+    medium: Object.freeze({ axles: 3, maxTotalTons: 26, capacityKg: 10000 }),
+    large: Object.freeze({ axles: 4, maxTotalTons: 32, capacityKg: 13000 }),
+});
+export const MAX_TRUCK_TYPES = 10;
+export const MAX_TRUCKS_PER_TYPE = 50;
+export const MIN_TRUCK_CAPACITY_KG = 500;
+export const MAX_TRUCK_CAPACITY_KG = 20000;
+export const TRUCK_NAME_MAX_LENGTH = 40;
+export const DEPOT_ADDRESS_MAX_LENGTH = 120;
 // A route visits at most this many bins, the most urgent first: the route
 // optimizer (OpenRouteService) builds a table of every location to every
 // other and allows 3500 entries, so 59 locations with the start (59² = 3481).

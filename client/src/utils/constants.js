@@ -60,6 +60,19 @@ export const SETTINGS_SAVE_DELAY_MS = 800
 export const SECTION_LINE_OFFSET_PX = 96
 export const SECTION_LINE_SLIDE_SHARE = 0.6
 export const SECTION_CLICK_HOLD_MS = 1000
+// An organization's trucks, as the server checks them (server/utils/constants.js):
+// the common classes with a payload at the low end of their range.
+export const TRUCK_PRESETS = Object.freeze({
+    small: Object.freeze({ axles: 2, maxTotalTons: 18, capacityKg: 5000 }),
+    medium: Object.freeze({ axles: 3, maxTotalTons: 26, capacityKg: 10000 }),
+    large: Object.freeze({ axles: 4, maxTotalTons: 32, capacityKg: 13000 }),
+})
+export const MAX_TRUCK_TYPES = 10
+export const MAX_TRUCKS_PER_TYPE = 50
+export const MIN_TRUCK_CAPACITY_KG = 500
+export const MAX_TRUCK_CAPACITY_KG = 20000
+export const TRUCK_NAME_MAX_LENGTH = 40
+export const DEPOT_ADDRESS_MAX_LENGTH = 120
 // Password length, as the server checks it.
 export const PASSWORD_MIN_LENGTH = 8
 export const PASSWORD_MAX_LENGTH = 30

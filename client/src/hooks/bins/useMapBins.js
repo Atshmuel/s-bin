@@ -26,11 +26,12 @@ export function useMapBins(box, { enabled = true } = {}) {
     return { mapBins: data?.bins, mapCells: data?.cells, isFetchingMapBins: isFetching }
 }
 
-// The box around all the user's devices, where the map first opens.
-export function useMapExtent({ enabled = true } = {}) {
+// The box around all the user's devices, where the map first opens; `orgId`
+// narrows an owner's to one organization.
+export function useMapExtent({ enabled = true, orgId = null } = {}) {
     const { data, isPending, error } = useQuery({
-        queryKey: ["map-extent"],
-        queryFn: getMapExtent,
+        queryKey: ["map-extent", orgId],
+        queryFn: () => getMapExtent(orgId),
         enabled,
     })
     return { extent: data?.extent ?? null, isLoadingExtent: enabled && isPending && !error }

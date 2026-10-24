@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Building2 } from "lucide-react";
 import OrgDangerZoneSection from "@/components/organizations/OrgDangerZoneSection";
+import OrgDepotSection from "@/components/organizations/OrgDepotSection";
+import OrgFleetSection from "@/components/organizations/OrgFleetSection";
 import OrgGeneralSection from "@/components/organizations/OrgGeneralSection";
 import OrgReportingSection from "@/components/organizations/OrgReportingSection";
 import SettingsLayout from "@/components/settings/SettingsLayout";
@@ -41,6 +43,8 @@ function OrganizationSettings() {
             sections={[
                 { id: "general", element: <OrgGeneralSection key={organization.name} id="general" organization={organization} canRename={isOwner} /> },
                 { id: "reporting", element: <OrgReportingSection key={reportingKey} id="reporting" organization={organization} /> },
+                { id: "fleet", element: <OrgFleetSection key={JSON.stringify(organization.fleet ?? [])} id="fleet" organization={organization} /> },
+                { id: "depot", element: <OrgDepotSection key={JSON.stringify(organization.depot ?? null)} id="depot" organization={organization} /> },
                 ...(isOwner ? [{ id: "danger", element: <OrgDangerZoneSection id="danger" organization={organization} /> }] : []),
             ]} />
     );
