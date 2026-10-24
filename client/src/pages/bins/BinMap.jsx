@@ -12,6 +12,7 @@ import BinPopupCard from "@/components/map/BinPopupCard";
 import { DriverPosition, DrivingBar } from "@/components/map/RouteDriving";
 import { Spinner } from "@/components/ui/spinner";
 import { useBins } from "@/hooks/bins/useBins";
+import { useBin } from "@/hooks/bins/useBin";
 import { useMapBins, useMapExtent } from "@/hooks/bins/useMapBins";
 import { useMapSettings } from "@/hooks/useMapSettings";
 import { getColor, isGateway } from "@/utils/binHelpers";
@@ -101,11 +102,15 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
     const [searchParams] = useSearchParams();
     const hasOwnBins = binsToUse !== null
     const isSearch = SEARCH_PARAMS.every(param => searchParams.has(param))
-    // A planned route shows on its own (the map page's, not the dashboard's).
-    const showsRoute = !hasOwnBins && Boolean(routePlan)
-    const followsView = !hasOwnBins && !isSearch && !showsRoute
-
+    // One bin from a link (?binId=, as the bins list opens it): the map opens
+    // on it and shows only it.
     const binId = searchParams.get("binId")
+    const focusesBin = !hasOwnBins && Boolean(binId)
+    const { bin: focusBin, isLoadingBins: isLoadingFocusBin } = useBin(focusesBin ? binId : null)
+    // A planned route shows on its own (the map page's, not the dashboard's).
+    const showsRoute = !hasOwnBins && !focusesBin && Boolean(routePlan)
+    const followsView = !hasOwnBins && !isSearch && !showsRoute && !focusesBin
+
     const zoomFromUrl = Number(searchParams.get("zoom"))
     const locationFromUrl = searchParams.get("coordinates")?.split(",").map(Number)
 
@@ -117,7 +122,8 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
     const opensAroundAll = followsView && !locationFromUrl
     const { extent, isLoadingExtent } = useMapExtent({ enabled: opensAroundAll })
 
-    let devices = (showsRoute ? [] : hasOwnBins ? binsToUse : isSearch ? searchBins : mapBins) ?? []
+    let devices = (showsRoute ? [] : hasOwnBins ? binsToUse : focusesBin ? (focusBin ? [focusBin] : [])
+        : isSearch ? searchBins : mapBins) ?? []
     if (binId) devices = devices.filter(bin => bin._id === binId)
 
     const shifts = getColocatedShifts(devices);
@@ -149,10 +155,11 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
     const routePoints = showsRoute ? [routePlan.start, ...routePlan.stops.map(stop => stop.location.coordinates)] : []
     const opening = showsRoute ? { bounds: routePoints }
         : locationFromUrl ? { center: locationFromUrl }
+        : focusBin ? { center: focusBin.location.coordinates }
         : center ? { center }
             : opensAroundAll && extent ? { bounds: [[extent.south, extent.west], [extent.north, extent.east]] }
                 : { center: devices[0]?.location.coordinates ?? DEFAULT_CENTER }
-    const isLoading = !hasOwnBins && ((isSearch && isLoadingBins) || (opensAroundAll && isLoadingExtent))
+    const isLoading = !hasOwnBins && ((isSearch && isLoadingBins) || (opensAroundAll && isLoadingExtent) || (focusesBin && isLoadingFocusBin))
 
     return (
         <div className="relative h-full w-full overflow-hidden rounded-2xl border border-gray-300 shadow-md">
@@ -172,7 +179,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                             color={isGateway(bin) ? getColor(bin.status, 'battery') : getColor(bin.status)} shiftX={shifts[bin._id] ?? 0}
                             popup={<BinPopupCard
                                 bin={bin}
-                                gatewayName={bin.gatewayName ?? binNames.get(bin.status?.connection?.gatewayId)}
+                                gatewayName={bin.gatewayName ?? bin.gateway?.binName ?? binNames.get(bin.status?.connection?.gatewayId)}
                                 relayCount={bin.relayCount ?? relayCounts.get(bin._id) ?? 0}
                             />} />
                     ))}
