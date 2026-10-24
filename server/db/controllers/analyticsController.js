@@ -6,7 +6,7 @@ import { DASHBOARD_SECTIONS, devicesWithReasons } from './dashboardController.js
 import {
     ANALYTICS_RANGES_DAYS, BATTERY_BUCKETS, BATTERY_SOON_DAYS, BATTERY_SOON_LIST_LIMIT, BATTERY_TREND_DAYS,
     DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, FULL_SOON_HOURS, FULL_SOON_LIST_LIMIT, FULLNESS_BUCKETS,
-    LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS, BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT,
+    GATEWAY_LIST_LIMIT, LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS, BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT,
     FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
     AI_BRIEFING_DAYS, AI_BRIEFING_DEVICE_LIMIT, HOUR_MS,
 } from '../../utils/constants.js'
@@ -75,12 +75,15 @@ function scopedBins(user, filter, projection) {
     return binModel.find(scopeToOrganization(filter, user), projection).lean();
 }
 
-// When each device first reported (kept logs only), through the binId index.
+// When each device first reported (kept logs only), in one query: one query
+// per device does not scale to thousands of them.
 async function firstReportTimes(binIds) {
-    const firsts = await Promise.all(binIds.map(binId => binLogModel.findOne(
-        { binId, ...READINGS_FILTER }, { createdAt: 1 },
-    ).sort({ createdAt: 1 }).lean()));
-    return new Map(binIds.map((binId, i) => [String(binId), firsts[i]?.createdAt ?? null]));
+    const firsts = await binLogModel.aggregate([
+        { $match: { binId: { $in: binIds }, ...READINGS_FILTER } },
+        { $group: { _id: '$binId', at: { $min: '$createdAt' } } },
+    ]);
+    const byId = new Map(firsts.map(first => [String(first._id), first.at]));
+    return new Map(binIds.map(binId => [String(binId), byId.get(String(binId)) ?? null]));
 }
 
 // ---- Bin page: GET /api/bins/:id/analytics/:section ----
@@ -346,12 +349,17 @@ async function connectivityOverview(user) {
             mesh: bins.filter(bin => bin.status?.connection?.via === 'mesh').length,
             unknown: bins.filter(bin => !bin.status?.connection?.via).length,
         },
-        gateways: [...gateways.values()].map(gateway => ({
-            _id: gateway._id,
-            binName: names.get(String(gateway._id)) ?? null,
-            leaves: gateway.leaves,
-            avgRssi: average(gateway.rssi),
-        })),
+        // The busiest gateways; the count says how many there are in all.
+        gatewayCount: gateways.size,
+        gateways: [...gateways.values()]
+            .sort((a, b) => b.leaves - a.leaves)
+            .slice(0, GATEWAY_LIST_LIMIT)
+            .map(gateway => ({
+                _id: gateway._id,
+                binName: names.get(String(gateway._id)) ?? null,
+                leaves: gateway.leaves,
+                avgRssi: average(gateway.rssi),
+            })),
         reliabilityDays: days,
         averageReliability: average(reliability.map(bin => bin.percent)),
         leastReliable: reliability
@@ -364,17 +372,24 @@ async function connectivityOverview(user) {
 async function healthCausesOverview(user, { days, timeZone }) {
     const bins = await scopedBins(user, {}, { _id: 1 });
     const start = rangeStart(days);
-    const logs = await binLogModel.find(
-        { binId: { $in: bins.map(bin => bin._id) }, ...READINGS_FILTER, createdAt: { $gte: start }, message: { $exists: true, $ne: null } },
-        { createdAt: 1, message: 1 },
-    ).lean();
+    // Counted per day and message in the database: devices send few distinct
+    // messages, so this returns far fewer rows than there are logs.
+    const groups = await binLogModel.aggregate([
+        { $match: { binId: { $in: bins.map(bin => bin._id) }, ...READINGS_FILTER, createdAt: { $gte: start }, message: { $exists: true, $ne: null } } },
+        {
+            $group: {
+                _id: { day: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: timeZone } }, message: '$message' },
+                count: { $sum: 1 },
+            },
+        },
+    ]);
     const byDay = new Map(daysBetween(start, timeZone).map(day => [
         day, Object.fromEntries(HEALTH_CAUSE_NAMES.map(cause => [cause, 0])),
     ]));
-    for (const log of logs) {
-        const counts = byDay.get(dayKey(log.createdAt, timeZone));
+    for (const group of groups) {
+        const counts = byDay.get(group._id.day);
         if (!counts) continue;
-        for (const cause of healthCauses(log.message)) counts[cause]++;
+        for (const cause of healthCauses(group._id.message)) counts[cause] += group.count;
     }
     return { daily: [...byDay].map(([day, counts]) => ({ day, ...counts })) };
 }

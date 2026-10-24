@@ -164,6 +164,7 @@ export const BATTERY_BUCKETS = Object.freeze([
 export const FULL_SOON_LIST_LIMIT = 20;
 export const BATTERY_SOON_LIST_LIMIT = 10;
 export const LEAST_RELIABLE_LIMIT = 5;
+export const GATEWAY_LIST_LIMIT = 10;
 export const ATTENTION_LIST_LIMIT = 50;
 export const RECENT_LOGS_LIMIT = 50;
 

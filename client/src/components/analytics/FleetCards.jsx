@@ -215,8 +215,10 @@ export function ConnectivityCard() {
                 </div>
                 {data?.gateways?.length > 0 && (
                     <div className="flex flex-col gap-1">
-                        <span className="text-xs font-medium text-muted-foreground">{t("pages.analytics.sections.connectivity.gateways")}</span>
-                        <ul className="flex flex-col divide-y">
+                        <span className="text-xs font-medium text-muted-foreground">
+                            {t("pages.analytics.sections.connectivity.gateways")} ({data.gatewayCount ?? data.gateways.length})
+                        </span>
+                        <ul className="flex max-h-40 flex-col divide-y overflow-y-auto">
                             {data.gateways.map((gateway) => (
                                 <li key={gateway._id} className="flex items-center justify-between gap-3 py-2 text-sm">
                                     {gateway.binName ? <BinLink bin={gateway} /> : <span>-</span>}
@@ -232,7 +234,7 @@ export function ConnectivityCard() {
                 {data?.leastReliable?.length > 0 && (
                     <div className="flex flex-col gap-1">
                         <span className="text-xs font-medium text-muted-foreground">{t("pages.analytics.sections.connectivity.leastReliable")}</span>
-                        <ul className="flex flex-col divide-y">
+                        <ul className="flex max-h-40 flex-col divide-y overflow-y-auto">
                             {data.leastReliable.map((device) => (
                                 <li key={device._id} className="flex items-center justify-between gap-3 py-2 text-sm">
                                     <BinLink bin={device} />
