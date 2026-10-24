@@ -4,11 +4,12 @@ import { LIST_REFRESH_MS } from "@/utils/constants";
 
 
 
-// `sort` is { sort, order } for the server to sort by, or null for newest first.
-export function useLogs(page = 1, limit = 10, search = "", sort = null) {
+// `sort` is { sort, order } for the server to sort by, or null for newest
+// first; `binId` keeps only that bin's logs.
+export function useLogs(page = 1, limit = 10, search = "", sort = null, { binId = null } = {}) {
     const { data, isPending: isLoadingLogs, error: logsError } = useQuery({
-        queryKey: ['all-logs', page, limit, search, sort],
-        queryFn: () => getAllLogs(page, limit, search, sort),
+        queryKey: ['all-logs', page, limit, search, sort, binId],
+        queryFn: () => getAllLogs(page, limit, search, sort, binId),
         refetchInterval: LIST_REFRESH_MS,
     })
 

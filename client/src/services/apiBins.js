@@ -7,8 +7,8 @@ export function getAllUserBins(page = 1, limit = 10, search = "", sort = null) {
     return request(`${BINS_EP}/all?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}${order}`);
 }
 
-export function getBin({ id, withLogs }) {
-    return request(`${BINS_EP}/${id}?withLogs=${withLogs}`);
+export function getBin({ id }) {
+    return request(`${BINS_EP}/${id}`);
 }
 
 export function getBinsInUserRadius({ coordinates, radius, health = null, minLevel = null, maxLevel = null }) {

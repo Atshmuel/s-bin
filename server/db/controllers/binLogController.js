@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { appendFilter, healthRank, listSortStages } from '../../utils/helpers.js';
+import { appendFilter, healthRank, listSortStages, scopeToOrganization } from '../../utils/helpers.js';
 import { binLogModel, binModel } from '../models/models.js'
 import { verifyBinOwner } from '../service/sharedService.js';
 import { DEFAULT_PAGE_SIZE, ROLES } from "../../utils/constants.js";
@@ -62,7 +62,17 @@ export async function getAllLogs(req, res) {
         // Filter and page the logs first, then name only the page's bins:
         // joining every log to its bin before sorting does not fit in memory.
         const filter = {};
-        if (role !== ROLES.OWNER) {
+        // One bin's logs (its page), if the user may see that bin.
+        const { binId } = req.query;
+        if (binId !== undefined) {
+            if (!mongoose.Types.ObjectId.isValid(binId)) {
+                return res.status(400).json({ message: `Invalid binId: '${binId}'` });
+            }
+            if (!await binModel.exists(scopeToOrganization({ _id: new mongoose.Types.ObjectId(binId) }, req.user))) {
+                return res.status(404).json({ message: 'Bin not found.' });
+            }
+            filter.binId = new mongoose.Types.ObjectId(binId);
+        } else if (role !== ROLES.OWNER) {
             const bins = await binModel.find({ ownerId: new mongoose.Types.ObjectId(ownerId) }, { _id: 1 }).lean();
             filter.binId = { $in: bins.map(bin => bin._id) };
         }

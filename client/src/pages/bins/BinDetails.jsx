@@ -15,6 +15,8 @@ import HealthBadge from "@/components/bins/HealthBadge"
 import { format } from "date-fns"
 import { getVariant, isGateway } from "@/utils/binHelpers"
 import { useBin } from "@/hooks/bins/useBin"
+import { useLogs } from "@/hooks/bins/binLogs/useBinLogs"
+import { BIN_LOGS_PAGE_SIZE } from "@/utils/constants"
 import { Link, useParams, useSearchParams } from "react-router-dom"
 import { LinkIcon } from "lucide-react"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -31,6 +33,22 @@ function BinDetails() {
     const { id } = useParams()
 
     const { bin, isLoadingBins, binsError } = useBin(id)
+    // The bin's logs, a page at a time, sorted and searched (by fill level)
+    // on the server; a new order or search starts again at page 1.
+    const [logsPagination, setLogsPagination] = useState({ pageIndex: 0, pageSize: BIN_LOGS_PAGE_SIZE })
+    const [logsSort, setLogsSort] = useState(null)
+    const [logsSearch, setLogsSearch] = useState("")
+    const handleLogsSort = useCallback((sort) => {
+        setLogsSort(sort)
+        setLogsPagination(prev => ({ ...prev, pageIndex: 0 }))
+    }, [])
+    const handleLogsSearch = useCallback((search) => {
+        setLogsSearch(search)
+        setLogsPagination(prev => ({ ...prev, pageIndex: 0 }))
+    }, [])
+    const { allLogs, totalLogs, isLoadingLogs, logsError } = useLogs(logsPagination.pageIndex + 1, logsPagination.pageSize,
+        logsSearch, logsSort, { binId: id })
+    const logsPageCount = totalLogs ? Math.ceil(totalLogs / logsPagination.pageSize) : 0
     const { me, isAdmin } = useMe()
     const isUser = me?.role === 'user'
     const isMobile = useIsMobile()
@@ -40,6 +58,7 @@ function BinDetails() {
         {
             header: t("pages.binDetails.logsTable.columns.createdAt"),
             accessorKey: 'createdAt',
+            meta: { sortKey: 'createdAt' },
             cell: ({ row }) => {
                 return format(new Date(row.original.createdAt), 'yyyy-MM-dd HH:mm')
             },
@@ -47,6 +66,7 @@ function BinDetails() {
         {
             header: t("pages.binDetails.logsTable.columns.severity"),
             accessorKey: 'severity',
+            meta: { sortKey: 'severity' },
             cell: ({ row }) => {
                 const severity = row.original.severity;
                 return (
@@ -70,6 +90,7 @@ function BinDetails() {
         {
             header: t("pages.binDetails.logsTable.columns.fillLevel"),
             accessorKey: 'newLevel',
+            meta: { sortKey: 'newLevel' },
             cell: ({ row }) => row.original.newLevel == null
                 ? t("sensorUnavailable")
                 : `${row.original.newLevel}%`,
@@ -77,6 +98,7 @@ function BinDetails() {
         {
             header: t("components.logCard.weight"),
             accessorKey: 'weight',
+            meta: { sortKey: 'weight' },
             cell: ({ row }) => {
                 return row.original.weight ?? '-'
             }
@@ -84,6 +106,7 @@ function BinDetails() {
         {
             header: t("pages.binDetails.logsTable.columns.healthStatus"),
             accessorKey: 'health',
+            meta: { sortKey: 'health' },
             cell: ({ row }) => {
                 return (
                     <HealthBadge
@@ -97,6 +120,7 @@ function BinDetails() {
         {
             header: t("pages.binDetails.logsTable.columns.batteryLevel"),
             accessorKey: 'battery',
+            meta: { sortKey: 'battery' },
             cell: ({ row }) => {
                 return <Battery level={row.original.battery} />
             }
@@ -224,7 +248,7 @@ function BinDetails() {
                 </Card>
             ) : !bin ? (
                 <Card>
-                    <EmptyCard title={t("components.binCard.emptyCard")} description={t("components.binCard.emptyDescription")} />
+                    <EmptyCard title={t("components.binCard.emptyCard")} description={binsError?.message || t("components.binCard.emptyDescription")} />
                 </Card>
             ) : (
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
@@ -277,7 +301,9 @@ function BinDetails() {
                                                 <CardDescription>{t("pages.binDetails.logsTable.description")}</CardDescription>
                                             </CardHeader>
                                             <CardContent>
-                                                <DataTable columns={logsColumns} isLoading={isLoadingBins} data={bin.logs ?? []} maxLength={6} error={binsError} sortingBy={[{ id: 'createdAt', desc: true }]} />
+                                                <DataTable columns={logsColumns} isLoading={isLoadingLogs} data={allLogs ?? []} maxLength={BIN_LOGS_PAGE_SIZE} error={logsError}
+                                                    manualPagination pageCount={logsPageCount} pagination={logsPagination} onPaginationChange={setLogsPagination}
+                                                    manualFiltering onSearchChange={handleLogsSearch} manualSorting onSortChange={handleLogsSort} />
                                             </CardContent>
                                         </Card>
                                     )}

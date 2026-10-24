@@ -1,9 +1,11 @@
 import { LOGS_EP } from "@/utils/constants";
 import { request } from "./request";
 
-export function getAllLogs(page = 1, limit = 10, search = "", sort = null) {
+// `binId` narrows the list to one bin's logs (its page).
+export function getAllLogs(page = 1, limit = 10, search = "", sort = null, binId = null) {
     const order = sort ? `&sort=${sort.sort}&order=${sort.order}` : "";
-    return request(`${LOGS_EP}?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}${order}`);
+    const bin = binId ? `&binId=${binId}` : "";
+    return request(`${LOGS_EP}?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}${order}${bin}`);
 }
 
 export function getLog({ id, withBin }) {

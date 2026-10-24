@@ -47,6 +47,8 @@ export const MIN_SCALE_GRAMS = 100
 export const MAX_SCALE_GRAMS = 200000
 export const MAX_BIN_NAME_LENGTH = 25
 export const INSTRUCTIONS_PAGE_SIZE = 5
+// A bin page's logs table shows this many logs a page.
+export const BIN_LOGS_PAGE_SIZE = 6
 // Settings saved as they change wait this long after the last change, so
 // quick clicks go out as one request.
 export const SETTINGS_SAVE_DELAY_MS = 800

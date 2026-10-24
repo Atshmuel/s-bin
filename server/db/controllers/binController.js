@@ -17,7 +17,6 @@ const BIN_SORT_FIELDS = Object.freeze({
 
 export async function getBin(req, res) {
     const { id } = req.params;
-    const { withLogs } = req.query
 
     let query = {}
     query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(id))
@@ -27,16 +26,6 @@ export async function getBin(req, res) {
         { $match: query },
         { $project: { macAddress: 0 } }
     ]
-    if (withLogs) {
-        pipeline.push({
-            $lookup: {
-                from: 'binlogs',
-                localField: '_id',
-                foreignField: 'binId',
-                as: 'logs'
-            },
-        })
-    }
 
     try {
         const binData = await binModel.aggregate(pipeline);
@@ -71,7 +60,7 @@ export async function getBin(req, res) {
 }
 
 export async function getAllUserBins(req, res) {
-    const { withLogs, page, limit, search } = req.query
+    const { page, limit, search } = req.query
 
     const pageNum = Number(page) || 1;
     const limitNum = Number(limit) || DEFAULT_PAGE_SIZE;
@@ -92,16 +81,6 @@ export async function getAllUserBins(req, res) {
         { $limit: limitNum },
         { $project: { macAddress: 0, _sortRank: 0 } },
     ]
-    if (withLogs) {
-        pipeline.push({
-            $lookup: {
-                from: 'binlogs',
-                localField: '_id',
-                foreignField: 'binId',
-                as: 'logs'
-            },
-        })
-    }
 
     try {
         const [binsData, total] = await Promise.all([
