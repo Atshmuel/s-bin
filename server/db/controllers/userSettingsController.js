@@ -7,12 +7,13 @@ export async function getSettingsByUserId(req, res) {
     const { id } = req.params
     const { id: userId, role } = req.user
 
-    const filter = {
-        userId: role === ROLES.OWNER ? id : userId
-    };
+    // One's own, or anyone's for an owner.
+    if (id !== userId && role !== ROLES.OWNER) {
+        return res.status(403).json({ message: "Only an owner can see another user's settings." })
+    }
 
     try {
-        const settings = await userSettingModel.findOne(filter)
+        const settings = await userSettingModel.findOne({ userId: id })
         if (!settings) {
             return res.status(404).json({ message: 'User Settings not found' })
         }
@@ -28,14 +29,11 @@ export async function updateUserSettings(req, res) {
     const { id: userId, role } = req.user
     const updates = req.body
 
-    const filter = {
-        userId: role === ROLES.OWNER ? id : userId
-    };
-
-    if (role !== ROLES.OWNER && id !== userId) {
-        return res.status(403)
-
+    // One's own, or anyone's for an owner.
+    if (id !== userId && role !== ROLES.OWNER) {
+        return res.status(403).json({ message: "Only an owner can change another user's settings." })
     }
+    const filter = { userId: id };
 
     try {
         const settings = await userSettingModel.findOneAndUpdate(filter, updates, { new: true, runValidators: true }

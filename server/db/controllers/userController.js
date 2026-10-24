@@ -350,21 +350,22 @@ export async function updateUserForgotenPassword(req, res) {
     }
 }
 
-export async function updateUserNameOrEmail(req, res) {
+// A user's name: one's own, or anyone's for an owner. The email is the
+// account's sign-in and never changes.
+export async function updateUserName(req, res) {
     const { id } = req.params //id of the user that we want to update
-    const { name, email } = req.body
+    const { name } = req.body
     const { id: userId, role } = req.user
 
-    const filter = {
-        _id: role === ROLES.OWNER ? id : userId
-    };
-
-    const update = {};
-    if (name !== null) update.name = name;
-    if (email !== null) update.email = email.toLowerCase();
+    if (id !== userId && role !== ROLES.OWNER) {
+        return res.status(403).json({ message: "Only an owner can change another user's name." });
+    }
+    if (typeof name !== 'string' || name.trim().length === 0) {
+        return res.status(400).json({ message: 'Name is required' });
+    }
 
     try {
-        const updatedUser = await userModel.findOneAndUpdate(filter, { $set: update }, { new: true }).select('-passwordHash -__v -accountVerification -recoveryCode -role -email')
+        const updatedUser = await userModel.findOneAndUpdate({ _id: id }, { $set: { name: name.trim() } }, { new: true }).select('-passwordHash -__v -accountVerification -recoveryCode -role -email')
         if (!updatedUser)
             return res.status(403).json({ message: "Not allowed to update this user" });
 

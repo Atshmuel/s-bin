@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authRole, authToken, resetToken } from '../middlewares/authMiddleware.js'
-import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, forgotPassword, verifyRecoveryCode, updateUserForgotenPassword, verifyNewUser, updateUserNameOrEmail, updateUserPassword, updateUserRole, updateUserStatus, deleteAccount, createUserAsAdmin, getUserManagers, getUserManagersByOrgId, updateUserManagerAndOrg } from "../db/controllers/userController.js";
+import { createUser, getAllUsers, getUser, loginUser, logoutUser, deleteUser, forgotPassword, verifyRecoveryCode, updateUserForgotenPassword, verifyNewUser, updateUserName, updateUserPassword, updateUserRole, updateUserStatus, deleteAccount, createUserAsAdmin, getUserManagers, getUserManagersByOrgId, updateUserManagerAndOrg } from "../db/controllers/userController.js";
 import { validateBodyFields, validateParamExist } from "../middlewares/validationMiddleware.js";
 import { getSettingsByUserId, updateUserSettings } from "../db/controllers/userSettingsController.js";
 import { authLimiter } from "../middlewares/rateLimiters.js";
@@ -38,7 +38,7 @@ userRouter.get('/managers/:id', authToken, validateParamExist(), getUserManagers
 userRouter.get('/:id', authToken, validateParamExist(), getUser)
 
 
-userRouter.patch('/info/:id', authToken, validateBodyFields([], ['name', 'email']), validateParamExist(), updateUserNameOrEmail) //update email&name
+userRouter.patch('/info/:id', authToken, validateBodyFields(['name']), validateParamExist(), updateUserName) //update the name; the email never changes
 
 userRouter.patch('/password/:id', authToken, validateBodyFields(['newPassword'], ['oldPassword']), validateParamExist(), updateUserPassword) //update the password
 
