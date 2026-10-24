@@ -16,17 +16,17 @@ binRouter.use(authToken) //demends jwt for all requests
 binRouter.get('/all', getAllUserBins) //all user bins in db
 binRouter.get('/map', getMapBins) //the devices in a map view (?south&west&north&east), marker fields only
 binRouter.get('/map/extent', selectOrganization, getMapExtent) //the box around all the user's devices (an owner's ?org= narrows it)
-// Mesh settings: owners for any organization, admins for their own (checked in the controller).
-binRouter.get('/mesh-settings', (req, res, next) => {
-    authRole([ROLES.OWNER, ROLES.ADMIN])(req, res, next)
-}, getMeshSettings)
+// Organization settings: owners read every organization's, anyone else their
+// own (a driver needs its trucks and depot); only owners and admins change
+// them (checked in the controller).
+binRouter.get('/mesh-settings', getMeshSettings)
 binRouter.patch('/mesh-settings/:orgId', (req, res, next) => {
     authRole([ROLES.OWNER, ROLES.ADMIN])(req, res, next)
 }, updateMeshSettings)
 binRouter.get('/:id', validateParamExist(), getBin) //get bin
 binRouter.get('/:id/analytics/:section', getBinAnalytics) //one bin page analytics section (?range=7|30|90)
 binRouter.post('/radius', validateBodyFields(['coordinates', 'radius'], ['health', 'minLevel', 'maxLevel']), getBinsInUserRadius) //get bins
-binRouter.post('/route', validateBodyFields(['coordinates', 'radius', 'type'], ['minLevel', 'maxLevel', 'health']), getRouteBins) //get bins in radius for maintenance or collection route
+binRouter.post('/route', validateBodyFields(['coordinates', 'radius', 'type'], ['minLevel', 'maxLevel', 'health', 'orgId', 'truckTypeId']), getRouteBins) //get bins in radius for maintenance or collection route
 //updates
 binRouter.patch('/maintenance/:id', (req, res, next) => {
     authRole([ROLES.OWNER, ROLES.ADMIN, ROLES.TECHNICIAN])(req, res, next) //update bin maintenance by id

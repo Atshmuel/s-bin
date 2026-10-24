@@ -29,6 +29,10 @@ export const WEIGHT_REFERENCE_KG = 250
 // The map search's fullness range before the user sets one: every bin, as the
 // map shows them.
 export const DEFAULT_SEARCH_FULLNESS = Object.freeze([0, 100])
+// A route's area around its start, and the fullest bins it collects from: a
+// truck fills up with the fullest first, down to this.
+export const DEFAULT_ROUTE_RADIUS_KM = 10
+export const DEFAULT_ROUTE_MIN_FULLNESS = FULLNESS_WARNING_PERCENT
 
 // Battery, in %: low at warning, needs replacing at critical.
 export const BATTERY_WARNING_PERCENT = 50
