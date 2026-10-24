@@ -217,6 +217,23 @@
          "title": "חיפוש פחים",
          "kilometers": "ק״מ"
        },
+       "drive": {
+         "start": "התחלת נסיעה",
+         "resume": "חזרה לנסיעה",
+         "locating": "מאתר את המיקום שלך…",
+         "meters": "במרחק {{count}} מ׳",
+         "kilometers": "במרחק {{count}} ק״מ",
+         "next": "הבא: עצירה {{order}} מתוך {{count}}",
+         "allDone": "כל העצירות הושלמו",
+         "backToDepot": "חזרה לנקודת ההתחלה",
+         "follow": "עקוב אחריי",
+         "done": "בוצע",
+         "previous": "הקודמת",
+         "previousHint": "פתיחה מחדש של עצירה {{order}}, שסומנה אחרונה כבוצעה",
+         "stop": "סיום נסיעה",
+         "finish": "סיום המסלול",
+         "progress": "{{done}} מתוך {{count}} עצירות בוצעו."
+       },
        "route": {
          "type": "סוג מסלול",
          "maintenance": "תחזוקה",

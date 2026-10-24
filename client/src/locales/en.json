@@ -214,6 +214,23 @@
       "clearFilters": "Clear filters",
       "title": "Find bins"
     },
+    "drive": {
+      "start": "Start driving",
+      "resume": "Back to driving",
+      "locating": "Finding your location…",
+      "meters": "{{count}} m away",
+      "kilometers": "{{count}} km away",
+      "next": "Next: stop {{order}} of {{count}}",
+      "allDone": "All stops are done",
+      "backToDepot": "Head back to the start",
+      "follow": "Follow me",
+      "done": "Done",
+      "previous": "Previous",
+      "previousHint": "Reopen stop {{order}}, marked done last",
+      "stop": "Stop driving",
+      "finish": "Finish route",
+      "progress": "{{done}} of {{count}} stops done."
+    },
     "route": {
       "type": "Route Type",
       "maintenance": "Maintenance",

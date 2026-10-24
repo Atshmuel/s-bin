@@ -92,6 +92,10 @@ export const CLUSTER_UNTIL_ZOOM = 13
 export const USER_MARKER_MS = MINUTE_MS
 export const MAP_VIEW_DEBOUNCE_MS = 300
 export const MAP_FIT_MAX_ZOOM = 15
+// Driving a route: a stop counts as reached within NAV_ARRIVED_METERS, and the
+// map follows the driver at NAV_FOLLOW_ZOOM or closer.
+export const NAV_ARRIVED_METERS = 30
+export const NAV_FOLLOW_ZOOM = 16
 
 // Analytics ranges (days) and how fresh data stays. Devices report hours
 // apart: lists refresh once a minute, a dashboard left open every two, and

@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
-import { RouteIcon, X } from "lucide-react"
+import { Navigation, RouteIcon, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -31,7 +31,7 @@ function MapRouteForm({ map, userMarker }) {
     const { isRight } = useAppSide()
     const { isOwner } = useMe()
     const { selectedOrgId } = useSelectedOrg()
-    const { routePlan, setRoutePlan } = useMapSettings()
+    const { routePlan, setRoutePlan, setOpenPanel } = useMapSettings()
 
     const [routeType, setRouteType] = useState("collection")
     const [radius, setRadius] = useState(DEFAULT_ROUTE_RADIUS_KM)
@@ -170,6 +170,15 @@ function MapRouteForm({ map, userMarker }) {
                     {routePlan.leftOut > 0 && (
                         <span className="text-amber-600 dark:text-amber-400">{t("mapLegend.route.leftOut", { count: routePlan.leftOut })}</span>
                     )}
+                    {routePlan.doneIds?.length > 0 && (
+                        <span>{t("mapLegend.drive.progress", { done: routePlan.doneIds.length, count: routePlan.stops.length })}</span>
+                    )}
+                    <Button type="button" size="sm" className="mt-2" onClick={() => {
+                        setRoutePlan({ ...routePlan, driving: true, doneIds: routePlan.doneIds ?? [] })
+                        setOpenPanel(null)
+                    }}>
+                        <Navigation data-icon="inline-start" />{t(routePlan.driving ? "mapLegend.drive.resume" : "mapLegend.drive.start")}
+                    </Button>
                 </div>
             )}
             {routePlan && (

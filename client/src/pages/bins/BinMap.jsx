@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import L from "leaflet";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Marker, Polyline, Popup, Tooltip, useMap, useMapEvents } from "react-leaflet";
@@ -8,6 +9,7 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import CustomMarker from "@/components/map/CustomMarker"
 import MapComponent from "@/components/map/MapComponent"
 import BinPopupCard from "@/components/map/BinPopupCard";
+import { DriverPosition, DrivingBar } from "@/components/map/RouteDriving";
 import { Spinner } from "@/components/ui/spinner";
 import { useBins } from "@/hooks/bins/useBins";
 import { useMapBins, useMapExtent } from "@/hooks/bins/useMapBins";
@@ -52,7 +54,8 @@ function RouteView({ plan }) {
         <>
             <Polyline positions={polyline.decode(plan.geometry)} pathOptions={{ color: ROUTE_COLOR, weight: 5, opacity: 0.7, lineJoin: "round" }} />
             {plan.stops.map(stop => (
-                <Marker key={stop._id} position={stop.location.coordinates} icon={createStopIcon(stop.order, getColor(stop.status))}>
+                <Marker key={stop._id} position={stop.location.coordinates}
+                    icon={createStopIcon(stop.order, getColor(stop.status), (plan.doneIds ?? []).includes(stop._id))}>
                     <Tooltip direction="top" offset={[0, -14]}>
                         {t("mapLegend.route.stopTooltip", { order: stop.order, count: plan.stops.length, name: stop.binName })}
                     </Tooltip>
@@ -90,7 +93,11 @@ const DEFAULT_CENTER = Object.freeze([32.0853, 34.7818]);
 // opens around all of the user's devices.
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
     const { t } = useTranslation()
-    const { map, routePlan } = useMapSettings()
+    const { map, routePlan, setRoutePlan } = useMapSettings()
+    // Driving a route: the driver's position and whether the map follows it.
+    const [driverPosition, setDriverPosition] = useState(null)
+    const [following, setFollowing] = useState(true)
+    const stopFollowing = useCallback(() => setFollowing(false), [])
     const [searchParams] = useSearchParams();
     const hasOwnBins = binsToUse !== null
     const isSearch = SEARCH_PARAMS.every(param => searchParams.has(param))
@@ -173,7 +180,19 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                 {followsView && <MapViewWatcher onView={setBox} />}
                 {followsView && mapCells && <MapCells cells={mapCells} />}
                 {showsRoute && <RouteView plan={routePlan} />}
+                {showsRoute && routePlan.driving && (
+                    <DriverPosition following={following} onStopFollowing={stopFollowing} onPosition={setDriverPosition} />
+                )}
             </MapComponent>
+            {showsRoute && routePlan.driving && (
+                <DrivingBar plan={routePlan} position={driverPosition} following={following}
+                    onFollow={() => setFollowing(true)}
+                    onDone={(stopId) => setRoutePlan({ ...routePlan, doneIds: [...(routePlan.doneIds ?? []), stopId] })}
+                    onUndo={() => setRoutePlan({ ...routePlan, doneIds: (routePlan.doneIds ?? []).slice(0, -1) })}
+                    onStop={() => { setRoutePlan({ ...routePlan, driving: false }); setDriverPosition(null) }}
+                    onFinish={() => { setRoutePlan(null); setDriverPosition(null) }}
+                    distanceTo={(from, to) => L.latLng(from).distanceTo(L.latLng(to))} />
+            )}
             {/* Above Leaflet's panes and controls (1000); clicks pass through to the map. */}
             {followsView && isFetchingMapBins && (
                 <div className="pointer-events-none absolute inset-x-0 top-3 z-[1001] flex justify-center px-14">
