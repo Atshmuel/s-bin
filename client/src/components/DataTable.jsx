@@ -89,8 +89,10 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
     const iconToShow = searching ? X : Search
 
 
+    // flex-1 and the pagination's mt-auto: in a card taller than the table, the
+    // pagination stays at the bottom, level with the card beside it.
     return (
-        <div className="space-y-4">
+        <div className="flex flex-1 flex-col gap-4">
             {/* One row only from lg, and the controls wrap: next to the sidebar a narrower
                 screen has no room for the title, search and buttons side by side. */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -202,7 +204,7 @@ export default function DataTable({ data = [], columns, title, maxLength = 10, i
                 {(!hasData || error) && !isLoading ? <EmptyTable title={t("globalTable.noResults")} description={searching ? t("globalTable.noSearchResults") : t("globalTable.nothingToShow")} /> : null}
             </div>
 
-            <div className={`flex justify-between`}>
+            <div className="mt-auto flex items-center justify-between">
                 <Button
                     variant="outline"
                     onClick={() => table.previousPage()}

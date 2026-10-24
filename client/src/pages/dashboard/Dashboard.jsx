@@ -54,18 +54,18 @@ function Tile({ title, value, footer, icon, badgeVariant, isLoading, error, onSe
 
 function TableCard({ ref, title, description, children }) {
     return (
-        <Card ref={ref} className="min-w-0 flex-1">
+        <Card ref={ref} className="flex min-w-0 flex-1 flex-col">
             <CardHeader>
                 <CardTitle className="text-2xl font-semibold">{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <CardContent>{children}</CardContent>
+            <CardContent className="flex flex-1 flex-col">{children}</CardContent>
         </Card>
     )
 }
 
 function BinLink({ id, name }) {
-    return <Link className="text-primary underline-offset-4 hover:underline" to={`/bins/${id}`}>{name ?? "-"}</Link>
+    return <Link className="whitespace-nowrap text-primary underline-offset-4 hover:underline" to={`/bins/${id}`}>{name ?? "-"}</Link>
 }
 
 // A reason's badge; a leaf offline because its gateway is names that gateway
@@ -162,7 +162,7 @@ function Dashboard() {
             header: t("pages.dashboard.tables.attention.columns.reasons"),
             id: "reasons",
             cell: ({ row }) => (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex gap-1 whitespace-nowrap">
                     {row.original.reasons.map((reason) => (
                         <ReasonBadge key={reason} reason={reason} offlineCause={row.original.offlineCause} />
                     ))}
@@ -200,9 +200,9 @@ function Dashboard() {
             cell: ({ row }) => <BinLink id={row.original.binId} name={row.original.binName} />,
         },
         {
-            header: t("pages.dashboard.tables.recentLogs.columns.fillLevel"),
-            accessorKey: "newLevel",
-            cell: ({ row }) => row.original.newLevel == null ? "-" : `${row.original.newLevel}%`,
+            header: t("pages.dashboard.tables.recentLogs.columns.fullness"),
+            accessorKey: "fullness",
+            cell: ({ row }) => row.original.fullness == null ? "-" : `${row.original.fullness}%`,
         },
         {
             header: t("pages.dashboard.tables.recentLogs.columns.severity"),

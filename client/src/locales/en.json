@@ -342,7 +342,7 @@
           "columns": {
             "time": "Time",
             "bin": "Bin",
-            "fillLevel": "Fill Level",
+            "fullness": "Fullness",
             "severity": "Severity",
             "type": "Type",
             "viewLog": "View Log"

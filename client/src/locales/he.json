@@ -346,7 +346,7 @@
           "columns": {
             "time": "זמן",
             "bin": "פח",
-            "fillLevel": "רמת מילוי",
+            "fullness": "מלאות",
             "severity": "חומרה",
             "type": "סוג",
             "viewLog": "הצג תיעוד"

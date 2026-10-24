@@ -1,7 +1,7 @@
 import { binLogModel, binModel, organizationModel } from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { intervalsByOrg } from '../service/sharedService.js'
-import { binFullness } from '../../utils/analytics.js'
+import { binFullness, fullnessPercent } from '../../utils/analytics.js'
 import { lastReportAt, offlineCauses } from '../../utils/offline.js'
 import {
     ATTENTION_LIST_LIMIT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
@@ -122,7 +122,8 @@ async function attention(user) {
     return { total: devices.length, devices: devices.slice(0, ATTENTION_LIST_LIMIT) };
 }
 
-// The last day's reports and events, newest first, with each bin's name.
+// The last day's reports and events, newest first, with each bin's name and
+// its fullness at that report, as the attention table beside it shows it.
 // Gateways' logs stay out, as in the other fleet statistics.
 async function recentLogs(user) {
     const bins = await binModel.find(scopeToOrganization({ ...BINS_ONLY_FILTER }, user), { binName: 1 }).lean();
@@ -131,7 +132,13 @@ async function recentLogs(user) {
         { binId: { $in: bins.map(bin => bin._id) }, createdAt: { $gte: new Date(Date.now() - RECENT_LOGS_HOURS * HOUR_MS) } },
         { binId: 1, type: 1, severity: 1, newLevel: 1, weight: 1, health: 1, message: 1, createdAt: 1 },
     ).sort({ createdAt: -1 }).limit(RECENT_LOGS_LIMIT).lean();
-    return { logs: logs.map(log => ({ ...log, binName: names.get(String(log.binId)) ?? null })) };
+    return {
+        logs: logs.map(log => ({
+            ...log,
+            binName: names.get(String(log.binId)) ?? null,
+            fullness: fullnessPercent(log.newLevel, log.weight),
+        })),
+    };
 }
 
 export const DASHBOARD_SECTIONS = {
