@@ -2,8 +2,8 @@ import { getAllUserBins, getBinsInUserRadius } from "@/services/apiBins";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
 import { LIST_REFRESH_MS } from "@/utils/constants";
+import { useErrorToast } from "@/hooks/useErrorToast";
 
 
 
@@ -32,11 +32,8 @@ export function useBins(page = 1, limit = 10, search = "", { enabled = true } = 
     })
 
 
-    if (!data && binsError) {
-        return toast.error(binsError.message || t("toasts.failedLoadBins"));
-    }
-
-
+    // Only when there is nothing to show: a failed refresh keeps the bins.
+    useErrorToast(data ? null : binsError, t("toasts.failedLoadBins"), "bins-load")
 
     const allBins = data?.binsData
     const totalBins = data?.total;

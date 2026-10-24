@@ -23,7 +23,7 @@ export default function AIInsights() {
             <CardContent className="pt-5 min-h-46">
                 {aiOverviewError ? (
                     <div className="text-sm text-destructive p-3 rounded-md border border-destructive/20">
-                        {aiOverviewError?.message}
+                        {aiOverviewError.message || t("toasts.failedToLoadOverview")}
                     </div>
                 ) : null}
 

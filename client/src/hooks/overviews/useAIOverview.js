@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAIOverviewStream } from '../../services/apiOverview';
-import { toast } from "sonner";
-import { useTranslation } from 'react-i18next';
 import { useSelectedOrg } from '@/hooks/organizations/useSelectedOrg';
 
+// The card shows a failure itself (AIInsights), so there is no toast.
 export function useAIOverview() {
-    const { t } = useTranslation()
     const { selectedOrgId } = useSelectedOrg()
     const {
         data,
@@ -19,11 +17,6 @@ export function useAIOverview() {
         retry: false,
         refetchOnWindowFocus: false,
     });
-
-
-    if (!data && aiOverviewError) {
-        return toast.error(aiOverviewError.message || t("toasts.failedToLoadOverview"));
-    }
 
     const insights = data?.insights || []
     return { insights, isLoadingAIOverview, aiOverviewError };
