@@ -31,6 +31,7 @@ import AccountVerify from './pages/auth/AccountVerify';
 import { AppSideProvider } from './contexts/AppSideProvider';
 import { OrganizationScopeProvider } from './contexts/OrganizationScopeProvider';
 import Organizations from './pages/organizations/Organizations';
+import OrganizationSettings from './pages/organizations/OrganizationSettings';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -87,6 +88,7 @@ function App() {
                   <Outlet />
                 </ProtectedRoute>}>
                   <Route path='' element={<Organizations />} />
+                  <Route path=':id/settings' element={<OrganizationSettings />} />
                 </Route>
 
 

@@ -1,123 +1,70 @@
-
-import DataTable from "../../components/DataTable"
-import { Edit, Trash, Copy } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import InputLabel from "@/components/InputLabel";
-import { Spinner } from "@/components/ui/spinner";
-import { MobileTooltip } from "@/components/ui/mobile-tooltip";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useDeleteOrg } from "@/hooks/organizations/useDeleteOrg";
-import { useUpdateOrgName } from "@/hooks/organizations/useUpdateOrg";
+import DataTable from "../../components/DataTable"
 import { useOrganizations } from "@/hooks/organizations/useOrganizations";
-import { useSearchParams } from "react-router-dom";
-import { useAppSide } from "@/hooks/useAppSide";
-import OrgSettingsDialog from "@/components/organizations/OrgSettingsDialog";
-import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
+import { getOverviewSection } from "@/services/apiAnalytics";
+import { formatReportSchedule } from "@/utils/orgSettings";
+import { DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR } from "@/utils/constants";
+
+// The owner's overview of every organization: its devices' state and its
+// reporting schedule. A name opens the organization's page, where it is
+// renamed, set up or deleted.
 function OrganizationsList() {
-    const { t } = useTranslation();
-    const { deleteOrgById, isDeleting } = useDeleteOrg();
-    const { updateOrgName, isUpdatingOrgName } = useUpdateOrgName();
-    const { data, isLoadingOrgs, orgsError } = useOrganizations()
-    const [searchParams] = useSearchParams();
-    const searchId = searchParams.get('id') || '';
-    const { isRight, side } = useAppSide()
+    const { t, i18n } = useTranslation();
+    const { data: organizations, isLoadingOrgs, orgsError } = useOrganizations()
+    // Every organization's numbers (the dashboard's Organizations card), not
+    // narrowed to the organization picked on the dashboard.
+    const statsQuery = useQuery({
+        queryKey: ["organizations-overview"],
+        queryFn: () => getOverviewSection({ section: "organizations" }),
+    })
+    const stats = new Map((statsQuery.data?.organizations ?? []).map(row => [row._id, row]))
+    const rows = (organizations ?? []).map(org => ({ ...org, ...stats.get(org._id) }))
 
-
+    const count = (key) => ({
+        header: t(`pages.dashboard.tables.organizations.columns.${key}`),
+        accessorKey: key,
+        enableSorting: true,
+        cell: ({ row }) => <span className="tabular-nums">{row.original[key] ?? "-"}</span>,
+    })
     const columns = [
         {
             header: t('pages.organizationsList.columns.orgName'),
             accessorKey: 'name',
-            id: 'Org name',
             enableSorting: true,
-            size: 300,
-        },
-        {
-            header: t('pages.organizationsList.columns.orgId'),
-            accessorKey: '_id',
-            id: 'Org id',
-            enableSorting: true,
-            size: 400,
             cell: ({ row }) => (
-                <MobileTooltip content={row.original._id}>
-                    <div
-                        className="flex items-center gap-2 cursor-copy active:scale-95 transition-transform w-fit"
-                        onClick={() => {
-                            navigator.clipboard.writeText(row.original._id)
-                            toast.success('Copied organization ID to clipboard!')
-                        }}
-                    >
-                        <Copy size={16} />
-                        <span>{row.original._id}</span>
-                    </div>
-                </MobileTooltip>
-            )
+                <Link className="font-medium text-primary underline-offset-4 hover:underline" to={`/organizations/${row.original._id}/settings`}>
+                    {row.original.name}
+                </Link>
+            ),
+        },
+        count("bins"),
+        count("gateways"),
+        count("needsAttention"),
+        count("offline"),
+        count("almostFull"),
+        {
+            header: t("pages.dashboard.tables.organizations.columns.averageFullness"),
+            accessorKey: "averageFullness",
+            enableSorting: true,
+            cell: ({ row }) => row.original.averageFullness == null ? "-" : `${row.original.averageFullness}%`,
         },
         {
-            header: t('pages.organizationsList.columns.settings'),
-            id: 'settings',
-            cell: ({ row }) => <OrgSettingsDialog organization={row.original} />,
-            size: 200,
-        },
-        {
-            header: t('pages.organizationsList.columns.editOrgName'),
-            cell: ({ row }) => {
-                return RenameOrg(row.original._id)
-            },
-            size: 100,
-        },
-        {
-            header: t('pages.organizationsList.columns.deleteOrg'),
-            cell: ({ row }) => {
-                return DeleteOrg(row.original._id)
-            },
-            size: 100,
+            header: t("components.orgSettingsPage.nav.reporting"),
+            id: "reporting",
+            cell: ({ row }) => (
+                <span className="whitespace-nowrap text-sm text-muted-foreground">
+                    {formatReportSchedule(row.original.reportIntervalMinutes ?? DEFAULT_REPORT_INTERVAL_MINUTES,
+                        row.original.reportStartHour ?? DEFAULT_REPORT_START_HOUR, t, i18n.language)}
+                </span>
+            ),
         },
     ]
 
-    function DeleteOrg(orgId) {
-        return <ConfirmDeleteDialog
-            trigger={<Button variant='destructive' className={'cursor-pointer'}><Trash /> {t("delete")}</Button>}
-            title={t("pages.organizationsList.deletion.confirmationTitle")}
-            description={t("pages.organizationsList.deletion.confirmationDescription")}
-            inputLabel={t("pages.organizationsList.deletion.typeDelete")}
-            isDeleting={isDeleting}
-            onConfirm={() => deleteOrgById({ orgId })}
-        />
-    }
-
-    function RenameOrg(orgId) {
-        const [renameInput, setRenameInput] = useState('')
-
-        return <Dialog onOpenChange={(open) => !open && setRenameInput('')}>
-            <DialogTrigger asChild>
-                <Button className={'cursor-pointer'}><Edit /> {t("edit")}</Button>
-            </DialogTrigger>
-            <DialogContent side={side}>
-                <DialogHeader className="pt-6">
-                    <DialogTitle>{t("pages.organizationsList.rename.confirmationTitle")}</DialogTitle>
-                    <DialogDescription isRight={!isRight}>{t("pages.organizationsList.rename.confirmationDescription")}</DialogDescription>
-                </DialogHeader>
-                <InputLabel id='name' placeholder=" " type='text' value={renameInput}
-                    onChange={(e) => setRenameInput(e.target.value)}>{t("pages.organizationsList.rename.label")}</InputLabel>
-                <DialogFooter className="flex flex-col gap-2 sm:flex-row justify-end">
-                    <DialogClose asChild>
-                        <Button disabled={isUpdatingOrgName} className="cursor-pointer" variant='outline'>{t("cancel")}</Button>
-                    </DialogClose>
-                    <Button className="cursor-pointer" disabled={!renameInput.length || isUpdatingOrgName} onClick={() => updateOrgName({ orgId, name: renameInput })
-                    }>{isUpdatingOrgName ? <Spinner /> : t("submit")}</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-
-    }
-
-
     return (
         <div className="sm:p-10">
-            <DataTable columns={columns} data={data ?? []} isLoading={isLoadingOrgs} error={orgsError} title={t('pages.organizationsList.title')} initialSearch={searchId} />
+            <DataTable columns={columns} data={rows} isLoading={isLoadingOrgs} error={orgsError} title={t('pages.organizationsList.title')} />
         </div>
     )
 }

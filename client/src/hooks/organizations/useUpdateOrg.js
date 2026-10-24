@@ -13,6 +13,7 @@ export function useUpdateOrgName() {
         onSuccess: () => {
             toast.success(t('toasts.updatedOrgNameSuccessfully'))
             queryClient.invalidateQueries({ queryKey: ["organizations"] });
+            queryClient.invalidateQueries({ queryKey: ["mesh-settings"] });
 
         },
         onError: (error) => {

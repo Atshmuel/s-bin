@@ -11,7 +11,7 @@ import { useMe } from "@/hooks/users/auth/useMe";
 import { useOrgManagers } from "@/hooks/users/useOrgManagers";
 import { useOrganizations } from "@/hooks/organizations/useOrganizations";
 import { useUpdateOrgAndManager, useUpdateUserRole, useUpdateUserStatus } from "@/hooks/users/useUpdateUser";
-import { SegmentedChoice, SettingsRow, SettingsSection } from "./SettingsSection";
+import { SegmentedChoice, SettingsRow, SettingsSection } from "@/components/settings/SettingsSection";
 
 const STATUSES = Object.freeze(["pending", "active", "inactive", "suspended"]);
 

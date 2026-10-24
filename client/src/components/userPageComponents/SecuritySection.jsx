@@ -9,7 +9,7 @@ import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { useUpdateUserPassword } from "@/hooks/users/useUpdateUser";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/utils/constants";
-import { SettingsRow, SettingsSection } from "./SettingsSection";
+import { SettingsRow, SettingsSection } from "@/components/settings/SettingsSection";
 
 // What a new password needs, ticked off as it is typed.
 const PASSWORD_RULES = Object.freeze([

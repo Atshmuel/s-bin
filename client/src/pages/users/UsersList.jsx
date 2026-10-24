@@ -75,7 +75,7 @@ function UsersList() {
             const org = organizations?.find(o => o._id === orgId);
             return (
                 <Link className="flex gap-2 items-center capitalize"
-                    to={`/organizations?id=${orgId}`}
+                    to={`/organizations/${orgId}/settings`}
                 >
                     <span className={`${!org ? 'capitalize text-muted-foreground/50' : ''}`} >{org ?
                         (<><LinkIcon size={14} className="inline mr-1" /> {org.name}</>) : 'N/A'}</span>

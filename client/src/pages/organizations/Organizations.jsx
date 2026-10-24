@@ -1,11 +1,16 @@
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useMe } from "@/hooks/users/auth/useMe";
 import OrganizationsList from "./OrganizationsList";
-import OrganizationSettings from "./OrganizationSettings";
 
-// Owners manage every organization; an admin gets their own organization's settings.
+// Owners see every organization in the table (an old ?id= link opens that
+// organization's page); an admin goes straight to their own organization's
+// settings.
 function Organizations() {
-    const { isOwner } = useMe();
-    return isOwner ? <OrganizationsList /> : <OrganizationSettings />;
+    const { me, isOwner } = useMe();
+    const [searchParams] = useSearchParams();
+    const orgId = isOwner ? searchParams.get("id") : me.org;
+    if (orgId) return <Navigate replace to={`/organizations/${orgId}/settings`} />;
+    return <OrganizationsList />;
 }
 
 export default Organizations;

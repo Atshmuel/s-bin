@@ -5,7 +5,7 @@ import { Skeleton } from "../ui/skeleton";
 import { useAppSide } from "@/hooks/useAppSide";
 import { useAutoSaveSettings } from "@/hooks/users/useAutoSaveSettings";
 import { useUserSettings } from "@/hooks/users/useUserSettings";
-import { SettingsRow, SettingsSection } from "./SettingsSection";
+import { SettingsRow, SettingsSection } from "@/components/settings/SettingsSection";
 
 // The daily email report, switched on or off and saved a moment later
 // (useAutoSaveSettings). Owners get every organization's report; everyone

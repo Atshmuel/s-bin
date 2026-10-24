@@ -866,6 +866,32 @@
       "saved":"Settings saved.",
       "empty":"No organization found."
     },
+    "orgSettingsPage":{
+      "header": "Organization settings",
+      "nav": {
+        "label": "Settings sections",
+        "general": "General",
+        "reporting": "Reporting",
+        "danger": "Danger zone"
+      },
+      "general": {
+        "title": "General",
+        "description": "The organization's name and its ID.",
+        "name": "Name",
+        "nameHint": "How the organization appears across the app.",
+        "nameReadOnly": "Only an owner can rename an organization.",
+        "orgId": "Organization ID",
+        "orgIdHint": "Entered in a device's setup so it joins this organization.",
+        "copyId": "Copy the organization ID"
+      },
+      "danger": {
+          "delete": "Delete this organization"
+        },
+        "reporting": {
+        "title": "Reporting",
+        "startHourHint": "Local time at each device; the other reports follow at the interval."
+      }
+    },
     "binCard":{
        "deviceKey":"Device Access Key",
        "ownerId":"Owner ID",

@@ -4,7 +4,7 @@ import { Spinner } from "../ui/spinner";
 import { useDeleteUser } from "@/hooks/users/useDeleteUser";
 import { useDeleteAccount } from "@/hooks/users/useDeleteAccount";
 import ConfirmDeleteDialog from "../ConfirmDeleteDialog";
-import { SettingsRow, SettingsSection } from "./SettingsSection";
+import { SettingsRow, SettingsSection } from "@/components/settings/SettingsSection";
 
 // Deleting the account: one's own, or (as an admin or owner) another user's.
 // Confirmed by typing the account's email.

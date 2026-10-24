@@ -12,6 +12,8 @@ export function useDeleteOrg() {
         onSuccess: () => {
             toast.success(t('toasts.orgDeletedSuccessfully'))
             queryClient.invalidateQueries({ queryKey: ["organizations"] });
+            queryClient.invalidateQueries({ queryKey: ["organizations-overview"] });
+            queryClient.invalidateQueries({ queryKey: ["mesh-settings"] });
             queryClient.invalidateQueries({ queryKey: ["users"] });
             queryClient.invalidateQueries({ queryKey: ["all-bins"] });
             queryClient.invalidateQueries({ queryKey: ["all-logs"] });

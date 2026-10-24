@@ -6,7 +6,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { useUpdateUserInfo } from "@/hooks/users/useUpdateUser";
-import { SettingsRow, SettingsSection } from "./SettingsSection";
+import { SettingsRow, SettingsSection } from "@/components/settings/SettingsSection";
 
 // The name, editable on one's own account or by an owner (the server allows
 // no one else), and the email, which is the account's sign-in and never

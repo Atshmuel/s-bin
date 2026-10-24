@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useAutoSaveSettings } from "@/hooks/users/useAutoSaveSettings";
 import { useUserSettings } from "@/hooks/users/useUserSettings";
 import { clearAICache } from "@/utils/aiCache";
-import { SegmentedChoice, SettingsRow, SettingsSection } from "./SettingsSection";
+import { SegmentedChoice, SettingsRow, SettingsSection } from "@/components/settings/SettingsSection";
 
 const THEME_TO_SETTING = Object.freeze({ light: false, dark: true, system: null });
 
