@@ -1,5 +1,5 @@
 import { binModel, organizationModel } from '../models/models.js'
-import { getNotificationRecipients, sendTemplateEmail } from './sharedService.js'
+import { getNotificationRecipients, getOwnerRecipients, sendTemplateEmail } from './sharedService.js'
 import { devicesWithReasons } from '../controllers/dashboardController.js'
 import { fullSoon } from '../controllers/analyticsController.js'
 import { isValidTimeZone } from '../../utils/analytics.js'
@@ -8,7 +8,8 @@ import { DAILY_REPORT_DUE_WITHIN_HOURS, HOUR_MS, ROLES } from '../../utils/const
 
 // The daily report: one email per organization to each of its users with
 // email notifications on, listing what the dashboard's "Needs attention"
-// lists, by name. Nothing is sent on a day without anything to list.
+// lists, by name; owners get every organization's in one email. Nothing is
+// sent on a day without anything to list.
 //
 // An outage is reported once: status.offlineAlertSentAt is set when a report
 // names the device and cleared once it reports again. A leaf behind a silent
@@ -104,22 +105,75 @@ function sectionsHtml(sections) {
         '</ul>').join('');
 }
 
-// Builds and sends each organization's report, then records which outages
-// it named and forgets those that are over.
+// Sends the report to each user, one by one; true when at least one email
+// went out.
+async function sendToEach(users, values) {
+    let sent = false;
+    for (const user of users) {
+        try {
+            await sendTemplateEmail('dailyReport', user.email, { ...values, name: ` ${user.name}` });
+            sent = true;
+        } catch (error) {
+            console.error(`[Cron] Daily report to ${user.email} failed:`, error);
+        }
+    }
+    return sent;
+}
+
+// Builds each organization's report, sends it to its users and, all in one
+// email, to the owners; then records which outages were told and forgets
+// those that are over.
 export async function sendDailyReports(now = Date.now()) {
     const orgIds = await binModel.distinct('ownerId');
     if (orgIds.length === 0) return;
-    const recipients = await getNotificationRecipients(orgIds);
+    const [recipients, owners] = await Promise.all([getNotificationRecipients(orgIds), getOwnerRecipients()]);
+
+    const reports = [];
     for (const orgId of orgIds) {
         try {
-            await sendOrganizationReport(orgId, recipients.filter(user => String(user.org) === String(orgId)), now);
+            const report = await organizationReport(orgId, now);
+            if (report) reports.push(report);
         } catch (error) {
             console.error(`[Cron] Daily report for organization ${orgId} failed:`, error);
         }
     }
+
+    for (const report of reports) {
+        const users = recipients.filter(user => String(user.org) === String(report.orgId));
+        report.sent = await sendToEach(users, {
+            orgName: report.orgName,
+            sectionsText: sectionsText(report.sections),
+            sectionsHtml: sectionsHtml(report.sections),
+        });
+        report.hasReaders = users.length > 0;
+    }
+    const ownersSent = reports.length > 0 && await sendToEach(owners, {
+        orgName: 'all organizations',
+        sectionsText: reports.map(report => `== ${report.orgName} ==\n\n${sectionsText(report.sections)}`).join('\n\n\n'),
+        sectionsHtml: reports.map(report =>
+            `<h2 style='margin:32px 0 0 0; font-size:18px; color:#0b7a57;'>${escapeHtml(report.orgName)}</h2>` +
+            sectionsHtml(report.sections)).join(''),
+    });
+
+    for (const report of reports) {
+        // Nobody to tell still counts as told, so a later reader is not sent
+        // every old outage at once; a failed send is retried the next day.
+        const told = report.sent || ownersSent || (!report.hasReaders && owners.length === 0);
+        if (!told || report.newlyOffline.length === 0) continue;
+        // Only devices still silent since they were read: one that reported in
+        // the meantime keeps no flag.
+        await binModel.bulkWrite(report.newlyOffline.map(device => ({
+            updateOne: {
+                filter: { _id: device._id, 'status.updatedAt': device.status.updatedAt },
+                update: { $set: { 'status.offlineAlertSentAt': new Date(now) } },
+            },
+        })));
+    }
 }
 
-async function sendOrganizationReport(orgId, users, now) {
+// One organization's report, or null on a day with nothing to list; clears
+// the flags of outages that are over.
+async function organizationReport(orgId, now) {
     const scope = { role: ROLES.ADMIN, org: orgId };
     const [devices, { bins: dueSoon }, org] = await Promise.all([
         devicesWithReasons(scope),
@@ -134,31 +188,6 @@ async function sendOrganizationReport(orgId, users, now) {
     }
 
     const { sections, newlyOffline } = reportSections(devices, dueSoon, now);
-    if (sections.length === 0) return;
-
-    // Nobody to tell still counts as reported, so a later reader is not sent
-    // every old outage at once; a failed send is retried the next day.
-    let reported = users.length === 0;
-    for (const user of users) {
-        try {
-            await sendTemplateEmail('dailyReport', user.email, {
-                name: ` ${user.name}`,
-                orgName: org?.name ?? 'your organization',
-                sectionsText: sectionsText(sections),
-                sectionsHtml: sectionsHtml(sections),
-            });
-            reported = true;
-        } catch (error) {
-            console.error(`[Cron] Daily report to ${user.email} failed:`, error);
-        }
-    }
-    if (!reported || newlyOffline.length === 0) return;
-    // Only devices still silent since they were read: one that reported in
-    // the meantime keeps no flag.
-    await binModel.bulkWrite(newlyOffline.map(device => ({
-        updateOne: {
-            filter: { _id: device._id, 'status.updatedAt': device.status.updatedAt },
-            update: { $set: { 'status.offlineAlertSentAt': new Date(now) } },
-        },
-    })));
+    if (sections.length === 0) return null;
+    return { orgId, orgName: org?.name ?? 'your organization', sections, newlyOffline };
 }

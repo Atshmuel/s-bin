@@ -161,19 +161,12 @@ export async function intervalsByOrg(devices) {
     return new Map(orgIds.map((orgId, i) => [orgId, settings[i].reportIntervalMinutes]));
 }
 
-// The users of these organizations who get emails: any role, as long as
-// email notifications are on in their settings.
-export async function getNotificationRecipients(orgs) {
+// Users who get emails (email notifications on in their settings), by a
+// filter on the user, with their name, email and organization.
+async function emailRecipients(match) {
     try {
-        if (!Array.isArray(orgs) || orgs.length === 0)
-            throw new Error('orgs must be a non-empty array')
-
-        const users = await userModel.aggregate([
-            {
-                $match: {
-                    org: { $in: orgs },
-                }
-            },
+        return await userModel.aggregate([
+            { $match: match },
             {
                 $lookup: {
                     from: "usersettings",
@@ -182,25 +175,29 @@ export async function getNotificationRecipients(orgs) {
                     as: "settingsData"
                 }
             },
-            {
-                $match: {
-                    "settingsData.notifications.email": true
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    name: 1,
-                    email: 1,
-                    org: 1
-                }
-            }
+            { $match: { "settingsData.notifications.email": true } },
+            { $project: { _id: 0, name: 1, email: 1, org: 1 } },
         ]);
-        return users;
     } catch (error) {
         console.error(error)
         return [];
     }
+}
+
+// The users of these organizations who get emails: any role, as long as
+// email notifications are on in their settings.
+export async function getNotificationRecipients(orgs) {
+    if (!Array.isArray(orgs) || orgs.length === 0) {
+        console.error('getNotificationRecipients: orgs must be a non-empty array')
+        return [];
+    }
+    return emailRecipients({ org: { $in: orgs } });
+}
+
+// The owners who get emails; they belong to no organization and hear about
+// all of them.
+export async function getOwnerRecipients() {
+    return emailRecipients({ role: ROLES.OWNER });
 }
 
 // Logs carry no kind; log-based stats exclude gateways by their bin IDs.
