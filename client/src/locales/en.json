@@ -218,7 +218,6 @@
       "type": "Route Type",
       "maintenance": "Maintenance",
       "collection": "Collection",
-      "byFoot": "Walking Route",
       "title": "Plan a route",
       "description": "Through the bins the search above finds: a collection by fullness, a maintenance visit by health (gateways included).",
       "noBinsCollection": "No bins within {{radius}} km are {{min}}–{{max}}% full.",

@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Slider } from "@/components/ui/slider"
 import { Spinner } from "@/components/ui/spinner"
-import { Switch } from "@/components/ui/switch"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useAppSide } from "@/hooks/useAppSide"
 import { getBestRoute } from "@/services/apiBins"
@@ -40,7 +39,6 @@ function ChoiceGroup({ value, onChange, options, label }) {
 // which the map reads, so a search or a route survives a refresh or a link.
 function MapSearchForm({ map, userMarker }) {
     const { t } = useTranslation()
-    const { isRight } = useAppSide()
     const [searchParams, setSearchParams] = useSearchParams()
     const params = Object.fromEntries(searchParams)
 
@@ -55,7 +53,6 @@ function MapSearchForm({ map, userMarker }) {
     ])
     const [health, setHealth] = useState(params.health ?? "all")
     const [routeType, setRouteType] = useState(params.type ?? "collection")
-    const [byFoot, setByFoot] = useState(params.byFoot === "true")
     const [isRouting, setIsRouting] = useState(false)
 
     // From the user's location when known, otherwise from the map's center.
@@ -77,10 +74,10 @@ function MapSearchForm({ map, userMarker }) {
     async function planRoute() {
         const coordinates = origin()
         setIsRouting(true)
-        setSearchParams({ coordinates, radius, type: routeType, byFoot: String(byFoot) })
+        setSearchParams({ coordinates, radius, type: routeType })
         try {
             const response = await getBestRoute({
-                coordinates, radius, type: routeType, byFoot,
+                coordinates, radius, type: routeType,
                 minLevel: fullness[0], maxLevel: fullness[1], health,
             })
             // No bins match: say which, rather than a failure.
@@ -154,10 +151,6 @@ function MapSearchForm({ map, userMarker }) {
                     <Label>{t("mapLegend.route.type")}</Label>
                     <ChoiceGroup value={routeType} onChange={setRouteType} label={t("mapLegend.route.type")}
                         options={ROUTE_TYPES.map((type) => [type, t(`mapLegend.route.${type}`)])} />
-                </div>
-                <div className="flex items-center gap-2">
-                    <Switch isRight={isRight} id="map-by-foot" checked={byFoot} onCheckedChange={setByFoot} />
-                    <Label htmlFor="map-by-foot" className="text-sm">{t("mapLegend.route.byFoot")}</Label>
                 </div>
                 <div className="flex gap-2">
                     <Button type="button" className="flex-1" onClick={planRoute} disabled={isRouting}>

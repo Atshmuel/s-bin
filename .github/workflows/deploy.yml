@@ -73,14 +73,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Copy docker-compose and nginx to VM
+      - name: Copy docker-compose, nginx and the routing setup to VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_PUBLIC_IP }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
 
-          source: "docker-compose.yml,client/nginx.conf" 
+          source: "docker-compose.yml,client/nginx.conf,routing/vroom-conf/config.yml,routing/prepare-osrm.sh" 
           target: "~/s-bin"
           strip_components: 0 
 

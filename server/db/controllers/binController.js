@@ -4,7 +4,7 @@ import { appendFilter, BINS_ONLY_FILTER, healthRank, listSortStages, scopeToOrga
 import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
 import {
     BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, DEFAULT_COLLECTION_FULLNESS, DEFAULT_PAGE_SIZE, FULLNESS_CRITICAL_PERCENT,
-    FULLNESS_WARNING_PERCENT, MAP_CELL_PX, MAP_VIEW_LIMIT, ROUTE_MAX_BINS, ROUTE_STOP_SECONDS,
+    FULLNESS_WARNING_PERCENT, MAP_CELL_PX, MAP_VIEW_LIMIT, ROUTE_ENGINES, DEFAULT_ROUTE_ENGINE, ROUTE_STOP_SECONDS,
 } from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
@@ -303,22 +303,14 @@ export async function getBinsInUserRadius(req, res) {
 const HEALTH_FILTERS = ['good', 'warning', 'critical', 'all']
 
 export async function getRouteBins(req, res) {
-    const { coordinates, radius, type, limit, byFoot, minLevel, maxLevel, health } = req.body
+    const { coordinates, radius, type, limit, minLevel, maxLevel, health } = req.body
     if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
 
-    const parseBooleanParam = (value) => {
-        if (typeof value === 'boolean') return value;
-        if (typeof value === 'string') {
-            const normalizedValue = value.trim().toLowerCase();
-            if (normalizedValue === 'true') return true;
-            if (normalizedValue === 'false') return false;
-        }
-        return false;
-    };
-
-    const useWalkingRoute = parseBooleanParam(byFoot);
+    // Read per request: process.env holds .env's values only once the server
+    // has started.
+    const engine = ROUTE_ENGINES[process.env.ROUTE_ENGINE] ?? ROUTE_ENGINES[DEFAULT_ROUTE_ENGINE];
 
     // The route visits what the map's search finds: a collection the bins in
     // the fullness range (level or weight, whichever is higher), a maintenance
@@ -370,7 +362,7 @@ export async function getRouteBins(req, res) {
                         total: [{ $count: 'count' }],
                         bins: [
                             { $sort: { urgency: -1, distance: 1 } },
-                            { $limit: Math.min(Number(limit) || ROUTE_MAX_BINS, ROUTE_MAX_BINS) },
+                            { $limit: Math.min(Number(limit) || engine.maxBins, engine.maxBins) },
                             { $project: { _id: 1, location: 1, status: 1 } },
                         ],
                     },
@@ -397,7 +389,7 @@ export async function getRouteBins(req, res) {
             vehicles: [
                 {
                     id: 1,
-                    profile: useWalkingRoute ? 'foot-walking' : type === 'collection' ? 'driving-hgv' : 'driving-car',
+                    profile: engine.profile[type] ?? engine.profile.collection,
                     start: [coordinates[1], coordinates[0]],
                 }],
             options: {
@@ -409,7 +401,8 @@ export async function getRouteBins(req, res) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': process.env.ORS_KEY
+                // OpenRouteService's key; our VROOM needs none.
+                ...(process.env.ORS_KEY ? { 'Authorization': process.env.ORS_KEY } : {}),
             },
             body: JSON.stringify(routeRequestBody)
         })
@@ -417,7 +410,7 @@ export async function getRouteBins(req, res) {
         const responseData = await response.json();
 
         if (!response.ok) {
-            console.error("ORS API Error:", responseData);
+            console.error("Route optimizer error:", responseData);
             return res.status(400).json({
                 message: "Failed to optimize route",
                 details: responseData

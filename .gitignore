@@ -35,3 +35,9 @@ Thumbs.db
 
 # Claude Code settings are per developer.
 .claude/
+
+# OSRM's road data (prepared on the VM by routing/prepare-osrm.sh) and
+# VROOM's access log.
+routing/osrm/*
+!routing/osrm/.gitkeep
+routing/vroom-conf/access.log

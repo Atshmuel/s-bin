@@ -208,11 +208,18 @@ export const MIN_TRUCK_CAPACITY_KG = 500;
 export const MAX_TRUCK_CAPACITY_KG = 20000;
 export const TRUCK_NAME_MAX_LENGTH = 40;
 export const DEPOT_ADDRESS_MAX_LENGTH = 120;
-// A route visits at most this many bins, the most urgent first: the route
-// optimizer (OpenRouteService) builds a table of every location to every
-// other and allows 3500 entries, so 59 locations with the start (59² = 3481).
-// The time per stop guides its order.
-export const ROUTE_MAX_BINS = 58;
+// The route optimizer, chosen by ROUTE_ENGINE in the environment: the
+// self-hosted VROOM with OSRM (see docker-compose.yml), or OpenRouteService's
+// free service. A route visits at most `maxBins` bins, the most urgent first:
+// OpenRouteService allows a 3500-entry table of every location to every
+// other, so 59 locations with the start (59² = 3481); our VROOM takes far
+// more. `profile` is the road profile each engine knows. The time per stop
+// guides the order.
+export const ROUTE_ENGINES = Object.freeze({
+    vroom: Object.freeze({ maxBins: 300, profile: Object.freeze({ collection: 'car', maintenance: 'car' }) }),
+    ors: Object.freeze({ maxBins: 58, profile: Object.freeze({ collection: 'driving-hgv', maintenance: 'driving-car' }) }),
+});
+export const DEFAULT_ROUTE_ENGINE = 'ors';
 export const ROUTE_STOP_SECONDS = Object.freeze({ maintenance: 30 * 60, collection: 2 * 60 });
 // A map view with more devices than this comes as grid cells (a count each)
 // instead of the devices; a cell is about MAP_CELL_PX across on screen.

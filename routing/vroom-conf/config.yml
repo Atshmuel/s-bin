@@ -1,0 +1,23 @@
+# vroom-express (v0.12.0) settings for S-Bin: one thread for the VM's single
+# core, and the OSRM container as the road router under the "car" profile.
+cliArgs:
+  geometry: false # retrieve geometry (-g); a request asks for it with options.g
+  planmode: false
+  threads: 1
+  explore: 5
+  limit: '1mb'
+  logdir: '/..'
+  logsize: '100M'
+  maxlocations: 1000
+  maxvehicles: 200
+  override: true # lets a request's options (g) apply
+  path: ''
+  port: 3000
+  router: 'osrm'
+  timeout: 300000
+  baseurl: '/'
+routingServers:
+  osrm:
+    car:
+      host: 'sbin-osrm'
+      port: '5000'
