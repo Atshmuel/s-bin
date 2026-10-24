@@ -26,9 +26,9 @@ const MINUTE_MS = 60 * 1000
 export const FULLNESS_WARNING_PERCENT = 50
 export const FULLNESS_CRITICAL_PERCENT = 80
 export const WEIGHT_REFERENCE_KG = 250
-// The map search's range starts at the bins worth collecting, so a route
-// without touching it is a normal collection round.
-export const DEFAULT_COLLECTION_FULLNESS = Object.freeze([FULLNESS_CRITICAL_PERCENT, 100])
+// The map search's fullness range before the user sets one: every bin, as the
+// map shows them.
+export const DEFAULT_SEARCH_FULLNESS = Object.freeze([0, 100])
 
 // Battery, in %: low at warning, needs replacing at critical.
 export const BATTERY_WARNING_PERCENT = 50
@@ -65,12 +65,16 @@ export const PASSWORD_MIN_LENGTH = 8
 export const PASSWORD_MAX_LENGTH = 30
 
 // Map. Below CLUSTER_UNTIL_ZOOM nearby devices group into one marker; the
-// user's location marker stays USER_MARKER_MS after "My location".
+// user's location marker stays USER_MARKER_MS after "My location". The map
+// page loads the devices in view once the map stops moving for
+// MAP_VIEW_DEBOUNCE_MS, and first opens around all of them, no closer than
+// MAP_FIT_MAX_ZOOM (one device, or several at one spot, is a single point).
 export const DEFAULT_RADIUS_KM = 5
 export const MAX_RADIUS_KM = 100
-export const MAP_BINS_LIMIT = 1000
-export const CLUSTER_UNTIL_ZOOM = 16
+export const CLUSTER_UNTIL_ZOOM = 13
 export const USER_MARKER_MS = MINUTE_MS
+export const MAP_VIEW_DEBOUNCE_MS = 300
+export const MAP_FIT_MAX_ZOOM = 15
 
 // Analytics ranges (days) and how fresh data stays. Devices report hours
 // apart: lists refresh once a minute, a dashboard left open every two, and

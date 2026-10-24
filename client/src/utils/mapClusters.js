@@ -22,3 +22,17 @@ export function createClusterIcon(cluster) {
         iconSize: [44, 44],
     })
 }
+
+// A grid cell the server counted (a crowded view): the same marker as a
+// group, with its count and the color of its most urgent device (0 good,
+// 1 warning, 2 critical).
+const URGENCY_COLORS = Object.freeze([STATUS_COLORS.good, STATUS_COLORS.warning, STATUS_COLORS.critical])
+
+export function createCellIcon(count, urgency) {
+    const label = count >= 1000 ? `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}k` : String(count)
+    return L.divIcon({
+        html: `<div class="bin-cluster" style="--cluster-color: ${URGENCY_COLORS[urgency] ?? STATUS_COLORS.good}">${label}</div>`,
+        className: "",
+        iconSize: [44, 44],
+    })
+}

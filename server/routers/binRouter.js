@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authToken, authRole } from "../middlewares/authMiddleware.js";
 import { validateBodyFields, validateParamExist, validateRequestBodyBinIds } from "../middlewares/validationMiddleware.js";
-import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName, getRouteBins } from "../db/controllers/binController.js";
+import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getMapBins, getMapExtent, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName, getRouteBins } from "../db/controllers/binController.js";
 import { cancelDeviceInstruction, enqueueDeviceInstruction, listDeviceInstructions } from "../db/controllers/deviceInstructionController.js";
 import { getMeshSettings, updateMeshSettings } from "../db/controllers/organizationController.js";
 import { getBinAnalytics } from "../db/controllers/analyticsController.js";
@@ -14,6 +14,8 @@ binRouter.use(authToken) //demends jwt for all requests
 
 //getters
 binRouter.get('/all', getAllUserBins) //all user bins in db
+binRouter.get('/map', getMapBins) //the devices in a map view (?south&west&north&east), marker fields only
+binRouter.get('/map/extent', getMapExtent) //the box around all the user's devices
 // Mesh settings: owners for any organization, admins for their own (checked in the controller).
 binRouter.get('/mesh-settings', (req, res, next) => {
     authRole([ROLES.OWNER, ROLES.ADMIN])(req, res, next)

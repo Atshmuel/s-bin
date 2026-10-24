@@ -7,6 +7,17 @@ export function getAllUserBins(page = 1, limit = 10, search = "", sort = null) {
     return request(`${BINS_EP}/all?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}${order}`);
 }
 
+// A map view: { total, bins } (marker fields only), or for a crowded view
+// { total, cells } with a count per grid cell.
+export function getMapBins({ south, west, north, east, zoom }) {
+    return request(`${BINS_EP}/map?${new URLSearchParams({ south, west, north, east, zoom })}`);
+}
+
+// The box around all the user's devices, where the map opens: { extent }.
+export function getMapExtent() {
+    return request(`${BINS_EP}/map/extent`);
+}
+
 export function getBin({ id }) {
     return request(`${BINS_EP}/${id}`);
 }

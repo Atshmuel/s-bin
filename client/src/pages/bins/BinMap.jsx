@@ -1,40 +1,90 @@
-import CustomMarker from "@/components/map/CustomMarker"
-import MapComponent from "@/components/map/MapComponent"
-import { useBins } from "@/hooks/bins/useBins";
-import { getColor, isGateway } from "@/utils/binHelpers";
-import { getColocatedShifts, getDeviceRole, getDeviceRoleIcon } from "@/utils/deviceRoles";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import BinPopupCard from "@/components/map/BinPopupCard";
-import { Polyline } from "react-leaflet";
+import { useTranslation } from "react-i18next";
+import { Marker, Polyline, useMap, useMapEvents } from "react-leaflet";
 import polyline from "@mapbox/polyline";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
-import { createClusterIcon } from "@/utils/mapClusters";
-import { CLUSTER_UNTIL_ZOOM, MAP_BINS_LIMIT } from "@/utils/constants";
+import CustomMarker from "@/components/map/CustomMarker"
+import MapComponent from "@/components/map/MapComponent"
+import BinPopupCard from "@/components/map/BinPopupCard";
+import { Spinner } from "@/components/ui/spinner";
+import { useBins } from "@/hooks/bins/useBins";
+import { useMapBins, useMapExtent } from "@/hooks/bins/useMapBins";
 import { useMapSettings } from "@/hooks/useMapSettings";
+import { getColor, isGateway } from "@/utils/binHelpers";
+import { getColocatedShifts, getDeviceRole, getDeviceRoleIcon } from "@/utils/deviceRoles";
+import { createCellIcon, createClusterIcon } from "@/utils/mapClusters";
+import { CLUSTER_UNTIL_ZOOM, MAP_VIEW_DEBOUNCE_MS } from "@/utils/constants";
 
+const SEARCH_PARAMS = Object.freeze(["coordinates", "radius", "minLevel", "maxLevel", "health"]);
 
+function viewOf(map) {
+    const bounds = map.getBounds()
+    return { south: bounds.getSouth(), west: bounds.getWest(), north: bounds.getNorth(), east: bounds.getEast(), zoom: map.getZoom() }
+}
+
+// Reports the map's view when it opens and each time it stops moving (after
+// MAP_VIEW_DEBOUNCE_MS). Rendered inside the map, so it only ever reads the
+// live one.
+function MapViewWatcher({ onView }) {
+    const map = useMap()
+    const timer = useRef(null)
+    useEffect(() => {
+        map.whenReady(() => onView(viewOf(map)))
+        return () => clearTimeout(timer.current)
+    }, [map, onView])
+    useMapEvents({
+        moveend: () => {
+            clearTimeout(timer.current)
+            timer.current = setTimeout(() => onView(viewOf(map)), MAP_VIEW_DEBOUNCE_MS)
+        },
+    })
+    return null
+}
+
+// A crowded view's grid cells, counted by the server: each a group marker
+// that zooms in on its devices.
+function MapCells({ cells }) {
+    const map = useMap()
+    return cells.map(cell => (
+        <Marker key={`${cell.lat},${cell.lng}`} position={[cell.lat, cell.lng]} icon={createCellIcon(cell.count, cell.urgency)}
+            eventHandlers={{ click: () => map.setView([cell.lat, cell.lng], Math.min(map.getZoom() + 2, CLUSTER_UNTIL_ZOOM)) }} />
+    ))
+}
+const DEFAULT_CENTER = Object.freeze([32.0853, 34.7818]);
+
+// The map's devices: a caller's own (the dashboard's), the map search's
+// results (its parameters in the URL), or otherwise the devices in view,
+// loaded again each time the map stops moving; a crowded view comes as the
+// server's grid cells instead, so every count is true. The map page first
+// opens around all of the user's devices.
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
-    // A caller with its own bins (the dashboard's) needs no request of its own.
-    const hasOwnBins = binsToUse !== null
-    const { allBins, isLoadingBins } = useBins(1, MAP_BINS_LIMIT, "", { enabled: !hasOwnBins })
+    const { t } = useTranslation()
     const { map } = useMapSettings()
-
-    if (!binsToUse) {
-        binsToUse = allBins
-    }
     const [searchParams] = useSearchParams();
+    const hasOwnBins = binsToUse !== null
+    const isSearch = SEARCH_PARAMS.every(param => searchParams.has(param))
+    const followsView = !hasOwnBins && !isSearch
 
     const binId = searchParams.get("binId")
     const zoomFromUrl = Number(searchParams.get("zoom"))
     const route = searchParams.get("route")
     const locationFromUrl = searchParams.get("coordinates")?.split(",").map(Number)
 
-    if (binId)
-        binsToUse = binsToUse.filter(bin => bin._id === binId)
+    const { allBins: searchBins, isLoadingBins } = useBins(1, 0, "", { enabled: !hasOwnBins && isSearch })
+
+    // The view, reported by MapViewWatcher inside the map.
+    const [box, setBox] = useState(null)
+    const { mapBins, mapCells, isFetchingMapBins } = useMapBins(box, { enabled: followsView })
+    const opensAroundAll = followsView && !locationFromUrl
+    const { extent, isLoadingExtent } = useMapExtent({ enabled: opensAroundAll })
+
+    let devices = (hasOwnBins ? binsToUse : isSearch ? searchBins : mapBins) ?? []
+    if (binId) devices = devices.filter(bin => bin._id === binId)
 
     const routeCoordinates = route ? polyline.decode(route) : [];
-    const shifts = getColocatedShifts(binsToUse);
+    const shifts = getColocatedShifts(devices);
 
     // A group whose devices only separate at street level (the same spot) flies
     // there, where they stand side by side and their popups stay open; Leaflet's
@@ -49,19 +99,26 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
             cluster.zoomToBounds({ padding: [48, 48] })
         }
     }
-    // For the popups: a leaf's gateway by name, and how many bins each device
-    // relays for, from the devices already on the map.
-    const knownBins = allBins ?? binsToUse ?? []
-    const binNames = new Map(knownBins.map((bin) => [bin._id, bin.binName]))
+    // For the popups: a leaf's gateway by name and how many devices a gateway
+    // relays for. The map's own view comes with both from the server, which
+    // also knows devices outside the view; otherwise they are counted from the
+    // devices shown.
+    const binNames = new Map(devices.map((bin) => [bin._id, bin.binName]))
     const relayCounts = new Map()
-    for (const bin of knownBins) {
+    for (const bin of devices) {
         const gatewayId = bin.status?.connection?.via === "mesh" ? bin.status.connection.gatewayId : null
         if (gatewayId) relayCounts.set(gatewayId, (relayCounts.get(gatewayId) ?? 0) + 1)
     }
 
+    const opening = locationFromUrl ? { center: locationFromUrl }
+        : center ? { center }
+            : opensAroundAll && extent ? { bounds: [[extent.south, extent.west], [extent.north, extent.east]] }
+                : { center: devices[0]?.location.coordinates ?? DEFAULT_CENTER }
+    const isLoading = !hasOwnBins && ((isSearch && isLoadingBins) || (opensAroundAll && isLoadingExtent))
+
     return (
-        <div className="rounded-2xl overflow-hidden shadow-md border border-gray-300 h-full w-full">
-            <MapComponent center={locationFromUrl ? locationFromUrl : center ? center : binsToUse && binsToUse.length ? binsToUse[0].location.coordinates : [32.0853, 34.7818]} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} isLoading={!hasOwnBins && isLoadingBins} >
+        <div className="relative h-full w-full overflow-hidden rounded-2xl border border-gray-300 shadow-md">
+            <MapComponent {...opening} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} isLoading={isLoading} >
                 <MarkerClusterGroup
                     chunkedLoading
                     showCoverageOnHover={false}
@@ -72,16 +129,18 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                     onClick={handleClusterClick}
                     iconCreateFunction={createClusterIcon}
                 >
-                    {binsToUse?.map((bin) => (
+                    {devices.map((bin) => (
                         <CustomMarker key={bin._id} icon={getDeviceRoleIcon(getDeviceRole(bin))} position={bin.location.coordinates}
                             color={isGateway(bin) ? getColor(bin.status, 'battery') : getColor(bin.status)} shiftX={shifts[bin._id] ?? 0}
                             popup={<BinPopupCard
                                 bin={bin}
-                                gatewayName={binNames.get(bin.status?.connection?.gatewayId)}
-                                relayCount={relayCounts.get(bin._id) ?? 0}
+                                gatewayName={bin.gatewayName ?? binNames.get(bin.status?.connection?.gatewayId)}
+                                relayCount={bin.relayCount ?? relayCounts.get(bin._id) ?? 0}
                             />} />
                     ))}
                 </MarkerClusterGroup>
+                {followsView && <MapViewWatcher onView={setBox} />}
+                {followsView && mapCells && <MapCells cells={mapCells} />}
                 <Polyline positions={routeCoordinates}
                     pathOptions={{
                         color: "#3b82f6",
@@ -90,6 +149,15 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                         lineJoin: 'round'
                     }} />
             </MapComponent>
+            {/* Above Leaflet's panes and controls (1000); clicks pass through to the map. */}
+            {followsView && isFetchingMapBins && (
+                <div className="pointer-events-none absolute inset-x-0 top-3 z-[1001] flex justify-center px-14">
+                    <span className="flex items-center gap-2 rounded-full bg-background/90 px-3 py-1.5 text-xs shadow-md">
+                        <Spinner className="size-3.5" />
+                        {t("components.binMap.loading")}
+                    </span>
+                </div>
+            )}
         </div >
     )
 }

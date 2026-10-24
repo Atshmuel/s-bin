@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useAppSide } from "@/hooks/useAppSide"
 import { getBestRoute } from "@/services/apiBins"
-import { DEFAULT_COLLECTION_FULLNESS as DEFAULT_FULLNESS, DEFAULT_RADIUS_KM, MAX_RADIUS_KM } from "@/utils/constants"
+import { DEFAULT_SEARCH_FULLNESS as DEFAULT_FULLNESS, DEFAULT_RADIUS_KM, MAX_RADIUS_KM } from "@/utils/constants"
 
 const HEALTH_OPTIONS = ["good", "warning", "critical", "all"]
 const ROUTE_TYPES = ["collection", "maintenance"]

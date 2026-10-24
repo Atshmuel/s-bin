@@ -2,7 +2,10 @@ import mongoose from 'mongoose'
 import { binModel, deviceInstructionModel } from '../models/models.js'
 import { appendFilter, BINS_ONLY_FILTER, healthRank, listSortStages, scopeToOrganization } from '../../utils/helpers.js'
 import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
-import { DEFAULT_COLLECTION_FULLNESS, DEFAULT_PAGE_SIZE, ROUTE_MAX_BINS, ROUTE_STOP_SECONDS } from '../../utils/constants.js'
+import {
+    BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, DEFAULT_COLLECTION_FULLNESS, DEFAULT_PAGE_SIZE, FULLNESS_CRITICAL_PERCENT,
+    FULLNESS_WARNING_PERCENT, MAP_CELL_PX, MAP_VIEW_LIMIT, ROUTE_MAX_BINS, ROUTE_STOP_SECONDS,
+} from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
@@ -91,6 +94,158 @@ export async function getAllUserBins(req, res) {
         res.status(200).json({ binsData, total })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
+    }
+}
+
+// ---- The map page: GET /api/bins/map and /api/bins/map/extent ----
+// Locations are stored [lat, lng], so a map box is a range on each of the
+// two coordinates (exact for a rectangle, whatever the axis order).
+
+// What a marker and its popup show; no device key or MAC address.
+const MAP_MARKER_PROJECTION = Object.freeze({
+    binName: 1, kind: 1, location: 1,
+    'status.level': 1, 'status.levelValid': 1, 'status.weight': 1, 'status.scale': 1, 'status.battery': 1,
+    'status.health': 1, 'status.healthMessage': 1, 'status.updatedAt': 1, 'status.connection': 1,
+});
+
+function wrapLongitude(lng) {
+    return ((lng + 180) % 360 + 360) % 360 - 180;
+}
+
+// The filter for a box given in degrees; null when the box is not one.
+function mapBoxFilter({ south, west, north, east }) {
+    const [s, w, n, e] = [south, west, north, east].map(Number);
+    if (![s, w, n, e].every(Number.isFinite) || s > n || w > e) return null;
+    const filter = { 'location.coordinates.0': { $gte: s, $lte: n } };
+    if (e - w >= 360) return filter; // the whole world across
+    const [from, to] = [wrapLongitude(w), wrapLongitude(e)];
+    // A box across the date line is two ranges.
+    return from <= to
+        ? { ...filter, 'location.coordinates.1': { $gte: from, $lte: to } }
+        : { ...filter, $or: [{ 'location.coordinates.1': { $gte: from } }, { 'location.coordinates.1': { $lte: to } }] };
+}
+
+// How urgent a device's marker is, as its color shows it: 0 good, 1
+// warning, 2 critical; a bin by its fullness, a gateway by its battery.
+const MARKER_URGENCY = Object.freeze({
+    $cond: [
+        { $eq: ['$kind', 'gateway'] },
+        {
+            $switch: {
+                branches: [
+                    { case: { $lte: ['$status.battery', BATTERY_CRITICAL_PERCENT] }, then: 2 },
+                    { case: { $lte: ['$status.battery', BATTERY_WARNING_PERCENT] }, then: 1 },
+                ],
+                default: 0,
+            },
+        },
+        {
+            $let: {
+                vars: { fullness: FULLNESS_EXPRESSION },
+                in: {
+                    $switch: {
+                        branches: [
+                            { case: { $gte: ['$$fullness', FULLNESS_CRITICAL_PERCENT] }, then: 2 },
+                            { case: { $gte: ['$$fullness', FULLNESS_WARNING_PERCENT] }, then: 1 },
+                        ],
+                        default: 0,
+                    },
+                },
+            },
+        },
+    ],
+});
+
+// The view's devices grouped into a grid of about MAP_CELL_PX on screen at
+// this zoom (Leaflet's world is 256 px across at zoom 0): per cell, how many,
+// where on average, and the most urgent.
+function mapCells(query, { south, north }, zoom) {
+    const lngStep = 360 * MAP_CELL_PX / (256 * 2 ** zoom);
+    const latStep = lngStep * Math.cos((Number(south) + Number(north)) / 2 * Math.PI / 180);
+    return binModel.aggregate([
+        { $match: query },
+        {
+            $project: {
+                lat: { $arrayElemAt: ['$location.coordinates', 0] },
+                lng: { $arrayElemAt: ['$location.coordinates', 1] },
+                urgency: MARKER_URGENCY,
+            },
+        },
+        {
+            $group: {
+                _id: { row: { $floor: { $divide: ['$lat', latStep] } }, col: { $floor: { $divide: ['$lng', lngStep] } } },
+                count: { $sum: 1 },
+                lat: { $avg: '$lat' },
+                lng: { $avg: '$lng' },
+                urgency: { $max: '$urgency' },
+            },
+        },
+        { $project: { _id: 0, count: 1, lat: 1, lng: 1, urgency: 1 } },
+    ]);
+}
+
+// The map's view (?south&west&north&east&zoom). Up to MAP_VIEW_LIMIT devices
+// come as markers: a leaf with its gateway's name and a gateway with how many
+// devices it relays for, even when those are outside the view. More come as
+// grid cells, so every count stays true however many there are.
+export async function getMapBins(req, res) {
+    const box = mapBoxFilter(req.query);
+    if (!box) return res.status(400).json({ message: 'A map box needs south, west, north and east in degrees.' });
+    const query = scopeToOrganization(box, req.user);
+    const zoom = Number(req.query.zoom);
+    try {
+        const total = await binModel.countDocuments(query);
+        if (total > MAP_VIEW_LIMIT && Number.isFinite(zoom)) {
+            return res.status(200).json({ total, cells: await mapCells(query, req.query, zoom) });
+        }
+        const bins = await binModel.find(query, MAP_MARKER_PROJECTION).sort({ 'status.level': -1, _id: 1 }).limit(MAP_VIEW_LIMIT).lean();
+        const ids = bins.map(bin => bin._id);
+        const gatewayIds = [...new Set(bins
+            .filter(bin => bin.status?.connection?.via === 'mesh' && bin.status.connection.gatewayId)
+            .map(bin => String(bin.status.connection.gatewayId)))];
+        const [gateways, relays] = await Promise.all([
+            binModel.find(scopeToOrganization({ _id: { $in: gatewayIds.map(id => new mongoose.Types.ObjectId(id)) } }, req.user),
+                { binName: 1 }).lean(),
+            binModel.aggregate([
+                { $match: { 'status.connection.via': 'mesh', 'status.connection.gatewayId': { $in: ids } } },
+                { $group: { _id: '$status.connection.gatewayId', count: { $sum: 1 } } },
+            ]),
+        ]);
+        const gatewayNames = new Map(gateways.map(gateway => [String(gateway._id), gateway.binName]));
+        const relayCounts = new Map(relays.map(relay => [String(relay._id), relay.count]));
+        res.status(200).json({
+            total,
+            bins: bins.map(bin => ({
+                ...bin,
+                gatewayName: gatewayNames.get(String(bin.status?.connection?.gatewayId)) ?? null,
+                relayCount: relayCounts.get(String(bin._id)) ?? 0,
+            })),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error });
+    }
+}
+
+// The box around all the user's devices, where the map first opens; null
+// when there are none.
+export async function getMapExtent(req, res) {
+    try {
+        const [extent] = await binModel.aggregate([
+            { $match: scopeToOrganization({ 'location.coordinates.1': { $exists: true } }, req.user) },
+            {
+                $group: {
+                    _id: null,
+                    south: { $min: { $arrayElemAt: ['$location.coordinates', 0] } },
+                    north: { $max: { $arrayElemAt: ['$location.coordinates', 0] } },
+                    west: { $min: { $arrayElemAt: ['$location.coordinates', 1] } },
+                    east: { $max: { $arrayElemAt: ['$location.coordinates', 1] } },
+                },
+            },
+            { $project: { _id: 0 } },
+        ]);
+        res.status(200).json({ extent: extent ?? null });
+    } catch (error) {
+        res.status(500).json({ message: error?.message || error });
     }
 }
 

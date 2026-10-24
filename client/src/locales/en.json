@@ -1029,6 +1029,9 @@
         "deleteOtherHint": "Removes this user's account for good."
       }
     },
+    "binMap":{
+      "loading":"Loading the devices in view…"
+    },
     "organizationSelect":{
       "label":"Organization",
       "all":"All organizations"

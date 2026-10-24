@@ -196,6 +196,10 @@ export const LOG_TYPES_DAYS = 30;
 // A route visits at most this many bins; the time per stop guides its order.
 export const ROUTE_MAX_BINS = 100;
 export const ROUTE_STOP_SECONDS = Object.freeze({ maintenance: 30 * 60, collection: 2 * 60 });
+// A map view with more devices than this comes as grid cells (a count each)
+// instead of the devices; a cell is about MAP_CELL_PX across on screen.
+export const MAP_VIEW_LIMIT = 2000;
+export const MAP_CELL_PX = 80;
 
 // The AI overview: the model, the window its briefing covers and how many
 // devices it lists (the most urgent first).
