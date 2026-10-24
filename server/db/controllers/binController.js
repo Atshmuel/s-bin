@@ -361,10 +361,24 @@ export async function getRouteBins(req, res) {
                     },
                 },
                 ...fullnessStages,
-                { $limit: limit || ROUTE_MAX_BINS },
-                { $project: { _id: 1, location: 1, status: 1 } }
+                // More than the optimizer takes: the most urgent first (the
+                // fullest for a collection, the worst health for maintenance),
+                // the nearest breaking ties; the total says how many matched.
+                { $addFields: { urgency: type === 'collection' ? '$fullness' : healthRank('$status.health') } },
+                {
+                    $facet: {
+                        total: [{ $count: 'count' }],
+                        bins: [
+                            { $sort: { urgency: -1, distance: 1 } },
+                            { $limit: Math.min(Number(limit) || ROUTE_MAX_BINS, ROUTE_MAX_BINS) },
+                            { $project: { _id: 1, location: 1, status: 1 } },
+                        ],
+                    },
+                },
             ]
         )
+        const total = binsData[0]?.total[0]?.count ?? 0
+        binsData = binsData[0]?.bins ?? []
 
         if (binsData.length === 0)
             return res.status(200).json({ route: [], message: "No bins found in the specified radius matching the criteria" });
@@ -410,7 +424,7 @@ export async function getRouteBins(req, res) {
             });
         }
 
-        res.status(200).json({ route: responseData.routes[0], binsData })
+        res.status(200).json({ route: responseData.routes[0], binsData, total })
     } catch (error) {
         res.status(500).json({ message: error?.message || error })
     }

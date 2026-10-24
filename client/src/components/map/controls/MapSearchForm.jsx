@@ -97,6 +97,11 @@ function MapSearchForm({ map, userMarker }) {
                 coordinates: response.binsData[0].location.coordinates.join(","),
             })
             toast.success(t("toasts.routeCalculated", { distance: (response.route.distance / 1000).toFixed(2) }))
+            // The optimizer takes a limited number of stops: say when some were left out.
+            if (response.total > response.binsData.length) {
+                toast.info(t(routeType === "collection" ? "mapLegend.route.partialCollection" : "mapLegend.route.partialMaintenance",
+                    { shown: response.binsData.length, total: response.total }))
+            }
         } catch (error) {
             setSearchParams({})
             toast.error(error.message || t("toasts.failedToGetRoutes"))

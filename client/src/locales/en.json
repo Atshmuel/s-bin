@@ -223,6 +223,8 @@
       "description": "Through the bins the search above finds: a collection by fullness, a maintenance visit by health (gateways included).",
       "noBinsCollection": "No bins within {{radius}} km are {{min}}–{{max}}% full.",
       "noBinsMaintenance": "No devices within {{radius}} km match the health filter ({{health}}).",
+      "partialCollection": "The route visits the {{shown}} fullest of the {{total}} bins found; narrow the search for the rest.",
+      "partialMaintenance": "The route visits the {{shown}} most urgent of the {{total}} devices found; narrow the search for the rest.",
       "clear": "Clear route"
     },
     "locations": {

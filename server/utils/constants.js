@@ -193,8 +193,11 @@ export const SERVICE_INTERVAL_DAYS = 30;
 export const DEFAULT_PAGE_SIZE = 10;
 export const RECENT_LOGS_HOURS = 24;
 export const LOG_TYPES_DAYS = 30;
-// A route visits at most this many bins; the time per stop guides its order.
-export const ROUTE_MAX_BINS = 100;
+// A route visits at most this many bins, the most urgent first: the route
+// optimizer (OpenRouteService) builds a table of every location to every
+// other and allows 3500 entries, so 59 locations with the start (59² = 3481).
+// The time per stop guides its order.
+export const ROUTE_MAX_BINS = 58;
 export const ROUTE_STOP_SECONDS = Object.freeze({ maintenance: 30 * 60, collection: 2 * 60 });
 // A map view with more devices than this comes as grid cells (a count each)
 // instead of the devices; a cell is about MAP_CELL_PX across on screen.
