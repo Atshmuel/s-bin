@@ -12,9 +12,10 @@ import { updateFleetSettingsApi } from "@/services/apiOrganizations";
 import {
     MAX_TRUCK_CAPACITY_KG, MAX_TRUCK_TYPES, MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
 } from "@/utils/constants";
+import { truckName } from "@/utils/orgSettings";
 
-const asForm = (fleet) => fleet.map(({ _id, name, preset, count, capacityKg }) =>
-    ({ _id, name, preset, count: String(count), capacityKg: String(capacityKg) }))
+const asForm = (fleet, t) => fleet.map(({ _id, name, preset, count, capacityKg }) =>
+    ({ _id, name: truckName({ name, preset }, t), preset, count: String(count), capacityKg: String(capacityKg) }))
 
 function isValidType({ name, count, capacityKg }) {
     const trucks = Number(count), kg = Number(capacityKg)
@@ -29,7 +30,7 @@ function isValidType({ name, count, capacityKg }) {
 function OrgFleetSection({ id, organization }) {
     const { t } = useTranslation()
     const queryClient = useQueryClient()
-    const saved = asForm(organization.fleet ?? [])
+    const saved = asForm(organization.fleet ?? [], t)
     const [fleet, setFleet] = useState(saved)
     const isChanged = JSON.stringify(fleet) !== JSON.stringify(saved)
     const isValid = fleet.every(isValidType)

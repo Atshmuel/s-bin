@@ -17,7 +17,7 @@ import ErrorPage from "../generals/ErrorPage";
 // organizations table), an admin's for their own.
 function OrganizationSettings() {
     const { id } = useParams();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isOwner } = useMe();
     const settingsQuery = useQuery({ queryKey: ["mesh-settings"], queryFn: getMeshSettings });
     const organization = settingsQuery.data?.organizations?.find(org => org._id === id);
@@ -43,7 +43,7 @@ function OrganizationSettings() {
             sections={[
                 { id: "general", element: <OrgGeneralSection key={organization.name} id="general" organization={organization} canRename={isOwner} /> },
                 { id: "reporting", element: <OrgReportingSection key={reportingKey} id="reporting" organization={organization} /> },
-                { id: "fleet", element: <OrgFleetSection key={JSON.stringify(organization.fleet ?? [])} id="fleet" organization={organization} /> },
+                { id: "fleet", element: <OrgFleetSection key={i18n.language + JSON.stringify(organization.fleet ?? [])} id="fleet" organization={organization} /> },
                 { id: "depot", element: <OrgDepotSection key={JSON.stringify(organization.depot ?? null)} id="depot" organization={organization} /> },
                 ...(isOwner ? [{ id: "danger", element: <OrgDangerZoneSection id="danger" organization={organization} /> }] : []),
             ]} />

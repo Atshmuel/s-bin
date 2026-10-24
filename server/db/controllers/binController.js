@@ -476,7 +476,7 @@ export async function getRouteBins(req, res) {
             start: origin,
             end: depot,
             fromDepot: Boolean(depot),
-            truck: truck ? { name: truck.name, capacityKg: truck.capacityKg } : null,
+            truck: truck ? { name: truck.name, preset: truck.preset, capacityKg: truck.capacityKg } : null,
             loadKg: truck ? stops.reduce((sum, stop) => sum + stop.loadKg, 0) : null,
             total,
             // Matched bins the route leaves: past the optimizer's limit, or past the truck's capacity.

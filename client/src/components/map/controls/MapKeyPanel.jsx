@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import L from "leaflet"
 import { Info, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useAppSide } from "@/hooks/useAppSide"
 import { useMapSettings } from "@/hooks/useMapSettings"
 import MapColorKey from "./MapColorKey"
 
@@ -10,6 +11,7 @@ import MapColorKey from "./MapColorKey"
 // opposite the map's actions.
 function MapKeyPanel() {
     const { t } = useTranslation()
+    const { isRight } = useAppSide()
     const { openPanel, setOpenPanel } = useMapSettings()
     const isOpen = openPanel === "key"
     const panelId = useId()
@@ -23,8 +25,9 @@ function MapKeyPanel() {
     }, [isOpen])
 
     return (
-        // The column spans the map's height, so the key scrolls inside a small map.
-        <div className="pointer-events-none absolute top-24 bottom-2 left-2 z-[400] flex flex-col items-start justify-end gap-2">
+        // The column spans the map's height, so the key scrolls inside a small
+        // map. Its button keeps to the left in Hebrew too.
+        <div className={`pointer-events-none absolute top-24 bottom-2 left-2 z-[400] flex flex-col justify-end gap-2 ${isRight ? "items-start" : "items-end"}`}>
             {isOpen && (
                 <div id={panelId} ref={panelRef}
                     className="pointer-events-auto min-h-0 w-64 max-w-[calc(100vw-3rem)] overflow-y-auto rounded-lg border bg-background/95 p-4 text-foreground shadow-lg backdrop-blur">

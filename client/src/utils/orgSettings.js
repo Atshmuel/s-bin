@@ -1,3 +1,15 @@
+import i18n from "@/i18n";
+
+// A truck type's name for the reader. A preset's name is saved in the language
+// of whoever added it, so while it stays unrenamed (any language's preset
+// name) it shows in the reader's language; a name the organization chose stays.
+export function truckName(truck, t) {
+    if (!truck?.preset || truck.preset === "custom") return truck?.name
+    const key = `components.orgSettingsPage.fleet.presets.${truck.preset}`
+    const isPresetName = Object.keys(i18n.options.resources).some(lng => t(key, { lng }) === truck.name)
+    return isPresetName ? t(key) : truck.name
+}
+
 const MINUTES_PER_DAY = 24 * 60;
 // Up to this many reports a day are listed by time; more are described.
 const MAX_LISTED_REPORT_TIMES = 4;

@@ -16,6 +16,7 @@ import { getBestRoute } from "@/services/apiBins"
 import { getMeshSettings } from "@/services/apiMeshSettings"
 import { DEFAULT_ROUTE_MIN_FULLNESS, DEFAULT_ROUTE_RADIUS_KM, MAX_RADIUS_KM } from "@/utils/constants"
 import { ROUTE_COLOR } from "@/utils/mapClusters"
+import { truckName } from "@/utils/orgSettings"
 import ChoiceGroup from "./ChoiceGroup"
 
 const ROUTE_TYPES = ["collection", "maintenance"]
@@ -123,7 +124,7 @@ function MapRouteForm({ map, userMarker }) {
                 organizations.map(org => [org._id, org.name]))}
             {routeType === "collection" && (fleet.length > 0
                 ? selectRow(t("mapLegend.route.truck"), truckTypeId, setTruckChoice,
-                    fleet.map(truck => [truck._id, t("mapLegend.route.truckOption", { name: truck.name, kg: truck.capacityKg.toLocaleString() })]))
+                    fleet.map(truck => [truck._id, t("mapLegend.route.truckOption", { name: truckName(truck, t), kg: truck.capacityKg.toLocaleString() })]))
                 : <p className="text-xs text-muted-foreground">{t("mapLegend.route.noFleet")}</p>)}
             <div className="flex flex-col gap-3">
                 <Label>{t("mapLegend.search.binRadius")}: {radius} {t("mapLegend.search.kilometers")}</Label>
@@ -164,7 +165,7 @@ function MapRouteForm({ map, userMarker }) {
                         {" · "}{t("mapLegend.route.summaryTime", { hours: Math.floor(routePlan.duration / 3600), minutes: Math.round(routePlan.duration % 3600 / 60) })}
                     </span>
                     {routePlan.truck && (
-                        <span>{t("mapLegend.route.summaryLoad", { load: routePlan.loadKg.toLocaleString(), capacity: routePlan.truck.capacityKg.toLocaleString(), truck: routePlan.truck.name })}</span>
+                        <span>{t("mapLegend.route.summaryLoad", { load: routePlan.loadKg.toLocaleString(), capacity: routePlan.truck.capacityKg.toLocaleString(), truck: truckName(routePlan.truck, t) })}</span>
                     )}
                     <span>{routePlan.fromDepot ? t("mapLegend.route.startsAtDepot") : t("mapLegend.route.startsHere")}</span>
                     {routePlan.leftOut > 0 && (

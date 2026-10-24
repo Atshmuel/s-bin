@@ -6,6 +6,7 @@ import { RouteIcon, SlidersHorizontal, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { useAppSide } from "@/hooks/useAppSide"
 import { useMapSettings } from "@/hooks/useMapSettings"
 import { USER_MARKER_MS } from "@/utils/constants"
 import MapDisplayOptions from "./MapDisplayOptions"
@@ -20,6 +21,7 @@ const LOCATION_ERRORS = { 1: "locationDenied", 2: "locationUnavailable", 3: "loc
 function MapControls({ legendForm = false }) {
     const { t } = useTranslation()
     const map = useMap()
+    const { isRight } = useAppSide()
     const { openPanel, setOpenPanel } = useMapSettings()
     const isOpen = openPanel === "controls" || openPanel === "route"
     const panelId = useId()
@@ -56,8 +58,9 @@ function MapControls({ legendForm = false }) {
 
     return (
         // The column spans the map's height, so a panel scrolls inside it
-        // instead of growing past the top.
-        <div className="pointer-events-none absolute top-8 right-2 bottom-2 z-[400] flex flex-col items-end justify-end gap-2">
+        // instead of growing past the top. Its buttons keep to the right in
+        // Hebrew too, where the column's end is its left.
+        <div className={`pointer-events-none absolute top-8 right-2 bottom-2 z-[400] flex flex-col justify-end gap-2 ${isRight ? "items-end" : "items-start"}`}>
             {isOpen && (
                 <div id={panelId} ref={panelRef}
                     className="pointer-events-auto flex min-h-0 w-72 max-w-[calc(100vw-3rem)] flex-col gap-4 overflow-y-auto rounded-lg border bg-background/95 p-4 text-foreground shadow-lg backdrop-blur">
