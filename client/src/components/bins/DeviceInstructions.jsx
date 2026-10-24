@@ -23,7 +23,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 import { cn } from "@/lib/utils";
 import {
     useCancelInstruction,

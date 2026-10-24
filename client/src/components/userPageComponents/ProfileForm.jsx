@@ -6,6 +6,7 @@ import { FormField, FormItem, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 import { Badge } from "../ui/badge";
 import { MobileTooltip } from "../ui/mobile-tooltip";
 import { useEffect } from "react";
@@ -117,11 +118,11 @@ function ProfileForm({ user, isAdmin = false }) {
                     </CardContent>
                     <CardFooter>
                         <Button
-                            disabled={(!isDirty || !isValid)}
+                            disabled={!isDirty || !isValid || isUpdatingInfo}
                             type="submit"
                             className="cursor-pointer w-full px-3 py-1"
                         >
-                            {t('components.profileFormCard.updateButton')}
+                            {isUpdatingInfo ? <Spinner /> : t('components.profileFormCard.updateButton')}
                         </Button>
                     </CardFooter>
                 </form>

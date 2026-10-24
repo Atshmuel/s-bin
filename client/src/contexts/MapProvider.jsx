@@ -1,7 +1,5 @@
-import { createContext, useContext, useRef, useState } from "react";
-
-
-const MapContext = createContext(null);
+import { useRef, useState } from "react";
+import { MapContext } from "./mapContext";
 
 function MapProvider({ children }) {
     const [tile, setTile] = useState("default")
@@ -39,10 +37,4 @@ function MapProvider({ children }) {
     )
 }
 
-function useMapSettings() {
-    const context = useContext(MapContext);
-    if (context === undefined) throw new Error('MapContext was used outside of the provider')
-    return context
-}
-
-export { MapProvider, useMapSettings }
+export { MapProvider }

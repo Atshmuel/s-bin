@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
+import { BreadcrumbContext } from "./breadcrumbsContext";
 
 const routeKeyMap = {
     dashboard: "dashboard",
@@ -17,7 +18,6 @@ const routeKeyMap = {
     add: "add",
     map: "map"
 };
-const BreadcrumbContext = createContext();
 
 export function BreadcrumbProvider({ children }) {
     const [crumbs, setBreadcrumbs] = useState([]);
@@ -56,10 +56,4 @@ export function BreadcrumbProvider({ children }) {
             {children}
         </BreadcrumbContext.Provider>
     );
-}
-
-export function useBreadcrumbs() {
-    const ctx = useContext(BreadcrumbContext);
-    if (!ctx) throw new Error("useBreadcrumbs must be used inside BreadcrumbProvider");
-    return ctx;
 }

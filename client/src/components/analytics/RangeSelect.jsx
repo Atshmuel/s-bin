@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { ANALYTICS_RANGES_DAYS as ANALYTICS_RANGES } from "@/utils/constants"
 
 

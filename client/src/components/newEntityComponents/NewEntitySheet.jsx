@@ -10,7 +10,7 @@ import { useMe } from "@/hooks/users/auth/useMe"
 import { useCreateOrg } from "@/hooks/organizations/useCreateOrg"
 import { useState } from "react"
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { useTranslation } from "react-i18next"
 
 function NewEntitySheet({ isExpanded }) {

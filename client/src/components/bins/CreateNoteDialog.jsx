@@ -5,7 +5,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Spinner } from "../ui/spinner"
 import { Textarea } from "../ui/textarea"
 import { useUpdateBinMaintenance } from "@/hooks/bins/useUpdateBin"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 
 // A maintenance note on the bin.
 function CreateNoteDialog({ bin, triggerClassName = "cursor-pointer flex-1 py-6" }) {

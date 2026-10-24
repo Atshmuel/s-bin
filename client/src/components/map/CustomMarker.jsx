@@ -1,4 +1,4 @@
-import { useMapSettings } from '@/contexts/mapContext';
+import { useMapSettings } from '@/hooks/useMapSettings';
 import L from 'leaflet'
 import { Trash2 } from 'lucide-react';
 import React, { useMemo } from 'react';

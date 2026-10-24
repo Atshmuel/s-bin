@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 
 function InputLabel({ children, variant = 'float', ...props }) {
     const id = useId();

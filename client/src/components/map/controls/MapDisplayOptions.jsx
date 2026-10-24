@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { useAppSide } from "@/contexts/AppSideProvider"
-import { useMapSettings } from "@/contexts/mapContext"
+import { useAppSide } from "@/hooks/useAppSide"
+import { useMapSettings } from "@/hooks/useMapSettings"
 
 // How the map looks and moves: satellite tiles, flying to a clicked marker,
 // and the user's own location.

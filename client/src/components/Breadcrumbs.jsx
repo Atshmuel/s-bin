@@ -3,8 +3,8 @@ import { NavLink } from "react-router-dom";
 import { Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "./ui/breadcrumb";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import React from "react";
-import { useBreadcrumbs } from "@/contexts/breadcrumbsContext";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useBreadcrumbs } from "@/hooks/useBreadcrumbs";
+import { useAppSide } from "@/hooks/useAppSide";
 
 export function Breakcrumbs() {
     const { crumbs } = useBreadcrumbs();

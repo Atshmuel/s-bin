@@ -8,7 +8,7 @@ import InputLabel from "../InputLabel";
 import { Eye, EyeOff } from "lucide-react";
 import { useUpdateUserPassword } from "@/hooks/users/useUpdateUser";
 import { Spinner } from "../ui/spinner";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 import { useTranslation } from "react-i18next";
 
 function PasswordForm({ user, isAdmin = false }) {

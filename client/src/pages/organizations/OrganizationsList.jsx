@@ -13,7 +13,7 @@ import { useDeleteOrg } from "@/hooks/organizations/useDeleteOrg";
 import { useUpdateOrgName } from "@/hooks/organizations/useUpdateOrg";
 import { useOrganizations } from "@/hooks/organizations/useOrganizations";
 import { useSearchParams } from "react-router-dom";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 import OrgSettingsDialog from "@/components/organizations/OrgSettingsDialog";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 function OrganizationsList() {

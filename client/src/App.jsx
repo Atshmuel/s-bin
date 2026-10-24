@@ -7,7 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
-import { DarkModeProvider } from './contexts/darkModelContext';
+import { DarkModeProvider } from './contexts/DarkModeProvider';
 import { Toaster } from './components/ui/sonner';
 import Login from '../src/pages/auth/Login'
 import Dashboard from './pages/dashboard/Dashboard';
@@ -24,9 +24,9 @@ import Signup from './pages/auth/Signup';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import SupportPage from './pages/generals/SupportPage';
 import ErrorPage from './pages/generals/ErrorPage';
-import { MapProvider } from './contexts/mapContext';
+import { MapProvider } from './contexts/MapProvider';
 import AddBin from './pages/bins/AddBin';
-import { BreadcrumbProvider } from './contexts/breadcrumbsContext';
+import { BreadcrumbProvider } from './contexts/BreadcrumbProvider';
 import AccountVerify from './pages/auth/AccountVerify';
 import { AppSideProvider } from './contexts/AppSideProvider';
 import { OrganizationScopeProvider } from './contexts/OrganizationScopeProvider';

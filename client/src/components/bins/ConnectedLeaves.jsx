@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Button } from "../ui/button"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { formatDate } from "@/utils/helpers"
 
 // The bins whose last report this device relayed over the mesh.

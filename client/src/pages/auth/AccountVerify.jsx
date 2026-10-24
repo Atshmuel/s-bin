@@ -28,7 +28,7 @@ function AccountVerify() {
             toast.error(t('pages.verifyAccountPage.verificationFailed'))
             navigate('/error', { replace: true })
         }
-    }, [error, isSuccess, data, navigate])
+    }, [error, isSuccess, data, navigate, t])
 
     return <div className="h-dvh w-full flex justify-center items-center">
         {isVerifing ? <Spinner className={'size-24'} /> : null}

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { useOrganizations } from "@/hooks/organizations/useOrganizations"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, CircleCheck, Copy, Info, ListChecks, AlertTriangle, Wifi, WifiOff } from "lucide-react"
@@ -19,7 +19,6 @@ function AddBin() {
     const { t } = useTranslation();
 
     const [api, setApi] = useState(null);
-    const [currentStep, setCurrentStep] = useState(0);
     const [copiedOwnerId, setCopiedOwnerId] = useState(false);
     const [selectedOrgId, setSelectedOrgId] = useState(null);
     const { data: organizations, isLoadingOrgs, orgsError } = useOrganizations()
@@ -40,24 +39,13 @@ function AddBin() {
             setCopiedOwnerId(true);
             toast.success(t("pages.addBin.toasts.ownerIdCopied"));
             setTimeout(() => setCopiedOwnerId(false), 2000);
-        } catch (e) {
+        } catch {
             toast.error(t("pages.addBin.toasts.copyFailed"));
         }
     };
 
-    const handleNext = () => {
-        if (api) {
-            api.scrollNext();
-            setCurrentStep(prev => prev + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        if (api) {
-            api.scrollPrev();
-            setCurrentStep(prev => prev - 1);
-        }
-    };
+    const handleNext = () => api?.scrollNext();
+    const handlePrev = () => api?.scrollPrev();
 
     const NextIcon = isRight ? ArrowRight : ArrowLeft;
     const PrevIcon = isRight ? ArrowLeft : ArrowRight;

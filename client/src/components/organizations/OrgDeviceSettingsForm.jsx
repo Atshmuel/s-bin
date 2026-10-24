@@ -12,7 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 import { updateMeshSettings } from "@/services/apiMeshSettings";
 import {
     formatHour,

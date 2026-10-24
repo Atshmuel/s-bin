@@ -2,7 +2,7 @@ import { Info } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Button } from "../ui/button"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { formatDate } from "@/utils/helpers"
 
 // Service dates, the technician and their last note.

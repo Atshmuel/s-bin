@@ -1,8 +1,6 @@
-import { useEffect } from "react";
-import { createContext, useContext, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-const AppSideContext = createContext();
+import { AppSideContext } from "./appSideContext";
 
 function AppSideProvider({ children }) {
     const { i18n } = useTranslation()
@@ -29,15 +27,11 @@ function AppSideProvider({ children }) {
             toggleSide(lang)
             document.documentElement.lang = lang;
         }
+        // Once, on load: toggleSide flips the side, so running it again would undo it.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return <AppSideContext.Provider value={{ side, isRight, opSide, toggleSide, language: i18n.language }}>{children}</AppSideContext.Provider>
 }
 
-function useAppSide() {
-    const context = useContext(AppSideContext);
-    if (context === undefined) throw new Error('AppSideContext was used outside of the provider')
-    return context
-}
-
-export { AppSideProvider, useAppSide }
+export { AppSideProvider }

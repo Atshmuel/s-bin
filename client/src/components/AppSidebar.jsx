@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/sidebar"
 import NewEntitySheet from "./newEntityComponents/NewEntitySheet"
 import { useMe } from "@/hooks/users/auth/useMe"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { useTranslation } from "react-i18next"
 import RemoveBin from "./bins/RemoveBin"
 

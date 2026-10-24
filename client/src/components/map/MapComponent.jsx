@@ -1,7 +1,7 @@
 import { AttributionControl, MapContainer, TileLayer } from "react-leaflet"
 import MapControls from "./controls/MapControls"
 import MapKeyPanel from "./controls/MapKeyPanel"
-import { useMapSettings } from "@/contexts/mapContext"
+import { useMapSettings } from "@/hooks/useMapSettings"
 import { Card } from "../ui/card"
 import { Skeleton } from "../ui/skeleton"
 

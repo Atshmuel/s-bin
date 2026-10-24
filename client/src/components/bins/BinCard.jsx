@@ -6,7 +6,7 @@ import Battery from "./Battary"
 import { Spinner } from "../ui/spinner"
 import EmptyCard from "../EmptyCard"
 import { useTranslation } from "react-i18next"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { useMe } from "@/hooks/users/auth/useMe";
 import { isGateway } from "@/utils/binHelpers";
 import BinNameEditor from "./BinNameEditor"

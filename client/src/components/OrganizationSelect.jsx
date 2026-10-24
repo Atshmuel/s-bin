@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Building2 } from "lucide-react"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { useSelectedOrg } from "@/hooks/organizations/useSelectedOrg"
 import { useOrganizations } from "@/hooks/organizations/useOrganizations"
 

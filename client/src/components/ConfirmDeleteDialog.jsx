@@ -4,7 +4,7 @@ import { Button } from "./ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Spinner } from "./ui/spinner"
 import InputLabel from "./InputLabel"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 
 // "delete" in either language.
 const DELETE_WORDS = ["delete", "מחק"]

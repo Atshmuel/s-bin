@@ -11,7 +11,7 @@ import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import { createClusterIcon } from "@/utils/mapClusters";
 import { CLUSTER_UNTIL_ZOOM, MAP_BINS_LIMIT } from "@/utils/constants";
-import { useMapSettings } from "@/contexts/mapContext";
+import { useMapSettings } from "@/hooks/useMapSettings";
 
 
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {

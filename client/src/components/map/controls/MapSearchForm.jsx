@@ -10,7 +10,7 @@ import { Slider } from "@/components/ui/slider"
 import { Spinner } from "@/components/ui/spinner"
 import { Switch } from "@/components/ui/switch"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { getBestRoute } from "@/services/apiBins"
 import { DEFAULT_COLLECTION_FULLNESS as DEFAULT_FULLNESS, DEFAULT_RADIUS_KM, MAX_RADIUS_KM } from "@/utils/constants"
 

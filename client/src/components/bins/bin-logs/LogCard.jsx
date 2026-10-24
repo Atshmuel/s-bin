@@ -4,7 +4,7 @@ import { Activity, CalendarClock, GaugeCircle, InfoIcon, Trash2 } from "lucide-r
 import EmptyCard from "@/components/EmptyCard"
 import { Spinner } from "@/components/ui/spinner"
 import { useTranslation } from "react-i18next"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { formatSleepDuration, formatDate } from "@/utils/helpers"
 import { isGateway } from "@/utils/binHelpers"
 

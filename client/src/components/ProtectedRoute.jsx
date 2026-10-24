@@ -4,8 +4,8 @@ import { Spinner } from "./ui/spinner";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUserSettings } from "@/hooks/users/useUserSettings";
-import { useAppSide } from "@/contexts/AppSideProvider";
-import { useDarkMode } from "@/contexts/darkModelContext";
+import { useAppSide } from "@/hooks/useAppSide";
+import { useDarkMode } from "@/hooks/useDarkMode";
 
 
 

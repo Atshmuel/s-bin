@@ -12,7 +12,7 @@ import {
 import { NavLink, useSearchParams } from "react-router-dom";
 import { useLogin } from "@/hooks/users/auth/useLogin";
 import { Spinner } from "@/components/ui/spinner";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 import { useTranslation } from "react-i18next";
 
 

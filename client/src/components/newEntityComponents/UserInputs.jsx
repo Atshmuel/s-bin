@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { useOrgManagers } from "@/hooks/users/useOrgManagers";
 import { Skeleton } from "../ui/skeleton";
 import { useOrganizations } from "@/hooks/organizations/useOrganizations";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 import { useTranslation } from "react-i18next";
 
 function UserInputs({ form, isCreating }) {

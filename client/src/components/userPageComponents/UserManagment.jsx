@@ -40,7 +40,7 @@ function UserManagment({ user, isAdmin = false }) {
             org: user?.org || me.org,
             manager: user.manager
         });
-    }, [user, userManagment]);
+    }, [user, userManagment, me.org]);
 
     const { data: organizations, isLoadingOrgs, orgsError } = useOrganizations()
     const selectedOrgId = isOwner ? userManagment.watch("org") : me.org;

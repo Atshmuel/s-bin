@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import L from "leaflet"
 import { Info, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useMapSettings } from "@/contexts/mapContext"
+import { useMapSettings } from "@/hooks/useMapSettings"
 import MapColorKey from "./MapColorKey"
 
 // What the map's colors and icons mean, behind its own button in the corner

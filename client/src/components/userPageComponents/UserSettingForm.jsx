@@ -13,9 +13,9 @@ import { Skeleton } from "../ui/skeleton";
 import { AlertCircle } from "lucide-react";
 import { useUpdateUserSettings } from "@/hooks/users/useUpdateUserSettings";
 import { Spinner } from "../ui/spinner";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 import { useTranslation } from "react-i18next";
-import { useDarkMode } from "@/contexts/darkModelContext";
+import { useDarkMode } from "@/hooks/useDarkMode";
 import { clearAICache } from "@/utils/aiCache";
 
 function UserSettingForm({ user, isAdmin = false, isSelf }) {

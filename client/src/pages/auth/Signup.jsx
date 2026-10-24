@@ -16,7 +16,7 @@ import Terms from "@/components/Terms";
 import { useSignup } from "@/hooks/users/auth/useSignup";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 import { useTranslation } from "react-i18next";
 
 

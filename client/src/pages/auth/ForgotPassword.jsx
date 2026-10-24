@@ -17,7 +17,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useForgot, useOtp, useUpdatePasswordByToken } from "@/hooks/users/auth/useForgot";
 import { Spinner } from "@/components/ui/spinner";
 import { useTranslation } from "react-i18next";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 
 
 function ForgotPassword() {

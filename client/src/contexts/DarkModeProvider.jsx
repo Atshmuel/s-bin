@@ -1,7 +1,5 @@
-import { useEffect } from "react";
-import { createContext, useContext, useState } from "react";
-
-const DarkModeContext = createContext();
+import { useEffect, useState } from "react";
+import { DarkModeContext } from "./darkModeContext";
 
 function DarkModeProvider({ children }) {
     const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
@@ -25,10 +23,4 @@ function DarkModeProvider({ children }) {
     return <DarkModeContext.Provider value={{ isDark, applyDarkMode }}>{children}</DarkModeContext.Provider>
 }
 
-function useDarkMode() {
-    const context = useContext(DarkModeContext);
-    if (context === undefined) throw new Error('DarkModeContext was used outside of the provider')
-    return context
-}
-
-export { DarkModeProvider, useDarkMode }
+export { DarkModeProvider }

@@ -4,7 +4,7 @@ import { CartesianGrid, ComposedChart, Area, Line, ReferenceLine, XAxis, YAxis }
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Spinner } from "@/components/ui/spinner"
-import { useAppSide } from "@/contexts/AppSideProvider"
+import { useAppSide } from "@/hooks/useAppSide"
 import { useBinAnalytics } from "@/hooks/analytics/useBinAnalytics"
 import { isGateway } from "@/utils/binHelpers"
 import { formatDate } from "@/utils/helpers"

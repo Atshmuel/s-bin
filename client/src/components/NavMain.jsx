@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/sidebar"
 import { NavLink } from "react-router-dom";
 import { useMe } from "@/hooks/users/auth/useMe";
-import { useAppSide } from "@/contexts/AppSideProvider";
+import { useAppSide } from "@/hooks/useAppSide";
 import { useTranslation } from "react-i18next";
 
 export function NavMain({
