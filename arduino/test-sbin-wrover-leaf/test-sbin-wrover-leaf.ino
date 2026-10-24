@@ -57,7 +57,11 @@ constexpr uint32_t UNKNOWN_DRIFT_PPM = 50000;
 // The guard covers twice this; each catch halves it toward the measured error.
 constexpr uint32_t FIRST_RESIDUAL_PPM = 15000;
 // Floor for the residual: temperature and the gateway's own clock still vary.
-constexpr uint32_t MIN_RESIDUAL_PPM = 500;
+// The WROVER's drift moved by up to 3,300 ppm between 12-hour cycles
+// (+43,120 to +46,469 ppm), and halving down to 1,882 ppm left a 167 s guard
+// that missed the slot; 2,500 keeps the guard at about 220 s on 12 hours,
+// covering 5,000 ppm.
+constexpr uint32_t MIN_RESIDUAL_PPM = 2500;
 constexpr uint32_t LISTEN_SLACK_SECONDS = 5;
 constexpr uint8_t SEND_ATTEMPTS = 3;
 constexpr uint32_t ACK_TIMEOUT_MS = 1500;
