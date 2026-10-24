@@ -6,3 +6,4 @@ yarn - error.log
     .gitignore
 Dockerfile
 README.md
+tests
