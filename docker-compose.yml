@@ -29,12 +29,14 @@ services:
       - ./certbot-etc:/etc/letsencrypt:ro
   # Road routing for Israel (OSRM), read only by the route optimizer below.
   # Its data is prepared once, and refreshed now and then, with
-  # routing/prepare-osrm.sh; the image tag must match the script's.
+  # routing/prepare-osrm.sh; the image tag must match the script's. A
+  # distance table takes up to 1000 locations (OSRM's default is 100), as many
+  # as VROOM's maxlocations.
   osrm:
     image: ghcr.io/project-osrm/osrm-backend:v26.4.0
     container_name: sbin-osrm
     restart: always
-    command: osrm-routed --algorithm mld /data/israel-and-palestine-latest.osrm
+    command: osrm-routed --algorithm mld --max-table-size 1000 /data/israel-and-palestine-latest.osrm
     volumes:
       - ./routing/osrm:/data:ro
     expose:
