@@ -40,7 +40,7 @@ userRouter.get('/:id', authToken, validateParamExist(), getUser)
 
 userRouter.patch('/info/:id', authToken, validateBodyFields([], ['name', 'email']), validateParamExist(), updateUserNameOrEmail) //update email&name
 
-userRouter.patch('/password/:id', authToken, validateBodyFields(['oldPassword', 'newPassword']), validateParamExist(), updateUserPassword) //update the password
+userRouter.patch('/password/:id', authToken, validateBodyFields(['newPassword'], ['oldPassword']), validateParamExist(), updateUserPassword) //update the password
 
 
 userRouter.patch('/status/:id', authToken, (req, res, next) => {

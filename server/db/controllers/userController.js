@@ -378,20 +378,25 @@ export async function updateUserPassword(req, res) {
     const { id: userId, role } = req.user
     const { oldPassword, newPassword } = req.body
 
-    const { error: oError } = passwordSchema.validate(oldPassword ?? '')
-    if (oError) return res.status(400).json({ message: oError.message });
+    // An owner sets another user's password without the old one; changing
+    // one's own password always takes the old one, owners included. Only an
+    // owner may change someone else's.
+    const settingAnothers = id !== userId
+    if (settingAnothers && role !== ROLES.OWNER) {
+        return res.status(403).json({ message: "Only an owner can set another user's password." })
+    }
+    if (!settingAnothers) {
+        const { error: oError } = passwordSchema.validate(oldPassword ?? '')
+        if (oError) return res.status(400).json({ message: oError.message });
+    }
     const { error: nError } = passwordSchema.validate(newPassword ?? '')
     if (nError) return res.status(400).json({ message: nError.message });
 
-    const filter = {
-        _id: role === ROLES.OWNER ? id : userId
-    };
-
     try {
-        const user = await userModel.findOne(filter)
+        const user = await userModel.findOne({ _id: id })
         if (!user) return res.status(401).json({ message: 'User not found' })
 
-        if (role !== ROLES.OWNER) {
+        if (!settingAnothers) {
             const isSamePassword = await comparePasswords(oldPassword, user.passwordHash)
             if (!isSamePassword) return res.status(403).json({ message: 'Invalid password' })
         }
