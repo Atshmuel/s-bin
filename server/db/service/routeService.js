@@ -224,6 +224,8 @@ export async function planRoute({ org, user, type, coordinates, radius, fullness
                 geometry: plan.geometry,
                 distanceMeters: plan.distanceMeters,
                 durationSeconds: plan.durationSeconds,
+                plannedDistanceMeters: plan.distanceMeters,
+                plannedDurationSeconds: plan.durationSeconds,
                 loadKg: plan.loadKg,
                 leftOut: total - plan.stops.length,
                 stops: plan.stops.map(({ bin, order, loadKg }) => ({
@@ -250,3 +252,63 @@ export async function planRoute({ org, user, type, coordinates, radius, fullness
 export async function releaseRoute(routeId) {
     await routeReservationModel.deleteMany({ routeId });
 }
+
+// Who may drive a route (mark its stops, re-order, finish): its driver, or an
+// admin of its organization (from the office). Owners manage routes but do not
+// drive them. Claims record who.
+export function canDriveRoute(route, { id, role, org }) {
+    if (role === ROLES.DRIVER) return String(route.driverId) === id;
+    return role === ROLES.ADMIN && String(route.orgId) === org;
+}
+
+// Re-orders the stops not yet done from the driver's position ([lng, lat])
+// back to the route's end: the same bins, so the same reservations and load.
+// Stops done or skipped keep their place first; the line, distance and time
+// become those from the position on.
+export async function reorderFromPosition(route, position) {
+    const remaining = route.stops.filter(stop => stop.status === "planned");
+    if (remaining.length === 0) return;
+    // Each job carries its stop; the optimizer hands the same objects back in order.
+    const plan = await optimizeRoute({
+        bins: remaining.map(stop => ({ stop, location: { coordinates: stop.location }, fullness: stop.fullnessAtPlan })),
+        type: route.type,
+        origin: position,
+        depot: route.end?.length ? route.end : null,
+        truck: null,
+    });
+    if (!plan) return;
+    const settled = route.stops.filter(stop => stop.status !== "planned").sort((a, b) => a.order - b.order);
+    const ordered = plan.stops.map(({ bin }) => bin.stop);
+    // A stop the optimizer left out (not reachable) keeps its place at the end.
+    const missing = remaining.filter(stop => !ordered.includes(stop));
+    [...settled, ...ordered, ...missing].forEach((stop, i) => { stop.order = i + 1; });
+    route.stops.sort((a, b) => a.order - b.order);
+    route.geometry = plan.geometry;
+    route.distanceMeters = plan.distanceMeters;
+    route.durationSeconds = plan.durationSeconds;
+}
+
+// Frees one bin of a route (a skipped stop).
+export async function releaseStop(routeId, binId) {
+    await routeReservationModel.deleteOne({ routeId, binId });
+}
+
+// Holds a bin for a route again (a skip undone). Throws a RouteError when
+// another route took the bin meanwhile.
+export async function reserveStop(route, binId) {
+    try {
+        await routeReservationModel.create({ orgId: route.orgId, binId, routeId: route._id, expiresAt: reservationExpiry(route.serviceDay) });
+    } catch (error) {
+        if (error?.code === DUPLICATE_KEY) throw new RouteError(409, "Another route took this bin meanwhile; it cannot come back to this one.");
+        throw error;
+    }
+}
+
+// Frees the bins of a finished route's stops that were not done; done ones stay
+// held until the day closes, so another route does not plan a bin just
+// emptied while its last report still says full.
+export async function releaseUndone(route) {
+    const undone = route.stops.filter(stop => stop.status !== "done").map(stop => stop.binId);
+    await routeReservationModel.deleteMany({ routeId: route._id, binId: { $in: undone } });
+}
+

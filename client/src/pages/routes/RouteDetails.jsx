@@ -1,11 +1,11 @@
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
-import { ArrowLeft, ArrowRight, CircleCheck, CircleHelp, CircleX } from "lucide-react"
+import { ArrowLeft, ArrowRight, CircleCheck, CircleHelp, CircleX, Navigation, Trash2 } from "lucide-react"
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog"
 import RouteMap from "@/components/routes/RouteMap"
 import { RouteDriverSelect, RouteStatusBadge } from "@/components/routes/RouteParts"
-import { routeDuration, routeTitle } from "@/utils/routes"
+import { loadedKg, routeDuration, routeTitle } from "@/utils/routes"
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
     AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -13,12 +13,14 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { MobileTooltip } from "@/components/ui/mobile-tooltip"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAppSide } from "@/hooks/useAppSide"
 import { useDeleteRoute, useRoute, useUpdateRoute } from "@/hooks/routes/useRoutes"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { getMeshSettings } from "@/services/apiMeshSettings"
+import { ROUTE_CLAIM_FAR_METERS } from "@/utils/constants"
 import { truckName } from "@/utils/orgSettings"
 
 const STOP_VARIANTS = Object.freeze({ planned: "outline", done: "active", skipped: "inactive" })
@@ -42,7 +44,7 @@ function RouteTruckSelect({ route }) {
     return (
         <Select value={route.truck?.truckTypeId ?? ""} disabled={mutation.isPending}
             onValueChange={(value) => mutation.mutate({ id: route._id, truckTypeId: value })}>
-            <SelectTrigger isRight={isRight} className="w-56" aria-label={t("mapLegend.route.truck")}><SelectValue /></SelectTrigger>
+            <SelectTrigger isRight={isRight} className="w-72" aria-label={t("mapLegend.route.truck")}><SelectValue /></SelectTrigger>
             <SelectContent className="z-[1000]">
                 {fleet.map(truck => (
                     <SelectItem isRight={isRight} key={truck._id} value={truck._id}>
@@ -54,11 +56,28 @@ function RouteTruckSelect({ route }) {
     )
 }
 
-function Detail({ label, children }) {
+// A figure of the route in a tile: its value, an optional line under it, and
+// an optional bar for how far along or how full (0 to 1).
+function Stat({ label, children, sub, bar }) {
+    return (
+        <div className="flex min-w-0 flex-col gap-1 rounded-lg border bg-muted/30 p-3">
+            <span className="text-xs text-muted-foreground">{label}</span>
+            <span className="truncate text-sm font-medium">{children}</span>
+            {bar != null && (
+                <span className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.round(bar * 100))}%` }} />
+                </span>
+            )}
+            {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
+        </div>
+    )
+}
+
+function Field({ label, children }) {
     return (
         <div className="flex flex-col gap-1">
             <span className="text-xs text-muted-foreground">{label}</span>
-            <div className="text-sm">{children}</div>
+            {children}
         </div>
     )
 }
@@ -69,10 +88,10 @@ function Detail({ label, children }) {
 // cancel it, while it is open; owners can also delete it (mistakes, test data).
 function RouteDetails() {
     const { id } = useParams()
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { isRight } = useAppSide()
     const navigate = useNavigate()
-    const { isAdmin, isOwner } = useMe()
+    const { me, isAdmin, isOwner } = useMe()
     const { route, isLoadingRoute, routeError } = useRoute(id)
     const cancel = useUpdateRoute()
     const remove = useDeleteRoute(() => navigate("/routes", { replace: true }))
@@ -81,6 +100,15 @@ function RouteDetails() {
     if (routeError || !route) return <p className="p-10 text-muted-foreground">{routeError?.message ?? t("pages.routes.details.notFound")}</p>
 
     const isOpen = ["planned", "driving"].includes(route.status)
+    // Its driver drives it; an admin can too (from the office). Owners manage only.
+    const canDrive = isOpen && ((isAdmin && !isOwner) || route.driverId === me?.id)
+    const doneCount = route.stops.filter(stop => stop.status === "done").length
+    const planned = routeDuration(route.plannedDurationSeconds ?? route.durationSeconds ?? 0, t)
+    // How long it took (start to finish, breaks included) or has been under way:
+    // for whoever manages the routes, not the driver.
+    const elapsed = isAdmin && route.startedAt
+        ? routeDuration(Math.max(0, (new Date(route.finishedAt ?? route.cancelledAt ?? Date.now()) - new Date(route.startedAt)) / 1000), t)
+        : null
     const BackIcon = isRight ? ArrowLeft : ArrowRight
     return (
         <div className="flex flex-col gap-4 sm:p-6">
@@ -93,11 +121,18 @@ function RouteDetails() {
                         {routeTitle(route, t)}
                         <RouteStatusBadge status={route.status} />
                     </CardTitle>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {canDrive && (
+                            <Button asChild>
+                                <Link to={`/routes/${route._id}/drive`}>
+                                    <Navigation data-icon="inline-start" />{t(route.status === "driving" ? "mapLegend.drive.resume" : "mapLegend.drive.start")}
+                                </Link>
+                            </Button>
+                        )}
                         {isAdmin && isOpen && (
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button type="button" variant="outline" className="text-destructive">{t("pages.routes.details.cancel")}</Button>
+                                    <Button type="button" variant="outline">{t("pages.routes.details.cancel")}</Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
@@ -115,7 +150,12 @@ function RouteDetails() {
                         )}
                         {isOwner && (
                             <ConfirmDeleteDialog
-                                trigger={<Button type="button" variant="destructive">{t("pages.routes.details.delete")}</Button>}
+                                trigger={(
+                                    <Button type="button" variant="ghost" size="icon" className="text-destructive hover:text-destructive"
+                                        aria-label={t("pages.routes.details.delete")} title={t("pages.routes.details.delete")}>
+                                        <Trash2 />
+                                    </Button>
+                                )}
                                 title={t("pages.routes.details.deleteTitle")}
                                 description={t("pages.routes.details.deleteDescription")}
                                 inputLabel={t("pages.routes.details.deleteInput")}
@@ -126,32 +166,39 @@ function RouteDetails() {
                 </CardHeader>
                 {/* Who and what first (pickers need room), then the route's figures. */}
                 <CardContent className="flex flex-col gap-5">
-                    <div className="flex flex-wrap gap-x-8 gap-y-4">
-                        <Detail label={t("mapLegend.route.truck")}><RouteTruckSelect route={route} /></Detail>
-                        <Detail label={t("pages.routes.columns.driver")}><RouteDriverSelect route={route} className="w-56" /></Detail>
+                    <div className="flex flex-wrap gap-x-6 gap-y-4">
+                        <Field label={t("mapLegend.route.truck")}><RouteTruckSelect route={route} /></Field>
+                        <Field label={t("pages.routes.columns.driver")}><RouteDriverSelect route={route} className="w-64" /></Field>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                        <Detail label={t("pages.routes.day")}>{route.serviceDay}</Detail>
-                        <Detail label={t("pages.routes.columns.progress")}>
-                            {t("pages.routes.progress", { done: route.stops.filter(stop => stop.status === "done").length, count: route.stops.length })}
-                        </Detail>
-                        <Detail label={t("pages.routes.columns.distance")}>
-                            {((route.distanceMeters ?? 0) / 1000).toFixed(1)} {t("mapLegend.search.kilometers")} · {routeDuration(route.durationSeconds ?? 0, t)}
-                        </Detail>
-                        <Detail label={t("pages.routes.columns.load")}>
-                            {route.loadKg == null ? "—" : t("pages.routes.load", { load: route.loadKg.toLocaleString(), capacity: route.truck?.capacityKg?.toLocaleString() ?? "—" })}
-                            {route.leftOut > 0 && <p className="text-xs text-amber-600 dark:text-amber-400">{t("mapLegend.route.leftOut", { count: route.leftOut })}</p>}
-                        </Detail>
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+                        <Stat label={t("pages.routes.day")}>{route.serviceDay}</Stat>
+                        <Stat label={t("pages.routes.columns.progress")} bar={route.stops.length ? doneCount / route.stops.length : 0}>
+                            {t("pages.routes.progress", { done: doneCount, count: route.stops.length })}
+                        </Stat>
+                        <Stat label={t("pages.routes.details.distance")}>
+                            {((route.distanceMeters ?? 0) / 1000).toFixed(1)} {t("mapLegend.search.kilometers")}
+                        </Stat>
+                        <Stat label={t("pages.routes.details.time")}
+                            sub={elapsed && t(route.status === "driving" ? "pages.routes.details.timeUnderWay" : "pages.routes.details.timeTook", { actual: elapsed })}>
+                            {t("pages.routes.details.timePlanned", { planned })}
+                        </Stat>
+                        {/* What is in the truck so far (the stops done), of the load planned (the truck's capacity is in its picker). */}
+                        <Stat label={t("pages.routes.details.inTruck")} bar={route.loadKg ? loadedKg(route) / route.loadKg : null}>
+                            {route.loadKg == null ? "—" : t("pages.routes.load", { load: `≈ ${loadedKg(route).toLocaleString()}`, capacity: route.loadKg.toLocaleString() })}
+                        </Stat>
                     </div>
+                    {route.leftOut > 0 && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400">{t("mapLegend.route.leftOut", { count: route.leftOut })}</p>
+                    )}
                 </CardContent>
             </Card>
             <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                 <div className="h-[60vh] min-h-80"><RouteMap route={route} /></div>
-                <Card className="max-h-[60vh] min-h-80 overflow-hidden">
+                <Card className="flex max-h-[60vh] min-h-80 flex-col overflow-hidden">
                     <CardHeader>
                         <CardTitle className="text-base">{t("mapLegend.route.stopsTitle")}</CardTitle>
                     </CardHeader>
-                    <CardContent className="overflow-y-auto">
+                    <CardContent className="min-h-0 flex-1 overflow-y-auto">
                         <ol className="flex flex-col divide-y">
                             {route.stops.map(stop => {
                                 const [VerificationIcon, verificationColor] = VERIFICATION_ICONS[stop.verification?.status] ?? []
@@ -166,16 +213,21 @@ function RouteDetails() {
                                             </span>
                                             {stop.claim && (
                                                 <span className="text-xs text-muted-foreground">
-                                                    {t("pages.routes.details.claimed", { time: new Date(stop.claim.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })}
-                                                    {stop.claim.distanceMeters != null && <> · {t("pages.routes.details.claimDistance", { meters: Math.round(stop.claim.distanceMeters) })}</>}
+                                                    {t("pages.routes.details.claimed", { time: new Date(stop.claim.at).toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" }) })}
+                                                    {/* How far from the bin it was marked: for whoever checks the claims, not the driver. */}
+                                                    {isAdmin && stop.claim.distanceMeters != null && (
+                                                        <span className={stop.claim.distanceMeters > ROUTE_CLAIM_FAR_METERS ? "text-amber-600 dark:text-amber-400" : ""}>
+                                                            {" · "}{t("pages.routes.details.claimDistance", { meters: Math.round(stop.claim.distanceMeters) })}
+                                                        </span>
+                                                    )}
                                                 </span>
                                             )}
                                         </div>
                                         <div className="flex shrink-0 items-center gap-2">
                                             {VerificationIcon && (
-                                                <span title={t(`pages.routes.verification.${stop.verification.status}`)}>
-                                                    <VerificationIcon size={16} className={verificationColor} />
-                                                </span>
+                                                <MobileTooltip content={t(`pages.routes.verification.${stop.verification.status}`)}>
+                                                    <span><VerificationIcon size={16} className={verificationColor} /></span>
+                                                </MobileTooltip>
                                             )}
                                             <Badge variant={STOP_VARIANTS[stop.status] ?? "outline"}>{t(`pages.routes.stopStatuses.${stop.status}`)}</Badge>
                                         </div>

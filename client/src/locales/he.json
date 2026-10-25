@@ -234,9 +234,24 @@
          "done": "בוצע",
          "previous": "הקודמת",
          "previousHint": "פתיחה מחדש של עצירה {{order}}, שסומנה אחרונה כבוצעה",
+         "previousSkippedHint": "החזרת עצירה {{order}}, שדולגה אחרונה",
+         "doneCount": "{{count}} בוצעו",
+         "skippedCount": "{{count}} דולגו",
+         "leftCount": "{{count}} נותרו",
+         "inTruck": "≈ {{load}} מתוך {{capacity}} ק״ג במשאית",
          "stop": "סיום נסיעה",
+         "stopShort": "עצירה",
+         "followHint": "להשאיר את המפה על המיקום שלכם",
+         "reorderHint": "לסדר את העצירות שנותרו מהמקום שבו אתם נמצאים",
+         "navigateHint": "ניווט לעצירה הבאה ב־{{app}}",
+         "doneHint": "לסמן את העצירה כנאספה (המיקום שלכם נשמר כהוכחה)",
+         "finishHint": "לסיים את המסלול; פחים שלא בוצעו ישוחררו למסלולים אחרים",
+         "previousNone": "אין עדיין מה לבטל",
+         "stopHint": "לצאת מהנסיעה; המסלול נשאר בדרך",
          "finish": "סיום המסלול",
-         "progress": "{{done}} מתוך {{count}} עצירות בוצעו."
+         "skip": "דילוג",
+         "skipHint": "אי אפשר לאסוף את הפח הזה: שחררו אותו למסלול אחר",
+         "reorder": "סידור מחדש מכאן"
        },
        "route": {
          "type": "סוג מסלול",
@@ -263,6 +278,7 @@
          "summaryStops_two": "שתי עצירות",
          "summaryStops_other": "{{count}} עצירות",
          "summaryTime": "{{hours}} ש׳ {{minutes}} דק׳",
+      "summaryMinutes": "{{minutes}} דק׳",
          "summaryLoad": "{{load}} מתוך {{capacity}} ק״ג ({{truck}})",
          "startsAtDepot": "מהחניון ובחזרה.",
          "startsHere": "מנקודת ההתחלה המסומנת במפה.",
@@ -290,6 +306,7 @@
          "unknownError": "אירעה שגיאה לא ידועה בעת קבלת המיקום."
        },
        "open": "אפשרויות מפה",
+      "openHint": "חיפוש פחים ואפשרויות מפה",
        "close": "סגור את אפשרויות המפה",
        "key": {
          "open": "מה מוצג במפה",
@@ -392,7 +409,20 @@
         "deleteDescription": "המסלול ומה שהנהג סימן בו יימחקו, והפחים שלו ישוחררו. כדי לשמור אותו כתיעוד, בטלו אותו במקום.",
         "deleteInput": "הקלידו \"מחק\" לאישור",
         "claimed": "סומן כבוצע ב־{{time}}",
-        "claimDistance": "{{meters}} מ׳ מהפח"
+        "claimDistance": "{{meters}} מ׳ מהפח",
+        "time": "זמן",
+        "timePlanned": "מתוכנן {{planned}}",
+        "timeUnderWay": "בדרך כבר {{actual}}",
+        "timeTook": "ארך {{actual}}",
+        "distance": "מרחק",
+        "inTruck": "במשאית"
+      },
+      "drive": {
+        "closed": "המסלול {{status}}; אין מה לנסוע בו.",
+        "toRoute": "למסלול",
+        "reordered": "העצירות שנותרו סודרו מהמקום שבו אתם נמצאים.",
+        "skipTitle": "לדלג על {{name}}?",
+        "skipDescription": "הפח יישאר למסלול אחר. השתמשו בזה כשאי אפשר לאסוף אותו (חסום, חסר)."
       }
     },
     "dashboard":{

@@ -107,6 +107,11 @@ export const PLAN_MAP_WHEEL_DEBOUNCE_MS = 80
 // map follows the driver at NAV_FOLLOW_ZOOM or closer.
 export const NAV_ARRIVED_METERS = 30
 export const NAV_FOLLOW_ZOOM = 16
+// Driving page: how long it waits for a first GPS fix to order the stops from
+// the driver's position (then it starts with the planned order).
+export const NAV_START_POSITION_WAIT_MS = 6 * 1000
+// A stop marked done farther than this from its bin is flagged (never refused).
+export const ROUTE_CLAIM_FAR_METERS = 100
 
 // Analytics ranges (days) and how fresh data stays. Devices report hours
 // apart: lists refresh once a minute, a dashboard left open every two, and

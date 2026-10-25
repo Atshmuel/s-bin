@@ -5,6 +5,7 @@ import { Marker, Popup, useMap } from "react-leaflet"
 import { SlidersHorizontal, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { MobileTooltip } from "@/components/ui/mobile-tooltip"
 import { Separator } from "@/components/ui/separator"
 import { useAppSide } from "@/hooks/useAppSide"
 import { useMapSettings } from "@/hooks/useMapSettings"
@@ -73,13 +74,14 @@ function MapControls({ legendForm = false }) {
                 </div>
             )}
             <div className="pointer-events-auto flex shrink-0 gap-2">
-                <Button type="button" size="icon" variant={openPanel === "controls" ? "default" : "secondary"} className="shadow-md"
-                    aria-expanded={openPanel === "controls"} aria-controls={panelId}
-                    aria-label={t(openPanel === "controls" ? "mapLegend.close" : "mapLegend.open")}
-                    title={t(openPanel === "controls" ? "mapLegend.close" : "mapLegend.open")}
-                    onClick={() => setOpenPanel(openPanel === "controls" ? null : "controls")}>
-                    {openPanel === "controls" ? <X /> : <SlidersHorizontal />}
-                </Button>
+                <MobileTooltip content={t(openPanel === "controls" ? "mapLegend.close" : "mapLegend.openHint")}>
+                    <Button type="button" size="icon" variant={openPanel === "controls" ? "default" : "secondary"} className="shadow-md"
+                        aria-expanded={openPanel === "controls"} aria-controls={panelId}
+                        aria-label={t(openPanel === "controls" ? "mapLegend.close" : "mapLegend.open")}
+                        onClick={() => setOpenPanel(openPanel === "controls" ? null : "controls")}>
+                        {openPanel === "controls" ? <X /> : <SlidersHorizontal />}
+                    </Button>
+                </MobileTooltip>
             </div>
 
             {userMarker && (

@@ -1,9 +1,10 @@
 import mongoose from 'mongoose'
 import { organizationModel, routeModel, userModel } from '../models/models.js'
-import { isLngLat } from '../../utils/geo.js'
+import { distanceMeters, isLngLat } from '../../utils/geo.js'
 import { DEFAULT_COLLECTION_FULLNESS, DEFAULT_TIME_ZONE, OPEN_ROUTE_STATUSES, ROLES, ROUTE_STATUSES, ROUTE_TYPES } from '../../utils/constants.js'
 import {
-    freeTruckUnit, HEALTH_FILTERS, organizationTimeZone, planRoute, releaseRoute, routeAccessFilter, RouteError, serviceDayOf,
+    canDriveRoute, freeTruckUnit, HEALTH_FILTERS, organizationTimeZone, planRoute, releaseRoute, releaseStop, releaseUndone,
+    reorderFromPosition, reserveStop, routeAccessFilter, RouteError, serviceDayOf,
 } from '../service/routeService.js'
 
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
@@ -209,3 +210,159 @@ export async function deleteRoute(req, res) {
         sendError(res, error)
     }
 }
+
+// ---- Driving: the driver (or an admin of the organization) works through an
+// open route's stops. A position is the phone's [lng, lat].
+
+// The open route the user may drive, or null after answering with the reason.
+async function drivableRoute(req, res) {
+    const access = routeAccessFilter(req.user)
+    if (!access) {
+        res.status(403).json({ message: 'Access denied' })
+        return null
+    }
+    const route = await routeModel.findOne({ ...access, _id: req.params.id })
+    if (!route) {
+        res.status(404).json({ message: 'Route not found.' })
+        return null
+    }
+    if (!canDriveRoute(route, req.user)) {
+        res.status(403).json({ message: 'Only its driver, or an admin of its organization, can drive this route.' })
+        return null
+    }
+    if (!OPEN_ROUTE_STATUSES.includes(route.status)) {
+        res.status(409).json({ message: `The route is ${route.status}.` })
+        return null
+    }
+    return route
+}
+
+function stopOf(route, binId) {
+    return route.stops.find(stop => String(stop.binId) === String(binId)) ?? null
+}
+
+// Starts driving (or goes back to it): the route is driving from now, and
+// with a position the stops not yet done are re-ordered from there (the same
+// call is "Re-order from here"). Without one the planned order stays.
+export async function startRoute(req, res) {
+    const { position } = req.body ?? {}
+    if (position !== undefined && position !== null && !isLngLat(position)) return res.status(400).json({ message: 'position must be [lng, lat].' })
+    try {
+        const route = await drivableRoute(req, res)
+        if (!route) return
+        if (route.status === 'planned') {
+            route.status = 'driving'
+            route.startedAt = new Date()
+        }
+        if (position) await reorderFromPosition(route, position)
+        await route.save()
+        res.status(200).json({ route: route.toObject() })
+    } catch (error) {
+        sendError(res, error)
+    }
+}
+
+// Marks a stop done: a claim with who, when, and where the phone was (its
+// distance from the bin worked out here). The bin's next report confirms it
+// or not (2g-6). Marking a stop also starts the route.
+export async function markStopDone(req, res) {
+    const { position, accuracyMeters } = req.body ?? {}
+    if (position !== undefined && position !== null && !isLngLat(position)) return res.status(400).json({ message: 'position must be [lng, lat].' })
+    if (accuracyMeters !== undefined && accuracyMeters !== null && !(Number.isFinite(accuracyMeters) && accuracyMeters >= 0)) {
+        return res.status(400).json({ message: 'accuracyMeters must be a number of meters.' })
+    }
+    try {
+        const route = await drivableRoute(req, res)
+        if (!route) return
+        const stop = stopOf(route, req.params.binId)
+        if (!stop) return res.status(404).json({ message: 'The bin is not a stop of this route.' })
+        stop.status = 'done'
+        stop.claim = {
+            by: req.user.id,
+            at: new Date(),
+            ...(position ? { position, distanceMeters: Math.round(distanceMeters(position, stop.location)) } : {}),
+            ...(Number.isFinite(accuracyMeters) ? { accuracyMeters: Math.round(accuracyMeters) } : {}),
+        }
+        stop.verification = null
+        if (route.status === 'planned') {
+            route.status = 'driving'
+            route.startedAt = new Date()
+        }
+        await route.save()
+        res.status(200).json({ route: route.toObject() })
+    } catch (error) {
+        sendError(res, error)
+    }
+}
+
+// Undoes a stop marked done by mistake ("Previous"): it is to do again.
+export async function undoStopDone(req, res) {
+    try {
+        const route = await drivableRoute(req, res)
+        if (!route) return
+        const stop = stopOf(route, req.params.binId)
+        if (!stop) return res.status(404).json({ message: 'The bin is not a stop of this route.' })
+        if (stop.status !== 'done') return res.status(409).json({ message: 'The stop is not marked done.' })
+        stop.status = 'planned'
+        stop.claim = null
+        stop.verification = null
+        await route.save()
+        res.status(200).json({ route: route.toObject() })
+    } catch (error) {
+        sendError(res, error)
+    }
+}
+
+// Skips a stop that cannot be collected: the bin is freed for other routes.
+export async function skipStop(req, res) {
+    try {
+        const route = await drivableRoute(req, res)
+        if (!route) return
+        const stop = stopOf(route, req.params.binId)
+        if (!stop) return res.status(404).json({ message: 'The bin is not a stop of this route.' })
+        if (stop.status !== 'planned') return res.status(409).json({ message: `The stop is ${stop.status}.` })
+        stop.status = 'skipped'
+        stop.skippedAt = new Date()
+        await route.save()
+        await releaseStop(route._id, stop.binId)
+        res.status(200).json({ route: route.toObject() })
+    } catch (error) {
+        sendError(res, error)
+    }
+}
+
+// Undoes a skip ("Previous"): the stop is to do again and its bin held for the
+// route again, unless another route took it meanwhile (409).
+export async function undoSkipStop(req, res) {
+    try {
+        const route = await drivableRoute(req, res)
+        if (!route) return
+        const stop = stopOf(route, req.params.binId)
+        if (!stop) return res.status(404).json({ message: 'The bin is not a stop of this route.' })
+        if (stop.status !== 'skipped') return res.status(409).json({ message: 'The stop is not skipped.' })
+        await reserveStop(route, stop.binId)
+        stop.status = 'planned'
+        stop.skippedAt = undefined
+        await route.save()
+        res.status(200).json({ route: route.toObject() })
+    } catch (error) {
+        sendError(res, error)
+    }
+}
+
+// Finishes the route: the bins of the stops not done are freed (done ones stay
+// held until the day closes, while their last report still says full).
+export async function finishRoute(req, res) {
+    try {
+        const route = await drivableRoute(req, res)
+        if (!route) return
+        route.status = 'finished'
+        route.finishedAt = new Date()
+        await route.save()
+        await releaseUndone(route)
+        res.status(200).json({ route: route.toObject() })
+    } catch (error) {
+        sendError(res, error)
+    }
+}
+

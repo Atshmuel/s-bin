@@ -231,9 +231,24 @@
       "done": "Done",
       "previous": "Previous",
       "previousHint": "Reopen stop {{order}}, marked done last",
+      "previousSkippedHint": "Bring back stop {{order}}, skipped last",
+      "doneCount": "{{count}} done",
+      "skippedCount": "{{count}} skipped",
+      "leftCount": "{{count}} to go",
+      "inTruck": "≈ {{load}} of {{capacity}} kg in the truck",
       "stop": "Stop driving",
+      "stopShort": "Stop",
+      "followHint": "Keep the map on your position",
+      "reorderHint": "Order the stops still to do from where you are now",
+      "navigateHint": "Directions to the next stop in {{app}}",
+      "doneHint": "Mark this stop collected (your position is kept as proof)",
+      "finishHint": "End the route; bins not done are freed for other routes",
+      "previousNone": "Nothing to undo yet",
+      "stopHint": "Leave driving; the route stays under way",
       "finish": "Finish route",
-      "progress": "{{done}} of {{count}} stops done."
+      "skip": "Skip",
+      "skipHint": "This bin cannot be collected: free it for another route",
+      "reorder": "Re-order from here"
     },
     "route": {
       "type": "Route Type",
@@ -259,6 +274,7 @@
       "summaryStops_one": "1 stop",
       "summaryStops_other": "{{count}} stops",
       "summaryTime": "{{hours}} h {{minutes}} min",
+      "summaryMinutes": "{{minutes}} min",
       "summaryLoad": "{{load}} of {{capacity}} kg ({{truck}})",
       "startsAtDepot": "From the depot and back.",
       "startsHere": "From the start point marked on the map.",
@@ -285,6 +301,7 @@
       "unknownError": "An unknown error occurred while retrieving location."
     },
     "open": "Map options",
+      "openHint": "Find bins and map options",
     "close": "Close map options",
     "key": {
       "open": "What the map shows",
@@ -385,7 +402,20 @@
         "deleteDescription": "The route and what its driver marked are erased, and its bins are freed. To keep it as a record, cancel it instead.",
         "deleteInput": "Type \"delete\" to confirm",
         "claimed": "Marked done at {{time}}",
-        "claimDistance": "{{meters}} m from the bin"
+        "claimDistance": "{{meters}} m from the bin",
+        "time": "Time",
+        "timePlanned": "Planned {{planned}}",
+        "timeUnderWay": "Under way {{actual}}",
+        "timeTook": "Took {{actual}}",
+        "distance": "Distance",
+        "inTruck": "In the truck"
+      },
+      "drive": {
+        "closed": "This route is {{status}}; there is nothing to drive.",
+        "toRoute": "To the route",
+        "reordered": "The stops still to do are ordered from where you are.",
+        "skipTitle": "Skip {{name}}?",
+        "skipDescription": "The bin is left for another route. Use this when it cannot be collected (blocked, missing)."
       }
     },
     "dashboard":{

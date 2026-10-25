@@ -13,6 +13,16 @@ export function timeZoneAt([lng, lat]) {
     return tzLookup(lat, lng);
 }
 
+const EARTH_RADIUS_M = 6371008.8;
+
+// The distance in meters between two [lng, lat] locations.
+export function distanceMeters([lng1, lat1], [lng2, lat2]) {
+    const rad = Math.PI / 180;
+    const a = Math.sin((lat2 - lat1) * rad / 2) ** 2 +
+        Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin((lng2 - lng1) * rad / 2) ** 2;
+    return 2 * EARTH_RADIUS_M * Math.asin(Math.sqrt(a));
+}
+
 // Whether a value is a [lng, lat] location.
 export function isLngLat(location) {
     return Array.isArray(location) && location.length === 2 &&

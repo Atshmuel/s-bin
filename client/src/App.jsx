@@ -34,6 +34,7 @@ import Organizations from './pages/organizations/Organizations';
 import OrganizationSettings from './pages/organizations/OrganizationSettings';
 import RoutesList from './pages/routes/RoutesList';
 import RouteDetails from './pages/routes/RouteDetails';
+import RouteDrive from './pages/routes/RouteDrive';
 import HomeRedirect from './components/HomeRedirect';
 
 const queryClient = new QueryClient({
@@ -92,6 +93,7 @@ function App() {
                 </ProtectedRoute>}>
                   <Route path='' element={<RoutesList />} />
                   <Route path=':id' element={<RouteDetails />} />
+                  <Route path=':id/drive' element={<RouteDrive />} />
                 </Route>
                 <Route path="organizations" element={<ProtectedRoute roles={['admin', 'owner']}>
                   <Outlet />

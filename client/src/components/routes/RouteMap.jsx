@@ -42,15 +42,16 @@ export function RouteLayers({ route }) {
 }
 
 // The route on a map of its own, opened around the whole route, with the
-// route's own key (not the devices' one). `children` go inside the map (the
-// driver's position while driving).
-function RouteMap({ route, children }) {
+// route's own key (not the devices' one; `withKey` false leaves it out, as
+// while driving, where the driving bar covers its corner). `children` go
+// inside the map (the driver's position while driving).
+function RouteMap({ route, withKey = true, children }) {
     const bounds = [route.start, ...(route.end ? [route.end] : []), ...route.stops.map(stop => stop.location)].map(toLatLng)
     return (
         <div className="relative h-full w-full overflow-hidden rounded-2xl border shadow-md">
             <MapComponent bounds={bounds}>
                 <RouteLayers route={route} />
-                <MapKeyPanel><RouteKey /></MapKeyPanel>
+                {withKey && <MapKeyPanel><RouteKey /></MapKeyPanel>}
                 {children}
             </MapComponent>
         </div>

@@ -10,6 +10,7 @@ import { RouteDriverSelect, RouteStatusBadge } from "@/components/routes/RoutePa
 import { routeDuration, routeTitle } from "@/utils/routes"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { MobileTooltip } from "@/components/ui/mobile-tooltip"
 import { useRoutes } from "@/hooks/routes/useRoutes"
 import { useSelectedOrg } from "@/hooks/organizations/useSelectedOrg"
 import { useAppSide } from "@/hooks/useAppSide"
@@ -77,8 +78,14 @@ function RoutesList() {
                 if (!confirmedCount && !contradictedCount) return <span className="text-muted-foreground">—</span>
                 return (
                     <span className="flex items-center gap-3">
-                        <span className="flex items-center gap-1 text-green-600" title={t("pages.routes.confirmed")}><CircleCheck size={14} />{confirmedCount}</span>
-                        {contradictedCount > 0 && <span className="flex items-center gap-1 text-red-600" title={t("pages.routes.contradicted")}><CircleX size={14} />{contradictedCount}</span>}
+                        <MobileTooltip content={t("pages.routes.confirmed")}>
+                            <span className="flex items-center gap-1 text-green-600"><CircleCheck size={14} />{confirmedCount}</span>
+                        </MobileTooltip>
+                        {contradictedCount > 0 && (
+                            <MobileTooltip content={t("pages.routes.contradicted")}>
+                                <span className="flex items-center gap-1 text-red-600"><CircleX size={14} />{contradictedCount}</span>
+                            </MobileTooltip>
+                        )}
                     </span>
                 )
             },

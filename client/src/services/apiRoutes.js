@@ -31,3 +31,32 @@ export function deleteRoute({ id }) {
 export function updateRoute({ id, ...changes }) {
     return request(`${ROUTES_EP}/${id}`, { method: "PATCH", body: changes });
 }
+
+// ---- Driving. A position is the phone's [lng, lat].
+
+// Starts driving (or goes back to it); with a position, the stops still to do
+// are re-ordered from there.
+export function startRoute({ id, position }) {
+    return request(`${ROUTES_EP}/${id}/start`, { method: "POST", body: position ? { position } : {} });
+}
+
+export function markStopDone({ id, binId, position, accuracyMeters }) {
+    return request(`${ROUTES_EP}/${id}/stops/${binId}/done`, { method: "POST", body: { ...(position ? { position, accuracyMeters } : {}) } });
+}
+
+export function undoStopDone({ id, binId }) {
+    return request(`${ROUTES_EP}/${id}/stops/${binId}/done`, { method: "DELETE" });
+}
+
+export function skipStop({ id, binId }) {
+    return request(`${ROUTES_EP}/${id}/stops/${binId}/skip`, { method: "POST" });
+}
+
+export function undoSkipStop({ id, binId }) {
+    return request(`${ROUTES_EP}/${id}/stops/${binId}/skip`, { method: "DELETE" });
+}
+
+export function finishRoute({ id }) {
+    return request(`${ROUTES_EP}/${id}/finish`, { method: "POST" });
+}
+

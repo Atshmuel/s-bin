@@ -7,7 +7,14 @@ export function routeTitle(route, t) {
         : t(`mapLegend.route.${route.type}`)
 }
 
-// "1 h 25 min" from seconds.
+// What is in the truck so far, about: the planned load of the stops done (a
+// bin's load was estimated from its weight or fullness when planned).
+export function loadedKg(route) {
+    return route.stops.reduce((sum, stop) => sum + (stop.status === "done" ? stop.loadKg ?? 0 : 0), 0)
+}
+
+// "1 h 25 min", or "8 min" under an hour, from seconds.
 export function routeDuration(seconds, t) {
-    return t("mapLegend.route.summaryTime", { hours: Math.floor(seconds / 3600), minutes: Math.round(seconds % 3600 / 60) })
+    const hours = Math.floor(seconds / 3600), minutes = Math.round(seconds % 3600 / 60)
+    return hours ? t("mapLegend.route.summaryTime", { hours, minutes }) : t("mapLegend.route.summaryMinutes", { minutes })
 }

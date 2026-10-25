@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import L from "leaflet"
 import { Info, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { MobileTooltip } from "@/components/ui/mobile-tooltip"
 import { useAppSide } from "@/hooks/useAppSide"
 import { useMapSettings } from "@/hooks/useMapSettings"
 import MapColorKey from "./MapColorKey"
@@ -35,13 +36,14 @@ function MapKeyPanel({ children = <MapColorKey /> }) {
                     {children}
                 </div>
             )}
-            <Button type="button" size="icon" variant="secondary" className="pointer-events-auto shrink-0 shadow-md"
-                aria-expanded={isOpen} aria-controls={panelId}
-                aria-label={t(isOpen ? "mapLegend.key.close" : "mapLegend.key.open")}
-                title={t(isOpen ? "mapLegend.key.close" : "mapLegend.key.open")}
-                onClick={() => setOpenPanel(isOpen ? null : "key")}>
-                {isOpen ? <X /> : <Info />}
-            </Button>
+            <MobileTooltip content={t(isOpen ? "mapLegend.key.close" : "mapLegend.key.open")}>
+                <Button type="button" size="icon" variant="secondary" className="pointer-events-auto shrink-0 shadow-md"
+                    aria-expanded={isOpen} aria-controls={panelId}
+                    aria-label={t(isOpen ? "mapLegend.key.close" : "mapLegend.key.open")}
+                    onClick={() => setOpenPanel(isOpen ? null : "key")}>
+                    {isOpen ? <X /> : <Info />}
+                </Button>
+            </MobileTooltip>
         </div>
     )
 }

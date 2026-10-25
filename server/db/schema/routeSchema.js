@@ -28,6 +28,8 @@ const stopSchema = new mongoose.Schema({
     fullnessAtPlan: Number,
     loadKg: Number,
     status: { type: String, enum: ROUTE_STOP_STATUSES, default: "planned" },
+    // When a skipped stop was skipped (Previous undoes whatever came last).
+    skippedAt: Date,
     claim: { type: claimSchema, default: null },
     verification: { type: verificationSchema, default: null },
 }, { _id: false });
@@ -58,9 +60,13 @@ export const routeSchema = new mongoose.Schema({
     start: { type: [Number], required: true },
     end: { type: [Number], default: undefined },
     fromDepot: { type: Boolean, default: false },
+    // The line, distance and time from where the route stands ("Re-order from
+    // here" replaces them); the planned ones are kept as planned, to compare.
     geometry: String,
     distanceMeters: Number,
     durationSeconds: Number,
+    plannedDistanceMeters: Number,
+    plannedDurationSeconds: Number,
     loadKg: Number,
     // Bins that matched but did not fit: past the optimizer's limit or the truck.
     leftOut: { type: Number, default: 0 },
