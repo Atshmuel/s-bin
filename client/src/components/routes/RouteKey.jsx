@@ -4,9 +4,9 @@ import { FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT } from "@/utils/con
 import { ROUTE_COLOR } from "@/utils/mapClusters"
 
 // A stop marker as the route map draws it (see createStopIcon), small.
-function StopSample({ children, background = ROUTE_COLOR, dot }) {
+function StopSample({ children, background = ROUTE_COLOR, dot, faded = false }) {
     return (
-        <span className="relative flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow"
+        <span className={`relative flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow ${faded ? "border-dashed opacity-55" : ""}`}
             style={{ background }}>
             {children}
             {dot && <span className="absolute -right-1 -bottom-1 size-2.5 rounded-full border border-white" style={{ background: dot }} />}
@@ -32,6 +32,7 @@ function RouteKey() {
                 </li>
                 <li className="flex items-center gap-2"><StopSample>3</StopSample>{t("pages.routes.key.stop")}</li>
                 <li className="flex items-center gap-2"><StopSample background="#9ca3af">✓</StopSample>{t("pages.routes.key.done")}</li>
+                <li className="flex items-center gap-2"><StopSample background="#9ca3af" faded>–</StopSample>{t("pages.routes.key.skipped")}</li>
                 <li className="flex items-center gap-2">
                     <span className="shrink-0 rounded bg-[#0f172a] px-1.5 py-0.5 text-[10px] font-semibold text-white">{t("mapLegend.route.start")}</span>
                     {t("pages.routes.key.depot")}

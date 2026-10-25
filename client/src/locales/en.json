@@ -388,6 +388,7 @@
         "line": "The road the truck drives",
         "stop": "A stop, numbered in driving order",
         "done": "A stop marked done",
+        "skipped": "A stop skipped (left for another route)",
         "depot": "The depot: where the route starts and ends",
         "dot": "The dot on a stop: how full the bin was when the route was planned"
       },

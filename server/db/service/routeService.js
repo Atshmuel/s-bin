@@ -263,8 +263,9 @@ export function canDriveRoute(route, { id, role, org }) {
 
 // Re-orders the stops not yet done from the driver's position ([lng, lat])
 // back to the route's end: the same bins, so the same reservations and load.
-// Stops done or skipped keep their place first; the line, distance and time
-// become those from the position on.
+// Stops done or skipped come first, in the order they were handled (when
+// marked or skipped), so their numbers tell the drive so far; the line,
+// distance and time become those from the position on.
 export async function reorderFromPosition(route, position) {
     const remaining = route.stops.filter(stop => stop.status === "planned");
     if (remaining.length === 0) return;
@@ -277,7 +278,8 @@ export async function reorderFromPosition(route, position) {
         truck: null,
     });
     if (!plan) return;
-    const settled = route.stops.filter(stop => stop.status !== "planned").sort((a, b) => a.order - b.order);
+    const handledAt = stop => (stop.status === "done" ? stop.claim?.at : stop.skippedAt)?.getTime?.() ?? 0;
+    const settled = route.stops.filter(stop => stop.status !== "planned").sort((a, b) => handledAt(a) - handledAt(b) || a.order - b.order);
     const ordered = plan.stops.map(({ bin }) => bin.stop);
     // A stop the optimizer left out (not reachable) keeps its place at the end.
     const missing = remaining.filter(stop => !ordered.includes(stop));

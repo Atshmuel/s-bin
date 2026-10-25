@@ -41,9 +41,12 @@ export function createCellIcon(count, urgency) {
 // order, and a dot in its fullness color; unlike a group's count.
 export const ROUTE_COLOR = "#2563eb"
 // A stop already done is grey with a check.
-export function createStopIcon(order, color, done = false) {
+// A stop's marker: its number in driving order, or a check once done, or a
+// dash, faded, when skipped (so a skipped stop never reads as one to do).
+export function createStopIcon(order, color, status = "planned") {
+    const done = status === "done", skipped = status === "skipped"
     return L.divIcon({
-        html: `<div style="position:relative;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9999px;background:${done ? "#9ca3af" : ROUTE_COLOR};color:#fff;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)">${done ? "✓" : order}<span style="position:absolute;right:-3px;bottom:-3px;width:11px;height:11px;border-radius:9999px;background:${color};border:2px solid #fff"></span></div>`,
+        html: `<div style="position:relative;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9999px;background:${done || skipped ? "#9ca3af" : ROUTE_COLOR};opacity:${skipped ? 0.55 : 1};color:#fff;font-weight:700;font-size:12px;border:2px ${skipped ? "dashed" : "solid"} #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)">${done ? "✓" : skipped ? "–" : order}<span style="position:absolute;right:-3px;bottom:-3px;width:11px;height:11px;border-radius:9999px;background:${color};border:2px solid #fff"></span></div>`,
         className: "",
         iconSize: [28, 28],
     })

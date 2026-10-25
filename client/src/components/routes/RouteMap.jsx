@@ -10,7 +10,7 @@ import { toLatLng } from "@/utils/geo";
 import { ROUTE_COLOR, createRouteEndIcon, createStopIcon } from "@/utils/mapClusters";
 
 // A stored route's line, where it starts and ends, and its stops numbered in
-// driving order (a done stop greyed with a check).
+// driving order (a done stop greyed with a check, a skipped one faded with a dash).
 export function RouteLayers({ route }) {
     const { t } = useTranslation()
     const sameEnd = route.end && route.end[0] === route.start[0] && route.end[1] === route.start[1]
@@ -21,13 +21,14 @@ export function RouteLayers({ route }) {
             )}
             {route.stops.map(stop => (
                 <Marker key={stop.binId} position={toLatLng(stop.location)}
-                    icon={createStopIcon(stop.order, getColor(stop.fullnessAtPlan ?? 0), stop.status === "done")}>
+                    icon={createStopIcon(stop.order, getColor(stop.fullnessAtPlan ?? 0), stop.status)}>
                     <Tooltip direction="top" offset={[0, -14]}>
                         {t("mapLegend.route.stopTooltip", { order: stop.order, count: route.stops.length, name: stop.binName })}
                     </Tooltip>
                     <Popup>
                         <div className="flex flex-col gap-1 text-sm">
                             <span className="font-semibold">{stop.order}. {stop.binName}</span>
+                            {stop.status !== "planned" && <span className="text-xs text-muted-foreground">{t(`pages.routes.stopStatuses.${stop.status}`)}</span>}
                             <span>{t("mapLegend.route.stopFullness", { percent: Math.round(stop.fullnessAtPlan ?? 0) })}</span>
                             {stop.loadKg != null && <span>{t("mapLegend.route.stopLoad", { kg: stop.loadKg.toLocaleString() })}</span>}
                             <Link to={`/bins/${stop.binId}`}>{t("viewBin")}</Link>
