@@ -25,8 +25,11 @@ constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 // First boot, or after losing the gateway: without a clock or schedule the
 // leaf cannot know when the gateway's short window is, so it listens through
 // a whole 12-hour cycle. Fine for this USB-powered test board; real leaves
-// rely on a pole gateway's long window instead.
-constexpr uint32_t COLD_JOIN_LISTEN_MS = 12UL * 60UL * 60UL * 1000UL + 30UL * 60UL * 1000UL;
+// rely on a pole gateway's long window instead. Slots keep the same local
+// hour, so across a clock change one gap is an hour longer (13 hours): a
+// 12.5-hour listen started after a flash on 2026-10-24 ended 3 minutes before
+// the first winter-time slot.
+constexpr uint32_t COLD_JOIN_LISTEN_MS = 13UL * 60UL * 60UL * 1000UL + 30UL * 60UL * 1000UL;
 constexpr uint32_t COLD_JOIN_RETRY_SLEEP_SECONDS = 15UL * 60UL;
 // A learned slot period outside this range is treated as a bad schedule.
 constexpr uint32_t MIN_SCHEDULE_PERIOD_SECONDS = 60;
