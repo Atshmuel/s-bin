@@ -32,15 +32,6 @@ export function getBinsInUserRadius({ coordinates, radius, health = null, minLev
     });
 }
 
-// The route visits the bins the map's search finds: a collection those in the
-// fullness range, a maintenance visit those in the health filter.
-// `coordinates` is the start as "lat,lng".
-export function getBestRoute({ coordinates, radius, type, minLevel, maxLevel, health, orgId, truckTypeId }) {
-    return request(`${BINS_EP}/route`, {
-        method: "POST",
-        body: { coordinates: toLngLat(coordinates.split(',').map(Number)), radius: +radius * 1000, type, minLevel, maxLevel, health, orgId, truckTypeId },
-    });
-}
 //end
 
 export function updateBinMaintenance({ id, notes }) {

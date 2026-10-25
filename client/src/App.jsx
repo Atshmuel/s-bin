@@ -4,7 +4,7 @@ import {
 } from '@tanstack/react-query'
 import 'leaflet/dist/leaflet.css';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import { DarkModeProvider } from './contexts/DarkModeProvider';
@@ -32,6 +32,9 @@ import { AppSideProvider } from './contexts/AppSideProvider';
 import { OrganizationScopeProvider } from './contexts/OrganizationScopeProvider';
 import Organizations from './pages/organizations/Organizations';
 import OrganizationSettings from './pages/organizations/OrganizationSettings';
+import RoutesList from './pages/routes/RoutesList';
+import RouteDetails from './pages/routes/RouteDetails';
+import HomeRedirect from './components/HomeRedirect';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 0 } },
@@ -57,7 +60,7 @@ function App() {
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<Navigate replace to="dashboard" />} />
+                <Route index element={<HomeRedirect />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="analytics" element={<Analytics />} />
 
@@ -83,6 +86,12 @@ function App() {
                 </Route>
                 <Route path="account">
                   <Route path="" element={<AccountProfile />} />
+                </Route>
+                <Route path="routes" element={<ProtectedRoute roles={['admin', 'owner', 'driver']}>
+                  <Outlet />
+                </ProtectedRoute>}>
+                  <Route path='' element={<RoutesList />} />
+                  <Route path=':id' element={<RouteDetails />} />
                 </Route>
                 <Route path="organizations" element={<ProtectedRoute roles={['admin', 'owner']}>
                   <Outlet />

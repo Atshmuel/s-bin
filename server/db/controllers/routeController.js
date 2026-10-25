@@ -182,3 +182,16 @@ export async function updateRoute(req, res) {
         sendError(res, error)
     }
 }
+
+// The active drivers of an organization, for assigning routes (owners name
+// the organization with ?org=, admins get their own's).
+export async function listDrivers(req, res) {
+    const orgId = req.user.role === ROLES.OWNER ? req.user.selectedOrg : req.user.org
+    if (!orgId) return res.status(400).json({ message: 'Name the organization with ?org=.' })
+    try {
+        const drivers = await userModel.find({ org: orgId, role: ROLES.DRIVER, status: 'active' }, { name: 1 }).sort({ name: 1 }).lean()
+        res.status(200).json({ drivers })
+    } catch (error) {
+        sendError(res, error)
+    }
+}

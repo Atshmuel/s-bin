@@ -8,7 +8,6 @@ import {
     FULLNESS_WARNING_PERCENT, MAP_CELL_PX, MAP_VIEW_LIMIT, ROLES,
 } from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
-import { HEALTH_FILTERS, optimizeRoute, reservedBinIds, RouteError, selectRouteBins } from '../service/routeService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
 // The bins page's sortable columns (see listSortStages). The plain fields have
@@ -298,100 +297,6 @@ export async function getBinsInUserRadius(req, res) {
 
         res.status(200).json({ binsData: binsData || [] })
     } catch (error) {
-        res.status(500).json({ message: error?.message || error })
-    }
-}
-
-// A route through what the map's search finds, not stored (POST /api/routes
-// stores one): a collection through the bins in the fullness range (level or
-// weight, whichever is higher), a maintenance visit through the devices,
-// gateways included, in the health filter, leaving out bins another route
-// holds. For a collection with a truck (truckTypeId, one of the
-// organization's truck types) it takes the most urgent bins that truck can
-// carry. A route starts and ends at the organization's depot when it has one,
-// else it starts at the search's centre. Owners name the organization
-// (orgId); anyone else plans for their own.
-export async function getRouteBins(req, res) {
-    const { coordinates, radius, type, minLevel, maxLevel, health, orgId, truckTypeId } = req.body
-    if (!isLngLat(coordinates)) return res.status(400).json({ message: 'coordinates must be [lng, lat].' })
-
-    if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
-
-    const fullnessRange = [minLevel, maxLevel].map((value, i) =>
-        value === undefined ? DEFAULT_COLLECTION_FULLNESS[i] : Number(value))
-    if (fullnessRange.some(value => !Number.isFinite(value) || value < 0 || value > 100) ||
-        fullnessRange[0] > fullnessRange[1]) {
-        return res.status(400).json({ message: 'minLevel and maxLevel must be 0-100, minLevel first.' })
-    }
-    // Maintenance without a health filter keeps its old meaning: critical devices.
-    const healthFilter = health ?? (type === 'maintenance' ? 'critical' : 'all')
-    if (!HEALTH_FILTERS.includes(healthFilter)) {
-        return res.status(400).json({ message: `health must be one of ${HEALTH_FILTERS.join(', ')}.` })
-    }
-
-    // The organization planned for, its depot and, for a collection, the truck.
-    const planOrgId = req.user.role === ROLES.OWNER ? orgId : req.user.org
-    if (planOrgId !== undefined && planOrgId !== null && !mongoose.Types.ObjectId.isValid(planOrgId)) {
-        return res.status(400).json({ message: 'Invalid orgId.' })
-    }
-    if (truckTypeId !== undefined && !planOrgId) {
-        return res.status(400).json({ message: 'A truck belongs to an organization: send orgId.' })
-    }
-    let depot = null
-    let truck = null
-    try {
-        if (planOrgId) {
-            const org = await organizationModel.findById(planOrgId, { fleet: 1, depot: 1 }).lean()
-            if (!org) return res.status(404).json({ message: 'Organization not found.' })
-            depot = org.depot?.location ?? null
-            if (truckTypeId !== undefined && type === 'collection') {
-                truck = (org.fleet ?? []).find(truckType => String(truckType._id) === String(truckTypeId))
-                if (!truck) return res.status(404).json({ message: 'Truck type not found in the organization.' })
-            }
-        }
-    } catch (error) {
-        return res.status(500).json({ message: error?.message || error })
-    }
-
-    const scope = planOrgId && req.user.role === ROLES.OWNER
-        ? { ownerId: new mongoose.Types.ObjectId(planOrgId) }
-        : scopeToOrganization({}, req.user)
-
-    try {
-        const excludeIds = await reservedBinIds(planOrgId)
-        const { bins, total } = await selectRouteBins({ scope, coordinates, radius, type, fullnessRange, healthFilter, excludeIds })
-        if (bins.length === 0)
-            return res.status(200).json({ route: [], message: "No bins found in the specified radius matching the criteria" });
-
-        const origin = depot ?? coordinates
-        const plan = await optimizeRoute({ bins, type, origin, depot, truck })
-        if (!plan) {
-            return res.status(200).json({ route: [], message: "No bin fits the truck", total, unassigned: bins.length })
-        }
-        const stops = plan.stops.map(({ bin, order, loadKg }) => ({
-            order,
-            _id: bin._id,
-            binName: bin.binName,
-            location: bin.location,
-            status: bin.status,
-            fullness: bin.fullness,
-            loadKg,
-        }))
-        res.status(200).json({
-            route: { geometry: plan.geometry, distance: plan.distanceMeters, duration: plan.durationSeconds },
-            stops,
-            start: origin,
-            end: depot,
-            fromDepot: Boolean(depot),
-            truck: truck ? { name: truck.name, preset: truck.preset, capacityKg: truck.capacityKg } : null,
-            loadKg: plan.loadKg,
-            total,
-            // Matched bins the route leaves: past the optimizer's limit, or past the truck's capacity.
-            leftOut: total - stops.length,
-            binsData: stops,
-        })
-    } catch (error) {
-        if (error instanceof RouteError) return res.status(error.status).json({ message: error.message, details: error.details })
         res.status(500).json({ message: error?.message || error })
     }
 }

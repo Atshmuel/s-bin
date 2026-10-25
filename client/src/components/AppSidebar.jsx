@@ -4,6 +4,7 @@ import * as React from "react"
 import {
   ChartSplineIcon,
   LayoutDashboardIcon,
+  RouteIcon,
   Trash2Icon,
   UserCircle2Icon,
 } from "lucide-react"
@@ -33,7 +34,7 @@ export function AppSidebar({
 }) {
   const { t } = useTranslation()
   const { state } = useSidebar()
-  const { me, isAdmin, isOwner } = useMe()
+  const { me, isAdmin, isOwner, isDriver } = useMe()
   const { opSide, isRight } = useAppSide()
 
   const isExpanded = state === 'expanded'
@@ -100,8 +101,25 @@ export function AppSidebar({
         name: t("sidebar.general.items.analytics"),
         url: "/analytics",
         icon: ChartSplineIcon,
-      }
+      },
     ],
+  }
+  // Routes: owners and admins plan and assign them, drivers drive theirs; a
+  // driver sees nothing else.
+  const routesGroup = {
+    title: t("sidebar.managment.subtitles.routes"),
+    url: "/routes",
+    icon: RouteIcon,
+    isActive: true,
+    items: [
+      { title: t("sidebar.managment.items.routeList"), url: "" },
+    ],
+  }
+  if (isDriver) {
+    data.listItems = [routesGroup]
+    data.general = []
+  } else if (isAdmin) {
+    data.listItems.splice(1, 0, routesGroup)
   }
 
 
@@ -114,7 +132,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.listItems} />
-        <NavGeneral general={data.general} />
+        {data.general.length > 0 && <NavGeneral general={data.general} />}
       </SidebarContent>
       <SidebarFooter>
         {isOwner ? <RemoveBin isExpanded={isExpanded} /> : null}

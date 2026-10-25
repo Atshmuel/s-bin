@@ -1,15 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import L from "leaflet";
-import { Link, useSearchParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Marker, Polyline, Popup, Tooltip, useMap, useMapEvents } from "react-leaflet";
-import polyline from "@mapbox/polyline";
+import { Marker, useMap, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import CustomMarker from "@/components/map/CustomMarker"
 import MapComponent from "@/components/map/MapComponent"
 import BinPopupCard from "@/components/map/BinPopupCard";
-import { DriverPosition, DrivingBar } from "@/components/map/RouteDriving";
 import { Spinner } from "@/components/ui/spinner";
 import { useBins } from "@/hooks/bins/useBins";
 import { useBin } from "@/hooks/bins/useBin";
@@ -17,7 +14,7 @@ import { useMapBins, useMapExtent } from "@/hooks/bins/useMapBins";
 import { useMapSettings } from "@/hooks/useMapSettings";
 import { getColor, isGateway } from "@/utils/binHelpers";
 import { getColocatedShifts, getDeviceRole, getDeviceRoleIcon } from "@/utils/deviceRoles";
-import { ROUTE_COLOR, createCellIcon, createClusterIcon, createRouteEndIcon, createStopIcon } from "@/utils/mapClusters";
+import { createCellIcon, createClusterIcon } from "@/utils/mapClusters";
 import { CLUSTER_UNTIL_ZOOM, MAP_VIEW_DEBOUNCE_MS } from "@/utils/constants";
 import { toLatLng } from "@/utils/geo";
 
@@ -47,36 +44,6 @@ function MapViewWatcher({ onView }) {
     return null
 }
 
-// A planned route on its own: its line, where it starts and ends, and its
-// stops numbered in driving order.
-function RouteView({ plan }) {
-    const { t } = useTranslation()
-    const sameEnd = plan.end && plan.end[0] === plan.start[0] && plan.end[1] === plan.start[1]
-    return (
-        <>
-            <Polyline positions={polyline.decode(plan.geometry)} pathOptions={{ color: ROUTE_COLOR, weight: 5, opacity: 0.7, lineJoin: "round" }} />
-            {plan.stops.map(stop => (
-                <Marker key={stop._id} position={toLatLng(stop.location.coordinates)}
-                    icon={createStopIcon(stop.order, getColor(stop.status), (plan.doneIds ?? []).includes(stop._id))}>
-                    <Tooltip direction="top" offset={[0, -14]}>
-                        {t("mapLegend.route.stopTooltip", { order: stop.order, count: plan.stops.length, name: stop.binName })}
-                    </Tooltip>
-                    <Popup>
-                        <div className="flex flex-col gap-1 text-sm">
-                            <span className="font-semibold">{stop.order}. {stop.binName}</span>
-                            <span>{t("mapLegend.route.stopFullness", { percent: Math.round(stop.fullness ?? 0) })}</span>
-                            {stop.loadKg != null && <span>{t("mapLegend.route.stopLoad", { kg: stop.loadKg.toLocaleString() })}</span>}
-                            <Link to={`/bins/${stop._id}`}>{t("viewBin")}</Link>
-                        </div>
-                    </Popup>
-                </Marker>
-            ))}
-            <Marker position={toLatLng(plan.start)} icon={createRouteEndIcon(t(sameEnd ? "mapLegend.route.startEnd" : "mapLegend.route.start"))} zIndexOffset={1000} />
-            {plan.end && !sameEnd && <Marker position={toLatLng(plan.end)} icon={createRouteEndIcon(t("mapLegend.route.end"))} zIndexOffset={1000} />}
-        </>
-    )
-}
-
 // A crowded view's grid cells, counted by the server: each a group marker
 // that zooms in on its devices.
 function MapCells({ cells }) {
@@ -95,11 +62,7 @@ const DEFAULT_CENTER = Object.freeze([32.0853, 34.7818]);
 // opens around all of the user's devices.
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
     const { t } = useTranslation()
-    const { map, routePlan, setRoutePlan } = useMapSettings()
-    // Driving a route: the driver's position and whether the map follows it.
-    const [driverPosition, setDriverPosition] = useState(null)
-    const [following, setFollowing] = useState(true)
-    const stopFollowing = useCallback(() => setFollowing(false), [])
+    const { map } = useMapSettings()
     const [searchParams] = useSearchParams();
     const hasOwnBins = binsToUse !== null
     const isSearch = SEARCH_PARAMS.every(param => searchParams.has(param))
@@ -108,9 +71,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
     const binId = searchParams.get("binId")
     const focusesBin = !hasOwnBins && Boolean(binId)
     const { bin: focusBin, isLoadingBins: isLoadingFocusBin } = useBin(focusesBin ? binId : null)
-    // A planned route shows on its own (the map page's, not the dashboard's).
-    const showsRoute = !hasOwnBins && !focusesBin && Boolean(routePlan)
-    const followsView = !hasOwnBins && !isSearch && !showsRoute && !focusesBin
+    const followsView = !hasOwnBins && !isSearch && !focusesBin
 
     const zoomFromUrl = Number(searchParams.get("zoom"))
     const locationFromUrl = searchParams.get("coordinates")?.split(",").map(Number)
@@ -123,7 +84,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
     const opensAroundAll = followsView && !locationFromUrl
     const { extent, isLoadingExtent } = useMapExtent({ enabled: opensAroundAll })
 
-    let devices = (showsRoute ? [] : hasOwnBins ? binsToUse : focusesBin ? (focusBin ? [focusBin] : [])
+    let devices = (hasOwnBins ? binsToUse : focusesBin ? (focusBin ? [focusBin] : [])
         : isSearch ? searchBins : mapBins) ?? []
     if (binId) devices = devices.filter(bin => bin._id === binId)
 
@@ -153,9 +114,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
         if (gatewayId) relayCounts.set(gatewayId, (relayCounts.get(gatewayId) ?? 0) + 1)
     }
 
-    const routePoints = showsRoute ? [routePlan.start, ...routePlan.stops.map(stop => stop.location.coordinates)].map(toLatLng) : []
-    const opening = showsRoute ? { bounds: routePoints }
-        : locationFromUrl ? { center: locationFromUrl }
+    const opening = locationFromUrl ? { center: locationFromUrl }
         : focusBin ? { center: toLatLng(focusBin.location.coordinates) }
         : center ? { center }
             : opensAroundAll && extent ? { bounds: [[extent.south, extent.west], [extent.north, extent.east]] }
@@ -187,20 +146,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                 </MarkerClusterGroup>
                 {followsView && <MapViewWatcher onView={setBox} />}
                 {followsView && mapCells && <MapCells cells={mapCells} />}
-                {showsRoute && <RouteView plan={routePlan} />}
-                {showsRoute && routePlan.driving && (
-                    <DriverPosition following={following} onStopFollowing={stopFollowing} onPosition={setDriverPosition} />
-                )}
             </MapComponent>
-            {showsRoute && routePlan.driving && (
-                <DrivingBar plan={routePlan} position={driverPosition} following={following}
-                    onFollow={() => setFollowing(true)}
-                    onDone={(stopId) => setRoutePlan({ ...routePlan, doneIds: [...(routePlan.doneIds ?? []), stopId] })}
-                    onUndo={() => setRoutePlan({ ...routePlan, doneIds: (routePlan.doneIds ?? []).slice(0, -1) })}
-                    onStop={() => { setRoutePlan({ ...routePlan, driving: false }); setDriverPosition(null) }}
-                    onFinish={() => { setRoutePlan(null); setDriverPosition(null) }}
-                    distanceTo={(from, to) => L.latLng(from).distanceTo(L.latLng(to))} />
-            )}
             {/* Above Leaflet's panes and controls (1000); clicks pass through to the map. */}
             {followsView && isFetchingMapBins && (
                 <div className="pointer-events-none absolute inset-x-0 top-3 z-[1001] flex justify-center px-14">

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authToken, authRole } from "../middlewares/authMiddleware.js";
 import { selectOrganization, validateBodyFields, validateParamExist, validateRequestBodyBinIds } from "../middlewares/validationMiddleware.js";
-import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getMapBins, getMapExtent, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName, getRouteBins } from "../db/controllers/binController.js";
+import { deleteBin, getAllUserBins, getBin, getBinsInUserRadius, getMapBins, getMapExtent, deleteBinsBatch, updateBinMaintenance, removeBinConfigViaMAC, updateBinName } from "../db/controllers/binController.js";
 import { cancelDeviceInstruction, enqueueDeviceInstruction, listDeviceInstructions } from "../db/controllers/deviceInstructionController.js";
 import { getMeshSettings, updateMeshSettings } from "../db/controllers/organizationController.js";
 import { getBinAnalytics } from "../db/controllers/analyticsController.js";
@@ -26,7 +26,6 @@ binRouter.patch('/mesh-settings/:orgId', (req, res, next) => {
 binRouter.get('/:id', validateParamExist(), getBin) //get bin
 binRouter.get('/:id/analytics/:section', getBinAnalytics) //one bin page analytics section (?range=7|30|90)
 binRouter.post('/radius', validateBodyFields(['coordinates', 'radius'], ['health', 'minLevel', 'maxLevel']), getBinsInUserRadius) //get bins
-binRouter.post('/route', validateBodyFields(['coordinates', 'radius', 'type'], ['minLevel', 'maxLevel', 'health', 'orgId', 'truckTypeId']), getRouteBins) //get bins in radius for maintenance or collection route
 //updates
 binRouter.patch('/maintenance/:id', (req, res, next) => {
     authRole([ROLES.OWNER, ROLES.ADMIN, ROLES.TECHNICIAN])(req, res, next) //update bin maintenance by id

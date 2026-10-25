@@ -91,10 +91,12 @@
         "bins": "Bins",
         "users": "Users",
         "organizations": "Organizations",
-        "organization": "Organization"
+        "organization": "Organization",
+        "routes": "Routes"
       },
       "items": {
         "binList": "List of Bins",
+        "routeList": "List of Routes",
         "addBin": "Add Bin",
         "map": "Map",
         "logs": "Logs",
@@ -311,6 +313,69 @@
     "meshBin":"Mesh bin"
   },
   "pages":{
+    "routes": {
+      "title": "Routes",
+      "newRoute": "New route",
+      "day": "Day",
+      "today": "Today",
+      "truckUnit": "{{name}} #{{unit}}",
+      "noDriver": "No driver",
+      "unknownDriver": "A former driver",
+      "progress": "{{done}} of {{count}} done",
+      "skipped_one": "1 skipped",
+      "skipped_other": "{{count}} skipped",
+      "load": "{{load}} of {{capacity}} kg",
+      "confirmed": "Confirmed by the bins' reports",
+      "contradicted": "Contradicted by the bins' reports",
+      "columns": {
+        "route": "Route",
+        "organization": "Organization",
+        "driver": "Driver",
+        "progress": "Progress",
+        "load": "Load",
+        "distance": "Distance and time",
+        "status": "Status",
+        "verified": "Verified"
+      },
+      "statuses": {
+        "planned": "Planned",
+        "driving": "Driving",
+        "finished": "Finished",
+        "cancelled": "Cancelled"
+      },
+      "stopStatuses": {
+        "planned": "To do",
+        "done": "Done",
+        "skipped": "Skipped"
+      },
+      "verification": {
+        "confirmed": "Confirmed: the bin's next report showed it emptied",
+        "contradicted": "Contradicted: the bin's next report showed it still full",
+        "unverified": "Unverified: no usable report"
+      },
+      "plan": {
+        "noFit": "No bin fits the truck.",
+        "noDepot": "Routes start and end at the organization's depot, which is not set.",
+        "toSettings": "Set it in the organization's settings."
+      },
+      "key": {
+        "title": "What the route map shows",
+        "line": "The road the truck drives",
+        "stop": "A stop, numbered in driving order",
+        "done": "A stop marked done",
+        "depot": "The depot: where the route starts and ends",
+        "dot": "The dot on a stop: how full the bin was when the route was planned"
+      },
+      "details": {
+        "back": "All routes",
+        "notFound": "Route not found.",
+        "cancel": "Cancel route",
+        "cancelTitle": "Cancel this route?",
+        "cancelDescription": "Its bins are freed for other routes. This cannot be undone.",
+        "claimed": "Marked done at {{time}}",
+        "claimDistance": "{{meters}} m from the bin"
+      }
+    },
     "dashboard":{
       "titles": {
         "quickOverview": {

@@ -6,6 +6,7 @@ export const USERS_EP = 'api/users'
 export const AUTH_EP = 'api/auth'
 export const OVERVIEW_EP = 'api/overviews'
 export const ORG_EP = 'api/organizations'
+export const ROUTES_EP = 'api/routes'
 
 // The AI overview is kept in the browser this long (it is slow and costs a
 // model call), one per organization an owner looks at; renaming the key drops

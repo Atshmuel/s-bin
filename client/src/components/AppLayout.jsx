@@ -1,9 +1,17 @@
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useMe } from "@/hooks/users/auth/useMe";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { Breakcrumbs } from "./Breadcrumbs";
+
+// A driver works only with their routes (and their own account).
+const DRIVER_PATHS = Object.freeze(["/routes", "/account"]);
+
 function AppLayout() {
+    const { isDriver } = useMe();
+    const { pathname } = useLocation();
+    const isDriverAway = isDriver && !DRIVER_PATHS.some(path => pathname.startsWith(path));
 
     return (
         <SidebarProvider>
@@ -22,7 +30,7 @@ function AppLayout() {
                     </div>
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4">
-                    <Outlet />
+                    {isDriverAway ? <Navigate replace to="/routes" /> : <Outlet />}
                 </div>
             </SidebarInset>
         </SidebarProvider>

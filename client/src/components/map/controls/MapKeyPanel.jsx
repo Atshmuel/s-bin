@@ -8,8 +8,9 @@ import { useMapSettings } from "@/hooks/useMapSettings"
 import MapColorKey from "./MapColorKey"
 
 // What the map's colors and icons mean, behind its own button in the corner
-// opposite the map's actions.
-function MapKeyPanel() {
+// opposite the map's actions: the devices' key by default, or another map's
+// (a route's) as children.
+function MapKeyPanel({ children = <MapColorKey /> }) {
     const { t } = useTranslation()
     const { isRight } = useAppSide()
     const { openPanel, setOpenPanel } = useMapSettings()
@@ -31,7 +32,7 @@ function MapKeyPanel() {
             {isOpen && (
                 <div id={panelId} ref={panelRef}
                     className="pointer-events-auto min-h-0 w-64 max-w-[calc(100vw-3rem)] overflow-y-auto rounded-lg border bg-background/95 p-4 text-foreground shadow-lg backdrop-blur">
-                    <MapColorKey />
+                    {children}
                 </div>
             )}
             <Button type="button" size="icon" variant="secondary" className="pointer-events-auto shrink-0 shadow-md"

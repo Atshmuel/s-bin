@@ -189,10 +189,12 @@
             "bins":"פחים",
             "users":"משתמשים",
             "organizations": "ארגונים",
-            "organization": "הארגון"
+            "organization": "הארגון",
+            "routes": "מסלולים"
             },
             "items":{
                 "binList":"רשימת פחים",
+                "routeList": "רשימת מסלולים",
                 "addBin":"הוסף פח",
                 "map":"מפה",
                 "logs":"תיעודים",
@@ -315,6 +317,70 @@
     "meshBin":"פח רשת"
   },
   "pages":{
+    "routes": {
+      "title": "מסלולים",
+      "newRoute": "מסלול חדש",
+      "day": "יום",
+      "today": "היום",
+      "truckUnit": "{{name}} #{{unit}}",
+      "noDriver": "ללא נהג",
+      "unknownDriver": "נהג לשעבר",
+      "progress": "{{done}} מתוך {{count}} בוצעו",
+      "skipped_one": "אחת דולגה",
+      "skipped_two": "שתיים דולגו",
+      "skipped_other": "{{count}} דולגו",
+      "load": "{{load}} מתוך {{capacity}} ק״ג",
+      "confirmed": "אושר בדיווחי הפחים",
+      "contradicted": "נסתר בדיווחי הפחים",
+      "columns": {
+        "route": "מסלול",
+        "organization": "ארגון",
+        "driver": "נהג",
+        "progress": "התקדמות",
+        "load": "מטען",
+        "distance": "מרחק וזמן",
+        "status": "סטטוס",
+        "verified": "אימות"
+      },
+      "statuses": {
+        "planned": "מתוכנן",
+        "driving": "בנסיעה",
+        "finished": "הסתיים",
+        "cancelled": "בוטל"
+      },
+      "stopStatuses": {
+        "planned": "לביצוע",
+        "done": "בוצע",
+        "skipped": "דולג"
+      },
+      "verification": {
+        "confirmed": "אושר: הדיווח הבא של הפח הראה שהוא רוקן",
+        "contradicted": "נסתר: הדיווח הבא של הפח הראה שהוא עדיין מלא",
+        "unverified": "לא אומת: אין דיווח שמיש"
+      },
+      "plan": {
+        "noFit": "אף פח לא נכנס למשאית.",
+        "noDepot": "מסלולים יוצאים מהחניון של הארגון וחוזרים אליו, והוא לא הוגדר.",
+        "toSettings": "הגדירו אותו בהגדרות הארגון."
+      },
+      "key": {
+        "title": "מה מפת המסלול מציגה",
+        "line": "הדרך שהמשאית נוסעת בה",
+        "stop": "עצירה, ממוספרת לפי סדר הנסיעה",
+        "done": "עצירה שסומנה כבוצעה",
+        "depot": "החניון: מכאן המסלול יוצא ולכאן הוא חוזר",
+        "dot": "הנקודה שעל העצירה: כמה הפח היה מלא כשהמסלול תוכנן"
+      },
+      "details": {
+        "back": "כל המסלולים",
+        "notFound": "המסלול לא נמצא.",
+        "cancel": "ביטול המסלול",
+        "cancelTitle": "לבטל את המסלול?",
+        "cancelDescription": "הפחים שלו ישוחררו למסלולים אחרים. אי אפשר לבטל את הפעולה.",
+        "claimed": "סומן כבוצע ב־{{time}}",
+        "claimDistance": "{{meters}} מ׳ מהפח"
+      }
+    },
     "dashboard":{
       "titles": {
         "quickOverview": {
