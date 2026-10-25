@@ -17,7 +17,6 @@ import { organizationRouter } from './routers/organizationRouter.js';
 import { routeRouter } from './routers/routeRouter.js';
 import { setEmailServiceCredentials } from './utils/mailService.js';
 import { initMqtt } from './mqtt/mqttClient.js';
-import { runMigrations } from './db/migrations/migrations.js';
 import { IS_DEV_MACHINE as isDevMachine, LOCAL_CLIENT_ORIGIN } from './utils/constants.js';
 import { apiLimiter } from './middlewares/rateLimiters.js';
 
@@ -80,11 +79,8 @@ const main = async () => {
     try {
         await mongoose.connect(`${DB_URL}`);
         if (isDevMachine) {
-            console.log(`Developer machine (${process.env.SBIN_DEV_MACHINE}): migrations, MQTT, scheduled jobs and real emails are left to the deployed server.`);
+            console.log(`Developer machine (${process.env.SBIN_DEV_MACHINE}): MQTT, scheduled jobs and real emails are left to the deployed server.`);
         } else {
-            // Before device messages: a report must not be stored in the order
-            // a migration is about to change.
-            await runMigrations();
             initMqtt();
             setEmailServiceCredentials()
             await import("./db/cron/cleanupOTP.js");
