@@ -4,7 +4,9 @@ import { deleteOrgRefs } from "../service/sharedService.js";
 import { MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../../utils/constants.js";
 import { ROLES } from "../../utils/constants.js";
 
-const MESH_SETTINGS_PROJECTION = { name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1, fleet: 1, depot: 1 };
+const MESH_SETTINGS_PROJECTION = {
+    name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1, fleet: 1, depot: 1, routePlanningHour: 1, lastAutoPlan: 1,
+};
 
 
 export async function getOrganizations(req, res) {
@@ -124,12 +126,13 @@ export async function updateMeshSettings(req, res) {
     }
 }
 
-// The organization's trucks and depot, which its routes are planned for:
-// owners for any organization, admins for their own. `fleet` replaces the
-// whole list; `depot` is { location: [lng, lat], address } or null.
+// The organization's trucks, depot and nightly planning hour, which its routes
+// are planned with: owners for any organization, admins for their own.
+// `fleet` replaces the whole list; `depot` is { location: [lng, lat], address }
+// or null; `routePlanningHour` is a local hour (0-23) or null (no nightly plan).
 export async function updateFleetSettings(req, res) {
     const { id } = req.params;
-    const { fleet, depot } = req.body ?? {};
+    const { fleet, depot, routePlanningHour } = req.body ?? {};
     const { role, org } = req.user;
 
     if (role !== ROLES.OWNER && id !== org) {
@@ -153,6 +156,7 @@ export async function updateFleetSettings(req, res) {
                         })),
                     }),
                     ...(depot === undefined ? {} : { depot: depot && { location: depot.location, address: depot.address ?? "" } }),
+                    ...(routePlanningHour === undefined ? {} : { routePlanningHour }),
                 },
             },
             { new: true, runValidators: true, projection: MESH_SETTINGS_PROJECTION }

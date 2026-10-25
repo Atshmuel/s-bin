@@ -4,7 +4,7 @@ import { distanceMeters, isLngLat } from '../../utils/geo.js'
 import { DEFAULT_COLLECTION_FULLNESS, DEFAULT_TIME_ZONE, OPEN_ROUTE_STATUSES, ROLES, ROUTE_STATUSES, ROUTE_TYPES } from '../../utils/constants.js'
 import {
     canDriveRoute, freeTruckUnit, HEALTH_FILTERS, organizationTimeZone, planRoute, releaseRoute, releaseStop, releaseUndone,
-    reorderFromPosition, reserveStop, routeAccessFilter, RouteError, serviceDayOf,
+    planOrganizationDay, reorderFromPosition, reserveStop, routeAccessFilter, RouteError, serviceDayOf,
 } from '../service/routeService.js'
 
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
@@ -180,6 +180,23 @@ export async function updateRoute(req, res) {
     } catch (error) {
         // The truck got a route meanwhile (one open route per truck a day).
         if (error?.code === 11000) return res.status(409).json({ message: 'That truck got another route meanwhile; try again.' })
+        sendError(res, error)
+    }
+}
+
+// Plans the organization's day now, as the nightly plan does (owners name the
+// organization with ?org=, admins plan their own): for a day that has no
+// nightly routes yet, or whose nightly routes were all cancelled.
+export async function planDayNow(req, res) {
+    const orgId = req.user.role === ROLES.OWNER ? req.user.selectedOrg : req.user.org
+    if (!orgId) return res.status(400).json({ message: 'Name the organization with ?org=.' })
+    try {
+        const org = await organizationModel.findById(orgId).lean()
+        if (!org) return res.status(404).json({ message: 'Organization not found.' })
+        const outcome = await planOrganizationDay(org)
+        if (outcome.skipped) return res.status(409).json({ message: "Today's routes are already planned; cancel them to plan again.", ...outcome })
+        res.status(200).json({ plan: outcome })
+    } catch (error) {
         sendError(res, error)
     }
 }

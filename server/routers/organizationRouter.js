@@ -15,4 +15,4 @@ organizationRouter.post('/', ownersOnly, validateBodyFields(['name']), createOrg
 organizationRouter.put('/:id', ownersOnly, validateParamExist(), validateBodyFields(['name']), updateOrganization);
 organizationRouter.delete('/:id', ownersOnly, validateParamExist(), removeOrganization);
 // Trucks and depot: owners for any organization, admins for their own (checked in the controller).
-organizationRouter.patch('/:id/fleet', ownersAndAdmins, validateParamExist(), validateBodyFields([], ['fleet', 'depot']), updateFleetSettings);
+organizationRouter.patch('/:id/fleet', ownersAndAdmins, validateParamExist(), validateBodyFields([], ['fleet', 'depot', 'routePlanningHour']), updateFleetSettings);

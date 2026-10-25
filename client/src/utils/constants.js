@@ -32,6 +32,8 @@ export const WEIGHT_REFERENCE_KG = 250
 export const DEFAULT_SEARCH_FULLNESS = Object.freeze([0, 100])
 // A route's area, and the fullness it collects from by default: the bins that
 // need collecting (a truck still fills up with the fullest first).
+// The local hour an organization's routes are planned every night, by default.
+export const DEFAULT_ROUTE_PLANNING_HOUR = 0
 export const DEFAULT_ROUTE_RADIUS_KM = 10
 export const DEFAULT_ROUTE_MIN_FULLNESS = FULLNESS_CRITICAL_PERCENT
 // The planner's collection area: its radius moves in half kilometres, up to a city's size.

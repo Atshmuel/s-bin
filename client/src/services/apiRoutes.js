@@ -17,6 +17,12 @@ export function getRouteDrivers({ org }) {
     return request(`${ROUTES_EP}/drivers${org ? `?org=${org}` : ""}`);
 }
 
+// Plans the organization's day now, as the nightly plan does: { plan } with its
+// routes, bins and what was left (409 when today is already planned).
+export function planDayNow({ org } = {}) {
+    return request(`${ROUTES_EP}/plan-day${org ? `?org=${org}` : ""}`, { method: "POST" });
+}
+
 // Plans and stores a route: { route } (null with a `reason` when nothing matched or fitted).
 export function createRoute(body) {
     return request(ROUTES_EP, { method: "POST", body });

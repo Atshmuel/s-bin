@@ -1024,7 +1024,8 @@
         "reporting": "Reporting",
         "danger": "Danger zone",
         "fleet": "Fleet",
-        "depot": "Depot"
+        "depot": "Depot",
+        "routePlanning": "Nightly routes"
       },
       "general": {
         "title": "General",
@@ -1056,6 +1057,24 @@
             "small": "Small / urban truck",
             "medium": "Medium-heavy truck",
             "large": "Very large truck"
+          }
+        },
+        "routePlanning": {
+          "title": "Nightly routes",
+          "description": "Every night each free truck gets a route from the depot, through the bins that need collecting or will within a day, the most urgent first.",
+          "nightly": "Plan routes every night",
+          "nightlyHint": "At this local hour; off: routes are planned by hand only.",
+          "hour": "Planning hour",
+          "lastLabel": "Last plan",
+          "never": "Not planned yet.",
+          "last": "{{at}}: {{routes}} routes, {{stops}} bins; {{leftOut}} more due were left for later.",
+          "lastNote": "{{at}}: no routes ({{reason}}).",
+          "planNow": "Plan today's routes now",
+          "notes": {
+            "noDepot": "the depot is not set",
+            "noTrucks": "no truck is free",
+            "noBins": "no bin needs collecting",
+            "noneFit": "no bin fitted a truck"
           }
         },
         "depot": {

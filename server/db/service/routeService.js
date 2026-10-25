@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
 import { binModel, routeModel, routeReservationModel } from "../models/models.js";
 import { appendFilter, BINS_ONLY_FILTER, healthRank } from "../../utils/helpers.js";
-import { FULLNESS_EXPRESSION } from "../../utils/analytics.js";
+import { binFullness, collectionDueAt, fillRatePerDay, FULLNESS_EXPRESSION, rangeStart } from "../../utils/analytics.js";
+import { readingsByBin } from "./readingsService.js";
 import { timeZoneAt } from "../../utils/geo.js";
 import {
-    DEFAULT_ROUTE_ENGINE, DEFAULT_TIME_ZONE, HOUR_MS, OPEN_ROUTE_STATUSES, ROLES, ROUTE_ENGINES, ROUTE_PLAN_ATTEMPTS,
-    ROUTE_RESERVATION_GRACE_HOURS, ROUTE_STOP_SECONDS, WEIGHT_REFERENCE_KG,
+    DEFAULT_ROUTE_ENGINE, DEFAULT_TIME_ZONE, FILL_RATE_WINDOW_DAYS, FULLNESS_CRITICAL_PERCENT, HOUR_MS, OPEN_ROUTE_STATUSES, ROLES,
+    ROUTE_ENGINES, ROUTE_FLEET_CANDIDATE_FACTOR, ROUTE_PLAN_ATTEMPTS, ROUTE_PLAN_HORIZON_HOURS, ROUTE_RESERVATION_GRACE_HOURS,
+    ROUTE_STOP_SECONDS, WEIGHT_REFERENCE_KG,
 } from "../../utils/constants.js";
 
 const DUPLICATE_KEY = 11000;
@@ -99,6 +101,26 @@ export async function selectRouteBins({ scope, coordinates, radius, type, fullne
     return { bins: result?.bins ?? [], total: result?.total[0]?.count ?? 0 };
 }
 
+// Sends a problem to the route optimizer (jobs and vehicles, [lng, lat]) and
+// returns its solution; a RouteError when it fails.
+async function callOptimizer(problem) {
+    const response = await fetch(`${process.env.ROUTE_OPTIMIZATION_API_URL}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            // OpenRouteService's key; our VROOM needs none.
+            ...(process.env.ORS_KEY ? { Authorization: process.env.ORS_KEY } : {}),
+        },
+        body: JSON.stringify(problem),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        console.error("Route optimizer error:", data);
+        throw new RouteError(400, "Failed to optimize route", data);
+    }
+    return data;
+}
+
 // The optimizer's order through `bins` from `origin`, back to `depot` when
 // there is one. With a truck it takes what fits, the fullest first. Returns
 // null when no bin fits; throws a RouteError when the optimizer fails.
@@ -112,30 +134,17 @@ export async function optimizeRoute({ bins, type, origin, depot, truck }) {
         // Priority 0-100 decides which bins a full truck leaves.
         ...(truck ? { pickup: [binLoadKg(bin)], priority: Math.round(Math.min(Math.max(bin.fullness ?? 0, 0), 100)) } : {}),
     }));
-    const response = await fetch(`${process.env.ROUTE_OPTIMIZATION_API_URL}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            // OpenRouteService's key; our VROOM needs none.
-            ...(process.env.ORS_KEY ? { Authorization: process.env.ORS_KEY } : {}),
-        },
-        body: JSON.stringify({
-            jobs,
-            vehicles: [{
-                id: 1,
-                profile: engine.profile[type] ?? engine.profile.collection,
-                start: origin,
-                ...(depot ? { end: depot } : {}),
-                ...(truck ? { capacity: [truck.capacityKg] } : {}),
-            }],
-            options: { g: true },
-        }),
+    const data = await callOptimizer({
+        jobs,
+        vehicles: [{
+            id: 1,
+            profile: engine.profile[type] ?? engine.profile.collection,
+            start: origin,
+            ...(depot ? { end: depot } : {}),
+            ...(truck ? { capacity: [truck.capacityKg] } : {}),
+        }],
+        options: { g: true },
     });
-    const data = await response.json();
-    if (!response.ok) {
-        console.error("Route optimizer error:", data);
-        throw new RouteError(400, "Failed to optimize route", data);
-    }
     const route = data.routes?.[0];
     if (!route) return null;
     // The stops in driving order, numbered from 1.
@@ -312,5 +321,133 @@ export async function reserveStop(route, binId) {
 export async function releaseUndone(route) {
     const undone = route.stops.filter(stop => stop.status !== "done").map(stop => stop.binId);
     await routeReservationModel.deleteMany({ routeId: route._id, binId: { $in: undone } });
+}
+
+// ---- The nightly plan.
+
+// The organization's trucks free on a day (a type's count, less those with an
+// open route), one optimizer vehicle each.
+async function freeTrucks(org, serviceDay) {
+    const taken = await routeModel.find(
+        { orgId: org._id, serviceDay, status: { $in: OPEN_ROUTE_STATUSES }, "truck.unit": { $exists: true } },
+        { "truck.truckTypeId": 1, "truck.unit": 1 },
+    ).lean();
+    const isTaken = (typeId, unit) => taken.some(route => String(route.truck.truckTypeId) === String(typeId) && route.truck.unit === unit);
+    return (org.fleet ?? []).flatMap(type => Array.from({ length: type.count }, (_, i) => i + 1)
+        .filter(unit => !isTaken(type._id, unit))
+        .map(unit => ({ type, unit })));
+}
+
+// The bins a day's routes should collect: those that need collecting now or
+// are forecast to within ROUTE_PLAN_HORIZON_HOURS (their fill rate since their
+// last emptying), not held by another route; the most urgent first. Each
+// carries its fullness and the load it is expected to have when collected
+// (a scale's weight, or else its fullness then, at least the critical level).
+async function binsDue(org, now) {
+    const reserved = await reservedBinIds(org._id);
+    const bins = await binModel.find(
+        { ownerId: org._id, ...BINS_ONLY_FILTER, _id: { $nin: reserved } },
+        { binName: 1, location: 1, "status.level": 1, "status.levelValid": 1, "status.weight": 1, "status.scale": 1 },
+    ).lean();
+    const readings = await readingsByBin(bins.map(bin => bin._id), rangeStart(FILL_RATE_WINDOW_DAYS, now));
+    const horizon = now + ROUTE_PLAN_HORIZON_HOURS * HOUR_MS;
+    return bins.map(bin => {
+        const fullness = binFullness(bin);
+        const dueAt = collectionDueAt(fullness, fillRatePerDay(readings.get(String(bin._id)) ?? []), now);
+        return { ...bin, fullness, dueAt };
+    })
+        .filter(bin => bin.dueAt && bin.dueAt.getTime() <= horizon)
+        .sort((a, b) => a.dueAt - b.dueAt || b.fullness - a.fullness)
+        .map(bin => ({ ...bin, loadKg: binLoadKg({ ...bin, fullness: Math.max(bin.fullness, FULLNESS_CRITICAL_PERCENT) }) }));
+}
+
+// Plans the organization's day: one call to the optimizer with every free
+// truck from the depot and the bins due, so the trucks split them (the most
+// urgent first when they do not all fit); each truck that gets bins gets a
+// route (no driver yet), its bins held for it. Runs once a day: a day that
+// already has open nightly routes is left alone. What it did is kept on the
+// organization (lastAutoPlan) and returned.
+export async function planOrganizationDay(org, { now = Date.now() } = {}) {
+    const timeZone = await organizationTimeZone(org);
+    const serviceDay = serviceDayOf(new Date(now), timeZone);
+    const record = async (outcome) => {
+        const lastAutoPlan = { at: new Date(now), serviceDay, routes: 0, stops: 0, leftOut: 0, ...outcome };
+        await mongoose.model("Organization").updateOne({ _id: org._id }, { $set: { lastAutoPlan } });
+        return lastAutoPlan;
+    };
+    if (await routeModel.exists({ orgId: org._id, serviceDay, source: "auto", status: { $ne: "cancelled" } })) {
+        return { serviceDay, skipped: "alreadyPlanned" };
+    }
+    const depot = org.depot?.location;
+    if (!depot) return record({ note: "noDepot" });
+    const trucks = await freeTrucks(org, serviceDay);
+    if (trucks.length === 0) return record({ note: "noTrucks" });
+    const allDue = await binsDue(org, now);
+    if (allDue.length === 0) return record({ note: "noBins" });
+    // The most urgent, up to a few times what the trucks carry and what the engine takes.
+    const engine = routeEngine();
+    const carried = trucks.reduce((sum, { type }) => sum + type.capacityKg, 0) * ROUTE_FLEET_CANDIDATE_FACTOR;
+    const due = [];
+    for (let load = 0, i = 0; i < allDue.length && due.length < engine.maxFleetBins && load < carried; i++) {
+        due.push(allDue[i]);
+        load += allDue[i].loadKg;
+    }
+
+    const solution = await callOptimizer({
+        jobs: due.map((bin, i) => ({
+            id: i + 1,
+            location: bin.location.coordinates,
+            service: ROUTE_STOP_SECONDS.collection,
+            pickup: [bin.loadKg],
+            priority: Math.round(Math.min(Math.max(bin.fullness, 0), 100)),
+        })),
+        vehicles: trucks.map(({ type }, i) => ({
+            id: i + 1, profile: engine.profile.collection, start: depot, end: depot, capacity: [type.capacityKg],
+        })),
+        options: { g: true },
+    });
+
+    let routes = 0, stops = 0;
+    for (const vehicleRoute of solution.routes ?? []) {
+        const { type, unit } = trucks[vehicleRoute.vehicle - 1];
+        const planned = vehicleRoute.steps.filter(step => step.type === "job").map((step, i) => ({ bin: due[step.id - 1], order: i + 1 }));
+        if (planned.length === 0) continue;
+        const routeId = new mongoose.Types.ObjectId();
+        try {
+            await routeReservationModel.insertMany(
+                planned.map(({ bin }) => ({ orgId: org._id, binId: bin._id, routeId, expiresAt: reservationExpiry(serviceDay) })),
+                { ordered: true },
+            );
+            await routeModel.create({
+                _id: routeId,
+                orgId: org._id,
+                type: "collection",
+                source: "auto",
+                serviceDay,
+                timeZone,
+                truck: { truckTypeId: type._id, unit, name: type.name, preset: type.preset, capacityKg: type.capacityKg },
+                start: depot,
+                end: depot,
+                fromDepot: true,
+                geometry: vehicleRoute.geometry,
+                distanceMeters: vehicleRoute.distance,
+                durationSeconds: vehicleRoute.duration,
+                plannedDistanceMeters: vehicleRoute.distance,
+                plannedDurationSeconds: vehicleRoute.duration,
+                loadKg: planned.reduce((sum, { bin }) => sum + bin.loadKg, 0),
+                leftOut: 0,
+                stops: planned.map(({ bin, order }) => ({
+                    binId: bin._id, binName: bin.binName, location: bin.location.coordinates, order, fullnessAtPlan: bin.fullness, loadKg: bin.loadKg,
+                })),
+            });
+            routes++;
+            stops += planned.length;
+        } catch (error) {
+            // A bin taken by a route planned by hand meanwhile, or the truck: this truck's route is dropped.
+            await routeReservationModel.deleteMany({ routeId });
+            console.error(`[Route plan] ${org.name}: ${type.name} #${unit} not planned:`, error?.message ?? error);
+        }
+    }
+    return record({ routes, stops, leftOut: allDue.length - stops, ...(routes === 0 ? { note: "noneFit" } : {}) });
 }
 

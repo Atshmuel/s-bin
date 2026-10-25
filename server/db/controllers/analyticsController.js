@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { binLogModel, binModel } from '../models/models.js'
+import { READINGS_FILTER, readingsByBin } from '../service/readingsService.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared, intervalsByOrg } from '../service/sharedService.js'
 import { DASHBOARD_SECTIONS, devicesWithReasons } from './dashboardController.js'
@@ -21,7 +22,6 @@ import {
 // response is aggregated to what its chart draws; raw logs never leave.
 
 // Only device reports: maintenance notes and system entries carry no readings.
-const READINGS_FILTER = Object.freeze({ type: 'log', source: 'sensor' });
 
 function parseRangeDays(value) {
     const days = Number(value);
@@ -51,25 +51,6 @@ async function binReadings(binId, since, extraFields = {}) {
     return logs;
 }
 
-// Readings of many bins at once, grouped per bin and sorted oldest first.
-async function readingsByBin(binIds, since) {
-    const groups = await binLogModel.aggregate([
-        { $match: { binId: { $in: binIds }, ...READINGS_FILTER, createdAt: { $gte: since } } },
-        { $sort: { createdAt: 1 } },
-        {
-            $group: {
-                _id: '$binId',
-                readings: { $push: { at: '$createdAt', level: '$newLevel', weight: '$weight', battery: '$battery' } },
-            },
-        },
-    ]);
-    return new Map(groups.map(group => [String(group._id), group.readings.map(reading => ({
-        at: reading.at,
-        level: reading.level ?? null,
-        weight: reading.weight ?? null,
-        battery: reading.battery ?? null,
-    }))]));
-}
 
 function scopedBins(user, filter, projection) {
     return binModel.find(scopeToOrganization(filter, user), projection).lean();

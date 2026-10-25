@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import {
-    DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR,
+    DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_ROUTE_PLANNING_HOUR, DEFAULT_REPORT_START_HOUR,
     DEPOT_ADDRESS_MAX_LENGTH, MAX_MESH_AWAKE_WINDOW_SECONDS, MAX_TRUCK_CAPACITY_KG, MAX_TRUCK_TYPES,
     MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG, REPORT_INTERVAL_OPTIONS_MINUTES, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
 } from "../../utils/constants.js";
@@ -33,6 +33,17 @@ const depotSchema = new mongoose.Schema({
         },
     },
     address: { type: String, trim: true, maxlength: DEPOT_ADDRESS_MAX_LENGTH, default: "" },
+}, { _id: false });
+
+// The last nightly plan: when, for which day, and what came of it; `note`
+// names why it made no routes (no depot, no free truck, no bins due).
+const lastAutoPlanSchema = new mongoose.Schema({
+    at: Date,
+    serviceDay: String,
+    routes: Number,
+    stops: Number,
+    leftOut: Number,
+    note: String,
 }, { _id: false });
 
 // Each organization's bins form their own ESP-NOW mesh, so all of them stay
@@ -75,5 +86,15 @@ export const organizationSchema = new mongoose.Schema({
         validate: { validator: fleet => fleet.length <= MAX_TRUCK_TYPES, message: `At most ${MAX_TRUCK_TYPES} truck types` },
     },
     depot: { type: depotSchema, default: null },
+    // The local hour its routes are planned every night; null: never.
+    routePlanningHour: {
+        type: Number,
+        min: 0,
+        max: 23,
+        default: DEFAULT_ROUTE_PLANNING_HOUR,
+        validate: { validator: value => value === null || Number.isInteger(value), message: "routePlanningHour must be an hour or null" },
+    },
+    // What the last nightly plan did, for its settings ("why no routes today?").
+    lastAutoPlan: { type: lastAutoPlanSchema, default: null },
 });
 

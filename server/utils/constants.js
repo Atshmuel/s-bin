@@ -216,11 +216,12 @@ export const DEPOT_ADDRESS_MAX_LENGTH = 120;
 // free service. A route visits at most `maxBins` bins, the most urgent first:
 // OpenRouteService allows a 3500-entry table of every location to every
 // other, so 59 locations with the start (59² = 3481); our VROOM takes far
-// more. `profile` is the road profile each engine knows. The time per stop
-// guides the order.
+// more. `maxFleetBins` is the same for the nightly plan of a whole fleet
+// (OSRM's table takes 1,000 locations, depot included). `profile` is the road
+// profile each engine knows. The time per stop guides the order.
 export const ROUTE_ENGINES = Object.freeze({
-    vroom: Object.freeze({ maxBins: 300, profile: Object.freeze({ collection: 'car', maintenance: 'car' }) }),
-    ors: Object.freeze({ maxBins: 58, profile: Object.freeze({ collection: 'driving-hgv', maintenance: 'driving-car' }) }),
+    vroom: Object.freeze({ maxBins: 300, maxFleetBins: 900, profile: Object.freeze({ collection: 'car', maintenance: 'car' }) }),
+    ors: Object.freeze({ maxBins: 58, maxFleetBins: 58, profile: Object.freeze({ collection: 'driving-hgv', maintenance: 'driving-car' }) }),
 });
 export const DEFAULT_ROUTE_ENGINE = 'ors';
 export const ROUTE_STOP_SECONDS = Object.freeze({ maintenance: 30 * 60, collection: 2 * 60 });
@@ -237,6 +238,16 @@ export const ROUTE_PLAN_ATTEMPTS = 3;
 // A reservation the day's closing never released (2g-6) lapses this long
 // after the end of its service day.
 export const ROUTE_RESERVATION_GRACE_HOURS = 24;
+// The nightly plan: at the organization's planning hour (local; null turns it
+// off) every free truck gets a route from the depot, through the bins that
+// need collecting or are forecast to within ROUTE_PLAN_HORIZON_HOURS, the most
+// urgent first, at most the engine's maxFleetBins (see ROUTE_ENGINES).
+export const DEFAULT_ROUTE_PLANNING_HOUR = 0;
+export const ROUTE_PLAN_HORIZON_HOURS = 24;
+// The optimizer gets the most urgent bins up to this many times what the free
+// trucks carry: enough to choose a good split, without solving for bins no
+// truck can take (900 bins took 50 s on the VM's one core).
+export const ROUTE_FLEET_CANDIDATE_FACTOR = 2;
 // The time zone of an organization without a depot or devices to tell it.
 export const DEFAULT_TIME_ZONE = 'Asia/Jerusalem';
 // A map view with more devices than this comes as grid cells (a count each)
@@ -288,4 +299,6 @@ export const CRON_SCHEDULES = Object.freeze({
     instructionCleanup: "15 * * * *",
     activationTokenCleanup: "0 0 * * *",
     otpCleanup: "*/5 * * * *",
+    // Hourly: each organization is planned when its planning hour comes.
+    routePlanning: "2 * * * *",
 });

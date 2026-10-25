@@ -2,8 +2,8 @@ import { Router } from "express";
 import { authRole, authToken } from "../middlewares/authMiddleware.js";
 import { selectOrganization, validateParamExist } from "../middlewares/validationMiddleware.js";
 import {
-    createRoute, deleteRoute, finishRoute, getRoute, listDrivers, listRoutes, markStopDone, skipStop, startRoute, undoSkipStop, undoStopDone,
-    updateRoute,
+    createRoute, deleteRoute, finishRoute, getRoute, listDrivers, listRoutes, markStopDone, planDayNow, skipStop, startRoute, undoSkipStop,
+    undoStopDone, updateRoute,
 } from "../db/controllers/routeController.js";
 import { ROLES } from "../utils/constants.js";
 
@@ -17,6 +17,8 @@ const ownersOnly = (req, res, next) => authRole([ROLES.OWNER])(req, res, next)
 // and admins. Deleting: owners.
 routeRouter.get('/', selectOrganization, listRoutes);
 routeRouter.get('/drivers', ownersAndAdmins, selectOrganization, listDrivers);
+// The nightly plan, now (it runs on its own every night at the organization's planning hour).
+routeRouter.post('/plan-day', ownersAndAdmins, selectOrganization, planDayNow);
 routeRouter.get('/:id', validateParamExist(), getRoute);
 routeRouter.post('/', ownersAndAdmins, createRoute);
 routeRouter.patch('/:id', ownersAndAdmins, validateParamExist(), updateRoute);
