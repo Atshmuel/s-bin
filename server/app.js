@@ -14,6 +14,7 @@ import { logRouter } from './routers/logRouter.js'
 import { overViewRouter } from './routers/overViewRouter.js';
 import { templateRouter } from './routers/templateRouter.js';
 import { organizationRouter } from './routers/organizationRouter.js';
+import { routeRouter } from './routers/routeRouter.js';
 import { setEmailServiceCredentials } from './utils/mailService.js';
 import { initMqtt } from './mqtt/mqttClient.js';
 import { IS_DEV_MACHINE as isDevMachine, LOCAL_CLIENT_ORIGIN } from './utils/constants.js';
@@ -45,6 +46,7 @@ app.use("/api/bins", binRouter);
 app.use("/api/logs", logRouter);
 app.use("/api/users", userRouter);
 app.use("/api/organizations", organizationRouter);
+app.use("/api/routes", routeRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/templates", templateRouter)
 app.use("/api/overviews", overViewRouter);

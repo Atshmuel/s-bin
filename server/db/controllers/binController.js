@@ -4,9 +4,10 @@ import { appendFilter, BINS_ONLY_FILTER, healthRank, listSortStages, scopeToOrga
 import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
 import {
     BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, DEFAULT_COLLECTION_FULLNESS, DEFAULT_PAGE_SIZE, FULLNESS_CRITICAL_PERCENT,
-    FULLNESS_WARNING_PERCENT, MAP_CELL_PX, MAP_VIEW_LIMIT, ROUTE_ENGINES, DEFAULT_ROUTE_ENGINE, ROUTE_STOP_SECONDS, ROLES, WEIGHT_REFERENCE_KG,
+    FULLNESS_WARNING_PERCENT, MAP_CELL_PX, MAP_VIEW_LIMIT, ROLES,
 } from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
+import { HEALTH_FILTERS, optimizeRoute, reservedBinIds, RouteError, selectRouteBins } from '../service/routeService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
 // The bins page's sortable columns (see listSortStages). The plain fields have
@@ -300,34 +301,20 @@ export async function getBinsInUserRadius(req, res) {
     }
 }
 
-const HEALTH_FILTERS = ['good', 'warning', 'critical', 'all']
-
-// A bin's expected load in kg: its weight from a working scale, or else its
-// fullness of WEIGHT_REFERENCE_KG (what a full bin weighs).
-function binLoadKg(bin) {
-    const kg = bin.status?.scale === 'ok' && Number.isFinite(bin.status?.weight)
-        ? bin.status.weight
-        : (bin.fullness ?? 0) / 100 * WEIGHT_REFERENCE_KG
-    return Math.max(Math.ceil(kg), 1)
-}
-
-// A route through what the map's search finds: a collection through the bins
-// in the fullness range (level or weight, whichever is higher), a maintenance
-// visit through the devices, gateways included, in the health filter. For a
-// collection with a truck (truckTypeId, one of the organization's truck
-// types) it takes the most urgent bins that truck can carry. A route starts
-// and ends at the organization's depot when it has one, else it starts at the
-// search's centre. Owners name the organization (orgId); anyone else plans
-// for their own.
+// A route through what the map's search finds, not stored (POST /api/routes
+// stores one): a collection through the bins in the fullness range (level or
+// weight, whichever is higher), a maintenance visit through the devices,
+// gateways included, in the health filter, leaving out bins another route
+// holds. For a collection with a truck (truckTypeId, one of the
+// organization's truck types) it takes the most urgent bins that truck can
+// carry. A route starts and ends at the organization's depot when it has one,
+// else it starts at the search's centre. Owners name the organization
+// (orgId); anyone else plans for their own.
 export async function getRouteBins(req, res) {
-    const { coordinates, radius, type, limit, minLevel, maxLevel, health, orgId, truckTypeId } = req.body
+    const { coordinates, radius, type, minLevel, maxLevel, health, orgId, truckTypeId } = req.body
     if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
-
-    // Read per request: process.env holds .env's values only once the server
-    // has started.
-    const engine = ROUTE_ENGINES[process.env.ROUTE_ENGINE] ?? ROUTE_ENGINES[DEFAULT_ROUTE_ENGINE];
 
     const fullnessRange = [minLevel, maxLevel].map((value, i) =>
         value === undefined ? DEFAULT_COLLECTION_FULLNESS[i] : Number(value))
@@ -365,125 +352,45 @@ export async function getRouteBins(req, res) {
         return res.status(500).json({ message: error?.message || error })
     }
 
-    let query = planOrgId && req.user.role === ROLES.OWNER
+    const scope = planOrgId && req.user.role === ROLES.OWNER
         ? { ownerId: new mongoose.Types.ObjectId(planOrgId) }
         : scopeToOrganization({}, req.user)
-    query = appendFilter(query, healthFilter !== 'all', 'status.health', healthFilter)
-    const fullnessStages = [{ $addFields: { fullness: FULLNESS_EXPRESSION } }]
-    if (type === 'collection') {
-        // Gateways need maintenance visits but are never collected.
-        query = { ...query, ...BINS_ONLY_FILTER }
-        fullnessStages.push({ $match: { fullness: { $gte: fullnessRange[0], $lte: fullnessRange[1] } } })
-    }
 
     try {
-        let binsData = await binModel.aggregate(
-            [
-                {
-                    $geoNear: {
-                        near: { type: "Point", coordinates },
-                        distanceField: "distance",
-                        spherical: true,
-                        maxDistance: radius,
-                        query,
-                    },
-                },
-                ...fullnessStages,
-                // More than the optimizer takes: the most urgent first (the
-                // fullest for a collection, the worst health for maintenance),
-                // the nearest breaking ties; the total says how many matched.
-                { $addFields: { urgency: type === 'collection' ? '$fullness' : healthRank('$status.health') } },
-                {
-                    $facet: {
-                        total: [{ $count: 'count' }],
-                        bins: [
-                            { $sort: { urgency: -1, distance: 1 } },
-                            { $limit: Math.min(Number(limit) || engine.maxBins, engine.maxBins) },
-                            { $project: { _id: 1, binName: 1, location: 1, status: 1, fullness: 1 } },
-                        ],
-                    },
-                },
-            ]
-        )
-        const total = binsData[0]?.total[0]?.count ?? 0
-        binsData = binsData[0]?.bins ?? []
-
-        if (binsData.length === 0)
+        const excludeIds = await reservedBinIds(planOrgId)
+        const { bins, total } = await selectRouteBins({ scope, coordinates, radius, type, fullnessRange, healthFilter, excludeIds })
+        if (bins.length === 0)
             return res.status(200).json({ route: [], message: "No bins found in the specified radius matching the criteria" });
 
-        // The optimizer takes [lng, lat]; bins and the depot store [lat, lng].
         const origin = depot ?? coordinates
-        const toLngLat = ([lat, lng]) => [lng, lat]
-        const jobs = binsData.map((bin, i) => ({
-            id: i + 1,
-            location: toLngLat(bin.location.coordinates),
-            service: ROUTE_STOP_SECONDS[type] ?? ROUTE_STOP_SECONDS.collection,
-            // A truck carries what fits, the fullest first (priority 0-100).
-            ...(truck ? { pickup: [binLoadKg(bin)], priority: Math.round(Math.min(Math.max(bin.fullness ?? 0, 0), 100)) } : {}),
+        const plan = await optimizeRoute({ bins, type, origin, depot, truck })
+        if (!plan) {
+            return res.status(200).json({ route: [], message: "No bin fits the truck", total, unassigned: bins.length })
+        }
+        const stops = plan.stops.map(({ bin, order, loadKg }) => ({
+            order,
+            _id: bin._id,
+            binName: bin.binName,
+            location: bin.location,
+            status: bin.status,
+            fullness: bin.fullness,
+            loadKg,
         }))
-        const routeRequestBody = {
-            jobs,
-            vehicles: [{
-                id: 1,
-                profile: engine.profile[type] ?? engine.profile.collection,
-                start: toLngLat(origin),
-                ...(depot ? { end: toLngLat(depot) } : {}),
-                ...(truck ? { capacity: [truck.capacityKg] } : {}),
-            }],
-            options: { g: true },
-        }
-
-        const response = await fetch(`${process.env.ROUTE_OPTIMIZATION_API_URL}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // OpenRouteService's key; our VROOM needs none.
-                ...(process.env.ORS_KEY ? { 'Authorization': process.env.ORS_KEY } : {}),
-            },
-            body: JSON.stringify(routeRequestBody)
-        })
-
-        const responseData = await response.json();
-
-        if (!response.ok) {
-            console.error("Route optimizer error:", responseData);
-            return res.status(400).json({
-                message: "Failed to optimize route",
-                details: responseData
-            });
-        }
-
-        const route = responseData.routes?.[0]
-        if (!route) {
-            return res.status(200).json({ route: [], message: "No bin fits the truck", total, unassigned: binsData.length })
-        }
-        // The stops in driving order, numbered from 1.
-        const stops = route.steps.filter(step => step.type === 'job').map((step, i) => {
-            const bin = binsData[step.id - 1]
-            return {
-                order: i + 1,
-                _id: bin._id,
-                binName: bin.binName,
-                location: bin.location,
-                status: bin.status,
-                fullness: bin.fullness,
-                loadKg: truck ? binLoadKg(bin) : null,
-            }
-        })
         res.status(200).json({
-            route: { geometry: route.geometry, distance: route.distance, duration: route.duration },
+            route: { geometry: plan.geometry, distance: plan.distanceMeters, duration: plan.durationSeconds },
             stops,
             start: origin,
             end: depot,
             fromDepot: Boolean(depot),
             truck: truck ? { name: truck.name, preset: truck.preset, capacityKg: truck.capacityKg } : null,
-            loadKg: truck ? stops.reduce((sum, stop) => sum + stop.loadKg, 0) : null,
+            loadKg: plan.loadKg,
             total,
             // Matched bins the route leaves: past the optimizer's limit, or past the truck's capacity.
             leftOut: total - stops.length,
             binsData: stops,
         })
     } catch (error) {
+        if (error instanceof RouteError) return res.status(error.status).json({ message: error.message, details: error.details })
         res.status(500).json({ message: error?.message || error })
     }
 }

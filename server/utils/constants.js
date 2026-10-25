@@ -224,6 +224,21 @@ export const ROUTE_ENGINES = Object.freeze({
 });
 export const DEFAULT_ROUTE_ENGINE = 'ors';
 export const ROUTE_STOP_SECONDS = Object.freeze({ maintenance: 30 * 60, collection: 2 * 60 });
+// A route's life: planned (built, maybe assigned), driving, then finished or
+// cancelled. While a route is open its bins are reserved for it alone.
+export const ROUTE_STATUSES = Object.freeze(['planned', 'driving', 'finished', 'cancelled']);
+export const OPEN_ROUTE_STATUSES = Object.freeze(['planned', 'driving']);
+export const ROUTE_TYPES = Object.freeze(['collection', 'maintenance']);
+export const ROUTE_SOURCES = Object.freeze(['manual', 'auto']);
+export const ROUTE_STOP_STATUSES = Object.freeze(['planned', 'done', 'skipped']);
+// Bins another plan reserved in the same moment: the plan is made again
+// without them, at most this many times.
+export const ROUTE_PLAN_ATTEMPTS = 3;
+// A reservation the day's closing never released (2g-6) lapses this long
+// after the end of its service day.
+export const ROUTE_RESERVATION_GRACE_HOURS = 24;
+// The time zone of an organization without a depot or devices to tell it.
+export const DEFAULT_TIME_ZONE = 'Asia/Jerusalem';
 // A map view with more devices than this comes as grid cells (a count each)
 // instead of the devices; a cell is about MAP_CELL_PX across on screen.
 export const MAP_VIEW_LIMIT = 2000;
