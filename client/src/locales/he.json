@@ -29,6 +29,7 @@
        "owner": "בעלים",
         "admin": "מנהל מערכת",
         "user": "משתמש",
+        "driver": "נהג",
       "technician": "טכנאי"
     },
     "levels":{
@@ -94,6 +95,7 @@
         "description": "שדה זה מעניק למשתמש הרשאות נוספות",
         "options": {
           "user": "משתמש",
+          "driver": "נהג",
           "technician": "טכנאי",
           "admin": "מנהל",
           "owner": "בעלים"

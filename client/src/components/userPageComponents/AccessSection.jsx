@@ -51,7 +51,7 @@ function AccessSection({ id, user }) {
         if (dirtyFields.status) updateStatus({ status: data.status, id: user._id })
     }
 
-    const roles = ["user", "technician", "admin", ...(isOwner ? ["owner"] : [])]
+    const roles = ["user", "driver", "technician", "admin", ...(isOwner ? ["owner"] : [])]
     const select = (name, { items, isLoading, error, placeholder, errorText }) => (
         <FormField name={name} control={form.control}
             render={({ field }) => (

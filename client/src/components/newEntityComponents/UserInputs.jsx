@@ -132,6 +132,7 @@ function UserInputs({ form, isCreating }) {
                                     }
                                 }}>
                                     <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="user">{t("newEntity.userInputs.fields.role.options.user")}</ToggleGroupItem>
+                                    <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="driver">{t("newEntity.userInputs.fields.role.options.driver")}</ToggleGroupItem>
                                     <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="technician">{t("newEntity.userInputs.fields.role.options.technician")}</ToggleGroupItem>
                                     <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="admin">{t("newEntity.userInputs.fields.role.options.admin")}</ToggleGroupItem>
                                     {me.role === 'owner' ? <ToggleGroupItem className='w-full text-[10px] min-[400px]:text-sm data-[state=on]:bg-primary data-[state=on]:text-accent' value="owner">{t("newEntity.userInputs.fields.role.options.owner")}</ToggleGroupItem> : null}

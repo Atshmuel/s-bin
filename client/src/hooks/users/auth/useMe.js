@@ -16,5 +16,6 @@ export function useMe() {
     const me = data?.user
     const isAdmin = me?.role === 'admin' || me?.role === "owner"
     const isOwner = me?.role === "owner";
-    return { me, isAdmin, isOwner, isLoadingMe, meError };
+    const isDriver = me?.role === "driver";
+    return { me, isAdmin, isOwner, isDriver, isLoadingMe, meError };
 }

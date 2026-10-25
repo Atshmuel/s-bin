@@ -28,6 +28,7 @@
 
   --color-owner: var(--owner);
   --color-admin: var(--admin);
+  --color-driver: var(--driver);
   --color-active: var(--active);
   --color-pending: var(--pending);
   --color-inactive: var(--inactive);
@@ -87,6 +88,7 @@
 
   --owner: oklch(52.696% 0.27635 284.56);
   --admin: oklch(60.438% 0.21508 260.727);
+  --driver: oklch(0.6 0.118 184.704);
   --active: oklch(0.723 0.219 149.579);
   --pending: oklch(0.769 0.188 70.08);
   --inactive: oklch(68.327% 0.21029 40.961);
@@ -128,6 +130,7 @@
   
 --owner: oklch(52.696% 0.27635 284.56);
   --admin: oklch(60.438% 0.21508 260.727);
+  --driver: oklch(0.6 0.118 184.704);
   --active: oklch(0.723 0.219 149.579);
   --pending: oklch(0.769 0.188 70.08);
   --inactive: oklch(68.327% 0.21029 40.961);

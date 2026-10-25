@@ -184,14 +184,15 @@ async function emailRecipients(match) {
     }
 }
 
-// The users of these organizations who get emails: any role, as long as
-// email notifications are on in their settings.
+// The users of these organizations who get emails: any role but drivers (they
+// act on their routes, not on the organization's report), as long as email
+// notifications are on in their settings.
 export async function getNotificationRecipients(orgs) {
     if (!Array.isArray(orgs) || orgs.length === 0) {
         console.error('getNotificationRecipients: orgs must be a non-empty array')
         return [];
     }
-    return emailRecipients({ org: { $in: orgs } });
+    return emailRecipients({ org: { $in: orgs }, role: { $ne: ROLES.DRIVER } });
 }
 
 // The owners who get emails; they belong to no organization and hear about

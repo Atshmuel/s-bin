@@ -29,6 +29,7 @@
       "owner": "Owner",
       "admin": "Admin",
       "user": "User",
+      "driver": "Driver",
       "technician": "Technician"
     },
         "levels":{
@@ -138,6 +139,7 @@
           "description": "This field grants the user additional permissions",
           "options": {
             "user": "User",
+            "driver": "Driver",
             "technician": "Technician",
             "admin": "Admin",
             "owner": "Owner"

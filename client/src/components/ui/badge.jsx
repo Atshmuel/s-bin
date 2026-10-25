@@ -24,6 +24,8 @@ const badgeVariants = cva(
           "uppercase tracking-tighter bg-primary text-stone-50 w-fit h-fit",
         technician:
           "uppercase tracking-tighter bg-pending text-stone-50 w-fit  h-fit",
+        driver:
+          "uppercase tracking-tighter bg-driver text-stone-50 w-fit h-fit",
         active:
           "uppercase tracking-tighter bg-active text-stone-50 w-fit  h-fit",
         pending:

@@ -5,6 +5,8 @@ export const ROLES = Object.freeze({
     OWNER: "owner",
     ADMIN: "admin",
     TECHNICIAN: "technician",
+    // Drives an organization's collection routes; sees only their own routes.
+    DRIVER: "driver",
     USER: "user",
 })
 
@@ -17,6 +19,7 @@ export const ROLE_LEVEL = {
     [ROLES.OWNER]: 4,
     [ROLES.ADMIN]: 3,
     [ROLES.TECHNICIAN]: 2,
+    [ROLES.DRIVER]: 2,
     [ROLES.USER]: 1
 }
 
