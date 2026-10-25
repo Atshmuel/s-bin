@@ -28,9 +28,10 @@ function MapComponent({ children, center, zoom = 13, bounds, legend = false, leg
 
     return (
         // The attribution sits at the top right, leaving both bottom corners to
-        // the map's panel buttons at the same height.
+        // the map's panel buttons at the same height. `isolate` keeps Leaflet's
+        // layer z-indexes (up to 1000) inside the map, so dialogs open above it.
         <MapContainer {...(bounds ? { bounds, boundsOptions: { maxZoom: MAP_FIT_MAX_ZOOM, padding: [32, 32] } } : { center, zoom })}
-            minZoom={4} className="h-full w-full relative" ref={setMap}
+            minZoom={4} className="isolate h-full w-full relative" ref={setMap}
             attributionControl={false} {...props}>
             <AttributionControl position="topright" />
             <TileLayer attribution={attribution} url={tileUrl} />

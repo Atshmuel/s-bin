@@ -77,7 +77,7 @@ function OrgDepotSection({ id, organization }) {
                 <p className="mb-3 text-sm text-muted-foreground">{t("components.orgSettingsPage.depot.hint")}</p>
                 <div className="h-72 overflow-hidden rounded-lg border">
                     {!saved && isLoadingExtent ? <Skeleton className="size-full" /> : (
-                        <MapContainer {...opening} className="size-full" scrollWheelZoom>
+                        <MapContainer {...opening} className="isolate size-full" scrollWheelZoom>
                             <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                             <PickOnClick onPick={setLocation} />
                             {location && <CircleMarker center={toLatLng(location)} radius={10} pathOptions={{ color: "#16a34a", fillOpacity: 0.7 }} />}

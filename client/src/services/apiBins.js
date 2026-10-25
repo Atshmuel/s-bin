@@ -24,11 +24,12 @@ export function getBin({ id }) {
     return request(`${BINS_EP}/${id}`);
 }
 
-// `coordinates` is the search centre as the address bar has it, [lat, lng].
-export function getBinsInUserRadius({ coordinates, radius, health = null, minLevel = null, maxLevel = null }) {
-    return request(`${BINS_EP}/radius`, {
+// `coordinates` is the search centre as the address bar has it, [lat, lng];
+// `org` an owner's organization; excludeReserved leaves out bins on other routes.
+export function getBinsInUserRadius({ coordinates, radius, health = null, minLevel = null, maxLevel = null, org = null, excludeReserved = false }) {
+    return request(`${BINS_EP}/radius${org ? `?org=${org}` : ""}`, {
         method: "POST",
-        body: { coordinates: toLngLat(coordinates), radius: +radius * 1000, health, minLevel, maxLevel },
+        body: { coordinates: toLngLat(coordinates), radius: +radius * 1000, health, minLevel, maxLevel, ...(excludeReserved ? { excludeReserved } : {}) },
     });
 }
 

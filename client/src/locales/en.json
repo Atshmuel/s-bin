@@ -356,7 +356,15 @@
       "plan": {
         "noFit": "No bin fits the truck.",
         "noDepot": "Routes start and end at the organization's depot, which is not set.",
-        "toSettings": "Set it in the organization's settings."
+        "toSettings": "Set it in the organization's settings.",
+      "description": "A collection for one truck takes the fullest bins it can carry in the area; a maintenance visit goes through the devices in poor health. The route starts and ends at the depot.",
+      "matches_one": "1 bin can be taken here",
+      "matches_other": "{{count}} bins can be taken here",
+      "fit_one": "about 1 fits the truck",
+      "fit_other": "about {{count}} fit the truck",
+      "backToDepot": "Back to the depot",
+      "clickMap": "Click the map to move the area. Bins on other routes are left out.",
+      "depot": "Depot"
       },
       "key": {
         "title": "What the route map shows",
@@ -372,6 +380,10 @@
         "cancel": "Cancel route",
         "cancelTitle": "Cancel this route?",
         "cancelDescription": "Its bins are freed for other routes. This cannot be undone.",
+        "delete": "Delete route",
+        "deleteTitle": "Delete this route for good?",
+        "deleteDescription": "The route and what its driver marked are erased, and its bins are freed. To keep it as a record, cancel it instead.",
+        "deleteInput": "Type \"delete\" to confirm",
         "claimed": "Marked done at {{time}}",
         "claimDistance": "{{meters}} m from the bin"
       }

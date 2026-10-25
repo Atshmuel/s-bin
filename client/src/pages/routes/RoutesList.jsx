@@ -100,7 +100,7 @@ function RoutesList() {
             <DataTable columns={columns} data={routes ?? []} isLoading={isLoadingRoutes} error={routesError}
                 title={t("pages.routes.title")} ActionButton={PlanButton} />
             <Dialog open={isPlanning} onOpenChange={setIsPlanning}>
-                <DialogContent side={side} className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
+                <DialogContent side={side} className="max-h-[90dvh] overflow-y-auto sm:max-w-5xl">
                     <DialogHeader isRight={isRight}><DialogTitle>{t("mapLegend.route.title")}</DialogTitle></DialogHeader>
                     <RoutePlanForm onPlanned={(route) => { setIsPlanning(false); navigate(`/routes/${route._id}`) }} />
                 </DialogContent>

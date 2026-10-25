@@ -195,3 +195,17 @@ export async function listDrivers(req, res) {
         sendError(res, error)
     }
 }
+
+// Deletes a route for good, with what its driver marked (owners only, for
+// mistakes and test data; cancelling keeps a route as a record). Its bins are
+// freed for other routes.
+export async function deleteRoute(req, res) {
+    try {
+        const route = await routeModel.findByIdAndDelete(req.params.id)
+        if (!route) return res.status(404).json({ message: 'Route not found.' })
+        await releaseRoute(route._id)
+        res.status(200).json({ deleted: String(route._id) })
+    } catch (error) {
+        sendError(res, error)
+    }
+}

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createRoute, getRoute, getRouteDrivers, getRoutes, updateRoute } from "@/services/apiRoutes";
+import { createRoute, deleteRoute, getRoute, getRouteDrivers, getRoutes, updateRoute } from "@/services/apiRoutes";
 
 export function useRoutes({ day, org } = {}) {
     const { data, isPending: isLoadingRoutes, error: routesError } = useQuery({
@@ -49,4 +49,17 @@ export function useUpdateRoute(onSuccess) {
 
 export function useCreateRoute(onSuccess) {
     return useRouteMutation(createRoute, onSuccess);
+}
+
+export function useDeleteRoute(onSuccess) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: deleteRoute,
+        onSuccess: (data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["routes"] });
+            queryClient.removeQueries({ queryKey: ["route", variables.id] });
+            onSuccess?.(data, variables);
+        },
+        onError: (error) => toast.error(error.message),
+    });
 }

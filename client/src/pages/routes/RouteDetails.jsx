@@ -1,7 +1,8 @@
-import { Link, useParams } from "react-router-dom"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { ArrowLeft, ArrowRight, CircleCheck, CircleHelp, CircleX } from "lucide-react"
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog"
 import RouteMap from "@/components/routes/RouteMap"
 import { RouteDriverSelect, RouteStatusBadge } from "@/components/routes/RouteParts"
 import { routeDuration, routeTitle } from "@/utils/routes"
@@ -15,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAppSide } from "@/hooks/useAppSide"
-import { useRoute, useUpdateRoute } from "@/hooks/routes/useRoutes"
+import { useDeleteRoute, useRoute, useUpdateRoute } from "@/hooks/routes/useRoutes"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { getMeshSettings } from "@/services/apiMeshSettings"
 import { truckName } from "@/utils/orgSettings"
@@ -65,14 +66,16 @@ function Detail({ label, children }) {
 // One route: what it is and who drives it, its map with its own key, and its
 // stops in driving order with what the driver marked and what the bins'
 // reports said about it. Owners and admins change the driver or the truck, or
-// cancel it, while it is open.
+// cancel it, while it is open; owners can also delete it (mistakes, test data).
 function RouteDetails() {
     const { id } = useParams()
     const { t } = useTranslation()
     const { isRight } = useAppSide()
-    const { isAdmin } = useMe()
+    const navigate = useNavigate()
+    const { isAdmin, isOwner } = useMe()
     const { route, isLoadingRoute, routeError } = useRoute(id)
     const cancel = useUpdateRoute()
+    const remove = useDeleteRoute(() => navigate("/routes", { replace: true }))
 
     if (isLoadingRoute) return <Skeleton className="h-[70vh] w-full" />
     if (routeError || !route) return <p className="p-10 text-muted-foreground">{routeError?.message ?? t("pages.routes.details.notFound")}</p>
@@ -90,25 +93,36 @@ function RouteDetails() {
                         {routeTitle(route, t)}
                         <RouteStatusBadge status={route.status} />
                     </CardTitle>
-                    {isAdmin && isOpen && (
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button type="button" variant="outline" className="text-destructive">{t("pages.routes.details.cancel")}</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>{t("pages.routes.details.cancelTitle")}</AlertDialogTitle>
-                                    <AlertDialogDescription>{t("pages.routes.details.cancelDescription")}</AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => cancel.mutate({ id: route._id, status: "cancelled" })}>
-                                        {t("pages.routes.details.cancel")}
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                        {isAdmin && isOpen && (
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button type="button" variant="outline" className="text-destructive">{t("pages.routes.details.cancel")}</Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>{t("pages.routes.details.cancelTitle")}</AlertDialogTitle>
+                                        <AlertDialogDescription>{t("pages.routes.details.cancelDescription")}</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => cancel.mutate({ id: route._id, status: "cancelled" })}>
+                                            {t("pages.routes.details.cancel")}
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
+                        {isOwner && (
+                            <ConfirmDeleteDialog
+                                trigger={<Button type="button" variant="destructive">{t("pages.routes.details.delete")}</Button>}
+                                title={t("pages.routes.details.deleteTitle")}
+                                description={t("pages.routes.details.deleteDescription")}
+                                inputLabel={t("pages.routes.details.deleteInput")}
+                                isDeleting={remove.isPending}
+                                onConfirm={() => remove.mutate({ id: route._id })} />
+                        )}
+                    </div>
                 </CardHeader>
                 {/* Who and what first (pickers need room), then the route's figures. */}
                 <CardContent className="flex flex-col gap-5">

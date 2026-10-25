@@ -30,10 +30,13 @@ export const WEIGHT_REFERENCE_KG = 250
 // The map search's fullness range before the user sets one: every bin, as the
 // map shows them.
 export const DEFAULT_SEARCH_FULLNESS = Object.freeze([0, 100])
-// A route's area around its start, and the fullest bins it collects from: a
-// truck fills up with the fullest first, down to this.
+// A route's area, and the fullness it collects from by default: the bins that
+// need collecting (a truck still fills up with the fullest first).
 export const DEFAULT_ROUTE_RADIUS_KM = 10
-export const DEFAULT_ROUTE_MIN_FULLNESS = FULLNESS_WARNING_PERCENT
+export const DEFAULT_ROUTE_MIN_FULLNESS = FULLNESS_CRITICAL_PERCENT
+// The planner's collection area: its radius moves in half kilometres, up to a city's size.
+export const ROUTE_AREA_RADIUS_STEP_KM = 0.5
+export const ROUTE_AREA_MAX_RADIUS_KM = 50
 
 // Battery, in %: low at warning, needs replacing at critical.
 export const BATTERY_WARNING_PERCENT = 50
@@ -93,6 +96,13 @@ export const CLUSTER_UNTIL_ZOOM = 17
 export const USER_MARKER_MS = MINUTE_MS
 export const MAP_VIEW_DEBOUNCE_MS = 300
 export const MAP_FIT_MAX_ZOOM = 15
+// The route planner's map draws every bin in reach; while it redraws, a
+// trackpad's scrolling piles up and Leaflet zooms by the whole pile. So its
+// zoom stays within a city's range and moves a level per this much scroll.
+export const PLAN_MAP_MIN_ZOOM = 8
+export const PLAN_MAP_MAX_ZOOM = 17
+export const PLAN_MAP_WHEEL_PX_PER_ZOOM_LEVEL = 150
+export const PLAN_MAP_WHEEL_DEBOUNCE_MS = 80
 // Driving a route: a stop counts as reached within NAV_ARRIVED_METERS, and the
 // map follows the driver at NAV_FOLLOW_ZOOM or closer.
 export const NAV_ARRIVED_METERS = 30

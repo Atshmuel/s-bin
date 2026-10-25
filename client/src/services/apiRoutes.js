@@ -22,6 +22,11 @@ export function createRoute(body) {
     return request(ROUTES_EP, { method: "POST", body });
 }
 
+// Deletes a route for good (owners).
+export function deleteRoute({ id }) {
+    return request(`${ROUTES_EP}/${id}`, { method: "DELETE" });
+}
+
 // Changes a route: { driverId }, { truckTypeId } or { status: "cancelled" }.
 export function updateRoute({ id, ...changes }) {
     return request(`${ROUTES_EP}/${id}`, { method: "PATCH", body: changes });

@@ -8,6 +8,7 @@ import {
     FULLNESS_WARNING_PERCENT, MAP_CELL_PX, MAP_VIEW_LIMIT, ROLES,
 } from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
+import { reservedBinIds } from '../service/routeService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
 // The bins page's sortable columns (see listSortStages). The plain fields have
@@ -250,8 +251,12 @@ export async function getMapExtent(req, res) {
     }
 }
 
+// The devices within `radius` meters of `coordinates` ([lng, lat]), in the
+// health filter and fullness range; an owner's ?org= narrows them to one
+// organization, and excludeReserved leaves out bins another route holds (what
+// a new route could still take).
 export async function getBinsInUserRadius(req, res) {
-    const { coordinates, radius, health, minLevel, maxLevel } = req.body
+    const { coordinates, radius, health, minLevel, maxLevel, excludeReserved } = req.body
     if (!isLngLat(coordinates)) return res.status(400).json({ message: 'coordinates must be [lng, lat].' })
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
@@ -259,6 +264,10 @@ export async function getBinsInUserRadius(req, res) {
     let query = {};
     query = scopeToOrganization(query, req.user)
     query = appendFilter(query, health && health !== "all", 'status.health', health)
+    if (excludeReserved) {
+        const orgId = req.user.role === ROLES.OWNER ? req.user.selectedOrg : req.user.org
+        query = { ...query, _id: { $nin: await reservedBinIds(orgId) } }
+    }
     // The range is on fullness (level or weight, whichever is higher), the
     // value the markers are colored by.
     const fullnessStages = []
