@@ -88,7 +88,7 @@ export const PASSWORD_MAX_LENGTH = 30
 // MAP_FIT_MAX_ZOOM (one device, or several at one spot, is a single point).
 export const DEFAULT_RADIUS_KM = 5
 export const MAX_RADIUS_KM = 100
-export const CLUSTER_UNTIL_ZOOM = 13
+export const CLUSTER_UNTIL_ZOOM = 17
 export const USER_MARKER_MS = MINUTE_MS
 export const MAP_VIEW_DEBOUNCE_MS = 300
 export const MAP_FIT_MAX_ZOOM = 15
