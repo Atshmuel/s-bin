@@ -1,4 +1,5 @@
 import { BINS_EP } from "@/utils/constants";
+import { toLngLat } from "@/utils/geo";
 import { request } from "./request";
 
 //get bins
@@ -23,19 +24,21 @@ export function getBin({ id }) {
     return request(`${BINS_EP}/${id}`);
 }
 
+// `coordinates` is the search centre as the address bar has it, [lat, lng].
 export function getBinsInUserRadius({ coordinates, radius, health = null, minLevel = null, maxLevel = null }) {
     return request(`${BINS_EP}/radius`, {
         method: "POST",
-        body: { coordinates, radius: +radius * 1000, health, minLevel, maxLevel },
+        body: { coordinates: toLngLat(coordinates), radius: +radius * 1000, health, minLevel, maxLevel },
     });
 }
 
 // The route visits the bins the map's search finds: a collection those in the
 // fullness range, a maintenance visit those in the health filter.
+// `coordinates` is the start as "lat,lng".
 export function getBestRoute({ coordinates, radius, type, minLevel, maxLevel, health, orgId, truckTypeId }) {
     return request(`${BINS_EP}/route`, {
         method: "POST",
-        body: { coordinates: coordinates.split(',').map(Number), radius: +radius * 1000, type, minLevel, maxLevel, health, orgId, truckTypeId },
+        body: { coordinates: toLngLat(coordinates.split(',').map(Number)), radius: +radius * 1000, type, minLevel, maxLevel, health, orgId, truckTypeId },
     });
 }
 //end

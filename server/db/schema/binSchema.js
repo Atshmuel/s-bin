@@ -29,7 +29,7 @@ export const binSchema = new mongoose.Schema({
             required: true,
             validate: {
                 validator: arr => arr.length === 2,
-                message: "Coordinates must be [lat, lng]"
+                message: "Coordinates must be [lng, lat] (GeoJSON)"
             }
         },
     },

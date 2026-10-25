@@ -1,4 +1,4 @@
-import tzLookup from "tz-lookup";
+import { isLngLat, timeZoneAt } from "./geo.js";
 import { DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR, EARLY_WAKE_TOLERANCE_SECONDS } from "./constants.js";
 
 const MINUTES_PER_DAY = 24 * 60;
@@ -60,31 +60,19 @@ function nextSlotEpoch(afterSeconds, intervalMinutes, startHour, timeZone) {
     return next;
 }
 
-// intervalMinutes and startHour are the organization's report interval and the
-// local hour of its first report each day.
+// location is the device's [lng, lat]; intervalMinutes and startHour are the
+// organization's report interval and the local hour of its first report each day.
 export function getNextReportSchedule(
     location,
     intervalMinutes = DEFAULT_REPORT_INTERVAL_MINUTES,
     startHour = DEFAULT_REPORT_START_HOUR,
     now = Date.now(),
 ) {
-    if (!Array.isArray(location) || location.length !== 2) {
-        throw new TypeError("Device location must contain latitude and longitude.");
+    if (!isLngLat(location)) {
+        throw new RangeError("Device location must be [lng, lat].");
     }
 
-    const [latitude, longitude] = location;
-    if (
-        typeof latitude !== "number" ||
-        typeof longitude !== "number" ||
-        latitude < -90 ||
-        latitude > 90 ||
-        longitude < -180 ||
-        longitude > 180
-    ) {
-        throw new RangeError("Device location contains invalid latitude or longitude.");
-    }
-
-    const timeZone = tzLookup(latitude, longitude);
+    const timeZone = timeZoneAt(location);
     if (!Number.isInteger(intervalMinutes) ||
         intervalMinutes < 1 ||
         MINUTES_PER_DAY % intervalMinutes !== 0) {

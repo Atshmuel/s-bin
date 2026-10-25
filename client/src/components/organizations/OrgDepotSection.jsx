@@ -11,11 +11,12 @@ import { SettingsRow, SettingsSection } from "@/components/settings/SettingsSect
 import { useMapExtent } from "@/hooks/bins/useMapBins";
 import { updateFleetSettingsApi } from "@/services/apiOrganizations";
 import { DEPOT_ADDRESS_MAX_LENGTH, MAP_FIT_MAX_ZOOM } from "@/utils/constants";
+import { toLatLng } from "@/utils/geo";
 
 const FALLBACK_CENTER = Object.freeze([31.5, 34.9]);
 
 function PickOnClick({ onPick }) {
-    useMapEvents({ click: (event) => onPick([event.latlng.lat, event.latlng.lng]) });
+    useMapEvents({ click: (event) => onPick([event.latlng.lng, event.latlng.lat]) });
     return null;
 }
 
@@ -44,14 +45,14 @@ function OrgDepotSection({ id, organization }) {
         setAddress(saved?.address ?? "");
     };
 
-    const opening = saved ? { center: saved.location, zoom: MAP_FIT_MAX_ZOOM }
+    const opening = saved ? { center: toLatLng(saved.location), zoom: MAP_FIT_MAX_ZOOM }
         : extent ? { bounds: [[extent.south, extent.west], [extent.north, extent.east]], boundsOptions: { maxZoom: MAP_FIT_MAX_ZOOM, padding: [24, 24] } }
             : { center: FALLBACK_CENTER, zoom: 8 };
 
     return (
         <SettingsSection id={id} title={t("components.orgSettingsPage.depot.title")}
             description={location
-                ? t("components.orgSettingsPage.depot.at", { lat: location[0].toFixed(5), lng: location[1].toFixed(5) })
+                ? t("components.orgSettingsPage.depot.at", { lat: location[1].toFixed(5), lng: location[0].toFixed(5) })
                 : t("components.orgSettingsPage.depot.description")}
             footer={(isChanged || saved) && (
                 <>
@@ -79,7 +80,7 @@ function OrgDepotSection({ id, organization }) {
                         <MapContainer {...opening} className="size-full" scrollWheelZoom>
                             <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                             <PickOnClick onPick={setLocation} />
-                            {location && <CircleMarker center={location} radius={10} pathOptions={{ color: "#16a34a", fillOpacity: 0.7 }} />}
+                            {location && <CircleMarker center={toLatLng(location)} radius={10} pathOptions={{ color: "#16a34a", fillOpacity: 0.7 }} />}
                         </MapContainer>
                     )}
                 </div>

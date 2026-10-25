@@ -2,6 +2,7 @@ import { Copy, MapPin } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { MobileTooltip } from "../ui/mobile-tooltip"
+import { toLatLng } from "@/utils/geo";
 import { formatSleepDuration } from "@/utils/helpers"
 
 // The device's sleep figures, keys and location, one row each.
@@ -65,11 +66,11 @@ function BinDeviceDetails({ bin, handleLocationClick }) {
                     <MobileTooltip content={t('components.binCard.locationTooltip')}>
                         <div onClick={handleLocationClick} className="flex flex-row gap-2 cursor-pointer">
                             <MapPin size={18} />
-                            <span>{bin.location.coordinates.join(", ")}</span>
+                            <span>{toLatLng(bin.location.coordinates).join(", ")}</span>
                         </div>
                     </MobileTooltip>
                     : <div className="flex flex-row gap-2">
-                        <span>{bin.location.coordinates.join(", ")}</span>
+                        <span>{toLatLng(bin.location.coordinates).join(", ")}</span>
                     </div>}
             </div>
         </>

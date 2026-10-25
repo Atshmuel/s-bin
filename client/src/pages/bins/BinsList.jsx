@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useDeleteBinBatch } from "@/hooks/bins/useDeleteAllBins";
 import { useTranslation } from "react-i18next";
 import { useMe } from "@/hooks/users/auth/useMe";
+import { toLatLng } from "@/utils/geo";
 import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 
 function BinsList() {
@@ -117,7 +118,7 @@ function BinsList() {
                             <TooltipTrigger asChild>
                                 <div className="flex flex-row gap-2 text-primary">
                                     <MapPin size={18} />
-                                    <span>{coords.join(", ")}</span>
+                                    <span>{toLatLng(coords).join(", ")}</span>
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent>

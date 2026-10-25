@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import { MapContext } from "./mapContext";
 
-const ROUTE_PLAN_KEY = "routePlan";
+// Versioned: a plan saved before locations became [lng, lat] is not read back.
+const ROUTE_PLAN_KEY = "routePlan:v2";
 
 // The route shown on the map, kept for this tab so a refresh keeps it.
 function readRoutePlan() {

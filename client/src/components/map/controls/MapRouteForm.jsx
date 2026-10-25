@@ -17,6 +17,7 @@ import { getMeshSettings } from "@/services/apiMeshSettings"
 import { DEFAULT_ROUTE_MIN_FULLNESS, DEFAULT_ROUTE_RADIUS_KM, MAX_RADIUS_KM } from "@/utils/constants"
 import { ROUTE_COLOR } from "@/utils/mapClusters"
 import { truckName } from "@/utils/orgSettings"
+import { toLatLng } from "@/utils/geo"
 import ChoiceGroup from "./ChoiceGroup"
 
 const ROUTE_TYPES = ["collection", "maintenance"]
@@ -87,7 +88,7 @@ function MapRouteForm({ map, userMarker }) {
                 leftOut: response.leftOut,
                 stops: response.stops,
             })
-            map.flyToBounds([response.start, ...response.stops.map(stop => stop.location.coordinates)], { padding: [32, 32] })
+            map.flyToBounds([response.start, ...response.stops.map(stop => stop.location.coordinates)].map(toLatLng), { padding: [32, 32] })
         } catch (error) {
             setRoutePlan(null)
             toast.error(error.message || t("toasts.failedToGetRoutes"))
@@ -191,7 +192,7 @@ function MapRouteForm({ map, userMarker }) {
                     <ol className="flex max-h-64 flex-col overflow-y-auto rounded-md border">
                         {routePlan.stops.map(stop => (
                             <li key={stop._id} className="border-b last:border-b-0">
-                                <button type="button" onClick={() => map.flyTo(stop.location.coordinates, 17)}
+                                <button type="button" onClick={() => map.flyTo(toLatLng(stop.location.coordinates), 17)}
                                     className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-start text-xs hover:bg-muted">
                                     <span className="flex size-6 shrink-0 items-center justify-center rounded-full font-bold text-white"
                                         style={{ background: ROUTE_COLOR }}>{stop.order}</span>

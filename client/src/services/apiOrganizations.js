@@ -18,7 +18,7 @@ export function updateOrgNameApi({ orgId, name }) {
 }
 
 // The organization's trucks and depot: `fleet` replaces the list, `depot` is
-// { location: [lat, lng], address } or null.
+// { location: [lng, lat], address } or null.
 export function updateFleetSettingsApi({ orgId, ...settings }) {
     return request(`${ORG_EP}/${orgId}/fleet`, { method: "PATCH", body: settings });
 }

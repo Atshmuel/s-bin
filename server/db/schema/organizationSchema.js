@@ -4,6 +4,7 @@ import {
     DEPOT_ADDRESS_MAX_LENGTH, MAX_MESH_AWAKE_WINDOW_SECONDS, MAX_TRUCK_CAPACITY_KG, MAX_TRUCK_TYPES,
     MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG, REPORT_INTERVAL_OPTIONS_MINUTES, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
 } from "../../utils/constants.js";
+import { isLngLat } from "../../utils/geo.js";
 
 // A type of truck the organization runs: how many, and how much waste one
 // carries (kg); `preset` is the class it started from, or custom.
@@ -20,15 +21,15 @@ const truckTypeSchema = new mongoose.Schema({
     },
 });
 
-// Where the trucks start and end their routes: [lat, lng], as bins store
+// Where the trucks start and end their routes: [lng, lat], as bins store
 // theirs, and an optional address.
 const depotSchema = new mongoose.Schema({
     location: {
         type: [Number],
         required: true,
         validate: {
-            validator: ([lat, lng, ...rest]) => rest.length === 0 && Math.abs(lat) <= 90 && Math.abs(lng) <= 180,
-            message: "location must be [lat, lng]",
+            validator: isLngLat,
+            message: "location must be [lng, lat]",
         },
     },
     address: { type: String, trim: true, maxlength: DEPOT_ADDRESS_MAX_LENGTH, default: "" },

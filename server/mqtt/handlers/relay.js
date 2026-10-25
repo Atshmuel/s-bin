@@ -4,6 +4,7 @@ import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { binModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
+import { fromDeviceLocation } from "../../utils/geo.js";
 import { applyDeviceLog, isValidTelemetryRecord } from "./telemetry.js";
 import { applyInstructionResult } from "./instructions.js";
 import { MAX_MESH_HOPS, MAX_READING_AGE_MS, MAX_READING_AHEAD_MS, RECENT_MESH_MESSAGE_IDS } from "../../utils/constants.js";
@@ -87,13 +88,15 @@ export async function handleRelay(gatewayMac, { deviceKey, leafMac, messageId, h
         return;
     }
 
-    const leafRecord = record.location === undefined
-        ? { ...record, location: gateway.location.coordinates }
-        : record;
-    if (!isValidTelemetryRecord(leafRecord)) {
+    // A leaf without a location of its own stands at its gateway. Checked in
+    // the device's [lat, lng], then stored as [lng, lat] like every location.
+    const [gatewayLng, gatewayLat] = gateway.location.coordinates;
+    const deviceRecord = record.location === undefined ? { ...record, location: [gatewayLat, gatewayLng] } : record;
+    if (!isValidTelemetryRecord(deviceRecord)) {
         publishRelayResult(gatewayMac, leafMac, messageId, false, "invalid_record");
         return;
     }
+    const leafRecord = { ...deviceRecord, location: fromDeviceLocation(deviceRecord.location) };
 
     const leaf = await findOrCreateLeafBin(leafMac, gateway, leafRecord);
     if (leaf.kind === "gateway") {

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { organizationModel, routeModel, userModel } from '../models/models.js'
+import { isLngLat } from '../../utils/geo.js'
 import { DEFAULT_COLLECTION_FULLNESS, DEFAULT_TIME_ZONE, OPEN_ROUTE_STATUSES, ROLES, ROUTE_STATUSES, ROUTE_TYPES } from '../../utils/constants.js'
 import {
     freeTruckUnit, HEALTH_FILTERS, organizationTimeZone, planRoute, releaseRoute, routeAccessFilter, RouteError, serviceDayOf,
@@ -94,9 +95,7 @@ export async function getRoute(req, res) {
 export async function createRoute(req, res) {
     const { type = 'collection', coordinates, radius, minLevel, maxLevel, health, orgId, truckTypeId } = req.body
     if (!ROUTE_TYPES.includes(type)) return res.status(400).json({ message: `type must be one of ${ROUTE_TYPES.join(', ')}.` })
-    if (!Array.isArray(coordinates) || coordinates.length !== 2 || !coordinates.every(Number.isFinite)) {
-        return res.status(400).json({ message: 'coordinates must be [lat, lng].' })
-    }
+    if (!isLngLat(coordinates)) return res.status(400).json({ message: 'coordinates must be [lng, lat].' })
     if (!Number.isFinite(radius) || radius <= 0) return res.status(400).json({ message: 'radius must be a positive number of meters.' })
     const fullnessRange = [minLevel, maxLevel].map((value, i) => value === undefined ? DEFAULT_COLLECTION_FULLNESS[i] : Number(value))
     if (fullnessRange.some(value => !Number.isFinite(value) || value < 0 || value > 100) || fullnessRange[0] > fullnessRange[1]) {

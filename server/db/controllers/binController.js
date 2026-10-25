@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { binModel, deviceInstructionModel, organizationModel } from '../models/models.js'
 import { appendFilter, BINS_ONLY_FILTER, healthRank, listSortStages, scopeToOrganization } from '../../utils/helpers.js'
 import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
+import { isLngLat } from '../../utils/geo.js'
 import {
     BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, DEFAULT_COLLECTION_FULLNESS, DEFAULT_PAGE_SIZE, FULLNESS_CRITICAL_PERCENT,
     FULLNESS_WARNING_PERCENT, MAP_CELL_PX, MAP_VIEW_LIMIT, ROLES,
@@ -99,8 +100,8 @@ export async function getAllUserBins(req, res) {
 }
 
 // ---- The map page: GET /api/bins/map and /api/bins/map/extent ----
-// Locations are stored [lat, lng], so a map box is a range on each of the
-// two coordinates (exact for a rectangle, whatever the axis order).
+// Locations are stored [lng, lat] (see utils/geo.js), so a map box is a range
+// on each of the two coordinates.
 
 // What a marker and its popup show; no device key or MAC address.
 const MAP_MARKER_PROJECTION = Object.freeze({
@@ -117,13 +118,13 @@ function wrapLongitude(lng) {
 function mapBoxFilter({ south, west, north, east }) {
     const [s, w, n, e] = [south, west, north, east].map(Number);
     if (![s, w, n, e].every(Number.isFinite) || s > n || w > e) return null;
-    const filter = { 'location.coordinates.0': { $gte: s, $lte: n } };
+    const filter = { 'location.coordinates.1': { $gte: s, $lte: n } };
     if (e - w >= 360) return filter; // the whole world across
     const [from, to] = [wrapLongitude(w), wrapLongitude(e)];
     // A box across the date line is two ranges.
     return from <= to
-        ? { ...filter, 'location.coordinates.1': { $gte: from, $lte: to } }
-        : { ...filter, $or: [{ 'location.coordinates.1': { $gte: from } }, { 'location.coordinates.1': { $lte: to } }] };
+        ? { ...filter, 'location.coordinates.0': { $gte: from, $lte: to } }
+        : { ...filter, $or: [{ 'location.coordinates.0': { $gte: from } }, { 'location.coordinates.0': { $lte: to } }] };
 }
 
 // How urgent a device's marker is, as its color shows it: 0 good, 1
@@ -167,8 +168,8 @@ function mapCells(query, { south, north }, zoom) {
         { $match: query },
         {
             $project: {
-                lat: { $arrayElemAt: ['$location.coordinates', 0] },
-                lng: { $arrayElemAt: ['$location.coordinates', 1] },
+                lng: { $arrayElemAt: ['$location.coordinates', 0] },
+                lat: { $arrayElemAt: ['$location.coordinates', 1] },
                 urgency: MARKER_URGENCY,
             },
         },
@@ -236,10 +237,10 @@ export async function getMapExtent(req, res) {
             {
                 $group: {
                     _id: null,
-                    south: { $min: { $arrayElemAt: ['$location.coordinates', 0] } },
-                    north: { $max: { $arrayElemAt: ['$location.coordinates', 0] } },
-                    west: { $min: { $arrayElemAt: ['$location.coordinates', 1] } },
-                    east: { $max: { $arrayElemAt: ['$location.coordinates', 1] } },
+                    south: { $min: { $arrayElemAt: ['$location.coordinates', 1] } },
+                    north: { $max: { $arrayElemAt: ['$location.coordinates', 1] } },
+                    west: { $min: { $arrayElemAt: ['$location.coordinates', 0] } },
+                    east: { $max: { $arrayElemAt: ['$location.coordinates', 0] } },
                 },
             },
             { $project: { _id: 0 } },
@@ -252,7 +253,7 @@ export async function getMapExtent(req, res) {
 
 export async function getBinsInUserRadius(req, res) {
     const { coordinates, radius, health, minLevel, maxLevel } = req.body
-    if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
+    if (!isLngLat(coordinates)) return res.status(400).json({ message: 'coordinates must be [lng, lat].' })
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
 
@@ -312,7 +313,7 @@ export async function getBinsInUserRadius(req, res) {
 // (orgId); anyone else plans for their own.
 export async function getRouteBins(req, res) {
     const { coordinates, radius, type, minLevel, maxLevel, health, orgId, truckTypeId } = req.body
-    if (!coordinates || !Array.isArray(coordinates) || !coordinates.every(el => typeof el === "number")) return res.status(400).json({ message: 'Coordinates is mandatory! (schema: coordinates:{[lat,lng]})' })
+    if (!isLngLat(coordinates)) return res.status(400).json({ message: 'coordinates must be [lng, lat].' })
 
     if (!radius || typeof radius !== "number") return res.status(400).json({ message: 'Radius is mandatory!' })
 

@@ -126,7 +126,7 @@ export async function updateMeshSettings(req, res) {
 
 // The organization's trucks and depot, which its routes are planned for:
 // owners for any organization, admins for their own. `fleet` replaces the
-// whole list; `depot` is { location: [lat, lng], address } or null.
+// whole list; `depot` is { location: [lng, lat], address } or null.
 export async function updateFleetSettings(req, res) {
     const { id } = req.params;
     const { fleet, depot } = req.body ?? {};
@@ -139,7 +139,7 @@ export async function updateFleetSettings(req, res) {
         return res.status(400).json({ message: "fleet must be a list of truck types." });
     }
     if (depot !== undefined && depot !== null && typeof depot !== "object") {
-        return res.status(400).json({ message: "depot must be { location: [lat, lng], address } or null." });
+        return res.status(400).json({ message: "depot must be { location: [lng, lat], address } or null." });
     }
 
     try {

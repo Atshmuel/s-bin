@@ -5,7 +5,7 @@ import { OPEN_ROUTE_STATUSES, ROUTE_SOURCES, ROUTE_STATUSES, ROUTE_STOP_STATUSES
 const claimSchema = new mongoose.Schema({
     by: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     at: { type: Date, required: true },
-    // [lat, lng], as bins store theirs; absent when the phone gave no position.
+    // [lng, lat], as bins store theirs; absent when the phone gave no position.
     position: { type: [Number], default: undefined },
     accuracyMeters: Number,
     distanceMeters: Number,
@@ -54,7 +54,7 @@ export const routeSchema = new mongoose.Schema({
     timeZone: { type: String, required: true },
     truck: { type: routeTruckSchema, default: null },
     driverId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-    // [lat, lng]; the route ends at `end` (the depot), or at its last stop.
+    // [lng, lat]; the route ends at `end` (the depot), or at its last stop.
     start: { type: [Number], required: true },
     end: { type: [Number], default: undefined },
     fromDepot: { type: Boolean, default: false },

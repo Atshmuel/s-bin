@@ -4,6 +4,7 @@ import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { binModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
+import { fromDeviceLocation } from "../../utils/geo.js";
 
 export async function handleRegistration({ mac, orgId, location, battery, kind = "bin" }) {
     try {
@@ -33,9 +34,11 @@ export async function handleRegistration({ mac, orgId, location, battery, kind =
             console.log("Invalid location or battery data");
             return;
         }
+        // Checked above in the device's [lat, lng]; stored as [lng, lat].
+        const lngLat = fromDeviceLocation(location);
         const { meshAwakeWindowSeconds, reportIntervalMinutes, reportStartHour } = await getOrgDeviceSettingsShared(orgId);
         const { timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds } =
-            getNextReportSchedule(location, reportIntervalMinutes, reportStartHour);
+            getNextReportSchedule(lngLat, reportIntervalMinutes, reportStartHour);
 
         const deviceKey = generateRandomToken();
         // 0,5 to get first 5 chars for example: 1D:44:8E:A7:32:5D -> 1D:44 date used for uniqueness validity
@@ -49,7 +52,7 @@ export async function handleRegistration({ mac, orgId, location, battery, kind =
             deviceKey,
             location: {
                 type: "Point",
-                coordinates: location || [0, 0],
+                coordinates: lngLat,
             },
             timezone: timeZone,
             status: {

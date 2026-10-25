@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import tzLookup from "tz-lookup";
 import { binModel, routeModel, routeReservationModel } from "../models/models.js";
 import { appendFilter, BINS_ONLY_FILTER, healthRank } from "../../utils/helpers.js";
 import { FULLNESS_EXPRESSION } from "../../utils/analytics.js";
+import { timeZoneAt } from "../../utils/geo.js";
 import {
     DEFAULT_ROUTE_ENGINE, DEFAULT_TIME_ZONE, HOUR_MS, OPEN_ROUTE_STATUSES, ROLES, ROUTE_ENGINES, ROUTE_PLAN_ATTEMPTS,
     ROUTE_RESERVATION_GRACE_HOURS, ROUTE_STOP_SECONDS, WEIGHT_REFERENCE_KG,
@@ -38,7 +38,7 @@ export function binLoadKg(bin) {
 // The organization's time zone: its depot's, or else its devices'.
 export async function organizationTimeZone(org) {
     const depot = org.depot?.location;
-    if (depot) return tzLookup(depot[0], depot[1]);
+    if (depot) return timeZoneAt(depot);
     const bin = await binModel.findOne({ ownerId: org._id, timezone: { $type: "string" } }, { timezone: 1 }).lean();
     return bin?.timezone ?? DEFAULT_TIME_ZONE;
 }
@@ -104,11 +104,10 @@ export async function selectRouteBins({ scope, coordinates, radius, type, fullne
 // null when no bin fits; throws a RouteError when the optimizer fails.
 export async function optimizeRoute({ bins, type, origin, depot, truck }) {
     const engine = routeEngine();
-    // The optimizer takes [lng, lat]; bins and the depot store [lat, lng].
-    const toLngLat = ([lat, lng]) => [lng, lat];
+    // The optimizer reads [lng, lat], as every location is stored.
     const jobs = bins.map((bin, i) => ({
         id: i + 1,
-        location: toLngLat(bin.location.coordinates),
+        location: bin.location.coordinates,
         service: ROUTE_STOP_SECONDS[type] ?? ROUTE_STOP_SECONDS.collection,
         // Priority 0-100 decides which bins a full truck leaves.
         ...(truck ? { pickup: [binLoadKg(bin)], priority: Math.round(Math.min(Math.max(bin.fullness ?? 0, 0), 100)) } : {}),
@@ -125,8 +124,8 @@ export async function optimizeRoute({ bins, type, origin, depot, truck }) {
             vehicles: [{
                 id: 1,
                 profile: engine.profile[type] ?? engine.profile.collection,
-                start: toLngLat(origin),
-                ...(depot ? { end: toLngLat(depot) } : {}),
+                start: origin,
+                ...(depot ? { end: depot } : {}),
                 ...(truck ? { capacity: [truck.capacityKg] } : {}),
             }],
             options: { g: true },

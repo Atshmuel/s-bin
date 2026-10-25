@@ -14,6 +14,7 @@ import { Link, useParams } from "react-router-dom"
 import ErrorPage from "../generals/ErrorPage"
 import { useAppSide } from "@/hooks/useAppSide"
 import { useTranslation } from "react-i18next"
+import { toLatLng } from "@/utils/geo";
 import BinPopupCard from "@/components/map/BinPopupCard"
 function BinLog() {
     const { mapContainerRef, scrollToMap } = useMapSettings();
@@ -41,12 +42,12 @@ function BinLog() {
                 </Button>
             </Link>
             <div className="flex flex-wrap justify-start gap-4">
-                <BinCard className="flex-1 min-w-xs" bin={bin} actions={false} handleLocationClick={() => scrollToMap(bin.location.coordinates)} isLoading={isLoadingLog} />
+                <BinCard className="flex-1 min-w-xs" bin={bin} actions={false} handleLocationClick={() => scrollToMap(toLatLng(bin.location.coordinates))} isLoading={isLoadingLog} />
                 <LogCard className="min-w-xs flex-1 h-fit" log={log} isLoading={isLoadingLog} />
             </div>
             <div ref={mapContainerRef} className="rounded-2xl overflow-hidden h-[450px]">
-                <MapComponent zoom={14} center={bin.location.coordinates} legend={true} >
-                    <CustomMarker key={bin._id} icon={getDeviceRoleIcon(getDeviceRole(bin))} position={bin.location.coordinates}
+                <MapComponent zoom={14} center={toLatLng(bin.location.coordinates)} legend={true} >
+                    <CustomMarker key={bin._id} icon={getDeviceRoleIcon(getDeviceRole(bin))} position={toLatLng(bin.location.coordinates)}
                         color={isGateway(bin) ? getColor(bin.status, 'battery') : getColor(bin.status)} popup={<BinPopupCard bin={bin} />} />
                 </MapComponent>
             </div>

@@ -5,6 +5,7 @@ import { Check, CircleStop, Crosshair, Flag, Navigation, Undo2 } from "lucide-re
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { NAV_ARRIVED_METERS, NAV_FOLLOW_ZOOM } from "@/utils/constants"
+import { toLatLng } from "@/utils/geo"
 
 const LOCATION_ERRORS = { 1: "locationDenied", 2: "locationUnavailable", 3: "locationTimeout" }
 
@@ -99,7 +100,7 @@ export function DrivingBar({ plan, position, following, onFollow, onDone, onUndo
     const doneIds = plan.doneIds ?? []
     const next = plan.stops.find(stop => !doneIds.includes(stop._id))
     const lastDone = plan.stops.find(stop => stop._id === doneIds.at(-1))
-    const target = next ? next.location.coordinates : plan.end ?? plan.start
+    const target = toLatLng(next ? next.location.coordinates : plan.end ?? plan.start)
     const meters = position ? distanceTo([position.lat, position.lng], target) : null
     const arrived = next && meters !== null && meters <= NAV_ARRIVED_METERS
     const links = navigationLinks(target, position, window.matchMedia("(pointer: coarse)").matches)

@@ -4,6 +4,7 @@ import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { binLogModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
+import { fromDeviceLocation } from "../../utils/geo.js";
 import { fullnessPercent } from "../../utils/analytics.js";
 import {
     BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT,
@@ -52,6 +53,7 @@ async function isNewestReading(binId, measuredAt) {
 
 // Stores one validated telemetry record for an authenticated bin, whether it
 // arrived over the bin's own cellular link or was relayed by a mesh gateway.
+// The record's location is [lng, lat] (the callers turn the device's around).
 // measuredAt is when a relayed reading was taken; without it the reading is
 // from now. A reading is logged at that time, and only the newest one sets the
 // bin's status, so readings a leaf queued land in place, in any order.
@@ -170,7 +172,8 @@ export async function handleDeviceLog(mac, { deviceKey, ...record }) {
         nextWakeEpoch,
         followingWakeEpoch,
         sleepDurationSeconds: scheduledSleepDurationSeconds,
-    } = await applyDeviceLog(bin, record, { via: "cellular", reportIntervalMinutes, reportStartHour });
+    } = await applyDeviceLog(bin, { ...record, location: fromDeviceLocation(record.location) },
+        { via: "cellular", reportIntervalMinutes, reportStartHour });
 
     console.log("Updated log for", mac);
     mqttClient.publish(

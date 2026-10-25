@@ -19,6 +19,7 @@ import { getColor, isGateway } from "@/utils/binHelpers";
 import { getColocatedShifts, getDeviceRole, getDeviceRoleIcon } from "@/utils/deviceRoles";
 import { ROUTE_COLOR, createCellIcon, createClusterIcon, createRouteEndIcon, createStopIcon } from "@/utils/mapClusters";
 import { CLUSTER_UNTIL_ZOOM, MAP_VIEW_DEBOUNCE_MS } from "@/utils/constants";
+import { toLatLng } from "@/utils/geo";
 
 const SEARCH_PARAMS = Object.freeze(["coordinates", "radius", "minLevel", "maxLevel", "health"]);
 
@@ -55,7 +56,7 @@ function RouteView({ plan }) {
         <>
             <Polyline positions={polyline.decode(plan.geometry)} pathOptions={{ color: ROUTE_COLOR, weight: 5, opacity: 0.7, lineJoin: "round" }} />
             {plan.stops.map(stop => (
-                <Marker key={stop._id} position={stop.location.coordinates}
+                <Marker key={stop._id} position={toLatLng(stop.location.coordinates)}
                     icon={createStopIcon(stop.order, getColor(stop.status), (plan.doneIds ?? []).includes(stop._id))}>
                     <Tooltip direction="top" offset={[0, -14]}>
                         {t("mapLegend.route.stopTooltip", { order: stop.order, count: plan.stops.length, name: stop.binName })}
@@ -70,8 +71,8 @@ function RouteView({ plan }) {
                     </Popup>
                 </Marker>
             ))}
-            <Marker position={plan.start} icon={createRouteEndIcon(t(sameEnd ? "mapLegend.route.startEnd" : "mapLegend.route.start"))} zIndexOffset={1000} />
-            {plan.end && !sameEnd && <Marker position={plan.end} icon={createRouteEndIcon(t("mapLegend.route.end"))} zIndexOffset={1000} />}
+            <Marker position={toLatLng(plan.start)} icon={createRouteEndIcon(t(sameEnd ? "mapLegend.route.startEnd" : "mapLegend.route.start"))} zIndexOffset={1000} />
+            {plan.end && !sameEnd && <Marker position={toLatLng(plan.end)} icon={createRouteEndIcon(t("mapLegend.route.end"))} zIndexOffset={1000} />}
         </>
     )
 }
@@ -152,13 +153,13 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
         if (gatewayId) relayCounts.set(gatewayId, (relayCounts.get(gatewayId) ?? 0) + 1)
     }
 
-    const routePoints = showsRoute ? [routePlan.start, ...routePlan.stops.map(stop => stop.location.coordinates)] : []
+    const routePoints = showsRoute ? [routePlan.start, ...routePlan.stops.map(stop => stop.location.coordinates)].map(toLatLng) : []
     const opening = showsRoute ? { bounds: routePoints }
         : locationFromUrl ? { center: locationFromUrl }
-        : focusBin ? { center: focusBin.location.coordinates }
+        : focusBin ? { center: toLatLng(focusBin.location.coordinates) }
         : center ? { center }
             : opensAroundAll && extent ? { bounds: [[extent.south, extent.west], [extent.north, extent.east]] }
-                : { center: devices[0]?.location.coordinates ?? DEFAULT_CENTER }
+                : { center: devices[0] ? toLatLng(devices[0].location.coordinates) : DEFAULT_CENTER }
     const isLoading = !hasOwnBins && ((isSearch && isLoadingBins) || (opensAroundAll && isLoadingExtent) || (focusesBin && isLoadingFocusBin))
 
     return (
@@ -175,7 +176,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                     iconCreateFunction={createClusterIcon}
                 >
                     {devices.map((bin) => (
-                        <CustomMarker key={bin._id} icon={getDeviceRoleIcon(getDeviceRole(bin))} position={bin.location.coordinates}
+                        <CustomMarker key={bin._id} icon={getDeviceRoleIcon(getDeviceRole(bin))} position={toLatLng(bin.location.coordinates)}
                             color={isGateway(bin) ? getColor(bin.status, 'battery') : getColor(bin.status)} shiftX={shifts[bin._id] ?? 0}
                             popup={<BinPopupCard
                                 bin={bin}

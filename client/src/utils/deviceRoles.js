@@ -27,7 +27,7 @@ const COLOCATED_SPACING_PX = 32
 export function getColocatedShifts(bins) {
     const groups = new Map()
     for (const bin of bins ?? []) {
-        const [lat, lng] = bin.location?.coordinates ?? []
+        const [lng, lat] = bin.location?.coordinates ?? []
         if (typeof lat !== "number" || typeof lng !== "number") continue
         const key = `${lat.toFixed(5)},${lng.toFixed(5)}`
         groups.set(key, [...(groups.get(key) ?? []), bin._id])
