@@ -6,9 +6,10 @@ import { lastSlotEpoch } from "../../utils/deviceSchedule.js";
 import { READINGS_FILTER } from "./readingsService.js";
 import { FILL_RATE_FIELDS, withFreshFillRates } from "./fillRateService.js";
 import { timeZoneAt } from "../../utils/geo.js";
+import { thresholdsOf } from "../../utils/thresholds.js";
 import {
     DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR, DEFAULT_ROUTE_ENGINE, DEFAULT_TIME_ZONE,
-    FULLNESS_CRITICAL_PERCENT, HOUR_MS, MINUTE_MS, OPEN_ROUTE_STATUSES, ROLES, ROUTE_CLAIM_VERIFY_HOURS, ROUTE_DAY_CLOSE_GRACE_MINUTES,
+    HOUR_MS, MINUTE_MS, OPEN_ROUTE_STATUSES, ROLES, ROUTE_CLAIM_VERIFY_HOURS, ROUTE_DAY_CLOSE_GRACE_MINUTES,
     ROUTE_ENGINES, ROUTE_FLEET_CANDIDATE_FACTOR, ROUTE_PLAN_ATTEMPTS, ROUTE_PLAN_HORIZON_HOURS, ROUTE_RESERVATION_GRACE_HOURS,
     ROUTE_STOP_SECONDS, WEIGHT_REFERENCE_KG,
 } from "../../utils/constants.js";
@@ -346,7 +347,9 @@ async function freeTrucks(org, serviceDay) {
 // last emptying), not held by another route; the most urgent first. Each
 // carries its fullness and the load it is expected to have when collected
 // (a scale's weight, or else its fullness then, at least the critical level).
+// Critical is the organization's cut-off.
 async function binsDue(org, now) {
+    const { fullnessCritical } = thresholdsOf(org);
     const reserved = await reservedBinIds(org._id);
     const bins = await binModel.find(
         { ownerId: org._id, ...BINS_ONLY_FILTER, _id: { $nin: reserved } },
@@ -356,12 +359,12 @@ async function binsDue(org, now) {
     const horizon = now + ROUTE_PLAN_HORIZON_HOURS * HOUR_MS;
     return bins.map(bin => {
         const fullness = binFullness(bin);
-        const dueAt = collectionDueAt(fullness, rates.get(String(bin._id)), now);
+        const dueAt = collectionDueAt(fullness, rates.get(String(bin._id)), now, fullnessCritical);
         return { ...bin, fullness, dueAt };
     })
         .filter(bin => bin.dueAt && bin.dueAt.getTime() <= horizon)
         .sort((a, b) => a.dueAt - b.dueAt || b.fullness - a.fullness)
-        .map(bin => ({ ...bin, loadKg: binLoadKg({ ...bin, fullness: Math.max(bin.fullness, FULLNESS_CRITICAL_PERCENT) }) }));
+        .map(bin => ({ ...bin, loadKg: binLoadKg({ ...bin, fullness: Math.max(bin.fullness, fullnessCritical) }) }));
 }
 
 // Plans the organization's day: one call to the optimizer with every free

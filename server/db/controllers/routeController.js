@@ -1,7 +1,8 @@
 import mongoose from 'mongoose'
 import { organizationModel, routeModel, userModel } from '../models/models.js'
 import { distanceMeters, isLngLat } from '../../utils/geo.js'
-import { DEFAULT_COLLECTION_FULLNESS, DEFAULT_TIME_ZONE, OPEN_ROUTE_STATUSES, ROLES, ROUTE_STATUSES, ROUTE_TYPES } from '../../utils/constants.js'
+import { thresholdsOf } from '../../utils/thresholds.js'
+import { DEFAULT_TIME_ZONE, OPEN_ROUTE_STATUSES, ROLES, ROUTE_STATUSES, ROUTE_TYPES } from '../../utils/constants.js'
 import {
     canDriveRoute, freeTruckUnit, HEALTH_FILTERS, organizationTimeZone, planRoute, releaseRoute, releaseStop, releaseUndone,
     planOrganizationDay, reorderFromPosition, reserveStop, routeAccessFilter, RouteError, serviceDayOf,
@@ -98,8 +99,9 @@ export async function createRoute(req, res) {
     if (!ROUTE_TYPES.includes(type)) return res.status(400).json({ message: `type must be one of ${ROUTE_TYPES.join(', ')}.` })
     if (!isLngLat(coordinates)) return res.status(400).json({ message: 'coordinates must be [lng, lat].' })
     if (!Number.isFinite(radius) || radius <= 0) return res.status(400).json({ message: 'radius must be a positive number of meters.' })
-    const fullnessRange = [minLevel, maxLevel].map((value, i) => value === undefined ? DEFAULT_COLLECTION_FULLNESS[i] : Number(value))
-    if (fullnessRange.some(value => !Number.isFinite(value) || value < 0 || value > 100) || fullnessRange[0] > fullnessRange[1]) {
+    // Without a range, the organization's critical bins (its cut-off up to full).
+    const givenRange = [minLevel, maxLevel].map(value => value === undefined ? undefined : Number(value))
+    if (givenRange.some(value => value !== undefined && (!Number.isFinite(value) || value < 0 || value > 100))) {
         return res.status(400).json({ message: 'minLevel and maxLevel must be 0-100, minLevel first.' })
     }
     const healthFilter = health ?? (type === 'maintenance' ? 'critical' : 'all')
@@ -112,8 +114,10 @@ export async function createRoute(req, res) {
     }
 
     try {
-        const org = await organizationModel.findById(planOrgId, { fleet: 1, depot: 1 }).lean()
+        const org = await organizationModel.findById(planOrgId, { fleet: 1, depot: 1, thresholds: 1 }).lean()
         if (!org) return res.status(404).json({ message: 'Organization not found.' })
+        const fullnessRange = [givenRange[0] ?? thresholdsOf(org).fullnessCritical, givenRange[1] ?? 100]
+        if (fullnessRange[0] > fullnessRange[1]) return res.status(400).json({ message: 'minLevel and maxLevel must be 0-100, minLevel first.' })
         let truckType = null
         if (type === 'collection' && truckTypeId !== undefined) {
             truckType = (org.fleet ?? []).find(truck => String(truck._id) === String(truckTypeId))

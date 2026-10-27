@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 import { organizationModel } from "../models/models.js";
 import { deleteOrgRefs } from "../service/sharedService.js";
-import { COST_SETTINGS, MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../../utils/constants.js";
+import { COST_SETTINGS, THRESHOLD_SETTINGS, MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../../utils/constants.js";
 import { ROLES } from "../../utils/constants.js";
 
 const MESH_SETTINGS_PROJECTION = {
     name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1, fleet: 1, depot: 1, routePlanningHour: 1, lastAutoPlan: 1,
-    clusterUntilZoom: 1, costs: 1,
+    clusterUntilZoom: 1, costs: 1, thresholds: 1,
 };
 
 
@@ -60,11 +60,15 @@ export async function updateOrganization(req, res) {
 }
 
 // Owners manage every organization's mesh settings; admins only their own.
+// Anyone else reads their own (a driver its trucks and depot, everyone the
+// cut-offs that color the devices), but not what collecting costs.
 export async function getMeshSettings(req, res) {
     const { role, org } = req.user;
     const query = role === ROLES.OWNER ? {} : { _id: org };
+    const { costs, ...withoutCosts } = MESH_SETTINGS_PROJECTION;
+    const projection = [ROLES.OWNER, ROLES.ADMIN].includes(role) ? MESH_SETTINGS_PROJECTION : withoutCosts;
     try {
-        const organizations = await organizationModel.find(query, MESH_SETTINGS_PROJECTION)
+        const organizations = await organizationModel.find(query, projection)
             .sort({ name: 1 });
         return res.status(200).json({ organizations });
     } catch (error) {
@@ -225,5 +229,31 @@ export async function updateCostSettings(req, res) {
             return res.status(400).json({ message: error.message });
         }
         return res.status(500).json({ message: error?.message || "Internal server error 'updateCostSettings'" });
+    }
+}
+
+// The organization's fullness and battery cut-offs (owners for any
+// organization, admins for their own): any of THRESHOLD_SETTINGS' fields. They
+// are checked together with the ones kept, so warning stays on the safe side
+// of critical.
+export async function updateThresholdSettings(req, res) {
+    const { id } = req.params;
+    const { role, org } = req.user;
+    if (role !== ROLES.OWNER && id !== org) {
+        return res.status(403).json({ message: "You can only change your own organization's settings." });
+    }
+    const changes = Object.entries(req.body ?? {}).filter(([field]) => field in THRESHOLD_SETTINGS);
+    if (!changes.length) return res.status(400).json({ message: `Send any of ${Object.keys(THRESHOLD_SETTINGS).join(", ")}.` });
+    try {
+        const organization = await organizationModel.findById(id, MESH_SETTINGS_PROJECTION);
+        if (!organization) return res.status(404).json({ message: "Organization not found." });
+        for (const [field, value] of changes) organization.thresholds[field] = value;
+        await organization.save();
+        return res.status(200).json({ organization });
+    } catch (error) {
+        if (error?.name === "ValidationError" || error?.name === "CastError") {
+            return res.status(400).json({ message: Object.values(error.errors ?? {})[0]?.message ?? error.message });
+        }
+        return res.status(500).json({ message: error?.message || "Internal server error 'updateThresholdSettings'" });
     }
 }

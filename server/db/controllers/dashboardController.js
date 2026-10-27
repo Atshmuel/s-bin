@@ -5,8 +5,10 @@ import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { intervalsByOrg } from '../service/sharedService.js'
 import { binFullness, fullnessPercent } from '../../utils/analytics.js'
 import { lastReportAt, offlineCauses } from '../../utils/offline.js'
+import { batteryLevel, fullnessLevel, thresholdsFor } from '../../utils/thresholds.js'
+import { thresholdsByOrganization } from '../service/thresholdService.js'
 import {
-    ATTENTION_LIST_LIMIT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
+    ATTENTION_LIST_LIMIT, OFFLINE_AFTER_MISSED_REPORTS,
     RECENT_LOGS_LIMIT, HOUR_MS, RECENT_LOGS_HOURS, ROLES, ROUTE_CONTRADICTION_RECENT_HOURS,
 } from '../../utils/constants.js'
 
@@ -31,17 +33,19 @@ export async function devicesWithReasons(user) {
     const contradicted = new Set((await recentContradictions(orgIds, new Date(now - ROUTE_CONTRADICTION_RECENT_HOURS * HOUR_MS)))
         .map(claim => String(claim.binId)));
     const causes = offlineCauses(devices, intervals, now);
+    const thresholds = await thresholdsByOrganization({ _id: { $in: orgIds } });
     const names = new Map(devices.map(device => [String(device._id), device.binName]));
     return devices.map(device => {
         const fullness = isGatewayBin(device) ? null : binFullness(device);
         const cause = causes.get(String(device._id));
+        const cutOffs = thresholdsFor(thresholds, device.ownerId);
         const reasons = [];
-        if (fullness !== null && fullness >= FULLNESS_CRITICAL_PERCENT) reasons.push('full');
+        if (fullnessLevel(fullness, cutOffs) === 'critical') reasons.push('full');
         if (device.maintenance?.nextServiceAt && new Date(device.maintenance.nextServiceAt) < new Date(now)) {
             reasons.push('maintenance');
         }
         if (cause) reasons.push('offline');
-        if (Number.isFinite(device.status?.battery) && device.status.battery <= BATTERY_WARNING_PERCENT) reasons.push('battery');
+        if (['warning', 'critical'].includes(batteryLevel(device.status?.battery, cutOffs))) reasons.push('battery');
         if (['warning', 'critical'].includes(device.status?.health)) reasons.push('health');
         if (contradicted.has(String(device._id))) reasons.push('contradicted');
         return {

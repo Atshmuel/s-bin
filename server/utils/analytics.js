@@ -110,20 +110,22 @@ export function fillRatePerDay(readings) {
     })), "fullness");
 }
 
-// When the bin reaches FULLNESS_CRITICAL_PERCENT and needs collecting at its
-// fill rate; now if it already has, null without a rising trend.
-export function collectionDueAt(fullness, ratePerDay, now = Date.now()) {
+// When the bin reaches its organization's critical fullness (`critical`) and
+// needs collecting at its fill rate; now if it already has, null without a
+// rising trend.
+export function collectionDueAt(fullness, ratePerDay, now = Date.now(), critical = FULLNESS_CRITICAL_PERCENT) {
     if (!Number.isFinite(fullness)) return null;
-    if (fullness >= FULLNESS_CRITICAL_PERCENT) return new Date(now);
+    if (fullness >= critical) return new Date(now);
     if (!(ratePerDay > 0)) return null;
-    return new Date(now + (FULLNESS_CRITICAL_PERCENT - fullness) / ratePerDay * DAY_MS);
+    return new Date(now + (critical - fullness) / ratePerDay * DAY_MS);
 }
 
-// Days until the battery reaches BATTERY_CRITICAL_PERCENT at its recent trend;
-// null when it is not draining (or charging, or too little data).
-export function batteryDaysLeft(battery, ratePerDay) {
+// Days until the battery reaches its organization's critical level
+// (`critical`) at its recent trend; null when it is not draining (or
+// charging, or too little data).
+export function batteryDaysLeft(battery, ratePerDay, critical = BATTERY_CRITICAL_PERCENT) {
     if (!Number.isFinite(battery) || !(ratePerDay < 0)) return null;
-    return Math.max((battery - BATTERY_CRITICAL_PERCENT) / -ratePerDay, 0);
+    return Math.max((battery - critical) / -ratePerDay, 0);
 }
 
 // Reports received against the slots in the window, counted from the

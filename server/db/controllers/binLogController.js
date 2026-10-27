@@ -88,12 +88,14 @@ export async function getAllLogs(req, res) {
             ]),
             binLogModel.countDocuments(filter),
         ]);
-        const bins = await binModel.find({ _id: { $in: pageLogs.map(log => log.binId) } }, { binName: 1, kind: 1 }).lean();
+        const bins = await binModel.find({ _id: { $in: pageLogs.map(log => log.binId) } }, { binName: 1, kind: 1, ownerId: 1 }).lean();
         const byId = new Map(bins.map(bin => [String(bin._id), bin]));
         const logs = pageLogs.map(log => ({
             ...log,
             binName: byId.get(String(log.binId))?.binName ?? null,
             binKind: byId.get(String(log.binId))?.kind ?? null,
+            // Its organization's cut-offs color the log's battery.
+            ownerId: byId.get(String(log.binId))?.ownerId ?? null,
         }));
 
         res.status(201).json({ logs, total })

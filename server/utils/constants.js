@@ -94,16 +94,27 @@ export const DAY_MS = 24 * HOUR_MS;
 
 // Fullness: the fill level or the weight against WEIGHT_REFERENCE_KG,
 // whichever is closer to full, in %. Warning and critical drive a report's
-// severity, the map's colors, "almost full" and the daily alert email.
+// severity, the map's colors, "almost full" and the daily alert email; these
+// are the defaults of each organization's own (THRESHOLD_SETTINGS).
 export const FULLNESS_WARNING_PERCENT = 50;
 export const FULLNESS_CRITICAL_PERCENT = 80;
 export const WEIGHT_REFERENCE_KG = 250;
-// A route without a range from the map's search collects the critical bins.
-export const DEFAULT_COLLECTION_FULLNESS = Object.freeze([FULLNESS_CRITICAL_PERCENT, 100]);
+// A route without a range from the map's search collects the critical bins
+// (the organization's critical cut-off up to full).
 
-// Battery, in %: low at warning, needs replacing at critical.
+// Battery, in %: low at warning, needs replacing at critical (defaults too).
 export const BATTERY_WARNING_PERCENT = 50;
 export const BATTERY_CRITICAL_PERCENT = 20;
+// Each organization's cut-offs: [default, min, max] in %. Warning stays on
+// the safe side of critical by at least THRESHOLD_MIN_GAP points (fullness
+// warns below critical, a battery warns above it).
+export const THRESHOLD_SETTINGS = Object.freeze({
+    fullnessWarning: Object.freeze([FULLNESS_WARNING_PERCENT, 20, 90]),
+    fullnessCritical: Object.freeze([FULLNESS_CRITICAL_PERCENT, 30, 100]),
+    batteryWarning: Object.freeze([BATTERY_WARNING_PERCENT, 10, 80]),
+    batteryCritical: Object.freeze([BATTERY_CRITICAL_PERCENT, 5, 40]),
+});
+export const THRESHOLD_MIN_GAP = 5;
 
 // Reporting schedule (an organization's settings and their defaults). Every
 // interval divides 24 hours, so the slots stay aligned; below 30 minutes

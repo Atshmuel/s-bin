@@ -8,8 +8,9 @@ import { fromDeviceLocation } from "../../utils/geo.js";
 import { fullnessPercent } from "../../utils/analytics.js";
 import { settleClaims } from "../../db/service/routeService.js";
 import { binFillRate } from "../../db/service/fillRateService.js";
+import { organizationThresholds } from "../../db/service/thresholdService.js";
+import { batteryLevel, fullnessLevel } from "../../utils/thresholds.js";
 import {
-    BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT,
     MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM,
 } from "../../utils/constants.js";
 
@@ -89,21 +90,23 @@ export async function applyDeviceLog(bin, {
     const scaleState = SCALE_STATES.includes(scale) ? scale : null;
     const weightKg = scaleState === "ok" ? Math.max(weight, 0) / 1000 : null;
 
-    // Severity follows fullness (fill level or weight, whichever is higher),
-    // as the map and the dashboard do; null for a gateway.
+    // Severity follows fullness (fill level or weight, whichever is higher)
+    // and the battery against the organization's cut-offs, as the map and the
+    // dashboard do; a gateway has no fullness.
+    const thresholds = await organizationThresholds(bin.ownerId);
     const fullness = fullnessPercent(sensorOk !== false ? level : null, weightKg);
-    const fullnessCritical = fullness !== null && fullness >= FULLNESS_CRITICAL_PERCENT;
-    const fullnessWarning = fullness !== null && fullness >= FULLNESS_WARNING_PERCENT;
-    const severity = fullnessCritical || battery <= BATTERY_CRITICAL_PERCENT || health === 'critical'
+    const fullnessState = fullnessLevel(fullness, thresholds);
+    const batteryState = batteryLevel(battery, thresholds);
+    const severity = fullnessState === 'critical' || batteryState === 'critical' || health === 'critical'
         ? 'critical'
-        : fullnessWarning || battery <= BATTERY_WARNING_PERCENT || health === 'warning'
+        : fullnessState === 'warning' || batteryState === 'warning' || health === 'warning'
             ? 'warning'
             : 'info';
     const messages = [];
-    if (fullnessCritical) messages.push('Bin is almost full.');
-    else if (fullnessWarning) messages.push('Bin is filling up.');
-    if (battery <= BATTERY_CRITICAL_PERCENT) messages.push('Battery level is critical.');
-    else if (battery <= BATTERY_WARNING_PERCENT) messages.push('Battery level is low.');
+    if (fullnessState === 'critical') messages.push('Bin is almost full.');
+    else if (fullnessState === 'warning') messages.push('Bin is filling up.');
+    if (batteryState === 'critical') messages.push('Battery level is critical.');
+    else if (batteryState === 'warning') messages.push('Battery level is low.');
     if (healthMessage) messages.push(healthMessage);
     const message = messages.length > 0 ? messages.join(' ') : null;
 

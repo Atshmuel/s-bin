@@ -6,12 +6,13 @@ import { getOrgDeviceSettingsShared, intervalsByOrg } from '../service/sharedSer
 import { DASHBOARD_SECTIONS, devicesWithReasons } from './dashboardController.js'
 import { costsOverview } from '../service/costsService.js'
 import { refreshStaleFillRates } from '../service/fillRateService.js'
+import { organizationThresholds, scopedThresholds } from '../service/thresholdService.js'
+import { DEFAULT_THRESHOLDS, thresholdExpression, thresholdsFor } from '../../utils/thresholds.js'
 import { lastDays, organizationDays, scopedOrganizations } from '../service/statsService.js'
 import {
     ANALYTICS_RANGES_DAYS, BATTERY_BUCKETS, BATTERY_SOON_DAYS, BATTERY_SOON_LIST_LIMIT, BATTERY_TREND_DAYS,
     DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, FULL_SOON_HOURS, FULL_SOON_LIST_LIMIT, FULLNESS_BUCKETS,
-    GATEWAY_LIST_LIMIT, LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS, BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT,
-    FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
+    GATEWAY_LIST_LIMIT, LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS, OFFLINE_AFTER_MISSED_REPORTS,
     AI_BRIEFING_DAYS, AI_BRIEFING_DEVICE_LIMIT, DAY_MS, HOUR_MS, ROLES,
 } from '../../utils/constants.js'
 import {
@@ -77,11 +78,13 @@ async function binFillRate(bin) {
     const readings = (await binReadings(bin._id, rangeStart(FILL_RATE_WINDOW_DAYS))).map(toReading);
     const fullness = binFullness(bin);
     const ratePerDay = fillRatePerDay(readings);
+    const { fullnessCritical } = await organizationThresholds(bin.ownerId);
     return {
         applicable: true,
         fullness,
         ratePerDay,
-        collectionDueAt: collectionDueAt(fullness, ratePerDay),
+        collectionDueAt: collectionDueAt(fullness, ratePerDay, Date.now(), fullnessCritical),
+        criticalPercent: fullnessCritical,
     };
 }
 
@@ -123,7 +126,7 @@ async function binBattery(bin, { days }) {
         })),
         battery: bin.status?.battery ?? null,
         ratePerDay,
-        daysLeft: batteryDaysLeft(bin.status?.battery, ratePerDay),
+        daysLeft: batteryDaysLeft(bin.status?.battery, ratePerDay, (await organizationThresholds(bin.ownerId)).batteryCritical),
     };
 }
 
@@ -184,23 +187,25 @@ export async function getBinAnalytics(req, res) {
 // ---- Analytics page: GET /api/overviews/:section ----
 
 // Bins expected to need collecting soon (by their fill rate, see
-// fillRateService), worked out by the database: the counts within each of
+// fillRateService, up to their organization's critical fullness), worked out
+// by the database: the counts within each of
 // FULL_SOON_HOURS and the soonest FULL_SOON_LIST_LIMIT. Bins that already need
 // collecting are left out: the dashboard's "almost full" tile counts them.
 export async function fullSoon(user) {
     const now = Date.now();
     const scope = scopeToOrganization({ ...BINS_ONLY_FILTER }, user);
-    await refreshStaleFillRates(scope, now);
+    const [thresholds] = await Promise.all([scopedThresholds(user), refreshStaleFillRates(scope, now)]);
+    const critical = thresholdExpression(thresholds, 'fullnessCritical');
     const by = hours => new Date(now + hours * HOUR_MS);
     const [result] = await binModel.aggregate([
         { $match: { ...scope, 'status.fillRatePerDay': { $gt: 0 } } },
         { $addFields: { fullness: { $round: [FULLNESS_EXPRESSION, 0] } } },
-        { $match: { fullness: { $lt: FULLNESS_CRITICAL_PERCENT } } },
+        { $match: { $expr: { $lt: ['$fullness', critical] } } },
         {
             $addFields: {
                 collectionDueAt: {
                     $toDate: {
-                        $add: [now, { $multiply: [{ $divide: [{ $subtract: [FULLNESS_CRITICAL_PERCENT, '$fullness'] }, '$status.fillRatePerDay'] }, DAY_MS] }],
+                        $add: [now, { $multiply: [{ $divide: [{ $subtract: [critical, '$fullness'] }, '$status.fillRatePerDay'] }, DAY_MS] }],
                     },
                 },
             },
@@ -298,7 +303,10 @@ async function wasteOverview(user, { days, timeZone }) {
 
 async function batteryOverview(user) {
     // Every device has a battery, gateways included.
-    const bins = await scopedBins(user, {}, { binName: 1, kind: 1, 'status.battery': 1 });
+    const [bins, thresholds] = await Promise.all([
+        scopedBins(user, {}, { binName: 1, kind: 1, ownerId: 1, 'status.battery': 1 }),
+        scopedThresholds(user),
+    ]);
     const readings = await readingsByBin(bins.map(bin => bin._id), rangeStart(BATTERY_TREND_DAYS));
     const soon = bins.map(bin => ({
         _id: bin._id,
@@ -306,7 +314,7 @@ async function batteryOverview(user) {
         kind: bin.kind,
         battery: bin.status?.battery ?? null,
         daysLeft: batteryDaysLeft(bin.status?.battery,
-            trendPerDay(readings.get(String(bin._id)) ?? [], 'battery')),
+            trendPerDay(readings.get(String(bin._id)) ?? [], 'battery'), thresholdsFor(thresholds, bin.ownerId).batteryCritical),
     }))
         .filter(bin => bin.daysLeft !== null && bin.daysLeft <= BATTERY_SOON_DAYS)
         .sort((a, b) => a.daysLeft - b.daysLeft);
@@ -527,7 +535,7 @@ export async function buildFleetBriefing(user) {
     const ids = devices.map(device => device._id);
     const weekStart = rangeStart(AI_BRIEFING_DAYS, now);
 
-    const [readings, firstReports, weekCounts, problemLogs, intervals] = await Promise.all([
+    const [readings, firstReports, weekCounts, problemLogs, intervals, thresholds] = await Promise.all([
         readingsByBin(ids, rangeStart(Math.max(FILL_RATE_WINDOW_DAYS, BATTERY_TREND_DAYS), now)),
         firstReportTimes(ids),
         binLogModel.aggregate([
@@ -539,6 +547,7 @@ export async function buildFleetBriefing(user) {
             { message: 1 },
         ).lean(),
         intervalsByOrg(devices),
+        scopedThresholds(user),
     ]);
     const reportsThisWeek = new Map(weekCounts.map(count => [String(count._id), count.count]));
 
@@ -560,7 +569,8 @@ export async function buildFleetBriefing(user) {
             reading => reading.at >= rangeStart(FILL_RATE_WINDOW_DAYS, now)));
         // Hours until the bin needs collecting, 0 if it already does; null
         // without a rising trend.
-        const dueAt = isGatewayDevice ? null : collectionDueAt(device.fullness, ratePerDay, now);
+        const cutOffs = thresholdsFor(thresholds, device.ownerId);
+        const dueAt = isGatewayDevice ? null : collectionDueAt(device.fullness, ratePerDay, now, cutOffs.fullnessCritical);
         const hoursUntilCollection = dueAt === null ? null : (dueAt.getTime() - now) / HOUR_MS;
         const batteryRate = trendPerDay(deviceReadings.filter(
             reading => reading.at >= rangeStart(BATTERY_TREND_DAYS, now)), 'battery');
@@ -581,7 +591,7 @@ export async function buildFleetBriefing(user) {
                 emptiedThisWeek: collections.length,
             }),
             batteryPercent: device.status?.battery ?? null,
-            batteryDaysUntilCritical: roundTo(batteryDaysLeft(device.status?.battery, batteryRate)),
+            batteryDaysUntilCritical: roundTo(batteryDaysLeft(device.status?.battery, batteryRate, cutOffs.batteryCritical)),
             health: device.status?.health ?? null,
             reportedProblem: device.status?.healthMessage || null,
             hoursSinceLastReport: lastReport ? roundTo((now - new Date(lastReport).getTime()) / HOUR_MS, 1) : null,
@@ -592,6 +602,8 @@ export async function buildFleetBriefing(user) {
     briefed.sort((a, b) => b.needsAttention.length - a.needsAttention.length ||
         (b.fullnessPercent ?? -1) - (a.fullnessPercent ?? -1));
 
+    // One organization's cut-offs, or the defaults when the briefing spans several.
+    const rules = thresholds.size === 1 ? [...thresholds.values()][0] : DEFAULT_THRESHOLDS;
     const problemsByCause = Object.fromEntries(HEALTH_CAUSE_NAMES.map(cause => [cause, 0]));
     for (const log of problemLogs) {
         for (const cause of healthCauses(log.message)) problemsByCause[cause]++;
@@ -601,10 +613,11 @@ export async function buildFleetBriefing(user) {
         generatedAt: new Date(now).toISOString(),
         rules: {
             fullnessMeans: 'the fill level or the weight against the bin\'s reference load, whichever is higher',
-            fullnessWarningPercent: FULLNESS_WARNING_PERCENT,
-            fullnessCriticalPercent: FULLNESS_CRITICAL_PERCENT,
-            batteryWarningPercent: BATTERY_WARNING_PERCENT,
-            batteryCriticalPercent: BATTERY_CRITICAL_PERCENT,
+            fullnessWarningPercent: rules.fullnessWarning,
+            fullnessCriticalPercent: rules.fullnessCritical,
+            batteryWarningPercent: rules.batteryWarning,
+            batteryCriticalPercent: rules.batteryCritical,
+            ...(thresholds.size > 1 ? { cutOffsNote: 'each organization may set its own cut-offs; these are the defaults' } : {}),
             offlineMeans: `missed ${OFFLINE_AFTER_MISSED_REPORTS} scheduled reports in a row`,
             gatewayNote: 'a gateway relays the reports of the bins that report through it; when it is offline, they go silent too',
         },

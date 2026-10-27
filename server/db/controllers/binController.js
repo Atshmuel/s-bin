@@ -4,10 +4,11 @@ import { appendFilter, BINS_ONLY_FILTER, healthRank, listSortStages, scopeToOrga
 import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
 import { isLngLat } from '../../utils/geo.js'
 import {
-    BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, DEFAULT_COLLECTION_FULLNESS, DEFAULT_PAGE_SIZE, FULLNESS_CRITICAL_PERCENT,
-    FULLNESS_WARNING_PERCENT, MAP_CELL_PX, MAP_VIEW_LIMIT, ROLES,
+    DEFAULT_PAGE_SIZE, MAP_CELL_PX, MAP_VIEW_LIMIT, ROLES,
 } from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
+import { scopedThresholds } from '../service/thresholdService.js'
+import { thresholdExpression } from '../../utils/thresholds.js'
 import { reservedBinIds } from '../service/routeService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 
@@ -128,40 +129,44 @@ function mapBoxFilter({ south, west, north, east }) {
 }
 
 // How urgent a device's marker is, as its color shows it: 0 good, 1
-// warning, 2 critical; a bin by its fullness, a gateway by its battery.
-const MARKER_URGENCY = Object.freeze({
-    $cond: [
-        { $eq: ['$kind', 'gateway'] },
-        {
-            $switch: {
-                branches: [
-                    { case: { $lte: ['$status.battery', BATTERY_CRITICAL_PERCENT] }, then: 2 },
-                    { case: { $lte: ['$status.battery', BATTERY_WARNING_PERCENT] }, then: 1 },
-                ],
-                default: 0,
+// warning, 2 critical; a bin by its fullness, a gateway by its battery,
+// against its organization's cut-offs (`thresholds`, by organization id).
+function markerUrgency(thresholds) {
+    const cutOff = field => thresholdExpression(thresholds, field);
+    return {
+        $cond: [
+            { $eq: ['$kind', 'gateway'] },
+            {
+                $switch: {
+                    branches: [
+                        { case: { $lte: ['$status.battery', cutOff('batteryCritical')] }, then: 2 },
+                        { case: { $lte: ['$status.battery', cutOff('batteryWarning')] }, then: 1 },
+                    ],
+                    default: 0,
+                },
             },
-        },
-        {
-            $let: {
-                vars: { fullness: FULLNESS_EXPRESSION },
-                in: {
-                    $switch: {
-                        branches: [
-                            { case: { $gte: ['$$fullness', FULLNESS_CRITICAL_PERCENT] }, then: 2 },
-                            { case: { $gte: ['$$fullness', FULLNESS_WARNING_PERCENT] }, then: 1 },
-                        ],
-                        default: 0,
+            {
+                $let: {
+                    vars: { fullness: FULLNESS_EXPRESSION },
+                    in: {
+                        $switch: {
+                            branches: [
+                                { case: { $gte: ['$$fullness', cutOff('fullnessCritical')] }, then: 2 },
+                                { case: { $gte: ['$$fullness', cutOff('fullnessWarning')] }, then: 1 },
+                            ],
+                            default: 0,
+                        },
                     },
                 },
             },
-        },
-    ],
-});
+        ],
+    };
+}
 
 // The view's devices grouped into a grid of about MAP_CELL_PX on screen at
 // this zoom (Leaflet's world is 256 px across at zoom 0): per cell, how many,
 // where on average, and the most urgent.
-function mapCells(query, { south, north }, zoom) {
+function mapCells(query, { south, north }, zoom, thresholds) {
     const lngStep = 360 * MAP_CELL_PX / (256 * 2 ** zoom);
     const latStep = lngStep * Math.cos((Number(south) + Number(north)) / 2 * Math.PI / 180);
     return binModel.aggregate([
@@ -170,7 +175,7 @@ function mapCells(query, { south, north }, zoom) {
             $project: {
                 lng: { $arrayElemAt: ['$location.coordinates', 0] },
                 lat: { $arrayElemAt: ['$location.coordinates', 1] },
-                urgency: MARKER_URGENCY,
+                urgency: markerUrgency(thresholds),
             },
         },
         {
@@ -198,7 +203,7 @@ export async function getMapBins(req, res) {
     try {
         const total = await binModel.countDocuments(query);
         if (total > MAP_VIEW_LIMIT && Number.isFinite(zoom)) {
-            return res.status(200).json({ total, cells: await mapCells(query, req.query, zoom) });
+            return res.status(200).json({ total, cells: await mapCells(query, req.query, zoom, await scopedThresholds(req.user)) });
         }
         const bins = await binModel.find(query, MAP_MARKER_PROJECTION).sort({ 'status.level': -1, _id: 1 }).limit(MAP_VIEW_LIMIT).lean();
         const ids = bins.map(bin => bin._id);

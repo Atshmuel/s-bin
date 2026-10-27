@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 import {
-    CLUSTER_ZOOM_RANGE, COST_SETTINGS, DEFAULT_CLUSTER_UNTIL_ZOOM, DEFAULT_TRUCK_LITERS_PER_100KM, DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_ROUTE_PLANNING_HOUR, DEFAULT_REPORT_START_HOUR,
+    CLUSTER_ZOOM_RANGE, COST_SETTINGS, THRESHOLD_SETTINGS, DEFAULT_CLUSTER_UNTIL_ZOOM, DEFAULT_TRUCK_LITERS_PER_100KM, DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_ROUTE_PLANNING_HOUR, DEFAULT_REPORT_START_HOUR,
     DEPOT_ADDRESS_MAX_LENGTH, MAX_MESH_AWAKE_WINDOW_SECONDS, MAX_TRUCK_CAPACITY_KG, MAX_TRUCK_TYPES,
     MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG, REPORT_INTERVAL_OPTIONS_MINUTES, TRUCK_LITERS_PER_100KM_RANGE, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
 } from "../../utils/constants.js";
 import { isLngLat } from "../../utils/geo.js";
+import { thresholdsProblem } from "../../utils/thresholds.js";
 
 // A type of truck the organization runs: how many, how much waste one carries
 // (kg) and how much diesel it burns (L per 100 km); `preset` is the class it
@@ -42,6 +43,17 @@ const depotSchema = new mongoose.Schema({
 // What collecting costs the organization, in ₪ (see COST_SETTINGS).
 const costsSchema = new mongoose.Schema(Object.fromEntries(Object.entries(COST_SETTINGS).map(([field, [byDefault, min, max]]) =>
     [field, { type: Number, required: true, min, max, default: byDefault }])), { _id: false });
+
+// Its fullness and battery cut-offs, in % (see THRESHOLD_SETTINGS); checked
+// together, so warning stays on the safe side of critical.
+const thresholdsSchema = new mongoose.Schema(Object.fromEntries(Object.entries(THRESHOLD_SETTINGS).map(([field, [byDefault, min, max]]) =>
+    [field, { type: Number, required: true, min, max, default: byDefault, validate: { validator: Number.isInteger, message: `${field} must be a whole number` } }])),
+{ _id: false });
+// On every save, even when one of them changes.
+thresholdsSchema.pre("validate", function () {
+    const problem = thresholdsProblem(this.toObject());
+    if (problem) this.invalidate("fullnessWarning", problem);
+});
 
 // The last nightly plan: when, for which day, and what came of it; `note`
 // names why it made no routes (no depot, no free truck, no bins due).
@@ -111,6 +123,7 @@ export const organizationSchema = new mongoose.Schema({
         validate: { validator: Number.isInteger, message: "clusterUntilZoom must be a whole zoom level" },
     },
     costs: { type: costsSchema, default: () => ({}) },
+    thresholds: { type: thresholdsSchema, default: () => ({}) },
     // What the last nightly plan did, for its settings ("why no routes today?").
     lastAutoPlan: { type: lastAutoPlanSchema, default: null },
 });
