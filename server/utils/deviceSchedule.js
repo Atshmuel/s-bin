@@ -40,6 +40,12 @@ function zonedEpoch(year, month, day, minuteOfDay, timeZone) {
     return asUtc - utcOffsetSeconds(guess, timeZone);
 }
 
+// When a local day ("YYYY-MM-DD") starts, in epoch seconds.
+export function dayStartEpoch(day, timeZone) {
+    const [year, month, date] = day.split("-").map(Number);
+    return zonedEpoch(year, month, date, 0, timeZone);
+}
+
 // The last report slot of a local day ("YYYY-MM-DD"), in epoch seconds: when
 // the day's last reports come in.
 export function lastSlotEpoch(day, intervalMinutes, startHour, timeZone) {

@@ -68,56 +68,54 @@ export function collectionKg(collection) {
     return { kg: collection.fullnessBefore / 100 * WEIGHT_REFERENCE_KG, isEstimate: true };
 }
 
-// One organization over the range's days (each { day }; the first and last
-// partial, so `rangeDays` long in all): spent on fuel and
-// the crew (the routes driven, by service day), disposal (every collection's
-// tonnes at the levy and the site's fee) and the system (its month spread over
-// the days); saved: the collections the old fixed schedule would have made
-// (the reporting bins, `baselineCollectionsPerWeek` each) less the ones made,
-// each at the fuel and crew one costs. Money in ₪, unrounded.
-export function organizationMoney({ costs, fleet, days, rangeDays, routes, learningRoutes, collections, reportingBins }) {
+// One organization over the range's days (each { day, share }: the share of
+// it the range covers, today's so far), from its days in numbers (`stats`, by
+// day; see db/service/statsService.js): spent on fuel and the crew (the routes
+// driven, by service day), disposal (every collection's tonnes at the levy and
+// the site's fee) and the system (its month spread over the days); saved: the
+// collections the old fixed schedule would have made (the day's reporting
+// bins, `baselineCollectionsPerWeek` each) less the ones made, each at the
+// fuel and crew one costs. Money in ₪, unrounded.
+export function organizationMoney({ costs, fleet, days, routes, learningRoutes, stats }) {
     const litersFor = litersPer100KmOf(fleet);
     const unit = perCollection(learningRoutes, litersFor);
     const collectionCost = unit ? unit.liters * costs.dieselPerLiter + unit.hours * costs.crewPerHour : null;
     const disposalPerKg = (costs.landfillLevyPerTonne + costs.disposalFeePerTonne) / 1000;
-    // Spread over the listed days, so they add up to the range.
-    const dayShare = rangeDays / days.length;
-    const baselinePerDay = reportingBins * costs.baselineCollectionsPerWeek / 7 * dayShare;
-    const systemPerDay = costs.systemPerMonth / DAYS_PER_MONTH * dayShare;
 
     const usageByDay = new Map();
     for (const route of routes) {
         const usage = drivenUsage(route, litersFor);
         if (usage) usageByDay.set(route.serviceDay, addUsage(usageByDay.get(route.serviceDay) ?? EMPTY_USAGE, usage));
     }
-    const collectionsByDay = new Map();
-    for (const collection of collections) {
-        collectionsByDay.set(collection.day, [...(collectionsByDay.get(collection.day) ?? []), collectionKg(collection)]);
-    }
 
-    const daily = days.map(({ day }) => {
+    const daily = days.map(({ day, share }) => {
         const usage = usageByDay.get(day) ?? EMPTY_USAGE;
-        const ofDay = collectionsByDay.get(day) ?? [];
-        const kg = ofDay.reduce((sum, collection) => sum + collection.kg, 0);
-        const avoided = baselinePerDay - ofDay.length;
+        const stat = stats.get(day);
+        const collections = stat?.collections ?? 0;
+        const estimatedKg = stat?.estimatedKg ?? 0;
+        const kg = (stat?.weighedKg ?? 0) + estimatedKg;
+        const baseline = (stat?.reportingBins ?? 0) * costs.baselineCollectionsPerWeek / 7 * share;
+        const avoided = baseline - collections;
         return {
             day,
             usage,
             kg,
-            estimatedKg: ofDay.filter(collection => collection.isEstimate).reduce((sum, collection) => sum + collection.kg, 0),
-            collections: ofDay.length,
+            estimatedKg,
+            collections,
+            baseline,
             spent: {
                 fuel: usage.liters * costs.dieselPerLiter,
                 crew: usage.hours * costs.crewPerHour,
                 disposal: kg * disposalPerKg,
-                system: systemPerDay,
+                system: costs.systemPerMonth / DAYS_PER_MONTH * share,
             },
-            avoided,
             savedMoney: collectionCost === null ? null : avoided * collectionCost,
             savedLiters: unit ? avoided * unit.liters : null,
         };
     });
-    return { unit, collectionCost, baseline: baselinePerDay * days.length, reportingBins, daily };
+    // The bins the old schedule emptied: the most that reported on one day.
+    const reportingBins = Math.max(0, ...[...stats.values()].map(stat => stat.reportingBins));
+    return { unit, collectionCost, reportingBins, daily };
 }
 
 const sum = (list, value) => list.reduce((total, item) => total + (value(item) ?? 0), 0);
@@ -143,7 +141,7 @@ export function combineMoney(organizations, days) {
     const savedMoney = priced.length ? sum(pricedEntries, entry => entry.savedMoney) : null;
     const savedLiters = priced.length ? sum(pricedEntries, entry => entry.savedLiters) : null;
     const actual = sum(entries, entry => entry.collections);
-    const baseline = sum(organizations, org => org.baseline);
+    const baseline = sum(entries, entry => entry.baseline);
     const tonnes = sum(entries, entry => entry.kg) / 1000;
     // One collection, weighted by the route collections each organization learned it from.
     const learned = sum(priced, org => org.unit.routeCollections);

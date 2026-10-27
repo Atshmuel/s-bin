@@ -5,6 +5,7 @@ import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared, intervalsByOrg } from '../service/sharedService.js'
 import { DASHBOARD_SECTIONS, devicesWithReasons } from './dashboardController.js'
 import { costsOverview } from '../service/costsService.js'
+import { lastDays, organizationDays, scopedOrganizations } from '../service/statsService.js'
 import {
     ANALYTICS_RANGES_DAYS, BATTERY_BUCKETS, BATTERY_SOON_DAYS, BATTERY_SOON_LIST_LIMIT, BATTERY_TREND_DAYS,
     DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, FULL_SOON_HOURS, FULL_SOON_LIST_LIMIT, FULLNESS_BUCKETS,
@@ -231,43 +232,49 @@ async function fullnessDistribution(user) {
     return { buckets: bucketCounts(known, FULLNESS_BUCKETS), unknown: values.length - known.length };
 }
 
-// Every collection in the range across the user's bins, with its day.
-async function orgCollections(user, days, timeZone) {
-    const bins = await scopedBins(user, { ...BINS_ONLY_FILTER }, { _id: 1 });
-    const start = rangeStart(days);
-    const readings = await readingsByBin(bins.map(bin => bin._id), start);
-    const collections = [...readings.values()].flatMap(binReadingsList => detectCollections(binReadingsList));
-    return { start, collections: collections.map(collection => ({ ...collection, day: dayKey(collection.at, timeZone) })) };
+// The range's days (the last `days`, ending today) in numbers across the
+// organizations in the user's scope, from each one's days (see statsService).
+async function scopedDays(user, days, timeZone) {
+    const dayList = lastDays(days, timeZone);
+    const organizations = await scopedOrganizations(user, {});
+    const perOrganization = await Promise.all(organizations.map(organization => organizationDays(organization, dayList)));
+    return dayList.map(day => {
+        const ofDay = perOrganization.map(stats => stats.get(day)).filter(Boolean);
+        const total = key => ofDay.reduce((sum, stat) => sum + stat[key], 0);
+        return {
+            day,
+            collections: total('collections'),
+            fullnessBeforeSum: total('fullnessBeforeSum'),
+            fullnessBeforeCount: total('fullnessBeforeCount'),
+            weighedKg: total('weighedKg'),
+            weighedCollections: total('weighedCollections'),
+        };
+    });
 }
 
 function average(values) {
     return values.length > 0 ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length) : null;
 }
 
+const averageFullness = (sum, count) => count > 0 ? Math.round(sum / count) : null;
+
 async function collectionsOverview(user, { days, timeZone }) {
-    const { start, collections } = await orgCollections(user, days, timeZone);
-    const fullness = list => average(list.map(c => c.fullnessBefore).filter(value => value !== null));
+    const daily = await scopedDays(user, days, timeZone);
+    const total = key => daily.reduce((sum, day) => sum + day[key], 0);
     return {
-        daily: daysBetween(start, timeZone).map(day => {
-            const ofDay = collections.filter(collection => collection.day === day);
-            return { day, count: ofDay.length, avgFullnessBefore: fullness(ofDay) };
-        }),
-        total: collections.length,
-        avgFullnessBefore: fullness(collections),
+        daily: daily.map(day => ({ day: day.day, count: day.collections, avgFullnessBefore: averageFullness(day.fullnessBeforeSum, day.fullnessBeforeCount) })),
+        total: total('collections'),
+        avgFullnessBefore: averageFullness(total('fullnessBeforeSum'), total('fullnessBeforeCount')),
     };
 }
 
 async function wasteOverview(user, { days, timeZone }) {
-    const { start, collections } = await orgCollections(user, days, timeZone);
-    const weighed = collections.filter(collection => collection.kgRemoved !== null);
+    const daily = await scopedDays(user, days, timeZone);
     const round = kg => Math.round(kg * 10) / 10;
     return {
-        daily: daysBetween(start, timeZone).map(day => ({
-            day,
-            kg: round(weighed.filter(c => c.day === day).reduce((sum, c) => sum + c.kgRemoved, 0)),
-        })),
-        totalKg: round(weighed.reduce((sum, collection) => sum + collection.kgRemoved, 0)),
-        weighedCollections: weighed.length,
+        daily: daily.map(day => ({ day: day.day, kg: round(day.weighedKg) })),
+        totalKg: round(daily.reduce((sum, day) => sum + day.weighedKg, 0)),
+        weighedCollections: daily.reduce((sum, day) => sum + day.weighedCollections, 0),
     };
 }
 

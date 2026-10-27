@@ -235,6 +235,17 @@ export const COST_SETTINGS = Object.freeze({
 export const COST_PER_COLLECTION_DAYS = 90;
 export const CO2_KG_PER_DIESEL_LITER = 2.68;
 export const DAYS_PER_MONTH = 365.25 / 12;
+// Each organization's day in numbers (orgstats): computed from the day's
+// reports and the day before it (a report interval is at most a day, so the
+// last reading before an emptying is in it), for the last STATS_DAYS. A day
+// is settled once computed STATS_SETTLE_MS after it ended (late reports in);
+// until then it is computed again when older than STATS_REFRESH_MS. Days are
+// filled STATS_CHUNK_DAYS at a time.
+export const STATS_DAYS = 90;
+export const STATS_LOOKBACK_MS = DAY_MS;
+export const STATS_SETTLE_MS = DAY_MS;
+export const STATS_REFRESH_MS = HOUR_MS;
+export const STATS_CHUNK_DAYS = 10;
 // The route optimizer, chosen by ROUTE_ENGINE in the environment: the
 // self-hosted VROOM with OSRM (see docker-compose.yml), or OpenRouteService's
 // free service. A route visits at most `maxBins` bins, the most urgent first:
@@ -337,4 +348,6 @@ export const CRON_SCHEDULES = Object.freeze({
     // Hourly: the days whose last reports are in close, then each organization
     // is planned when its planning hour comes.
     routePlanning: "2 * * * *",
+    // Hourly: each organization's recent days in numbers (and any missing).
+    orgStats: "12 * * * *",
 });

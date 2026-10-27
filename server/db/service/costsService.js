@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
-import { binModel, organizationModel, routeModel } from "../models/models.js";
-import { readingsByBin } from "./readingsService.js";
-import { BINS_ONLY_FILTER } from "../../utils/helpers.js";
-import { COST_PER_COLLECTION_DAYS, ROLES } from "../../utils/constants.js";
-import { dayKey, daysBetween, detectCollections, rangeStart } from "../../utils/analytics.js";
+import { routeModel } from "../models/models.js";
+import { lastDays, organizationDays, scopedOrganizations } from "./statsService.js";
+import { COST_PER_COLLECTION_DAYS, DAY_MS } from "../../utils/constants.js";
+import { dayStartEpoch } from "../../utils/deviceSchedule.js";
 import { combineMoney, organizationMoney } from "../../utils/costs.js";
 
 const ROUTE_FIELDS = Object.freeze({
@@ -11,52 +10,36 @@ const ROUTE_FIELDS = Object.freeze({
     distanceMeters: 1, durationSeconds: 1, plannedDistanceMeters: 1, plannedDurationSeconds: 1, 'stops.status': 1,
 });
 
-// The organizations in the user's scope: an owner's picked one, or all of
-// them; anyone else's own. Hydrated, so ones saved before costs existed get
-// the defaults.
-async function scopedOrganizations({ role, org, selectedOrg }) {
-    const query = role === ROLES.OWNER ? (selectedOrg ? { _id: selectedOrg } : {}) : { _id: org };
-    const organizations = await organizationModel.find(query, { costs: 1, fleet: 1 });
-    return organizations.map(organization => organization.toObject());
-}
-
-// One organization's range: its collection routes (by service day, in the
-// range; and those of the last COST_PER_COLLECTION_DAYS, to learn what a
-// collection costs), and every collection its bins' reports show, with the
-// bins that reported (the old schedule emptied those).
-async function organizationData(organization, { start, timeZone }) {
-    const orgId = new mongoose.Types.ObjectId(organization._id);
-    const learnFrom = dayKey(rangeStart(COST_PER_COLLECTION_DAYS), timeZone);
-    const startDay = dayKey(start, timeZone);
-    const [learningRoutes, bins] = await Promise.all([
-        routeModel.find({ orgId, type: 'collection', status: { $ne: 'cancelled' }, serviceDay: { $gte: learnFrom < startDay ? learnFrom : startDay } }, ROUTE_FIELDS).lean(),
-        binModel.find({ ...BINS_ONLY_FILTER, ownerId: orgId }, { _id: 1 }).lean(),
-    ]);
-    const readings = await readingsByBin(bins.map(bin => bin._id), start);
-    const collections = [...readings.values()].flatMap(binReadings => detectCollections(binReadings))
-        .filter(collection => collection.at >= start)
-        .map(collection => ({ ...collection, day: dayKey(collection.at, timeZone) }));
+// An organization's collection routes since a service day: the range's, and
+// those of the last COST_PER_COLLECTION_DAYS, to learn what a collection costs.
+async function collectionRoutes(organization, { startDay, timeZone, now }) {
+    const learnFrom = lastDays(COST_PER_COLLECTION_DAYS, timeZone, now)[0];
+    const routes = await routeModel.find({
+        orgId: new mongoose.Types.ObjectId(organization._id), type: 'collection', status: { $ne: 'cancelled' },
+        serviceDay: { $gte: learnFrom < startDay ? learnFrom : startDay },
+    }, ROUTE_FIELDS).lean();
     return {
-        routes: learningRoutes.filter(route => route.serviceDay >= startDay),
-        learningRoutes: learningRoutes.filter(route => route.serviceDay >= learnFrom),
-        collections,
-        reportingBins: readings.size,
+        routes: routes.filter(route => route.serviceDay >= startDay),
+        learningRoutes: routes.filter(route => route.serviceDay >= learnFrom),
     };
 }
 
-// The money of the range in the user's scope: what collecting spent, what the
-// system saved against each organization's old schedule, and per day (see
-// utils/costs.js). In ₪.
+// The money of the range's days (the last `days`, ending today) in the user's
+// scope: what collecting spent, what the system saved against each
+// organization's old schedule, and per day (see utils/costs.js). In ₪.
 export async function costsOverview(user, { days, timeZone }) {
-    const start = rangeStart(days);
-    const dayList = daysBetween(start, timeZone).map(day => ({ day }));
-    const organizations = await scopedOrganizations(user);
-    const money = await Promise.all(organizations.map(async organization => organizationMoney({
-        costs: organization.costs,
-        fleet: organization.fleet,
-        days: dayList,
-        rangeDays: days,
-        ...await organizationData(organization, { start, timeZone }),
-    })));
-    return { days, ...combineMoney(money, dayList) };
+    const now = Date.now();
+    const dayList = lastDays(days, timeZone, now);
+    // Today counts for the part of it gone by.
+    const todayShare = Math.min((now - dayStartEpoch(dayList.at(-1), timeZone) * 1000) / DAY_MS, 1);
+    const rangeDays = dayList.map((day, index) => ({ day, share: index === dayList.length - 1 ? todayShare : 1 }));
+    const organizations = await scopedOrganizations(user, { costs: 1, fleet: 1 });
+    const money = await Promise.all(organizations.map(async organization => {
+        const [stats, routes] = await Promise.all([
+            organizationDays(organization, dayList, { now }),
+            collectionRoutes(organization, { startDay: dayList[0], timeZone, now }),
+        ]);
+        return organizationMoney({ costs: organization.costs, fleet: organization.fleet, days: rangeDays, stats, ...routes });
+    }));
+    return { days, ...combineMoney(money, rangeDays) };
 }

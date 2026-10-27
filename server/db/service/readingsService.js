@@ -4,10 +4,11 @@ import { binLogModel } from "../models/models.js";
 // planner read them.
 export const READINGS_FILTER = Object.freeze({ type: "log", source: "sensor" });
 
-// Readings of many bins at once, grouped per bin and sorted oldest first.
-export async function readingsByBin(binIds, since) {
+// Readings of many bins at once, from `since` (until `until`, when given),
+// grouped per bin and sorted oldest first.
+export async function readingsByBin(binIds, since, until = null) {
     const groups = await binLogModel.aggregate([
-        { $match: { binId: { $in: binIds }, ...READINGS_FILTER, createdAt: { $gte: since } } },
+        { $match: { binId: { $in: binIds }, ...READINGS_FILTER, createdAt: { $gte: since, ...(until ? { $lt: until } : {}) } } },
         { $sort: { createdAt: 1 } },
         {
             $group: {
