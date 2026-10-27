@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import {
-    DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_ROUTE_PLANNING_HOUR, DEFAULT_REPORT_START_HOUR,
+    CLUSTER_ZOOM_RANGE, DEFAULT_CLUSTER_UNTIL_ZOOM, DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_ROUTE_PLANNING_HOUR, DEFAULT_REPORT_START_HOUR,
     DEPOT_ADDRESS_MAX_LENGTH, MAX_MESH_AWAKE_WINDOW_SECONDS, MAX_TRUCK_CAPACITY_KG, MAX_TRUCK_TYPES,
     MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG, REPORT_INTERVAL_OPTIONS_MINUTES, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
 } from "../../utils/constants.js";
@@ -93,6 +93,14 @@ export const organizationSchema = new mongoose.Schema({
         max: 23,
         default: DEFAULT_ROUTE_PLANNING_HOUR,
         validate: { validator: value => value === null || Number.isInteger(value), message: "routePlanningHour must be an hour or null" },
+    },
+    // The zoom from which the map shows each device on its own (below it, nearby ones group).
+    clusterUntilZoom: {
+        type: Number,
+        min: CLUSTER_ZOOM_RANGE[0],
+        max: CLUSTER_ZOOM_RANGE[1],
+        default: DEFAULT_CLUSTER_UNTIL_ZOOM,
+        validate: { validator: Number.isInteger, message: "clusterUntilZoom must be a whole zoom level" },
     },
     // What the last nightly plan did, for its settings ("why no routes today?").
     lastAutoPlan: { type: lastAutoPlanSchema, default: null },

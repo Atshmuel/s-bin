@@ -6,6 +6,7 @@ import { ROLES } from "../../utils/constants.js";
 
 const MESH_SETTINGS_PROJECTION = {
     name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1, fleet: 1, depot: 1, routePlanningHour: 1, lastAutoPlan: 1,
+    clusterUntilZoom: 1,
 };
 
 
@@ -170,3 +171,30 @@ export async function updateFleetSettings(req, res) {
         return res.status(500).json({ message: error?.message || "Internal server error 'updateFleetSettings'" });
     }
 }
+
+// The organization's map settings (owners for any organization, admins for
+// their own): `clusterUntilZoom`, the zoom from which each device shows on its
+// own, a whole level within CLUSTER_ZOOM_RANGE (the schema refuses others).
+export async function updateMapSettings(req, res) {
+    const { id } = req.params;
+    const { clusterUntilZoom } = req.body ?? {};
+    const { role, org } = req.user;
+    if (role !== ROLES.OWNER && id !== org) {
+        return res.status(403).json({ message: "You can only change your own organization's settings." });
+    }
+    try {
+        const organization = await organizationModel.findByIdAndUpdate(
+            id,
+            { $set: { ...(clusterUntilZoom === undefined ? {} : { clusterUntilZoom }) } },
+            { new: true, runValidators: true, projection: MESH_SETTINGS_PROJECTION },
+        );
+        if (!organization) return res.status(404).json({ message: "Organization not found." });
+        return res.status(200).json({ organization });
+    } catch (error) {
+        if (error?.name === "ValidationError" || error?.name === "CastError") {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: error?.message || "Internal server error 'updateMapSettings'" });
+    }
+}
+

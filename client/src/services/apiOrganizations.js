@@ -19,6 +19,11 @@ export function updateOrgNameApi({ orgId, name }) {
 
 // The organization's trucks and depot: `fleet` replaces the list, `depot` is
 // { location: [lng, lat], address } or null.
+// The organization's map: { clusterUntilZoom }, within CLUSTER_ZOOM_RANGE.
+export function updateMapSettingsApi({ orgId, ...settings }) {
+    return request(`${ORG_EP}/${orgId}/map`, { method: "PATCH", body: settings });
+}
+
 export function updateFleetSettingsApi({ orgId, ...settings }) {
     return request(`${ORG_EP}/${orgId}/fleet`, { method: "PATCH", body: settings });
 }

@@ -1050,7 +1050,8 @@
         "danger": "Danger zone",
         "fleet": "Fleet",
         "depot": "Depot",
-        "routePlanning": "Nightly routes"
+        "routePlanning": "Nightly routes",
+        "map": "Map"
       },
       "general": {
         "title": "General",
@@ -1082,6 +1083,24 @@
             "small": "Small / urban truck",
             "medium": "Medium-heavy truck",
             "large": "Very large truck"
+          }
+        },
+        "map": {
+          "title": "Map",
+          "description": "How the organization's map shows its devices.",
+          "clusterZoom": "Show each device on its own from",
+          "clusterZoomHint": "Zoomed out further, nearby devices group into one marker with their count.",
+        "example": "At this zoom, a map this wide shows about {{km}} km across ({{place}}).",
+        "aroundDepot": "around the depot",
+        "aroundDevices": "around the organization's devices",
+          "zooms": {
+            "12": "Zoom 12 · a town",
+            "13": "Zoom 13 · neighbourhoods",
+            "14": "Zoom 14 · a neighbourhood",
+            "15": "Zoom 15 · streets",
+            "16": "Zoom 16 · a street",
+            "17": "Zoom 17 · buildings (default)",
+            "18": "Zoom 18 · a building"
           }
         },
         "routePlanning": {

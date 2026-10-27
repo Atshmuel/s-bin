@@ -5,6 +5,7 @@ import { Building2 } from "lucide-react";
 import OrgDangerZoneSection from "@/components/organizations/OrgDangerZoneSection";
 import OrgDepotSection from "@/components/organizations/OrgDepotSection";
 import OrgRoutePlanningSection from "@/components/organizations/OrgRoutePlanningSection";
+import OrgMapSection from "@/components/organizations/OrgMapSection";
 import OrgFleetSection from "@/components/organizations/OrgFleetSection";
 import OrgGeneralSection from "@/components/organizations/OrgGeneralSection";
 import OrgReportingSection from "@/components/organizations/OrgReportingSection";
@@ -47,6 +48,7 @@ function OrganizationSettings() {
                 { id: "fleet", element: <OrgFleetSection key={i18n.language + JSON.stringify(organization.fleet ?? [])} id="fleet" organization={organization} /> },
                 { id: "depot", element: <OrgDepotSection key={JSON.stringify(organization.depot ?? null)} id="depot" organization={organization} /> },
                 { id: "routePlanning", element: <OrgRoutePlanningSection key={String(organization.routePlanningHour)} id="routePlanning" organization={organization} /> },
+                { id: "map", element: <OrgMapSection key={String(organization.clusterUntilZoom)} id="map" organization={organization} /> },
                 ...(isOwner ? [{ id: "danger", element: <OrgDangerZoneSection id="danger" organization={organization} /> }] : []),
             ]} />
     );

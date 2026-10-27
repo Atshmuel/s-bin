@@ -87,7 +87,8 @@ export const DEPOT_ADDRESS_MAX_LENGTH = 120
 export const PASSWORD_MIN_LENGTH = 8
 export const PASSWORD_MAX_LENGTH = 30
 
-// Map. Below CLUSTER_UNTIL_ZOOM nearby devices group into one marker; the
+// Map. Below the organization's cluster zoom (CLUSTER_UNTIL_ZOOM when it has
+// none, within CLUSTER_ZOOM_RANGE) nearby devices group into one marker; the
 // user's location marker stays USER_MARKER_MS after "My location". The map
 // page loads the devices in view once the map stops moving for
 // MAP_VIEW_DEBOUNCE_MS, and first opens around all of them, no closer than
@@ -95,6 +96,7 @@ export const PASSWORD_MAX_LENGTH = 30
 export const DEFAULT_RADIUS_KM = 5
 export const MAX_RADIUS_KM = 100
 export const CLUSTER_UNTIL_ZOOM = 17
+export const CLUSTER_ZOOM_RANGE = Object.freeze([12, 18])
 export const USER_MARKER_MS = MINUTE_MS
 export const MAP_VIEW_DEBOUNCE_MS = 300
 export const MAP_FIT_MAX_ZOOM = 15

@@ -15,7 +15,8 @@ import { useMapSettings } from "@/hooks/useMapSettings";
 import { getColor, isGateway } from "@/utils/binHelpers";
 import { getColocatedShifts, getDeviceRole, getDeviceRoleIcon } from "@/utils/deviceRoles";
 import { createCellIcon, createClusterIcon } from "@/utils/mapClusters";
-import { CLUSTER_UNTIL_ZOOM, MAP_VIEW_DEBOUNCE_MS } from "@/utils/constants";
+import { MAP_VIEW_DEBOUNCE_MS } from "@/utils/constants";
+import { useClusterZoom } from "@/hooks/useClusterZoom";
 import { toLatLng } from "@/utils/geo";
 
 const SEARCH_PARAMS = Object.freeze(["coordinates", "radius", "minLevel", "maxLevel", "health"]);
@@ -45,12 +46,12 @@ function MapViewWatcher({ onView }) {
 }
 
 // A crowded view's grid cells, counted by the server: each a group marker
-// that zooms in on its devices.
-function MapCells({ cells }) {
+// that zooms in on its devices, up to where they show on their own.
+function MapCells({ cells, untilZoom }) {
     const map = useMap()
     return cells.map(cell => (
         <Marker key={`${cell.lat},${cell.lng}`} position={[cell.lat, cell.lng]} icon={createCellIcon(cell.count, cell.urgency)}
-            eventHandlers={{ click: () => map.setView([cell.lat, cell.lng], Math.min(map.getZoom() + 2, CLUSTER_UNTIL_ZOOM)) }} />
+            eventHandlers={{ click: () => map.setView([cell.lat, cell.lng], Math.min(map.getZoom() + 2, untilZoom)) }} />
     ))
 }
 const DEFAULT_CENTER = Object.freeze([32.0853, 34.7818]);
@@ -63,6 +64,8 @@ const DEFAULT_CENTER = Object.freeze([32.0853, 34.7818]);
 function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = null }) {
     const { t } = useTranslation()
     const { map } = useMapSettings()
+    // Each device's organization's: below it nearby devices group.
+    const { zoomFor, deepest } = useClusterZoom()
     const [searchParams] = useSearchParams();
     const hasOwnBins = binsToUse !== null
     const isSearch = SEARCH_PARAMS.every(param => searchParams.has(param))
@@ -89,16 +92,23 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
     if (binId) devices = devices.filter(bin => bin._id === binId)
 
     const shifts = getColocatedShifts(devices);
+    // One cluster group per zoom: the devices of the organizations that group until it.
+    const byZoom = new Map()
+    for (const bin of devices) {
+        const clusterZoom = zoomFor(bin.ownerId)
+        byZoom.set(clusterZoom, [...(byZoom.get(clusterZoom) ?? []), bin])
+    }
+    const groups = [...byZoom]
 
     // A group whose devices only separate at street level (the same spot) flies
     // there, where they stand side by side and their popups stay open; Leaflet's
     // default would fan them out, and moving the map folds the fan and closes the
     // popup. Other groups zoom to fit their devices.
-    function handleClusterClick(event) {
+    const handleClusterClick = (clusterZoom) => (event) => {
         const cluster = event.layer
         if (!map) return
-        if (map.getBoundsZoom(cluster.getBounds()) >= CLUSTER_UNTIL_ZOOM) {
-            map.flyTo(cluster.getLatLng(), CLUSTER_UNTIL_ZOOM)
+        if (map.getBoundsZoom(cluster.getBounds()) >= clusterZoom) {
+            map.flyTo(cluster.getLatLng(), clusterZoom)
         } else {
             cluster.zoomToBounds({ padding: [48, 48] })
         }
@@ -124,28 +134,32 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
     return (
         <div className="relative h-full w-full overflow-hidden rounded-2xl border border-gray-300 shadow-md">
             <MapComponent {...opening} zoom={zoomFromUrl ? zoomFromUrl : zoom ?? 11} legend={legend} legendForm={legendForm} isLoading={isLoading} >
-                <MarkerClusterGroup
-                    chunkedLoading
-                    showCoverageOnHover={false}
-                    maxClusterRadius={50}
-                    disableClusteringAtZoom={CLUSTER_UNTIL_ZOOM}
-                    spiderfyOnMaxZoom={false}
-                    zoomToBoundsOnClick={false}
-                    onClick={handleClusterClick}
-                    iconCreateFunction={createClusterIcon}
-                >
-                    {devices.map((bin) => (
-                        <CustomMarker key={bin._id} icon={getDeviceRoleIcon(getDeviceRole(bin))} position={toLatLng(bin.location.coordinates)}
-                            color={isGateway(bin) ? getColor(bin.status, 'battery') : getColor(bin.status)} shiftX={shifts[bin._id] ?? 0}
-                            popup={<BinPopupCard
-                                bin={bin}
-                                gatewayName={bin.gatewayName ?? bin.gateway?.binName ?? binNames.get(bin.status?.connection?.gatewayId)}
-                                relayCount={bin.relayCount ?? relayCounts.get(bin._id) ?? 0}
-                            />} />
-                    ))}
-                </MarkerClusterGroup>
+                {/* Keyed by the zoom: a group builds its zoom levels once, so a new zoom needs a new group. */}
+                {groups.map(([clusterZoom, bins]) => (
+                    <MarkerClusterGroup
+                        key={clusterZoom}
+                        chunkedLoading
+                        showCoverageOnHover={false}
+                        maxClusterRadius={50}
+                        disableClusteringAtZoom={clusterZoom}
+                        spiderfyOnMaxZoom={false}
+                        zoomToBoundsOnClick={false}
+                        onClick={handleClusterClick(clusterZoom)}
+                        iconCreateFunction={createClusterIcon}
+                    >
+                        {bins.map((bin) => (
+                            <CustomMarker key={bin._id} icon={getDeviceRoleIcon(getDeviceRole(bin))} position={toLatLng(bin.location.coordinates)}
+                                color={isGateway(bin) ? getColor(bin.status, 'battery') : getColor(bin.status)} shiftX={shifts[bin._id] ?? 0}
+                                popup={<BinPopupCard
+                                    bin={bin}
+                                    gatewayName={bin.gatewayName ?? bin.gateway?.binName ?? binNames.get(bin.status?.connection?.gatewayId)}
+                                    relayCount={bin.relayCount ?? relayCounts.get(bin._id) ?? 0}
+                                />} />
+                        ))}
+                    </MarkerClusterGroup>
+                ))}
                 {followsView && <MapViewWatcher onView={setBox} />}
-                {followsView && mapCells && <MapCells cells={mapCells} />}
+                {followsView && mapCells && <MapCells cells={mapCells} untilZoom={deepest} />}
             </MapComponent>
             {/* Above Leaflet's panes and controls (1000); clicks pass through to the map. */}
             {followsView && isFetchingMapBins && (

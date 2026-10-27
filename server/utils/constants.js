@@ -255,6 +255,10 @@ export const ROUTE_FLEET_CANDIDATE_FACTOR = 2;
 export const ROUTE_DAY_CLOSE_GRACE_MINUTES = 30;
 export const ROUTE_CLAIM_VERIFY_HOURS = 36;
 export const ROUTE_CONTRADICTION_RECENT_HOURS = 24;
+// The map groups nearby devices below this zoom; each organization picks its
+// own within the range (12 a neighbourhood, 18 single buildings).
+export const DEFAULT_CLUSTER_UNTIL_ZOOM = 17;
+export const CLUSTER_ZOOM_RANGE = Object.freeze([12, 18]);
 // The time zone of an organization without a depot or devices to tell it.
 export const DEFAULT_TIME_ZONE = 'Asia/Jerusalem';
 // A map view with more devices than this comes as grid cells (a count each)
