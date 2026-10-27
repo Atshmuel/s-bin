@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { routeModel } from "../models/models.js";
 import { lastDays, organizationDays, scopedOrganizations } from "./statsService.js";
-import { COST_PER_COLLECTION_DAYS, DAY_MS } from "../../utils/constants.js";
+import { COST_PER_COLLECTION_DAYS, DAY_MS, ROLES } from "../../utils/constants.js";
 import { dayStartEpoch } from "../../utils/deviceSchedule.js";
 import { combineMoney, organizationMoney } from "../../utils/costs.js";
 
@@ -27,7 +27,11 @@ async function collectionRoutes(organization, { startDay, timeZone, now }) {
 // The money of the range's days (the last `days`, ending today) in the user's
 // scope: what collecting spent, what the system saved against each
 // organization's old schedule, and per day (see utils/costs.js). In ₪.
+// Owners and admins only, who set the costs.
 export async function costsOverview(user, { days, timeZone }) {
+    if (![ROLES.OWNER, ROLES.ADMIN].includes(user.role)) {
+        throw Object.assign(new Error("Only owners and admins see the money."), { status: 403 });
+    }
     const now = Date.now();
     const dayList = lastDays(days, timeZone, now);
     // Today counts for the part of it gone by.

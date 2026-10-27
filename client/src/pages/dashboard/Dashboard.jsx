@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CircleAlert, Clock, InfoIcon, LinkIcon, WifiOff, X } from "lucide-react"
+import { CircleAlert, Clock, InfoIcon, LinkIcon, PiggyBank, WifiOff, X } from "lucide-react"
 import { useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,8 @@ import { useOverviewSection } from "@/hooks/analytics/useOverviewSection"
 import { DASHBOARD_REFRESH_MS } from "@/utils/constants"
 import OrganizationSelect from "@/components/OrganizationSelect"
 import { useSelectedOrg } from "@/hooks/organizations/useSelectedOrg"
+import { useMe } from "@/hooks/users/auth/useMe"
+import { formatMoney } from "@/utils/money"
 
 const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm"
 // Reasons that call for a visit; the map shows only these bins.
@@ -127,8 +129,9 @@ function OrganizationsCard({ refresh }) {
 }
 
 function Dashboard() {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
     const { selectedOrgId, isOwner } = useSelectedOrg()
+    const { isAdmin } = useMe()
     // The tiles, the map and the tables each make their own request, so the
     // page fills in as they arrive and a failure stays in its own card.
     const refresh = { refreshMs: DASHBOARD_REFRESH_MS }
@@ -137,6 +140,8 @@ function Dashboard() {
     const fullSoon = useOverviewSection("full-soon", refresh)
     const attention = useOverviewSection("attention", refresh)
     const recentLogs = useOverviewSection("recent-logs", refresh)
+    // The money is for owners and admins, who set the costs.
+    const costs = useOverviewSection("costs", { ...refresh, range: 30, enabled: isAdmin })
 
     // A tile's reason filters the "Needs attention" table; again clears it.
     const [reasonFilter, setReasonFilter] = useState(null)
@@ -272,6 +277,20 @@ function Dashboard() {
             isLoading: summary.isLoading,
             error: summary.error,
         },
+        ...(isAdmin ? [{
+            title: t("pages.dashboard.cards.saved.title"),
+            value: formatMoney(costs.data?.saved?.money, i18n.language),
+            footer: costs.data?.saved?.money != null
+                ? t("pages.dashboard.cards.saved.net", {
+                    net: formatMoney(costs.data.saved.net, i18n.language), count: costs.data.collections.avoided.toLocaleString(i18n.language),
+                })
+                : t("pages.dashboard.cards.saved.none"),
+            icon: PiggyBank,
+            badgeVariant: "active",
+            to: "/analytics",
+            isLoading: costs.isLoading,
+            error: costs.error,
+        }] : []),
     ]
 
     return (

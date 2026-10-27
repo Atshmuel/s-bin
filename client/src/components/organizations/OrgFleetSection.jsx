@@ -44,6 +44,8 @@ function OrgFleetSection({ id, organization }) {
         onSuccess: () => {
             toast.success(t("components.orgSettings.saved"))
             queryClient.invalidateQueries({ queryKey: ["mesh-settings"] })
+            // The money counts with them.
+            queryClient.invalidateQueries({ queryKey: ["overview-section", "costs"] })
         },
         onError: (error) => toast.error(error.message),
     })

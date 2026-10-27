@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useBinStatusOV } from "@/hooks/overviews/useBinStatusOV"
 import { useLogsTypeOV } from "@/hooks/overviews/useLogsTypeOV"
 import AIInsights from "./AIInsights"
-import { BatteryOutlookCard, CollectionsTrendCard, ConnectivityCard, FullnessDistributionCard, FullSoonCard, HealthCausesCard, RoutesCard, WasteCard } from "@/components/analytics/FleetCards"
+import { BatteryOutlookCard, CollectionsTrendCard, ConnectivityCard, CostsCard, FullnessDistributionCard, FullSoonCard, HealthCausesCard, RoutesCard, WasteCard } from "@/components/analytics/FleetCards"
 import { Bar, BarChart, CartesianGrid, Label, Pie, PieChart, XAxis } from "recharts"
 import { useAppSide } from "@/hooks/useAppSide"
 import { useTranslation } from "react-i18next"
@@ -48,7 +48,7 @@ function Analytics() {
 
 
     const { isRight } = useAppSide()
-    const { isOwner } = useMe()
+    const { isOwner, isAdmin } = useMe()
 
     const { binsCount, isLoadingStatusOV, statusOVError } = useBinStatusOV()
     const { logTypes, isLoadingLogTypeOV, logTypeOVError } = useLogsTypeOV()
@@ -139,6 +139,8 @@ function Analytics() {
                 <WasteCard />
                 {/* The collection routes: across the row, for the drivers' table. */}
                 <RoutesCard className="lg:col-span-2" />
+                {/* The money: owners and admins, who set the costs. */}
+                {isAdmin && <CostsCard className="lg:col-span-2" />}
                 <BatteryOutlookCard />
                 <ConnectivityCard />
                 <HealthCausesCard />

@@ -8,8 +8,11 @@ import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartToo
 import { useAppSide } from "@/hooks/useAppSide"
 import { useOverviewSection } from "@/hooks/analytics/useOverviewSection"
 import { useInView } from "@/hooks/use-in-view"
+import { useSelectedOrg } from "@/hooks/organizations/useSelectedOrg"
+import { useMe } from "@/hooks/users/auth/useMe"
 import { FULLNESS_CRITICAL_PERCENT } from "@/utils/constants"
 import { formatDate } from "@/utils/helpers"
+import { formatMoney } from "@/utils/money"
 import { routeDuration } from "@/utils/routes"
 import RangeSelect from "./RangeSelect"
 import SectionCard, { Muted } from "./SectionCard"
@@ -348,3 +351,79 @@ export function RoutesCard({ className }) {
     )
 }
 
+const SPENT_PARTS = ["fuel", "crew", "disposal", "system"]
+
+// The range's money (owners and admins): spent, saved against the old fixed
+// schedule, the collections saved and their CO₂, what the spending went on,
+// and per day; then what the savings rest on, and where the prices are set.
+export function CostsCard({ className }) {
+    const { t, i18n } = useTranslation()
+    const { me, isOwner } = useMe()
+    const { selectedOrgId } = useSelectedOrg()
+    const [range, setRange] = useState(30)
+    const { ref, data, isLoading, error } = useSection("costs", range)
+    const money = value => formatMoney(value, i18n.language)
+    const number = (value, digits = 0) => value === null || value === undefined ? "—" : value.toLocaleString(i18n.language, { maximumFractionDigits: digits })
+    const config = {
+        spent: { label: t("pages.analytics.sections.costs.spent"), color: "var(--chart-1)" },
+        saved: { label: t("pages.analytics.sections.costs.saved"), color: "var(--chart-2)" },
+    }
+    // One organization's prices can be opened: an owner's picked one, or an admin's own.
+    const orgId = isOwner ? selectedOrgId : me?.org
+    const unit = data?.perCollection
+    return (
+        <SectionCard ref={ref} className={className} title={t("pages.analytics.sections.costs.title")}
+            description={data?.saved?.money != null
+                ? t("pages.analytics.sections.costs.summary", { saved: money(data.saved.money), net: money(data.saved.net) })
+                : t("pages.analytics.sections.costs.description")}
+            action={<RangeSelect value={range} onChange={setRange} className="w-[140px]" />}
+            isLoading={isLoading} error={error}>
+            {data && (
+                <div className="flex flex-col gap-6">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                        <BigNumber label={t("pages.analytics.sections.costs.spent")} value={money(data.spent.total)} />
+                        <BigNumber label={t("pages.analytics.sections.costs.saved")} value={money(data.saved.money)} />
+                        <BigNumber label={t("pages.analytics.sections.costs.avoided")} value={number(data.collections.avoided)} />
+                        <BigNumber label={t("pages.analytics.sections.costs.co2")}
+                            value={data.saved.co2Kg === null ? "—" : t("pages.analytics.sections.costs.co2Value", { value: number(data.saved.co2Kg) })} />
+                    </div>
+                    <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm md:grid-cols-4">
+                        {SPENT_PARTS.map(part => (
+                            <div key={part} className="flex justify-between gap-2 border-b py-1">
+                                <dt className="text-muted-foreground">{t(`pages.analytics.sections.costs.spentOn.${part}`)}</dt>
+                                <dd className="tabular-nums">{money(data.spent[part])}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                    <DailyChart data={data.daily} config={config}>
+                        <YAxis hide />
+                        <Bar dataKey="spent" fill="var(--color-spent)" radius={4} />
+                        <Bar dataKey="saved" fill="var(--color-saved)" radius={4} />
+                    </DailyChart>
+                    <div className="flex flex-col gap-1">
+                        <Muted>
+                            {t("pages.analytics.sections.costs.collections", {
+                                actual: number(data.collections.actual), baseline: number(data.collections.baseline), bins: number(data.collections.bins),
+                            })}
+                        </Muted>
+                        <Muted>
+                            {unit
+                                ? t(`pages.analytics.sections.costs.unit.${unit.basis}`, { cost: formatMoney(unit.cost, i18n.language), km: number(unit.km, 2), minutes: number(unit.minutes, 1) })
+                                : t("pages.analytics.sections.costs.unit.none")}
+                        </Muted>
+                        {data.usage.estimatedTonnes > 0 && (
+                            <Muted>
+                                {t("pages.analytics.sections.costs.estimated", { estimated: number(data.usage.estimatedTonnes, 1), tonnes: number(data.usage.tonnes, 1) })}
+                            </Muted>
+                        )}
+                        {orgId && (
+                            <Link to={`/organizations/${orgId}/settings`} className="text-sm text-primary underline-offset-4 hover:underline">
+                                {t("pages.analytics.sections.costs.prices")}
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            )}
+        </SectionCard>
+    )
+}

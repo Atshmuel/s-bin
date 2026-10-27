@@ -446,6 +446,11 @@
           "description": "Check these bins before they overflow.",
           "average": "Average fullness: {{percent}}%."
         },
+        "saved": {
+          "title": "Saved in the last 30 days",
+          "net": "{{net}} after S-Bin's cost · {{count}} fewer collections.",
+          "none": "Shows once a route teaches what a collection costs."
+        },
         "requiredMaintenance": {
           "title": "Bins Requiring Maintenance",
           "description": "Their scheduled service date has passed."
@@ -575,6 +580,30 @@
         "log":"Log"
       },
       "sections":{
+      "costs": {
+        "title": "Money",
+        "description": "What collecting spent and what S-Bin saved against the old fixed schedule.",
+        "summary": "Saved {{saved}} · {{net}} after S-Bin's cost.",
+        "spent": "Spent",
+        "saved": "Saved",
+        "avoided": "Fewer collections",
+        "co2": "CO₂ saved",
+        "co2Value": "{{value}} kg",
+        "spentOn": {
+          "fuel": "Fuel",
+          "crew": "Crew",
+          "disposal": "Disposal",
+          "system": "S-Bin"
+        },
+        "collections": "{{actual}} collections against {{baseline}} on the old schedule ({{bins}} bins).",
+        "unit": {
+          "driven": "A collection costs about {{cost}} in fuel and crew ({{km}} km, {{minutes}} min), learned from the routes driven.",
+          "planned": "A collection costs about {{cost}} in fuel and crew ({{km}} km, {{minutes}} min), estimated from the planned routes until routes are driven.",
+          "none": "The savings show once the organization has a planned or driven route, which a collection's cost is learned from."
+        },
+        "estimated": "{{estimated}} of the {{tonnes}} t were estimated from fullness (bins without a scale).",
+        "prices": "Prices from the organization's Costs settings"
+      },
       "routes": {
         "title": "Collection routes",
         "description": "No routes in this range yet.",
