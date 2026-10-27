@@ -57,7 +57,7 @@ function ProfileSection({ id, user, canEdit }) {
                         ) : <p className="text-sm sm:text-end" dir="auto">{user.name}</p>}
                     </SettingsRow>
                     <SettingsRow label={t("components.accountPage.profile.email")} description={t("components.accountPage.profile.emailHint")}>
-                        <p className="text-sm sm:text-end" dir="ltr">{user.email}</p>
+                        <p className="text-sm sm:text-end"><span dir="ltr">{user.email}</span></p>
                     </SettingsRow>
                 </SettingsSection>
             </form>

@@ -20,7 +20,7 @@ function AccountHeader({ user, isSelf }) {
                     {isSelf ? t("components.accountPage.header.self") : t("components.accountPage.header.other")}
                 </p>
                 <h1 className="truncate text-2xl font-semibold">{user.name}</h1>
-                <p className="truncate text-sm text-muted-foreground" dir="ltr">{user.email}</p>
+                <p className="truncate text-sm text-muted-foreground"><span dir="ltr">{user.email}</span></p>
             </div>
             <div className="flex gap-2">
                 {user.role && <Badge variant={user.role}>{t(`roles.${user.role}`)}</Badge>}
