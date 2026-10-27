@@ -4,6 +4,7 @@ import { READINGS_FILTER, readingsByBin } from '../service/readingsService.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared, intervalsByOrg } from '../service/sharedService.js'
 import { DASHBOARD_SECTIONS, devicesWithReasons } from './dashboardController.js'
+import { costsOverview } from '../service/costsService.js'
 import {
     ANALYTICS_RANGES_DAYS, BATTERY_BUCKETS, BATTERY_SOON_DAYS, BATTERY_SOON_LIST_LIMIT, BATTERY_TREND_DAYS,
     DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, FULL_SOON_HOURS, FULL_SOON_LIST_LIMIT, FULLNESS_BUCKETS,
@@ -465,6 +466,7 @@ const OVERVIEW_SECTIONS = {
     connectivity: connectivityOverview,
     'health-causes': healthCausesOverview,
     routes: routesOverview,
+    costs: costsOverview,
     ...DASHBOARD_SECTIONS,
 };
 

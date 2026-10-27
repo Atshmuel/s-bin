@@ -229,6 +229,12 @@ export const COST_SETTINGS = Object.freeze({
     systemPerMonth: Object.freeze([0, 0, 1000000]),
     baselineCollectionsPerWeek: Object.freeze([3, 0.25, 14]),
 });
+// The money: a collection's fuel and crew cost is learned from the routes
+// driven in the last COST_PER_COLLECTION_DAYS (or, before any was driven,
+// from those planned); burning a litre of diesel emits CO2_KG_PER_DIESEL_LITER.
+export const COST_PER_COLLECTION_DAYS = 90;
+export const CO2_KG_PER_DIESEL_LITER = 2.68;
+export const DAYS_PER_MONTH = 365.25 / 12;
 // The route optimizer, chosen by ROUTE_ENGINE in the environment: the
 // self-hosted VROOM with OSRM (see docker-compose.yml), or OpenRouteService's
 // free service. A route visits at most `maxBins` bins, the most urgent first:
