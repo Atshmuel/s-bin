@@ -72,7 +72,8 @@ export function collectionKg(collection) {
 // it the range covers, today's so far), from its days in numbers (`stats`, by
 // day; see db/service/statsService.js): spent on fuel and the crew (the routes
 // driven, by service day), disposal (every collection's tonnes at the levy and
-// the site's fee) and the system (its month spread over the days); saved: the
+// the site's fee) and the system (each device the organization had that day,
+// its month spread over the days); saved: the
 // collections the old fixed schedule would have made (the day's reporting
 // bins, `baselineCollectionsPerWeek` each) less the ones made, each at the
 // fuel and crew one costs. Money in ₪, unrounded.
@@ -107,7 +108,7 @@ export function organizationMoney({ costs, fleet, days, routes, learningRoutes, 
                 fuel: usage.liters * costs.dieselPerLiter,
                 crew: usage.hours * costs.crewPerHour,
                 disposal: kg * disposalPerKg,
-                system: costs.systemPerMonth / DAYS_PER_MONTH * share,
+                system: (stat?.devices ?? 0) * costs.systemPerDevicePerMonth / DAYS_PER_MONTH * share,
             },
             savedMoney: collectionCost === null ? null : avoided * collectionCost,
             savedLiters: unit ? avoided * unit.liters : null,
@@ -115,7 +116,9 @@ export function organizationMoney({ costs, fleet, days, routes, learningRoutes, 
     });
     // The bins the old schedule emptied: the most that reported on one day.
     const reportingBins = Math.max(0, ...[...stats.values()].map(stat => stat.reportingBins));
-    return { unit, collectionCost, reportingBins, daily };
+    // The devices it pays for now: the range's last day's.
+    const devices = stats.get(days.at(-1).day)?.devices ?? 0;
+    return { unit, collectionCost, reportingBins, devices, daily };
 }
 
 const sum = (list, value) => list.reduce((total, item) => total + (value(item) ?? 0), 0);
@@ -150,6 +153,7 @@ export function combineMoney(organizations, days) {
     return {
         spent: {
             fuel: round(spent.fuel), crew: round(spent.crew), disposal: round(spent.disposal), system: round(spent.system),
+            devices: sum(organizations, org => org.devices),
             total: round(spent.fuel + spent.crew + spent.disposal + spent.system),
         },
         usage: {

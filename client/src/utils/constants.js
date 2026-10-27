@@ -92,7 +92,7 @@ export const COST_SETTINGS = Object.freeze({
     crewPerHour: Object.freeze([180, 0, 2000]),
     landfillLevyPerTonne: Object.freeze([117.22, 0, 1000]),
     disposalFeePerTonne: Object.freeze([0, 0, 2000]),
-    systemPerMonth: Object.freeze([0, 0, 1000000]),
+    systemPerDevicePerMonth: Object.freeze([0, 0, 10000]),
     baselineCollectionsPerWeek: Object.freeze([3, 0.25, 14]),
 })
 export const DEPOT_ADDRESS_MAX_LENGTH = 120

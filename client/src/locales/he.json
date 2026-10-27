@@ -603,7 +603,10 @@
           "fuel": "סולר",
           "crew": "צוות",
           "disposal": "הטמנה",
-          "system": "S-Bin"
+          "system": "S-Bin",
+          "systemDevices_one": "S-Bin (מכשיר אחד)",
+          "systemDevices_two": "S-Bin (שני מכשירים)",
+          "systemDevices_other": "S-Bin ({{count}} מכשירים)"
         },
         "collections": "{{actual}} איסופים מול {{baseline}} בלוח הזמנים הקודם ({{bins}} פחים).",
         "unit": {
@@ -1146,7 +1149,7 @@
             "crewPerHour": { "label": "צוות", "hint": "צוות המשאית (הנהג והעובדים) לשעה במסלול.", "unit": "₪ / שעה" },
             "landfillLevyPerTonne": { "label": "היטל הטמנה", "hint": "לטון פסולת מעורבת: 117.22 ₪ מ־2025, צמוד למדד.", "unit": "₪ / טון" },
             "disposalFeePerTonne": { "label": "דמי כניסה לאתר ההטמנה", "hint": "דמי הכניסה של האתר עצמו לטון.", "unit": "₪ / טון" },
-            "systemPerMonth": { "label": "S-Bin", "hint": "המכשירים, הנתונים שלהם והמנוי, לחודש.", "unit": "₪ / חודש" },
+            "systemPerDevicePerMonth": { "label": "S-Bin", "hint": "לכל מכשיר (פחים ושערי תקשורת) לחודש: הנתונים והמנוי, עם החומרה מחולקת על אורך חייה (מכשיר של 360 ₪ ל־3 שנים הוא 10 ₪). נספר לפי המכשירים שיש לארגון בכל יום.", "unit": "₪ / מכשיר / חודש" },
             "baselineCollectionsPerWeek": { "label": "איסופים לפני S-Bin", "hint": "כמה פעמים בשבוע פח רוקן בלוח הזמנים הקבוע הקודם; החיסכון נספר מולו.", "unit": "בשבוע" }
           }
         },

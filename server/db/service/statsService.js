@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import { binModel, organizationModel, orgStatModel } from "../models/models.js";
 import { readingsByBin } from "./readingsService.js";
 import { organizationTimeZone } from "./routeService.js";
-import { BINS_ONLY_FILTER } from "../../utils/helpers.js";
 import { daysBetween, detectCollections, rangeStart } from "../../utils/analytics.js";
 import { collectionKg } from "../../utils/costs.js";
 import { dayStartEpoch } from "../../utils/deviceSchedule.js";
@@ -58,9 +57,12 @@ export function summarizeDays(readingsPerBin, days) {
     return summaries;
 }
 
-// Computes and saves an organization's consecutive local days.
-async function computeDays(orgId, days, timeZone, binIds) {
+// Computes and saves an organization's consecutive local days, from its
+// devices (each with its kind and createdAt).
+async function computeDays(orgId, days, timeZone, devices) {
     const bounds = days.map(day => ({ day, start: dayStart(day, timeZone), end: dayStart(nextDay(day), timeZone) }));
+    const binIds = devices.filter(device => device.kind !== "gateway").map(device => device._id);
+    const devicesBy = day => devices.filter(device => device.createdAt < bounds.find(bound => bound.day === day).end).length;
     const since = new Date(bounds[0].start.getTime() - STATS_LOOKBACK_MS);
     const readings = await readingsByBin(binIds, since, bounds.at(-1).end);
     const computedAt = new Date();
@@ -68,7 +70,7 @@ async function computeDays(orgId, days, timeZone, binIds) {
     await orgStatModel.bulkWrite(summaries.map(summary => ({
         updateOne: {
             filter: { orgId, day: summary.day },
-            update: { $set: { ...summary, timeZone, computedAt } },
+            update: { $set: { ...summary, devices: devicesBy(summary.day), timeZone, computedAt } },
             upsert: true,
         },
     })), { ordered: false });
@@ -88,12 +90,13 @@ function chunks(days) {
 
 // The days of `days` that need computing: missing, or not settled (computed
 // less than STATS_SETTLE_MS after the day ended) and computed over
-// STATS_REFRESH_MS ago. Today never settles.
+// STATS_REFRESH_MS ago. Today never settles. One computed before a field
+// existed (no device count) is computed again.
 function staleDays(days, stats, timeZone, now) {
     const byDay = new Map(stats.map(stat => [stat.day, stat]));
     return days.filter(day => {
         const stat = byDay.get(day);
-        if (!stat) return true;
+        if (!stat || stat.devices === undefined) return true;
         const settledAt = dayStart(nextDay(day), timeZone).getTime() + STATS_SETTLE_MS;
         return stat.computedAt.getTime() < settledAt && now - stat.computedAt.getTime() > STATS_REFRESH_MS;
     });
@@ -115,8 +118,8 @@ export async function organizationDays(organization, days, { now = Date.now() } 
         const key = `${orgId}:${stale.join(",")}`;
         if (!filling.has(key)) {
             filling.set(key, (async () => {
-                const bins = await binModel.find({ ...BINS_ONLY_FILTER, ownerId: orgId }, { _id: 1 }).lean();
-                for (const run of chunks(stale)) await computeDays(orgId, run, timeZone, bins.map(bin => bin._id));
+                const devices = await binModel.find({ ownerId: orgId }, { kind: 1, createdAt: 1 }).lean();
+                for (const run of chunks(stale)) await computeDays(orgId, run, timeZone, devices);
             })().finally(() => filling.delete(key)));
         }
         await filling.get(key);

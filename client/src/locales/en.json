@@ -593,7 +593,9 @@
           "fuel": "Fuel",
           "crew": "Crew",
           "disposal": "Disposal",
-          "system": "S-Bin"
+          "system": "S-Bin",
+          "systemDevices_one": "S-Bin ({{count}} device)",
+          "systemDevices_other": "S-Bin ({{count}} devices)"
         },
         "collections": "{{actual}} collections against {{baseline}} on the old schedule ({{bins}} bins).",
         "unit": {
@@ -1125,7 +1127,7 @@
             "crewPerHour": { "label": "Crew", "hint": "A truck's crew (the driver and the workers) for an hour on a route.", "unit": "₪ / hour" },
             "landfillLevyPerTonne": { "label": "Landfill levy", "hint": "Per tonne of mixed waste: ₪117.22 from 2025, linked to the index.", "unit": "₪ / tonne" },
             "disposalFeePerTonne": { "label": "Disposal site's fee", "hint": "The site's own entry fee per tonne, which differs between sites.", "unit": "₪ / tonne" },
-            "systemPerMonth": { "label": "S-Bin", "hint": "The devices, their data and the subscription, a month.", "unit": "₪ / month" },
+            "systemPerDevicePerMonth": { "label": "S-Bin", "hint": "Per device (bins and gateways) a month: its data and the subscription, with its hardware spread over its life (a ₪360 device over 3 years is ₪10). Counted with the devices the organization has each day.", "unit": "₪ / device / month" },
             "baselineCollectionsPerWeek": { "label": "Collections before S-Bin", "hint": "How many times a week a bin was emptied on the old fixed schedule; the savings are counted against it.", "unit": "a week" }
           }
         },

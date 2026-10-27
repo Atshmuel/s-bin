@@ -390,7 +390,11 @@ export function CostsCard({ className }) {
                     <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm md:grid-cols-4">
                         {SPENT_PARTS.map(part => (
                             <div key={part} className="flex justify-between gap-2 border-b py-1">
-                                <dt className="text-muted-foreground">{t(`pages.analytics.sections.costs.spentOn.${part}`)}</dt>
+                                <dt className="text-muted-foreground">
+                                    {part === "system"
+                                        ? t("pages.analytics.sections.costs.spentOn.systemDevices", { count: data.spent.devices })
+                                        : t(`pages.analytics.sections.costs.spentOn.${part}`)}
+                                </dt>
                                 <dd className="tabular-nums">{money(data.spent[part])}</dd>
                             </div>
                         ))}

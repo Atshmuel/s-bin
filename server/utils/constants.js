@@ -218,7 +218,9 @@ export const TRUCK_LITERS_PER_100KM_RANGE = Object.freeze([10, 200]);
 // What collecting costs an organization (in ₪), for the money its routes
 // spend and the system saves; each organization edits its own. The landfill
 // levy is the 2025 rate for mixed waste (index-linked); the site's entry fee
-// differs by up to 300% between sites, so it starts empty. The baseline is how
+// differs by up to 300% between sites, so it starts empty. The system is paid
+// per device (bins and gateways) a month, its hardware spread over its life,
+// so it grows with the devices on its own. The baseline is how
 // often a bin was emptied before the system (a fixed schedule), which the
 // savings are counted against. Each value: [default, min, max].
 export const COST_SETTINGS = Object.freeze({
@@ -226,7 +228,7 @@ export const COST_SETTINGS = Object.freeze({
     crewPerHour: Object.freeze([180, 0, 2000]),
     landfillLevyPerTonne: Object.freeze([117.22, 0, 1000]),
     disposalFeePerTonne: Object.freeze([0, 0, 2000]),
-    systemPerMonth: Object.freeze([0, 0, 1000000]),
+    systemPerDevicePerMonth: Object.freeze([0, 0, 10000]),
     baselineCollectionsPerWeek: Object.freeze([3, 0.25, 14]),
 });
 // The money: a collection's fuel and crew cost is learned from the routes
