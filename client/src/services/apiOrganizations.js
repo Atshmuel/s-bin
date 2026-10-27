@@ -28,6 +28,11 @@ export function updateMapSettingsApi({ orgId, ...settings }) {
     return request(`${ORG_EP}/${orgId}/map`, { method: "PATCH", body: settings });
 }
 
+// The organization's fullness and battery cut-offs: any of THRESHOLD_SETTINGS' fields.
+export function updateThresholdSettingsApi({ orgId, ...thresholds }) {
+    return request(`${ORG_EP}/${orgId}/thresholds`, { method: "PATCH", body: thresholds });
+}
+
 // What collecting costs the organization: any of COST_SETTINGS' fields.
 export function updateCostSettingsApi({ orgId, ...costs }) {
     return request(`${ORG_EP}/${orgId}/costs`, { method: "PATCH", body: costs });

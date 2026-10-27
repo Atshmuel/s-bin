@@ -6,6 +6,7 @@ import MapComponent from "@/components/map/MapComponent";
 import MapKeyPanel from "@/components/map/controls/MapKeyPanel";
 import RouteKey from "@/components/routes/RouteKey";
 import { getColor } from "@/utils/binHelpers";
+import { useThresholds } from "@/hooks/useThresholds";
 import { toLatLng } from "@/utils/geo";
 import { ROUTE_COLOR, createRouteEndIcon, createStopIcon } from "@/utils/mapClusters";
 
@@ -13,6 +14,7 @@ import { ROUTE_COLOR, createRouteEndIcon, createStopIcon } from "@/utils/mapClus
 // driving order (a done stop greyed with a check, a skipped one faded with a dash).
 export function RouteLayers({ route }) {
     const { t } = useTranslation()
+    const thresholds = useThresholds().thresholdsFor(route.orgId)
     const sameEnd = route.end && route.end[0] === route.start[0] && route.end[1] === route.start[1]
     return (
         <>
@@ -21,7 +23,7 @@ export function RouteLayers({ route }) {
             )}
             {route.stops.map(stop => (
                 <Marker key={stop.binId} position={toLatLng(stop.location)}
-                    icon={createStopIcon(stop.order, getColor(stop.fullnessAtPlan ?? 0), stop.status)}>
+                    icon={createStopIcon(stop.order, getColor(stop.fullnessAtPlan ?? 0, 'fill', thresholds), stop.status)}>
                     <Tooltip direction="top" offset={[0, -14]}>
                         {t("mapLegend.route.stopTooltip", { order: stop.order, count: route.stops.length, name: stop.binName })}
                     </Tooltip>
@@ -47,12 +49,13 @@ export function RouteLayers({ route }) {
 // while driving, where the driving bar covers its corner). `children` go
 // inside the map (the driver's position while driving).
 function RouteMap({ route, withKey = true, children }) {
+    const { thresholdsFor } = useThresholds()
     const bounds = [route.start, ...(route.end ? [route.end] : []), ...route.stops.map(stop => stop.location)].map(toLatLng)
     return (
         <div className="relative h-full w-full overflow-hidden rounded-2xl border shadow-md">
             <MapComponent bounds={bounds}>
                 <RouteLayers route={route} />
-                {withKey && <MapKeyPanel><RouteKey /></MapKeyPanel>}
+                {withKey && <MapKeyPanel><RouteKey thresholds={thresholdsFor(route.orgId)} /></MapKeyPanel>}
                 {children}
             </MapComponent>
         </div>

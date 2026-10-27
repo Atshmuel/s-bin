@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { STATUS_COLORS } from "@/utils/binHelpers"
-import { FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT } from "@/utils/constants"
+import { DEFAULT_THRESHOLDS } from "@/utils/constants"
 import { ROUTE_COLOR } from "@/utils/mapClusters"
 
 // A stop marker as the route map draws it (see createStopIcon), small.
@@ -14,13 +14,15 @@ function StopSample({ children, background = ROUTE_COLOR, dot, faded = false }) 
     )
 }
 
-// What a route map's line and markers mean (shown by MapKeyPanel).
-function RouteKey() {
+// What a route map's line and markers mean (shown by MapKeyPanel), with the
+// route's organization's cut-offs.
+function RouteKey({ thresholds = DEFAULT_THRESHOLDS }) {
     const { t } = useTranslation()
+    const { fullnessWarning: warning, fullnessCritical: critical } = thresholds
     const fullness = [
-        [STATUS_COLORS.good, t("mapLegend.key.fullnessLow", { warning: FULLNESS_WARNING_PERCENT })],
-        [STATUS_COLORS.warning, t("mapLegend.key.fullnessMid", { warning: FULLNESS_WARNING_PERCENT, belowCritical: FULLNESS_CRITICAL_PERCENT - 1 })],
-        [STATUS_COLORS.critical, t("mapLegend.key.fullnessHigh", { critical: FULLNESS_CRITICAL_PERCENT })],
+        [STATUS_COLORS.good, t("mapLegend.key.fullnessLow", { warning })],
+        [STATUS_COLORS.warning, t("mapLegend.key.fullnessMid", { warning, belowCritical: critical - 1 })],
+        [STATUS_COLORS.critical, t("mapLegend.key.fullnessHigh", { critical })],
     ]
     return (
         <section className="flex flex-col gap-2 text-xs">

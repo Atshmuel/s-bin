@@ -1,7 +1,4 @@
-import {
-    BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT,
-    WEIGHT_REFERENCE_KG,
-} from "./constants"
+import { DEFAULT_THRESHOLDS, WEIGHT_REFERENCE_KG } from "./constants"
 
 
 // The marker colors for a device's state, from good to critical.
@@ -25,20 +22,27 @@ export function getFullness(status) {
     return { combined: Math.round(Math.max(level, weightPercent)), level, weightPercent }
 }
 
-export function getColor(levelOrStatus, type = 'fill') {
-    // levelOrStatus can be a numeric level (0-100) or an object `{ level, weight, battery }`
+// "good", "warning" or "critical" for a battery or a fullness, against an
+// organization's cut-offs (see useThresholds).
+export function batteryState(battery, thresholds = DEFAULT_THRESHOLDS) {
+    return battery > thresholds.batteryWarning ? "good" : battery > thresholds.batteryCritical ? "warning" : "critical"
+}
+export function fullnessState(fullness, thresholds = DEFAULT_THRESHOLDS) {
+    return fullness >= thresholds.fullnessCritical ? "critical" : fullness >= thresholds.fullnessWarning ? "warning" : "good"
+}
+
+// A marker's color: `levelOrStatus` is a number (0-100) or a status
+// `{ level, weight, battery }`, judged by the device's organization's
+// cut-offs (`thresholds`).
+export function getColor(levelOrStatus, type = 'fill', thresholds = DEFAULT_THRESHOLDS) {
     if (type === 'battery') {
         const level = typeof levelOrStatus === 'object' ? (levelOrStatus.battery ?? 0) : (levelOrStatus ?? 0)
-        return level > BATTERY_WARNING_PERCENT ? STATUS_COLORS.good
-            : level > BATTERY_CRITICAL_PERCENT ? STATUS_COLORS.warning
-                : STATUS_COLORS.critical
+        return STATUS_COLORS[batteryState(level, thresholds)]
     }
     if (type === 'fill') {
         // A status object also counts its weight (see getFullness).
         const level = typeof levelOrStatus === 'object' ? getFullness(levelOrStatus).combined : (levelOrStatus ?? 0)
-        return level >= FULLNESS_CRITICAL_PERCENT ? STATUS_COLORS.critical
-            : level >= FULLNESS_WARNING_PERCENT ? STATUS_COLORS.warning
-                : STATUS_COLORS.good
+        return STATUS_COLORS[fullnessState(level, thresholds)]
     }
 }
 

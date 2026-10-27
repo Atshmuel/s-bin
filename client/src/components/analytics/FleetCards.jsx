@@ -10,7 +10,7 @@ import { useOverviewSection } from "@/hooks/analytics/useOverviewSection"
 import { useInView } from "@/hooks/use-in-view"
 import { useSelectedOrg } from "@/hooks/organizations/useSelectedOrg"
 import { useMe } from "@/hooks/users/auth/useMe"
-import { FULLNESS_CRITICAL_PERCENT } from "@/utils/constants"
+import { useThresholds } from "@/hooks/useThresholds"
 import { formatDate } from "@/utils/helpers"
 import { formatMoney } from "@/utils/money"
 import { routeDuration } from "@/utils/routes"
@@ -90,11 +90,12 @@ function BucketChart({ buckets, label }) {
 export function FullSoonCard() {
     const { t, i18n } = useTranslation()
     const { ref, data, isLoading, error } = useSection("full-soon")
+    const { thresholds } = useThresholds()
     const locale = i18n.language === "he" ? he : undefined
 
     return (
         <SectionCard ref={ref} title={t("pages.analytics.sections.fullSoon.title")}
-            description={t("pages.analytics.sections.fullSoon.description", { percent: FULLNESS_CRITICAL_PERCENT })}
+            description={t("pages.analytics.sections.fullSoon.description", { percent: thresholds.fullnessCritical })}
             isLoading={isLoading} error={error}>
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-2 gap-4">

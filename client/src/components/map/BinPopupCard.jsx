@@ -9,12 +9,14 @@ import HealthBadge from "@/components/bins/HealthBadge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { getColor } from "@/utils/binHelpers"
+import { useThresholds } from "@/hooks/useThresholds"
 import { getDeviceRole } from "@/utils/deviceRoles"
 
 // A device's popup on the map: what it is, its state and how it reaches the
 // server. gatewayName and relayCount come from the other devices on the map.
 function BinPopupCard({ bin, gatewayName, relayCount = 0 }) {
     const { t, i18n } = useTranslation()
+    const { thresholdsFor } = useThresholds()
     const { isRight } = useAppSide()
     const role = getDeviceRole(bin)
     const { level, levelValid, battery, updatedAt, connection } = bin.status
@@ -43,7 +45,7 @@ function BinPopupCard({ bin, gatewayName, relayCount = 0 }) {
                                 <div className="h-1.5 w-full rounded-full bg-muted">
                                     <div
                                         className="h-full rounded-full"
-                                        style={{ width: `${Math.min(100, Math.max(0, level))}%`, backgroundColor: getColor(level, 'fill') }}
+                                        style={{ width: `${Math.min(100, Math.max(0, level))}%`, backgroundColor: getColor(level, 'fill', thresholdsFor(bin.ownerId)) }}
                                     />
                                 </div>
                             )}
@@ -54,7 +56,7 @@ function BinPopupCard({ bin, gatewayName, relayCount = 0 }) {
                 <dt className="text-muted-foreground">{t("pages.binDetails.tiles.battery")}</dt>
                 <dd className="flex items-center gap-1.5 font-semibold">
                     <span>{battery}%</span>
-                    <Battery level={battery} />
+                    <Battery level={battery} ownerId={bin.ownerId} />
                 </dd>
 
                 <dt className="text-muted-foreground">{t("pages.binDetails.tiles.lastReport")}</dt>

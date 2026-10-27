@@ -30,12 +30,11 @@ export const WEIGHT_REFERENCE_KG = 250
 // The map search's fullness range before the user sets one: every bin, as the
 // map shows them.
 export const DEFAULT_SEARCH_FULLNESS = Object.freeze([0, 100])
-// A route's area, and the fullness it collects from by default: the bins that
-// need collecting (a truck still fills up with the fullest first).
 // The local hour an organization's routes are planned every night, by default.
 export const DEFAULT_ROUTE_PLANNING_HOUR = 0
+// A route's area by default; it collects from the organization's critical
+// fullness up (a truck still fills up with the fullest first).
 export const DEFAULT_ROUTE_RADIUS_KM = 10
-export const DEFAULT_ROUTE_MIN_FULLNESS = FULLNESS_CRITICAL_PERCENT
 // The planner's collection area: its radius moves in half kilometres, up to a city's size.
 export const ROUTE_AREA_RADIUS_STEP_KM = 0.5
 export const ROUTE_AREA_MAX_RADIUS_KM = 50
@@ -43,6 +42,18 @@ export const ROUTE_AREA_MAX_RADIUS_KM = 50
 // Battery, in %: low at warning, needs replacing at critical.
 export const BATTERY_WARNING_PERCENT = 50
 export const BATTERY_CRITICAL_PERCENT = 20
+// Each organization's cut-offs, as the server checks them: [default, min, max]
+// in %, warning at least THRESHOLD_MIN_GAP on the safe side of critical. The
+// four above are the defaults.
+export const THRESHOLD_SETTINGS = Object.freeze({
+    fullnessWarning: Object.freeze([FULLNESS_WARNING_PERCENT, 20, 90]),
+    fullnessCritical: Object.freeze([FULLNESS_CRITICAL_PERCENT, 30, 100]),
+    batteryWarning: Object.freeze([BATTERY_WARNING_PERCENT, 10, 80]),
+    batteryCritical: Object.freeze([BATTERY_CRITICAL_PERCENT, 5, 40]),
+})
+export const THRESHOLD_MIN_GAP = 5
+export const DEFAULT_THRESHOLDS = Object.freeze(Object.fromEntries(
+    Object.entries(THRESHOLD_SETTINGS).map(([field, [byDefault]]) => [field, byDefault])))
 
 // Reporting schedule options and defaults. Every interval divides 24 hours.
 export const MAX_MESH_AWAKE_WINDOW_SECONDS = 60

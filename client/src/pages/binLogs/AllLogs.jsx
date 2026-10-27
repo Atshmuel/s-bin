@@ -120,7 +120,7 @@ function AllLogs() {
             meta: { sortKey: 'battery' },
             enableSorting: true,
             cell: ({ row }) => {
-                return <Battery level={row.original.battery} />
+                return <Battery level={row.original.battery} ownerId={row.original.ownerId} />
             }
         },
         {

@@ -1083,7 +1083,8 @@
         "depot": "Depot",
         "routePlanning": "Nightly routes",
         "map": "Map",
-        "costs": "Costs"
+        "costs": "Costs",
+        "thresholds": "Thresholds"
       },
       "general": {
         "title": "General",
@@ -1117,6 +1118,26 @@
             "medium": "Medium-heavy truck",
             "large": "Very large truck"
           }
+        },
+        "thresholds": {
+          "title": "Thresholds",
+          "description": "When the organization's bins count as filling up or full, and batteries as low or critical. They color its devices and set its reports' severity, \"almost full\", the bins due soon, the nightly routes and the alerts.",
+          "fullness": "Fullness",
+          "fullnessHint": "The fill level or the weight, whichever is higher. A bin is due for collection at critical.",
+          "battery": "Battery",
+          "batteryHint": "Low at warning; needs replacing at critical.",
+          "warning": "Warning",
+          "critical": "Critical",
+          "fields": {
+            "fullnessWarning": "The fullness warning",
+            "fullnessCritical": "The critical fullness",
+            "batteryWarning": "The battery warning",
+            "batteryCritical": "The critical battery"
+          },
+          "invalidRange": "{{field}} needs a whole number from {{min}} to {{max}}.",
+          "fullnessGap": "The fullness warning needs to be at least {{gap}} below critical.",
+          "batteryGap": "The battery warning needs to be at least {{gap}} above critical.",
+          "reset": "Reset to defaults"
         },
         "costs": {
           "title": "Costs",

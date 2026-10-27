@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Battery from "@/components/bins/Battary"
 import { getColor, getFullness, isGateway } from "@/utils/binHelpers"
 import { useBinAnalytics } from "@/hooks/analytics/useBinAnalytics"
-import { FULLNESS_CRITICAL_PERCENT } from "@/utils/constants"
+import { useThresholds } from "@/hooks/useThresholds"
 
 function StatTile({ title, value, children }) {
     return (
@@ -26,7 +26,7 @@ function FillForecast({ bin }) {
     const { t, i18n } = useTranslation()
     const { data } = useBinAnalytics(bin._id, "fill-rate")
     if (!data?.applicable) return null
-    if (data.fullness >= FULLNESS_CRITICAL_PERCENT) return <span>{t('pages.binDetails.tiles.collectNow')}</span>
+    if (data.fullness >= data.criticalPercent) return <span>{t('pages.binDetails.tiles.collectNow')}</span>
     if (data.ratePerDay === null) return <span>{t('pages.binDetails.tiles.fillRateUnknown')}</span>
     if (!(data.ratePerDay > 0) || !data.collectionDueAt) return <span>{t('pages.binDetails.tiles.notFilling')}</span>
     return (
@@ -44,6 +44,7 @@ function FillForecast({ bin }) {
 // the server.
 function BinStatTiles({ bin }) {
     const { t, i18n } = useTranslation()
+    const { thresholdsFor } = useThresholds()
     const gateway = isGateway(bin)
     const { level, levelValid, battery, updatedAt, connection } = bin.status
     const leaves = bin.connectedLeaves ?? []
@@ -66,7 +67,7 @@ function BinStatTiles({ bin }) {
                         <div className="h-2 w-full rounded-full bg-muted">
                             <div
                                 className="h-full rounded-full"
-                                style={{ width: `${Math.min(100, Math.max(0, shown))}%`, backgroundColor: getColor(bin.status, 'fill') }}
+                                style={{ width: `${Math.min(100, Math.max(0, shown))}%`, backgroundColor: getColor(bin.status, 'fill', thresholdsFor(bin.ownerId)) }}
                             />
                         </div>
                     )}
@@ -82,7 +83,7 @@ function BinStatTiles({ bin }) {
                 </StatTile>
             )}
 
-            <StatTile title={t('pages.binDetails.tiles.battery')} value={<><span>{battery}%</span><Battery level={battery} /></>} />
+            <StatTile title={t('pages.binDetails.tiles.battery')} value={<><span>{battery}%</span><Battery level={battery} ownerId={bin.ownerId} /></>} />
 
             <StatTile
                 title={t('pages.binDetails.tiles.lastReport')}

@@ -172,7 +172,7 @@ function BinsList() {
             meta: { sortKey: 'battery' },
             enableSorting: true,
             cell: ({ row }) => {
-                return <Battery level={row.original.status.battery} />
+                return <Battery level={row.original.status.battery} ownerId={row.original.ownerId} />
             }
         },
         {

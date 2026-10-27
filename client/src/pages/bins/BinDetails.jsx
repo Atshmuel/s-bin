@@ -122,7 +122,7 @@ function BinDetails() {
             accessorKey: 'battery',
             meta: { sortKey: 'battery' },
             cell: ({ row }) => {
-                return <Battery level={row.original.battery} />
+                return <Battery level={row.original.battery} ownerId={bin?.ownerId} />
             }
         },
         {

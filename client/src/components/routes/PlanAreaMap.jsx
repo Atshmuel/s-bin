@@ -42,7 +42,7 @@ function MoveOnClick({ onMove }) {
 
 // Where a route will collect: the depot it starts and ends at, the area (a
 // click moves it) and the bins in it that a route could take, by fullness.
-function PlanAreaMap({ depot, center, radiusMeters, bins, onMove }) {
+function PlanAreaMap({ depot, center, radiusMeters, bins, thresholds, onMove }) {
     const { t } = useTranslation()
     return (
         <div className="relative h-full min-h-80 w-full overflow-hidden rounded-xl border">
@@ -55,7 +55,7 @@ function PlanAreaMap({ depot, center, radiusMeters, bins, onMove }) {
                     pathOptions={{ color: ROUTE_COLOR, weight: 2, dashArray: "6 6", fillOpacity: 0.06 }} />
                 {bins.map(bin => (
                     <CircleMarker key={bin._id} center={toLatLng(bin.location.coordinates)} radius={4} interactive={false}
-                        pathOptions={{ color: getColor(bin.status), weight: 1, fillOpacity: 0.85 }} />
+                        pathOptions={{ color: getColor(bin.status, 'fill', thresholds), weight: 1, fillOpacity: 0.85 }} />
                 ))}
                 {depot && <Marker position={toLatLng(depot)} icon={createRouteEndIcon(t("pages.routes.plan.depot"))} zIndexOffset={1000} />}
             </MapComponent>

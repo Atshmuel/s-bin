@@ -41,7 +41,7 @@ function BinCard({ bin, actions = true, handleLocationClick, isLoading = true, .
                                     <BinNameEditor bin={bin} />
                                 </div>
                                 <div className="flex flex-row justify-center items-center gap-3">
-                                    <Battery level={bin.status.battery} />
+                                    <Battery level={bin.status.battery} ownerId={bin.ownerId} />
                                     <HealthBadge health={bin.status.health} message={bin.status.healthMessage} />
                                 </div>
                             </CardTitle>

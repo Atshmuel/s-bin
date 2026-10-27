@@ -17,6 +17,7 @@ import { getColocatedShifts, getDeviceRole, getDeviceRoleIcon } from "@/utils/de
 import { createCellIcon, createClusterIcon } from "@/utils/mapClusters";
 import { MAP_VIEW_DEBOUNCE_MS } from "@/utils/constants";
 import { useClusterZoom } from "@/hooks/useClusterZoom";
+import { useThresholds } from "@/hooks/useThresholds";
 import { toLatLng } from "@/utils/geo";
 
 const SEARCH_PARAMS = Object.freeze(["coordinates", "radius", "minLevel", "maxLevel", "health"]);
@@ -66,6 +67,8 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
     const { map } = useMapSettings()
     // Each device's organization's: below it nearby devices group.
     const { zoomFor, deepest } = useClusterZoom()
+    // Each device's organization's cut-offs color it.
+    const { thresholdsFor } = useThresholds()
     const [searchParams] = useSearchParams();
     const hasOwnBins = binsToUse !== null
     const isSearch = SEARCH_PARAMS.every(param => searchParams.has(param))
@@ -149,7 +152,7 @@ function BinMap({ zoom, center, legend = true, legendForm = true, binsToUse = nu
                     >
                         {bins.map((bin) => (
                             <CustomMarker key={bin._id} icon={getDeviceRoleIcon(getDeviceRole(bin))} position={toLatLng(bin.location.coordinates)}
-                                color={isGateway(bin) ? getColor(bin.status, 'battery') : getColor(bin.status)} shiftX={shifts[bin._id] ?? 0}
+                                color={getColor(bin.status, isGateway(bin) ? 'battery' : 'fill', thresholdsFor(bin.ownerId))} shiftX={shifts[bin._id] ?? 0}
                                 popup={<BinPopupCard
                                     bin={bin}
                                     gatewayName={bin.gatewayName ?? bin.gateway?.binName ?? binNames.get(bin.status?.connection?.gatewayId)}

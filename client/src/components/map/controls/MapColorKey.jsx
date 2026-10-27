@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next"
 import DeviceRoleIcon from "@/components/bins/DeviceRoleIcon"
 import { STATUS_COLORS } from "@/utils/binHelpers"
-import { FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT } from "@/utils/constants"
+import { useThresholds } from "@/hooks/useThresholds"
 
 // The marker colors by fullness, as getColor() picks them; the texts take the
-// cut-offs from the constants.
+// cut-offs of the organization in view (the defaults across several).
 const FULLNESS_KEYS = [
     ["good", "fullnessLow"],
     ["warning", "fullnessMid"],
@@ -19,6 +19,7 @@ function Swatch({ color }) {
 // What the map's colors and icons mean (shown by MapKeyPanel).
 function MapColorKey() {
     const { t } = useTranslation()
+    const { thresholds } = useThresholds()
     return (
         <section className="flex flex-col gap-2 text-xs">
             <h4 className="text-sm font-medium">{t("mapLegend.key.title")}</h4>
@@ -27,9 +28,9 @@ function MapColorKey() {
                     <li key={status} className="flex items-center gap-2">
                         <Swatch color={STATUS_COLORS[status]} />
                         {t(`mapLegend.key.${key}`, {
-                            warning: FULLNESS_WARNING_PERCENT,
-                            belowCritical: FULLNESS_CRITICAL_PERCENT - 1,
-                            critical: FULLNESS_CRITICAL_PERCENT,
+                            warning: thresholds.fullnessWarning,
+                            belowCritical: thresholds.fullnessCritical - 1,
+                            critical: thresholds.fullnessCritical,
                         })}
                     </li>
                 ))}

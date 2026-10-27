@@ -183,7 +183,7 @@ function Dashboard() {
         {
             header: t("pages.dashboard.tables.attention.columns.battery"),
             id: "battery",
-            cell: ({ row }) => <Battery level={row.original.status?.battery} />,
+            cell: ({ row }) => <Battery level={row.original.status?.battery} ownerId={row.original.ownerId} />,
         },
         {
             header: t("pages.dashboard.tables.attention.columns.lastReport"),

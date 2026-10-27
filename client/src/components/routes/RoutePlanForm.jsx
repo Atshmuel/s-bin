@@ -20,7 +20,7 @@ import { getBinsInUserRadius } from "@/services/apiBins"
 import { getMeshSettings } from "@/services/apiMeshSettings"
 import { getFullness } from "@/utils/binHelpers"
 import {
-    DEFAULT_ROUTE_MIN_FULLNESS, DEFAULT_ROUTE_RADIUS_KM, ROUTE_AREA_MAX_RADIUS_KM, ROUTE_AREA_RADIUS_STEP_KM, WEIGHT_REFERENCE_KG,
+    DEFAULT_ROUTE_RADIUS_KM, DEFAULT_THRESHOLDS, ROUTE_AREA_MAX_RADIUS_KM, ROUTE_AREA_RADIUS_STEP_KM, WEIGHT_REFERENCE_KG,
 } from "@/utils/constants"
 import { toLatLng } from "@/utils/geo"
 import { truckName } from "@/utils/orgSettings"
@@ -65,7 +65,8 @@ function RoutePlanForm({ onPlanned }) {
 
     const [routeType, setRouteType] = useState("collection")
     const [radius, setRadius] = useState(DEFAULT_ROUTE_RADIUS_KM)
-    const [minFullness, setMinFullness] = useState(DEFAULT_ROUTE_MIN_FULLNESS)
+    // Until the user moves it, the organization's critical fullness.
+    const [minFullnessChoice, setMinFullness] = useState(null)
     const [health, setHealth] = useState("critical")
 
     // The organizations a route can be planned for, with their trucks and depot:
@@ -75,6 +76,8 @@ function RoutePlanForm({ onPlanned }) {
     const [orgChoice, setOrgChoice] = useState(null)
     const orgId = orgChoice ?? (isOwner ? (selectedOrgId ?? organizations[0]?._id) : organizations[0]?._id) ?? null
     const organization = organizations.find(org => org._id === orgId)
+    const thresholds = { ...DEFAULT_THRESHOLDS, ...organization?.thresholds }
+    const minFullness = minFullnessChoice ?? thresholds.fullnessCritical
     const fleet = organization?.fleet ?? []
     const [truckChoice, setTruckChoice] = useState(null)
     const truckTypeId = fleet.some(truck => truck._id === truckChoice) ? truckChoice : fleet[0]?._id ?? null
@@ -200,7 +203,7 @@ function RoutePlanForm({ onPlanned }) {
                     )}
                 </div>
                 <div className="min-h-80 flex-1">
-                    <PlanAreaMap key={orgId} depot={depot} center={center} radiusMeters={radius * 1000} bins={areaBins}
+                    <PlanAreaMap key={orgId} depot={depot} center={center} radiusMeters={radius * 1000} bins={areaBins} thresholds={thresholds}
                         onMove={(lngLat) => setMoved({ orgId, center: lngLat })} />
                 </div>
                 <p className="text-xs text-muted-foreground">{t("pages.routes.plan.clickMap")}</p>

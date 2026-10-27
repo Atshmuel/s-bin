@@ -16,12 +16,14 @@ import { useAppSide } from "@/hooks/useAppSide"
 import { useTranslation } from "react-i18next"
 import { toLatLng } from "@/utils/geo";
 import BinPopupCard from "@/components/map/BinPopupCard"
+import { useThresholds } from "@/hooks/useThresholds"
 function BinLog() {
     const { mapContainerRef, scrollToMap } = useMapSettings();
     const { isRight } = useAppSide()
     const { t } = useTranslation()
     const { id } = useParams()
     const { log, isLoadingLog, logError } = useLog(id);
+    const { thresholdsFor } = useThresholds()
 
     if (isLoadingLog) {
         return <div className="flex h-full w-full justify-center items-center">
@@ -48,7 +50,7 @@ function BinLog() {
             <div ref={mapContainerRef} className="rounded-2xl overflow-hidden h-[450px]">
                 <MapComponent zoom={14} center={toLatLng(bin.location.coordinates)} legend={true} >
                     <CustomMarker key={bin._id} icon={getDeviceRoleIcon(getDeviceRole(bin))} position={toLatLng(bin.location.coordinates)}
-                        color={isGateway(bin) ? getColor(bin.status, 'battery') : getColor(bin.status)} popup={<BinPopupCard bin={bin} />} />
+                        color={getColor(bin.status, isGateway(bin) ? 'battery' : 'fill', thresholdsFor(bin.ownerId))} popup={<BinPopupCard bin={bin} />} />
                 </MapComponent>
             </div>
         </div>

@@ -1,19 +1,21 @@
-import { getColor } from "@/utils/binHelpers"
-import { BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT } from "@/utils/constants"
+import { batteryState, getColor } from "@/utils/binHelpers"
+import { useThresholds } from "@/hooks/useThresholds"
 import { BatteryFull, BatteryLow, BatteryMedium } from "lucide-react"
 import { MobileTooltip } from "../ui/mobile-tooltip"
 
-function Battary({ level }) {
-    const color = getColor(level, "battery")
+const ICONS = { good: BatteryFull, warning: BatteryMedium, critical: BatteryLow }
+
+// A battery's icon and color, by its device's organization's cut-offs
+// (`ownerId`; without one, the page's).
+function Battary({ level, ownerId }) {
+    const { thresholdsFor } = useThresholds()
+    const thresholds = thresholdsFor(ownerId)
+    const Icon = ICONS[batteryState(level, thresholds)]
 
     return (
         <MobileTooltip content={`${level}%`} className={'z-999'}>
             <p className="w-fit">
-                {
-                    level > BATTERY_WARNING_PERCENT ? <BatteryFull color={color} /> :
-                        level > BATTERY_CRITICAL_PERCENT ? <BatteryMedium color={color} /> :
-                            <BatteryLow color={color} />
-                }
+                <Icon color={getColor(level, "battery", thresholds)} />
             </p>
         </MobileTooltip>
     )
