@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
-import { binModel, routeModel, routeReservationModel } from "../models/models.js";
+import { binLogModel, binModel, organizationModel, routeModel, routeReservationModel } from "../models/models.js";
 import { appendFilter, BINS_ONLY_FILTER, healthRank } from "../../utils/helpers.js";
-import { binFullness, collectionDueAt, fillRatePerDay, FULLNESS_EXPRESSION, rangeStart } from "../../utils/analytics.js";
-import { readingsByBin } from "./readingsService.js";
+import { binFullness, collectionDueAt, detectCollections, fillRatePerDay, FULLNESS_EXPRESSION, fullnessPercent, rangeStart } from "../../utils/analytics.js";
+import { lastSlotEpoch } from "../../utils/deviceSchedule.js";
+import { READINGS_FILTER, readingsByBin } from "./readingsService.js";
 import { timeZoneAt } from "../../utils/geo.js";
 import {
-    DEFAULT_ROUTE_ENGINE, DEFAULT_TIME_ZONE, FILL_RATE_WINDOW_DAYS, FULLNESS_CRITICAL_PERCENT, HOUR_MS, OPEN_ROUTE_STATUSES, ROLES,
+    DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR, DEFAULT_ROUTE_ENGINE, DEFAULT_TIME_ZONE, FILL_RATE_WINDOW_DAYS,
+    FULLNESS_CRITICAL_PERCENT, HOUR_MS, MINUTE_MS, OPEN_ROUTE_STATUSES, ROLES, ROUTE_CLAIM_VERIFY_HOURS, ROUTE_DAY_CLOSE_GRACE_MINUTES,
     ROUTE_ENGINES, ROUTE_FLEET_CANDIDATE_FACTOR, ROUTE_PLAN_ATTEMPTS, ROUTE_PLAN_HORIZON_HOURS, ROUTE_RESERVATION_GRACE_HOURS,
     ROUTE_STOP_SECONDS, WEIGHT_REFERENCE_KG,
 } from "../../utils/constants.js";
@@ -372,7 +374,7 @@ export async function planOrganizationDay(org, { now = Date.now() } = {}) {
     const serviceDay = serviceDayOf(new Date(now), timeZone);
     const record = async (outcome) => {
         const lastAutoPlan = { at: new Date(now), serviceDay, routes: 0, stops: 0, leftOut: 0, ...outcome };
-        await mongoose.model("Organization").updateOne({ _id: org._id }, { $set: { lastAutoPlan } });
+        await organizationModel.updateOne({ _id: org._id }, { $set: { lastAutoPlan } });
         return lastAutoPlan;
     };
     if (await routeModel.exists({ orgId: org._id, serviceDay, source: "auto", status: { $ne: "cancelled" } })) {
@@ -449,5 +451,91 @@ export async function planOrganizationDay(org, { now = Date.now() } = {}) {
         }
     }
     return record({ routes, stops, leftOut: allDue.length - stops, ...(routes === 0 ? { note: "noneFit" } : {}) });
+}
+
+// ---- Settling claims and closing days.
+
+// Settles the claims on a bin with one of its reports ({ at, level, weight,
+// logId }; level and weight null when not read): each stop marked done before
+// the report and not yet settled is confirmed when the bin was emptied between
+// its last reading before the claim and this one (the analytics' emptying: a
+// level drop, or a weight drop of at least COLLECTION_WEIGHT_DROP_MIN_KG),
+// contradicted when not, and unverified when the report read neither level nor
+// weight. Without a reading before the claim, the fullness it was planned at
+// stands in. Returns how many claims it settled.
+export async function settleClaims(binId, reading) {
+    const routes = await routeModel.find(
+        { stops: { $elemMatch: { binId, status: "done", verification: null, "claim.at": { $lte: reading.at } } }, status: { $ne: "cancelled" } },
+        { stops: 1 },
+    );
+    let settled = 0;
+    for (const route of routes) {
+        for (const stop of route.stops) {
+            if (String(stop.binId) !== String(binId) || stop.status !== "done" || stop.verification || !stop.claim || stop.claim.at > reading.at) continue;
+            const fullness = fullnessPercent(reading.level, reading.weight);
+            let status = "unverified";
+            if (fullness !== null) {
+                const before = await binLogModel.findOne(
+                    { binId, ...READINGS_FILTER, createdAt: { $lt: stop.claim.at } },
+                    { newLevel: 1, weight: 1 },
+                ).sort({ createdAt: -1 }).lean();
+                const previous = before
+                    ? { at: stop.claim.at, level: before.newLevel ?? null, weight: before.weight ?? null }
+                    : { at: stop.claim.at, level: stop.fullnessAtPlan ?? null, weight: null };
+                status = detectCollections([previous, { at: reading.at, level: reading.level, weight: reading.weight }]).length > 0
+                    ? "confirmed" : "contradicted";
+            }
+            stop.verification = { status, at: reading.at, logId: reading.logId, ...(fullness !== null ? { fullness } : {}) };
+            settled++;
+        }
+        await route.save();
+    }
+    return settled;
+}
+
+// Closes the days whose reports are in: an open route of a day past its last
+// report slot and ROUTE_DAY_CLOSE_GRACE_MINUTES is finished (closedByDay) and
+// all its bins freed; a claim no report settled within ROUTE_CLAIM_VERIFY_HOURS
+// is unverified. Returns what it closed.
+export async function closeRouteDays(now = Date.now()) {
+    const open = await routeModel.find({ status: { $in: OPEN_ROUTE_STATUSES } }, { orgId: 1, serviceDay: 1, timeZone: 1 }).lean();
+    const orgs = new Map((await organizationModel.find({ _id: { $in: [...new Set(open.map(route => String(route.orgId)))] } },
+        { reportIntervalMinutes: 1, reportStartHour: 1 }).lean()).map(org => [String(org._id), org]));
+    const due = open.filter(route => {
+        const org = orgs.get(String(route.orgId));
+        const closesAt = lastSlotEpoch(route.serviceDay, org?.reportIntervalMinutes ?? DEFAULT_REPORT_INTERVAL_MINUTES,
+            org?.reportStartHour ?? DEFAULT_REPORT_START_HOUR, route.timeZone) * 1000 + ROUTE_DAY_CLOSE_GRACE_MINUTES * MINUTE_MS;
+        return now >= closesAt;
+    });
+    const ids = due.map(route => route._id);
+    if (ids.length) {
+        await routeModel.updateMany({ _id: { $in: ids }, status: { $in: OPEN_ROUTE_STATUSES } },
+            { $set: { status: "finished", finishedAt: new Date(now), closedByDay: true } });
+        await routeReservationModel.deleteMany({ routeId: { $in: ids } });
+    }
+    const cutoff = new Date(now - ROUTE_CLAIM_VERIFY_HOURS * HOUR_MS);
+    const expired = await routeModel.updateMany(
+        { stops: { $elemMatch: { status: "done", verification: null, "claim.at": { $lt: cutoff } } } },
+        { $set: { "stops.$[stop].verification": { status: "unverified", at: new Date(now) } } },
+        { arrayFilters: [{ "stop.status": "done", "stop.verification": null, "stop.claim.at": { $lt: cutoff } }] },
+    );
+    return { closed: ids.length, unverifiedRoutes: expired.modifiedCount };
+}
+
+// Claims a report contradicted since `since` on the organizations' routes,
+// newest first: the bin, who marked it and when, the route's truck, and how
+// full the report read it.
+export async function recentContradictions(orgIds, since) {
+    const routes = await routeModel.find(
+        { orgId: { $in: orgIds }, stops: { $elemMatch: { "verification.status": "contradicted", "verification.at": { $gte: since } } } },
+        { orgId: 1, truck: 1, timeZone: 1, stops: 1 },
+    ).lean();
+    return routes.flatMap(route => route.stops
+        .filter(stop => stop.verification?.status === "contradicted" && stop.verification.at >= since)
+        .map(stop => ({
+            orgId: route.orgId, routeId: route._id, truck: route.truck, timeZone: route.timeZone,
+            binId: stop.binId, binName: stop.binName, claim: stop.claim, verification: stop.verification,
+        })))
+        .sort((a, b) => b.verification.at - a.verification.at);
 }
 

@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useBinStatusOV } from "@/hooks/overviews/useBinStatusOV"
 import { useLogsTypeOV } from "@/hooks/overviews/useLogsTypeOV"
 import AIInsights from "./AIInsights"
-import { BatteryOutlookCard, CollectionsTrendCard, ConnectivityCard, FullnessDistributionCard, FullSoonCard, HealthCausesCard, WasteCard } from "@/components/analytics/FleetCards"
+import { BatteryOutlookCard, CollectionsTrendCard, ConnectivityCard, FullnessDistributionCard, FullSoonCard, HealthCausesCard, RoutesCard, WasteCard } from "@/components/analytics/FleetCards"
 import { Bar, BarChart, CartesianGrid, Label, Pie, PieChart, XAxis } from "recharts"
 import { useAppSide } from "@/hooks/useAppSide"
 import { useTranslation } from "react-i18next"
@@ -137,6 +137,8 @@ function Analytics() {
             <div className="grid gap-6 lg:grid-cols-2">
                 <CollectionsTrendCard />
                 <WasteCard />
+                {/* The collection routes: across the row, for the drivers' table. */}
+                <RoutesCard className="lg:col-span-2" />
                 <BatteryOutlookCard />
                 <ConnectivityCard />
                 <HealthCausesCard />

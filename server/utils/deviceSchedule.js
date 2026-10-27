@@ -40,6 +40,15 @@ function zonedEpoch(year, month, day, minuteOfDay, timeZone) {
     return asUtc - utcOffsetSeconds(guess, timeZone);
 }
 
+// The last report slot of a local day ("YYYY-MM-DD"), in epoch seconds: when
+// the day's last reports come in.
+export function lastSlotEpoch(day, intervalMinutes, startHour, timeZone) {
+    const [year, month, date] = day.split("-").map(Number);
+    const firstMinute = (startHour * 60) % intervalMinutes;
+    const lastMinute = firstMinute + Math.floor((MINUTES_PER_DAY - 1 - firstMinute) / intervalMinutes) * intervalMinutes;
+    return zonedEpoch(year, month, date, lastMinute, timeZone);
+}
+
 // The first slot after an instant. Each local day's slots are the start hour
 // plus multiples of the interval, so the chosen hour stays the same local hour
 // all year. The day before through two days ahead covers any interval up to a

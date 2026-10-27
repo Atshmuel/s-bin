@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { binLogModel, binModel } from '../models/models.js'
+import { binLogModel, binModel, routeModel, userModel } from '../models/models.js'
 import { READINGS_FILTER, readingsByBin } from '../service/readingsService.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared, intervalsByOrg } from '../service/sharedService.js'
@@ -9,7 +9,7 @@ import {
     DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, FULL_SOON_HOURS, FULL_SOON_LIST_LIMIT, FULLNESS_BUCKETS,
     GATEWAY_LIST_LIMIT, LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS, BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT,
     FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
-    AI_BRIEFING_DAYS, AI_BRIEFING_DEVICE_LIMIT, HOUR_MS,
+    AI_BRIEFING_DAYS, AI_BRIEFING_DEVICE_LIMIT, HOUR_MS, ROLES,
 } from '../../utils/constants.js'
 import {
     HEALTH_CAUSE_NAMES,
@@ -375,6 +375,87 @@ async function healthCausesOverview(user, { days, timeZone }) {
     return { daily: [...byDay].map(([day, counts]) => ({ day, ...counts })) };
 }
 
+// ---- Collection routes: what was driven, collected and confirmed ----
+
+// The routes of the range in the user's scope (an owner's picked organization,
+// or all of them; anyone else's own), by their service day.
+function routeScope({ role, org, selectedOrg }) {
+    if (role === ROLES.OWNER) return selectedOrg ? { orgId: new mongoose.Types.ObjectId(selectedOrg) } : {}
+    return { orgId: new mongoose.Types.ObjectId(org) }
+}
+
+// How the range's routes went: routes finished, bins collected and skipped,
+// what the bins' reports said about the collections marked (the confirmed
+// share counts only claims a report settled either way), the time a route
+// took against the time planned (routes a driver finished; a route the day's
+// end closed has no real end), and per day the stops done and skipped.
+// Owners and admins also get each driver's figures.
+async function routesOverview(user, { days, timeZone }) {
+    const start = rangeStart(days);
+    const startDay = dayKey(start, timeZone);
+    const routes = await routeModel.find(
+        { ...routeScope(user), serviceDay: { $gte: startDay }, status: { $ne: 'cancelled' } },
+        { status: 1, serviceDay: 1, driverId: 1, startedAt: 1, finishedAt: 1, closedByDay: 1, durationSeconds: 1, plannedDurationSeconds: 1,
+            'stops.status': 1, 'stops.claim.by': 1, 'stops.verification.status': 1 },
+    ).lean();
+    const stops = routes.flatMap(route => route.stops.map(stop => ({ ...stop, route })));
+    const done = stops.filter(stop => stop.status === 'done');
+    const verdicts = status => done.filter(stop => stop.verification?.status === status).length;
+    const [confirmed, contradicted, unverified] = ['confirmed', 'contradicted', 'unverified'].map(verdicts);
+    const timed = routes.filter(route => route.status === 'finished' && !route.closedByDay && route.startedAt && route.finishedAt);
+    const minutes = seconds => Math.round(seconds / 60);
+    const average = values => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+
+    const overview = {
+        routes: routes.length,
+        finished: routes.filter(route => route.status === 'finished').length,
+        collected: done.length,
+        skipped: stops.filter(stop => stop.status === 'skipped').length,
+        confirmed, contradicted, unverified,
+        confirmedPercent: confirmed + contradicted ? Math.round(confirmed / (confirmed + contradicted) * 100) : null,
+        timedRoutes: timed.length,
+        avgActualMinutes: timed.length ? minutes(average(timed.map(route => (route.finishedAt - route.startedAt) / 1000))) : null,
+        avgPlannedMinutes: timed.length ? minutes(average(timed.map(route => route.plannedDurationSeconds ?? route.durationSeconds ?? 0))) : null,
+        daily: daysBetween(start, timeZone).map(day => ({
+            day,
+            done: stops.filter(stop => stop.route.serviceDay === day && stop.status === 'done').length,
+            skipped: stops.filter(stop => stop.route.serviceDay === day && stop.status === 'skipped').length,
+        })),
+    };
+    if (![ROLES.OWNER, ROLES.ADMIN].includes(user.role)) return overview;
+
+    // Per driver, by who marked the stops: the routes they drove, what they
+    // collected, what the reports said, and minutes per collected stop on the
+    // routes they finished themselves.
+    const byDriver = new Map();
+    for (const stop of done) {
+        const id = String(stop.claim?.by ?? '');
+        if (!id) continue;
+        const driver = byDriver.get(id) ?? { _id: id, routes: new Set(), collected: 0, confirmed: 0, contradicted: 0 };
+        driver.routes.add(String(stop.route._id));
+        driver.collected++;
+        if (stop.verification?.status === 'confirmed') driver.confirmed++;
+        if (stop.verification?.status === 'contradicted') driver.contradicted++;
+        byDriver.set(id, driver);
+    }
+    const names = new Map((await userModel.find({ _id: { $in: [...byDriver.keys()] } }, { name: 1 }).lean()).map(u => [String(u._id), u.name]));
+    overview.drivers = [...byDriver.values()].map(driver => {
+        const own = timed.filter(route => driver.routes.has(String(route._id)));
+        const ownStops = own.reduce((sum, route) => sum + route.stops.filter(stop => stop.status === 'done').length, 0);
+        return {
+            _id: driver._id,
+            name: names.get(driver._id) ?? null,
+            routes: driver.routes.size,
+            collected: driver.collected,
+            confirmed: driver.confirmed,
+            contradicted: driver.contradicted,
+            confirmedPercent: driver.confirmed + driver.contradicted ? Math.round(driver.confirmed / (driver.confirmed + driver.contradicted) * 100) : null,
+            minutesPerStop: ownStops ? Math.round(own.reduce((sum, route) => sum + (route.finishedAt - route.startedAt) / 60000, 0) / ownStops * 10) / 10 : null,
+        };
+    }).sort((a, b) => b.collected - a.collected);
+    return overview;
+}
+
 const OVERVIEW_SECTIONS = {
     'full-soon': fullSoon,
     'fullness-distribution': fullnessDistribution,
@@ -383,6 +464,7 @@ const OVERVIEW_SECTIONS = {
     battery: batteryOverview,
     connectivity: connectivityOverview,
     'health-causes': healthCausesOverview,
+    routes: routesOverview,
     ...DASHBOARD_SECTIONS,
 };
 

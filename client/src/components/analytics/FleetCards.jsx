@@ -10,6 +10,7 @@ import { useOverviewSection } from "@/hooks/analytics/useOverviewSection"
 import { useInView } from "@/hooks/use-in-view"
 import { FULLNESS_CRITICAL_PERCENT } from "@/utils/constants"
 import { formatDate } from "@/utils/helpers"
+import { routeDuration } from "@/utils/routes"
 import RangeSelect from "./RangeSelect"
 import SectionCard, { Muted } from "./SectionCard"
 
@@ -274,3 +275,76 @@ export function HealthCausesCard() {
         </SectionCard>
     )
 }
+
+// How the range's routes went: what was collected and skipped, what the bins'
+// reports said about the collections marked, the time a route took against
+// the time planned, and (owners and admins) each driver's figures.
+export function RoutesCard({ className }) {
+    const { t } = useTranslation()
+    const [range, setRange] = useState(30)
+    const { ref, data, isLoading, error } = useSection("routes", range)
+    const config = {
+        done: { label: t("pages.analytics.sections.routes.done"), color: "var(--chart-2)" },
+        skipped: { label: t("pages.analytics.sections.routes.skipped"), color: "var(--chart-4)" },
+    }
+    const percent = value => value === null || value === undefined ? "—" : `${value}%`
+    return (
+        <SectionCard ref={ref} className={className} title={t("pages.analytics.sections.routes.title")}
+            description={data && data.routes > 0
+                ? t("pages.analytics.sections.routes.summary", { count: data.finished, routes: data.routes })
+                : t("pages.analytics.sections.routes.description")}
+            action={<RangeSelect value={range} onChange={setRange} className="w-[140px]" />}
+            isLoading={isLoading} error={error}>
+            {data && (
+                <div className="flex flex-col gap-6">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                        <BigNumber label={t("pages.analytics.sections.routes.collected")} value={data.collected.toLocaleString()} />
+                        <BigNumber label={t("pages.analytics.sections.routes.skippedTotal")} value={data.skipped.toLocaleString()} />
+                        <BigNumber label={t("pages.analytics.sections.routes.confirmed")} value={percent(data.confirmedPercent)} />
+                        <BigNumber label={t("pages.analytics.sections.routes.contradicted")} value={data.contradicted.toLocaleString()} />
+                    </div>
+                    <DailyChart data={data.daily} config={config}>
+                        <YAxis allowDecimals={false} hide />
+                        <Bar dataKey="done" stackId="stops" fill="var(--color-done)" radius={[0, 0, 4, 4]} />
+                        <Bar dataKey="skipped" stackId="stops" fill="var(--color-skipped)" radius={[4, 4, 0, 0]} />
+                    </DailyChart>
+                    <Muted>
+                        {data.timedRoutes > 0
+                            ? t("pages.analytics.sections.routes.time", {
+                                actual: routeDuration(data.avgActualMinutes * 60, t), planned: routeDuration(data.avgPlannedMinutes * 60, t), count: data.timedRoutes,
+                            })
+                            : t("pages.analytics.sections.routes.noTime")}
+                    </Muted>
+                    {data.drivers && (
+                        data.drivers.length > 0 ? (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead className="text-start text-xs text-muted-foreground">
+                                        <tr>
+                                            {["driver", "routes", "collected", "confirmed", "contradicted", "minutesPerStop"].map(column => (
+                                                <th key={column} className="py-2 pe-4 text-start font-medium">{t(`pages.analytics.sections.routes.columns.${column}`)}</th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y">
+                                        {data.drivers.map(driver => (
+                                            <tr key={driver._id}>
+                                                <td className="py-2 pe-4">{driver.name ?? t("pages.routes.unknownDriver")}</td>
+                                                <td className="py-2 pe-4 tabular-nums">{driver.routes}</td>
+                                                <td className="py-2 pe-4 tabular-nums">{driver.collected}</td>
+                                                <td className="py-2 pe-4 tabular-nums">{percent(driver.confirmedPercent)}</td>
+                                                <td className={`py-2 pe-4 tabular-nums ${driver.contradicted ? "text-red-600" : ""}`}>{driver.contradicted}</td>
+                                                <td className="py-2 pe-4 tabular-nums">{driver.minutesPerStop ?? "—"}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : <Muted>{t("pages.analytics.sections.routes.noDrivers")}</Muted>
+                    )}
+                </div>
+            )}
+        </SectionCard>
+    )
+}
+

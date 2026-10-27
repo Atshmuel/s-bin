@@ -1,11 +1,13 @@
+import mongoose from 'mongoose'
 import { binLogModel, binModel, organizationModel } from '../models/models.js'
+import { recentContradictions } from '../service/routeService.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { intervalsByOrg } from '../service/sharedService.js'
 import { binFullness, fullnessPercent } from '../../utils/analytics.js'
 import { lastReportAt, offlineCauses } from '../../utils/offline.js'
 import {
     ATTENTION_LIST_LIMIT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
-    RECENT_LOGS_LIMIT, HOUR_MS, RECENT_LOGS_HOURS, ROLES,
+    RECENT_LOGS_LIMIT, HOUR_MS, RECENT_LOGS_HOURS, ROLES, ROUTE_CONTRADICTION_RECENT_HOURS,
 } from '../../utils/constants.js'
 
 // The dashboard's sections, served like the analytics page's (one request
@@ -25,6 +27,9 @@ export async function devicesWithReasons(user) {
     const now = Date.now();
     const devices = await binModel.find(scopeToOrganization({}, user), BIN_PUBLIC_PROJECTION).lean();
     const intervals = await intervalsByOrg(devices);
+    const orgIds = [...new Set(devices.map(device => String(device.ownerId)))].map(id => new mongoose.Types.ObjectId(id));
+    const contradicted = new Set((await recentContradictions(orgIds, new Date(now - ROUTE_CONTRADICTION_RECENT_HOURS * HOUR_MS)))
+        .map(claim => String(claim.binId)));
     const causes = offlineCauses(devices, intervals, now);
     const names = new Map(devices.map(device => [String(device._id), device.binName]));
     return devices.map(device => {
@@ -38,6 +43,7 @@ export async function devicesWithReasons(user) {
         if (cause) reasons.push('offline');
         if (Number.isFinite(device.status?.battery) && device.status.battery <= BATTERY_WARNING_PERCENT) reasons.push('battery');
         if (['warning', 'critical'].includes(device.status?.health)) reasons.push('health');
+        if (contradicted.has(String(device._id))) reasons.push('contradicted');
         return {
             ...device,
             fullness,

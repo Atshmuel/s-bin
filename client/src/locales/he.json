@@ -461,6 +461,7 @@
         }
       },
       "reasons": {
+        "contradicted": "סומן כנאסף, עדיין מלא",
         "full": "כמעט מלא",
         "maintenance": "דורש תחזוקה",
         "offline": "לא מחובר",
@@ -584,6 +585,32 @@
         "log":"תיעוד"
       },
       "sections":{
+      "routes": {
+        "title": "מסלולי איסוף",
+        "description": "עדיין אין מסלולים בטווח הזה.",
+        "summary_one": "{{count}} מתוך {{routes}} מסלולים הסתיימו.",
+        "summary_two": "{{count}} מתוך {{routes}} מסלולים הסתיימו.",
+        "summary_other": "{{count}} מתוך {{routes}} מסלולים הסתיימו.",
+        "collected": "פחים שנאספו",
+        "skippedTotal": "פחים שדולגו",
+        "confirmed": "אושרו בדיווחי הפחים",
+        "contradicted": "נסתרו",
+        "done": "נאספו",
+        "skipped": "דולגו",
+        "time_one": "מסלול ארך בממוצע {{actual}}, מתוכנן {{planned}} (מסלול {{count}} שהנהג סיים).",
+        "time_two": "מסלול ארך בממוצע {{actual}}, מתוכנן {{planned}} ({{count}} מסלולים שהנהגים סיימו).",
+        "time_other": "מסלול ארך בממוצע {{actual}}, מתוכנן {{planned}} ({{count}} מסלולים שהנהגים סיימו).",
+        "noTime": "עדיין אין מסלול שהנהג סיים: הזמן יוצג כשיהיה.",
+        "noDrivers": "עדיין לא סומנו איסופים.",
+        "columns": {
+          "driver": "נהג",
+          "routes": "מסלולים",
+          "collected": "נאספו",
+          "confirmed": "אושרו",
+          "contradicted": "נסתרו",
+          "minutesPerStop": "דקות לפח"
+        }
+      },
         "bins":"פחים",
         "devices":"מכשירים",
         "fullSoon":{

@@ -11,11 +11,12 @@ const claimSchema = new mongoose.Schema({
     distanceMeters: Number,
 }, { _id: false });
 
-// What the bin's next report said about a claim.
+// What the bin's next report said about a claim, and how full it read then.
 const verificationSchema = new mongoose.Schema({
     status: { type: String, enum: ["confirmed", "contradicted", "unverified"], required: true },
     at: { type: Date, required: true },
     logId: { type: mongoose.Schema.Types.ObjectId, ref: "BinLog" },
+    fullness: Number,
 }, { _id: false });
 
 // One bin on a route. Its name and location are copied when planned, so the
@@ -74,11 +75,15 @@ export const routeSchema = new mongoose.Schema({
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     startedAt: Date,
     finishedAt: Date,
+    // Closed by the day's end rather than by its driver.
+    closedByDay: { type: Boolean, default: false },
     cancelledAt: Date,
 }, { timestamps: true });
 
 routeSchema.index({ orgId: 1, serviceDay: -1, status: 1 });
 routeSchema.index({ driverId: 1, serviceDay: -1 });
+// The claims a bin's next report settles.
+routeSchema.index({ "stops.binId": 1, "stops.status": 1 });
 // One open route per truck on a day, even when two are planned in the same moment.
 routeSchema.index(
     { orgId: 1, serviceDay: 1, "truck.truckTypeId": 1, "truck.unit": 1 },

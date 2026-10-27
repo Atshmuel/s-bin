@@ -452,6 +452,7 @@
         }
       },
       "reasons": {
+        "contradicted": "Marked collected, still full",
         "full": "Almost full",
         "maintenance": "Maintenance due",
         "offline": "Offline",
@@ -574,6 +575,30 @@
         "log":"Log"
       },
       "sections":{
+      "routes": {
+        "title": "Collection routes",
+        "description": "No routes in this range yet.",
+        "summary_one": "{{count}} of {{routes}} routes finished.",
+        "summary_other": "{{count}} of {{routes}} routes finished.",
+        "collected": "Bins collected",
+        "skippedTotal": "Bins skipped",
+        "confirmed": "Confirmed by the bins",
+        "contradicted": "Contradicted",
+        "done": "Collected",
+        "skipped": "Skipped",
+        "time_one": "A route took {{actual}} on average, planned {{planned}} ({{count}} route its driver finished).",
+        "time_other": "A route took {{actual}} on average, planned {{planned}} ({{count}} routes their drivers finished).",
+        "noTime": "No route finished by its driver yet: the time taken shows once one is.",
+        "noDrivers": "No collections marked yet.",
+        "columns": {
+          "driver": "Driver",
+          "routes": "Routes",
+          "collected": "Collected",
+          "confirmed": "Confirmed",
+          "contradicted": "Contradicted",
+          "minutesPerStop": "Minutes per bin"
+        }
+      },
         "bins":"Bins",
         "devices":"Devices",
         "fullSoon":{

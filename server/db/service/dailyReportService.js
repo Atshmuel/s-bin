@@ -1,10 +1,11 @@
-import { binModel, organizationModel } from '../models/models.js'
+import { binModel, organizationModel, userModel } from '../models/models.js'
 import { getNotificationRecipients, getOwnerRecipients, sendTemplateEmail } from './sharedService.js'
 import { devicesWithReasons } from '../controllers/dashboardController.js'
 import { fullSoon } from '../controllers/analyticsController.js'
+import { recentContradictions } from './routeService.js'
 import { isValidTimeZone } from '../../utils/analytics.js'
 import { lastReportAt, upstreamId } from '../../utils/offline.js'
-import { DAILY_REPORT_DUE_WITHIN_HOURS, HOUR_MS, ROLES } from '../../utils/constants.js'
+import { DAILY_REPORT_DUE_WITHIN_HOURS, DAY_MS, HOUR_MS, ROLES } from '../../utils/constants.js'
 
 // The daily report: one email per organization to each of its users with
 // email notifications on, listing what the dashboard's "Needs attention"
@@ -50,9 +51,19 @@ function offlineLine(device, devices) {
     return parts.join(' ');
 }
 
+// A collection a driver marked that the bin's next report contradicted.
+function contradictionLine({ binName, claim, verification, truck, timeZone }, drivers) {
+    const who = drivers.get(String(claim?.by)) ?? 'the driver';
+    const on = truck ? ` (${truck.name} #${truck.unit})` : '';
+    return `${binName}: marked collected by ${who} at ${formatTime(claim?.at, timeZone)}${on}, ` +
+        `but its next report read it ${Math.round(verification.fullness ?? 0)}% full.`;
+}
+
 // The report's sections for one organization, each { title, lines }, empty
 // ones left out; and the devices it reports offline for the first time.
-export function reportSections(devices, dueSoon, now = Date.now()) {
+// `contradictions` are the day's claims a report contradicted, with the names
+// of who made them in `drivers`.
+export function reportSections(devices, dueSoon, now = Date.now(), contradictions = [], drivers = new Map()) {
     const offline = devices.filter(device => device.offlineCause?.cause === 'self' && device.status?.connection?.via);
     const newlyOffline = offline.filter(device => !device.status.offlineAlertSentAt);
     const stillOffline = offline.length - newlyOffline.length;
@@ -68,6 +79,10 @@ export function reportSections(devices, dueSoon, now = Date.now()) {
                 ...dueWithin.map(bin => `${bin.binName}: ${bin.fullness}% full, needs collecting in about ` +
                     `${Math.max(Math.round((new Date(bin.collectionDueAt).getTime() - now) / HOUR_MS), 1)} hours.`),
             ],
+        },
+        {
+            title: 'Marked collected, still full',
+            lines: contradictions.map(claim => contradictionLine(claim, drivers)),
         },
         {
             title: 'Low battery',
@@ -175,11 +190,14 @@ export async function sendDailyReports(now = Date.now()) {
 // the flags of outages that are over.
 async function organizationReport(orgId, now) {
     const scope = { role: ROLES.ADMIN, org: orgId };
-    const [devices, { bins: dueSoon }, org] = await Promise.all([
+    const [devices, { bins: dueSoon }, org, contradictions] = await Promise.all([
         devicesWithReasons(scope),
         fullSoon(scope),
         organizationModel.findById(orgId, { name: 1 }).lean(),
+        recentContradictions([orgId], new Date(now - DAY_MS)),
     ]);
+    const drivers = new Map((await userModel.find({ _id: { $in: contradictions.map(claim => claim.claim?.by).filter(Boolean) } }, { name: 1 }).lean())
+        .map(user => [String(user._id), user.name]));
 
     const recovered = devices.filter(device => device.status?.offlineAlertSentAt && !device.offlineCause);
     if (recovered.length > 0) {
@@ -187,7 +205,7 @@ async function organizationReport(orgId, now) {
             { $set: { 'status.offlineAlertSentAt': null } });
     }
 
-    const { sections, newlyOffline } = reportSections(devices, dueSoon, now);
+    const { sections, newlyOffline } = reportSections(devices, dueSoon, now, contradictions, drivers);
     if (sections.length === 0) return null;
     return { orgId, orgName: org?.name ?? 'your organization', sections, newlyOffline };
 }

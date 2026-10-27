@@ -6,6 +6,7 @@ import { binLogModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
 import { fromDeviceLocation } from "../../utils/geo.js";
 import { fullnessPercent } from "../../utils/analytics.js";
+import { settleClaims } from "../../db/service/routeService.js";
 import {
     BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT,
     MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM,
@@ -127,7 +128,16 @@ export async function applyDeviceLog(bin, {
     };
     query = appendFilter(query, message, 'message', message);
 
-    await binLogModel.create(query);
+    const log = await binLogModel.create(query);
+    // A collection a driver marked on this bin is confirmed or contradicted by
+    // its next report; never at the cost of storing the report.
+    if (!isGateway) {
+        try {
+            await settleClaims(bin._id, { at: takenAt, level: levelIsValid ? level : null, weight: weightKg, logId: log._id });
+        } catch (error) {
+            console.error(`Could not settle the route claims of ${bin.binName}:`, error?.message ?? error);
+        }
+    }
     if (!isNewest) {
         return schedule;
     }

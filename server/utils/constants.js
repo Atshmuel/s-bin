@@ -248,6 +248,13 @@ export const ROUTE_PLAN_HORIZON_HOURS = 24;
 // trucks carry: enough to choose a good split, without solving for bins no
 // truck can take (900 bins took 50 s on the VM's one core).
 export const ROUTE_FLEET_CANDIDATE_FACTOR = 2;
+// A day's open routes close this long after the day's last report slot (its
+// reports in): their bins are freed. A claim no report settled within
+// ROUTE_CLAIM_VERIFY_HOURS stays unverified; a contradicted one shows in Needs
+// attention for ROUTE_CONTRADICTION_RECENT_HOURS.
+export const ROUTE_DAY_CLOSE_GRACE_MINUTES = 30;
+export const ROUTE_CLAIM_VERIFY_HOURS = 36;
+export const ROUTE_CONTRADICTION_RECENT_HOURS = 24;
 // The time zone of an organization without a depot or devices to tell it.
 export const DEFAULT_TIME_ZONE = 'Asia/Jerusalem';
 // A map view with more devices than this comes as grid cells (a count each)
@@ -299,6 +306,7 @@ export const CRON_SCHEDULES = Object.freeze({
     instructionCleanup: "15 * * * *",
     activationTokenCleanup: "0 0 * * *",
     otpCleanup: "*/5 * * * *",
-    // Hourly: each organization is planned when its planning hour comes.
+    // Hourly: the days whose last reports are in close, then each organization
+    // is planned when its planning hour comes.
     routePlanning: "2 * * * *",
 });

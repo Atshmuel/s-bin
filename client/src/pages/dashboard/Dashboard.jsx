@@ -18,8 +18,9 @@ import { useSelectedOrg } from "@/hooks/organizations/useSelectedOrg"
 
 const DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm"
 // Reasons that call for a visit; the map shows only these bins.
-const VISIT_REASONS = ["full", "maintenance", "offline"]
-const REASON_VARIANTS = { full: "inactive", maintenance: "suspended", offline: "destructive", battery: "outline", health: "outline" }
+// A bin marked collected that its next report still read full needs the truck back too.
+const VISIT_REASONS = ["full", "contradicted", "maintenance", "offline"]
+const REASON_VARIANTS = { full: "inactive", contradicted: "inactive", maintenance: "suspended", offline: "destructive", battery: "outline", health: "outline" }
 
 // A count tile; each loads with its own request and waits on its own. A tile
 // opens its list: `onSelect` filters the table below, `to` links elsewhere.
