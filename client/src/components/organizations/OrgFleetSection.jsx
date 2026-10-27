@@ -10,21 +10,25 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { updateFleetSettingsApi } from "@/services/apiOrganizations";
 import {
-    MAX_TRUCK_CAPACITY_KG, MAX_TRUCK_TYPES, MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
+    DEFAULT_TRUCK_LITERS_PER_100KM, MAX_TRUCK_CAPACITY_KG, MAX_TRUCK_TYPES, MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG,
+    TRUCK_LITERS_PER_100KM_RANGE, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
 } from "@/utils/constants";
 import { truckName } from "@/utils/orgSettings";
 
-const asForm = (fleet, t) => fleet.map(({ _id, name, preset, count, capacityKg }) =>
-    ({ _id, name: truckName({ name, preset }, t), preset, count: String(count), capacityKg: String(capacityKg) }))
+const asForm = (fleet, t) => fleet.map(({ _id, name, preset, count, capacityKg, litersPer100Km }) => ({
+    _id, name: truckName({ name, preset }, t), preset, count: String(count), capacityKg: String(capacityKg),
+    litersPer100Km: String(litersPer100Km ?? DEFAULT_TRUCK_LITERS_PER_100KM),
+}))
 
-function isValidType({ name, count, capacityKg }) {
-    const trucks = Number(count), kg = Number(capacityKg)
+function isValidType({ name, count, capacityKg, litersPer100Km }) {
+    const trucks = Number(count), kg = Number(capacityKg), liters = Number(litersPer100Km)
     return name.trim().length > 0 && Number.isInteger(trucks) && trucks >= 1 && trucks <= MAX_TRUCKS_PER_TYPE &&
-        Number.isInteger(kg) && kg >= MIN_TRUCK_CAPACITY_KG && kg <= MAX_TRUCK_CAPACITY_KG
+        Number.isInteger(kg) && kg >= MIN_TRUCK_CAPACITY_KG && kg <= MAX_TRUCK_CAPACITY_KG &&
+        litersPer100Km.trim() !== "" && liters >= TRUCK_LITERS_PER_100KM_RANGE[0] && liters <= TRUCK_LITERS_PER_100KM_RANGE[1]
 }
 
-// The organization's garbage trucks, by type: how many and how much waste one
-// carries, which its daily routes are planned for. A type starts from a
+// The organization's garbage trucks, by type: how many, how much waste one
+// carries and how much diesel it burns, which its daily routes are planned for. A type starts from a
 // common class (its payload at the low end of the class's range) or custom;
 // every value stays editable. The list is saved as a whole.
 function OrgFleetSection({ id, organization }) {
@@ -51,12 +55,13 @@ function OrgFleetSection({ id, organization }) {
         preset,
         count: "1",
         capacityKg: String(TRUCK_PRESETS[preset]?.capacityKg ?? TRUCK_PRESETS.medium.capacityKg),
+        litersPer100Km: String(DEFAULT_TRUCK_LITERS_PER_100KM),
     }])
     const remove = (index) => setFleet(current => current.filter((_, i) => i !== index))
     const save = () => mutation.mutate({
         orgId: organization._id,
-        fleet: fleet.map(({ _id, name, preset, count, capacityKg }) =>
-            ({ _id, name: name.trim(), preset, count: Number(count), capacityKg: Number(capacityKg) })),
+        fleet: fleet.map(({ _id, name, preset, count, capacityKg, litersPer100Km }) =>
+            ({ _id, name: name.trim(), preset, count: Number(count), capacityKg: Number(capacityKg), litersPer100Km: Number(litersPer100Km) })),
     })
 
     const validTypes = fleet.filter(isValidType)
@@ -108,11 +113,17 @@ function OrgFleetSection({ id, organization }) {
                                 <Input type="number" min={MIN_TRUCK_CAPACITY_KG} max={MAX_TRUCK_CAPACITY_KG} step={100} value={type.capacityKg}
                                     onChange={update(index, "capacityKg")} className="w-36" disabled={mutation.isPending} />
                             </label>
+                            <label className="flex flex-col gap-1 text-sm">
+                                {t("components.orgSettingsPage.fleet.consumption")}
+                                <Input type="number" min={TRUCK_LITERS_PER_100KM_RANGE[0]} max={TRUCK_LITERS_PER_100KM_RANGE[1]} step={1} value={type.litersPer100Km}
+                                    onChange={update(index, "litersPer100Km")} className="w-36" disabled={mutation.isPending} />
+                            </label>
                         </div>
                         {!isValidType(type) && (
                             <p role="alert" className="text-xs text-destructive">
                                 {t("components.orgSettingsPage.fleet.invalid", {
                                     max: MAX_TRUCKS_PER_TYPE, minKg: MIN_TRUCK_CAPACITY_KG, maxKg: MAX_TRUCK_CAPACITY_KG,
+                                    minLiters: TRUCK_LITERS_PER_100KM_RANGE[0], maxLiters: TRUCK_LITERS_PER_100KM_RANGE[1],
                                 })}
                             </p>
                         )}

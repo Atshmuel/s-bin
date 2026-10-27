@@ -211,6 +211,24 @@ export const MIN_TRUCK_CAPACITY_KG = 500;
 export const MAX_TRUCK_CAPACITY_KG = 20000;
 export const TRUCK_NAME_MAX_LENGTH = 40;
 export const DEPOT_ADDRESS_MAX_LENGTH = 120;
+// A truck type's diesel use: garbage trucks stop and start all day, 57-141 L
+// per 100 km in published fleets, about 77 on average.
+export const DEFAULT_TRUCK_LITERS_PER_100KM = 77;
+export const TRUCK_LITERS_PER_100KM_RANGE = Object.freeze([10, 200]);
+// What collecting costs an organization (in ₪), for the money its routes
+// spend and the system saves; each organization edits its own. The landfill
+// levy is the 2025 rate for mixed waste (index-linked); the site's entry fee
+// differs by up to 300% between sites, so it starts empty. The baseline is how
+// often a bin was emptied before the system (a fixed schedule), which the
+// savings are counted against. Each value: [default, min, max].
+export const COST_SETTINGS = Object.freeze({
+    dieselPerLiter: Object.freeze([7.5, 0, 50]),
+    crewPerHour: Object.freeze([180, 0, 2000]),
+    landfillLevyPerTonne: Object.freeze([117.22, 0, 1000]),
+    disposalFeePerTonne: Object.freeze([0, 0, 2000]),
+    systemPerMonth: Object.freeze([0, 0, 1000000]),
+    baselineCollectionsPerWeek: Object.freeze([3, 0.25, 14]),
+});
 // The route optimizer, chosen by ROUTE_ENGINE in the environment: the
 // self-hosted VROOM with OSRM (see docker-compose.yml), or OpenRouteService's
 // free service. A route visits at most `maxBins` bins, the most urgent first:

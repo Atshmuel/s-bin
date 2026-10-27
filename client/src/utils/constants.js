@@ -82,6 +82,19 @@ export const MAX_TRUCKS_PER_TYPE = 50
 export const MIN_TRUCK_CAPACITY_KG = 500
 export const MAX_TRUCK_CAPACITY_KG = 20000
 export const TRUCK_NAME_MAX_LENGTH = 40
+// A truck type's diesel use (L per 100 km): garbage trucks average about 77.
+export const DEFAULT_TRUCK_LITERS_PER_100KM = 77
+export const TRUCK_LITERS_PER_100KM_RANGE = Object.freeze([10, 200])
+// What collecting costs an organization (in ₪), as the server checks it: each
+// value [default, min, max] (server/utils/constants.js).
+export const COST_SETTINGS = Object.freeze({
+    dieselPerLiter: Object.freeze([7.5, 0, 50]),
+    crewPerHour: Object.freeze([180, 0, 2000]),
+    landfillLevyPerTonne: Object.freeze([117.22, 0, 1000]),
+    disposalFeePerTonne: Object.freeze([0, 0, 2000]),
+    systemPerMonth: Object.freeze([0, 0, 1000000]),
+    baselineCollectionsPerWeek: Object.freeze([3, 0.25, 14]),
+})
 export const DEPOT_ADDRESS_MAX_LENGTH = 120
 // Password length, as the server checks it.
 export const PASSWORD_MIN_LENGTH = 8

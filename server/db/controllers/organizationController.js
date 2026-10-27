@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 import { organizationModel } from "../models/models.js";
 import { deleteOrgRefs } from "../service/sharedService.js";
-import { MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../../utils/constants.js";
+import { COST_SETTINGS, MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../../utils/constants.js";
 import { ROLES } from "../../utils/constants.js";
 
 const MESH_SETTINGS_PROJECTION = {
     name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1, fleet: 1, depot: 1, routePlanningHour: 1, lastAutoPlan: 1,
-    clusterUntilZoom: 1,
+    clusterUntilZoom: 1, costs: 1,
 };
 
 
@@ -152,8 +152,8 @@ export async function updateFleetSettings(req, res) {
             {
                 $set: {
                     ...(fleet === undefined ? {} : {
-                        fleet: fleet.map(({ _id, name, preset, count, capacityKg }) => ({
-                            ...(mongoose.Types.ObjectId.isValid(_id) ? { _id } : {}), name, preset, count, capacityKg,
+                        fleet: fleet.map(({ _id, name, preset, count, capacityKg, litersPer100Km }) => ({
+                            ...(mongoose.Types.ObjectId.isValid(_id) ? { _id } : {}), name, preset, count, capacityKg, litersPer100Km,
                         })),
                     }),
                     ...(depot === undefined ? {} : { depot: depot && { location: depot.location, address: depot.address ?? "" } }),
@@ -198,3 +198,32 @@ export async function updateMapSettings(req, res) {
     }
 }
 
+// What collecting costs the organization (owners for any organization, admins
+// for their own): any of COST_SETTINGS' fields, each a number in its range
+// (the schema refuses others).
+export async function updateCostSettings(req, res) {
+    const { id } = req.params;
+    const { role, org } = req.user;
+    if (role !== ROLES.OWNER && id !== org) {
+        return res.status(403).json({ message: "You can only change your own organization's settings." });
+    }
+    const changes = Object.entries(req.body ?? {}).filter(([field]) => field in COST_SETTINGS);
+    if (!changes.length) return res.status(400).json({ message: `Send any of ${Object.keys(COST_SETTINGS).join(", ")}.` });
+    if (changes.some(([, value]) => typeof value !== "number" || !Number.isFinite(value))) {
+        return res.status(400).json({ message: "Each cost must be a number." });
+    }
+    try {
+        const organization = await organizationModel.findByIdAndUpdate(
+            id,
+            { $set: Object.fromEntries(changes.map(([field, value]) => [`costs.${field}`, value])) },
+            { new: true, runValidators: true, projection: MESH_SETTINGS_PROJECTION },
+        );
+        if (!organization) return res.status(404).json({ message: "Organization not found." });
+        return res.status(200).json({ organization });
+    } catch (error) {
+        if (error?.name === "ValidationError" || error?.name === "CastError") {
+            return res.status(400).json({ message: error.message });
+        }
+        return res.status(500).json({ message: error?.message || "Internal server error 'updateCostSettings'" });
+    }
+}

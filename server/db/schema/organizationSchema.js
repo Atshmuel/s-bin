@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
 import {
-    CLUSTER_ZOOM_RANGE, DEFAULT_CLUSTER_UNTIL_ZOOM, DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_ROUTE_PLANNING_HOUR, DEFAULT_REPORT_START_HOUR,
+    CLUSTER_ZOOM_RANGE, COST_SETTINGS, DEFAULT_CLUSTER_UNTIL_ZOOM, DEFAULT_TRUCK_LITERS_PER_100KM, DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_ROUTE_PLANNING_HOUR, DEFAULT_REPORT_START_HOUR,
     DEPOT_ADDRESS_MAX_LENGTH, MAX_MESH_AWAKE_WINDOW_SECONDS, MAX_TRUCK_CAPACITY_KG, MAX_TRUCK_TYPES,
-    MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG, REPORT_INTERVAL_OPTIONS_MINUTES, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
+    MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG, REPORT_INTERVAL_OPTIONS_MINUTES, TRUCK_LITERS_PER_100KM_RANGE, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
 } from "../../utils/constants.js";
 import { isLngLat } from "../../utils/geo.js";
 
-// A type of truck the organization runs: how many, and how much waste one
-// carries (kg); `preset` is the class it started from, or custom.
+// A type of truck the organization runs: how many, how much waste one carries
+// (kg) and how much diesel it burns (L per 100 km); `preset` is the class it
+// started from, or custom.
 const truckTypeSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true, maxlength: TRUCK_NAME_MAX_LENGTH },
     preset: { type: String, enum: [...Object.keys(TRUCK_PRESETS), "custom"], default: "custom" },
@@ -18,6 +19,9 @@ const truckTypeSchema = new mongoose.Schema({
     capacityKg: {
         type: Number, required: true, min: MIN_TRUCK_CAPACITY_KG, max: MAX_TRUCK_CAPACITY_KG,
         validate: { validator: Number.isInteger, message: "capacityKg must be an integer" },
+    },
+    litersPer100Km: {
+        type: Number, min: TRUCK_LITERS_PER_100KM_RANGE[0], max: TRUCK_LITERS_PER_100KM_RANGE[1], default: DEFAULT_TRUCK_LITERS_PER_100KM,
     },
 });
 
@@ -34,6 +38,10 @@ const depotSchema = new mongoose.Schema({
     },
     address: { type: String, trim: true, maxlength: DEPOT_ADDRESS_MAX_LENGTH, default: "" },
 }, { _id: false });
+
+// What collecting costs the organization, in ₪ (see COST_SETTINGS).
+const costsSchema = new mongoose.Schema(Object.fromEntries(Object.entries(COST_SETTINGS).map(([field, [byDefault, min, max]]) =>
+    [field, { type: Number, required: true, min, max, default: byDefault }])), { _id: false });
 
 // The last nightly plan: when, for which day, and what came of it; `note`
 // names why it made no routes (no depot, no free truck, no bins due).
@@ -102,6 +110,7 @@ export const organizationSchema = new mongoose.Schema({
         default: DEFAULT_CLUSTER_UNTIL_ZOOM,
         validate: { validator: Number.isInteger, message: "clusterUntilZoom must be a whole zoom level" },
     },
+    costs: { type: costsSchema, default: () => ({}) },
     // What the last nightly plan did, for its settings ("why no routes today?").
     lastAutoPlan: { type: lastAutoPlanSchema, default: null },
 });

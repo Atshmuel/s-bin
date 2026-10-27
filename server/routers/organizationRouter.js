@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { authRole, authToken } from "../middlewares/authMiddleware.js";
-import { createOrganization, getOrganizations, removeOrganization, updateFleetSettings, updateMapSettings, updateOrganization } from "../db/controllers/organizationController.js";
+import { createOrganization, getOrganizations, removeOrganization, updateCostSettings, updateFleetSettings, updateMapSettings, updateOrganization } from "../db/controllers/organizationController.js";
 import { validateBodyFields, validateParamExist } from '../middlewares/validationMiddleware.js'
-import { ROLES } from "../utils/constants.js";
+import { COST_SETTINGS, ROLES } from "../utils/constants.js";
 
 export const organizationRouter = Router();
 organizationRouter.use(authToken)
@@ -18,3 +18,5 @@ organizationRouter.delete('/:id', ownersOnly, validateParamExist(), removeOrgani
 organizationRouter.patch('/:id/fleet', ownersAndAdmins, validateParamExist(), validateBodyFields([], ['fleet', 'depot', 'routePlanningHour']), updateFleetSettings);
 // The map: owners for any organization, admins for their own (checked in the controller).
 organizationRouter.patch('/:id/map', ownersAndAdmins, validateParamExist(), validateBodyFields(['clusterUntilZoom']), updateMapSettings);
+// Costs: owners for any organization, admins for their own (checked in the controller).
+organizationRouter.patch('/:id/costs', ownersAndAdmins, validateParamExist(), validateBodyFields([], Object.keys(COST_SETTINGS)), updateCostSettings);

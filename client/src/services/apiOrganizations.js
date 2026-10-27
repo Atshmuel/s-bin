@@ -19,11 +19,16 @@ export function updateOrgNameApi({ orgId, name }) {
 
 // The organization's trucks and depot: `fleet` replaces the list, `depot` is
 // { location: [lng, lat], address } or null.
+export function updateFleetSettingsApi({ orgId, ...settings }) {
+    return request(`${ORG_EP}/${orgId}/fleet`, { method: "PATCH", body: settings });
+}
+
 // The organization's map: { clusterUntilZoom }, within CLUSTER_ZOOM_RANGE.
 export function updateMapSettingsApi({ orgId, ...settings }) {
     return request(`${ORG_EP}/${orgId}/map`, { method: "PATCH", body: settings });
 }
 
-export function updateFleetSettingsApi({ orgId, ...settings }) {
-    return request(`${ORG_EP}/${orgId}/fleet`, { method: "PATCH", body: settings });
+// What collecting costs the organization: any of COST_SETTINGS' fields.
+export function updateCostSettingsApi({ orgId, ...costs }) {
+    return request(`${ORG_EP}/${orgId}/costs`, { method: "PATCH", body: costs });
 }
