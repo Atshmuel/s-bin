@@ -246,6 +246,8 @@ export const STATS_LOOKBACK_MS = DAY_MS;
 export const STATS_SETTLE_MS = DAY_MS;
 export const STATS_REFRESH_MS = HOUR_MS;
 export const STATS_CHUNK_DAYS = 10;
+// Bins whose fill rate is stale are worked out this many at a time.
+export const FILL_RATE_CHUNK_BINS = 500;
 // The route optimizer, chosen by ROUTE_ENGINE in the environment: the
 // self-hosted VROOM with OSRM (see docker-compose.yml), or OpenRouteService's
 // free service. A route visits at most `maxBins` bins, the most urgent first:

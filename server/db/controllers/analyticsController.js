@@ -5,18 +5,19 @@ import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared, intervalsByOrg } from '../service/sharedService.js'
 import { DASHBOARD_SECTIONS, devicesWithReasons } from './dashboardController.js'
 import { costsOverview } from '../service/costsService.js'
+import { refreshStaleFillRates } from '../service/fillRateService.js'
 import { lastDays, organizationDays, scopedOrganizations } from '../service/statsService.js'
 import {
     ANALYTICS_RANGES_DAYS, BATTERY_BUCKETS, BATTERY_SOON_DAYS, BATTERY_SOON_LIST_LIMIT, BATTERY_TREND_DAYS,
     DEFAULT_RANGE_DAYS, FILL_RATE_WINDOW_DAYS, FULL_SOON_HOURS, FULL_SOON_LIST_LIMIT, FULLNESS_BUCKETS,
     GATEWAY_LIST_LIMIT, LEAST_RELIABLE_LIMIT, RELIABILITY_DAYS, BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT,
     FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT, OFFLINE_AFTER_MISSED_REPORTS,
-    AI_BRIEFING_DAYS, AI_BRIEFING_DEVICE_LIMIT, HOUR_MS, ROLES,
+    AI_BRIEFING_DAYS, AI_BRIEFING_DEVICE_LIMIT, DAY_MS, HOUR_MS, ROLES,
 } from '../../utils/constants.js'
 import {
     HEALTH_CAUSE_NAMES,
     batteryDaysLeft, binFullness, collectionDueAt, dayKey, daysBetween, detectCollections, fillRatePerDay,
-    fullnessPercent, healthCauses, isValidTimeZone, rangeStart, reportReliability, trendPerDay,
+    FULLNESS_EXPRESSION, fullnessPercent, healthCauses, isValidTimeZone, rangeStart, reportReliability, trendPerDay,
 } from '../../utils/analytics.js'
 
 // Each section of the bin page and the analytics page is its own request, so
@@ -182,34 +183,51 @@ export async function getBinAnalytics(req, res) {
 
 // ---- Analytics page: GET /api/overviews/:section ----
 
-// Bins expected to need collecting soon. Bins that already do are left out:
-// the dashboard's "almost full" tile counts them.
+// Bins expected to need collecting soon (by their fill rate, see
+// fillRateService), worked out by the database: the counts within each of
+// FULL_SOON_HOURS and the soonest FULL_SOON_LIST_LIMIT. Bins that already need
+// collecting are left out: the dashboard's "almost full" tile counts them.
 export async function fullSoon(user) {
     const now = Date.now();
-    const bins = await scopedBins(user, BINS_ONLY_FILTER,
-        { binName: 1, 'status.level': 1, 'status.levelValid': 1, 'status.weight': 1, 'status.scale': 1 });
-    const readings = await readingsByBin(bins.map(bin => bin._id), rangeStart(FILL_RATE_WINDOW_DAYS));
-    const forecasts = bins.map(bin => {
-        const fullness = binFullness(bin);
-        const ratePerDay = fillRatePerDay(readings.get(String(bin._id)) ?? []);
-        return {
-            _id: bin._id,
-            binName: bin.binName,
-            fullness,
-            ratePerDay,
-            collectionDueAt: collectionDueAt(fullness, ratePerDay, now),
-        };
-    }).filter(forecast => forecast.collectionDueAt !== null && forecast.fullness < FULLNESS_CRITICAL_PERCENT);
-    const lastHours = FULL_SOON_HOURS[FULL_SOON_HOURS.length - 1];
-    const soon = forecasts
-        .filter(forecast => forecast.collectionDueAt.getTime() <= now + lastHours * HOUR_MS)
-        .sort((a, b) => a.collectionDueAt - b.collectionDueAt);
+    const scope = scopeToOrganization({ ...BINS_ONLY_FILTER }, user);
+    await refreshStaleFillRates(scope, now);
+    const by = hours => new Date(now + hours * HOUR_MS);
+    const [result] = await binModel.aggregate([
+        { $match: { ...scope, 'status.fillRatePerDay': { $gt: 0 } } },
+        { $addFields: { fullness: { $round: [FULLNESS_EXPRESSION, 0] } } },
+        { $match: { fullness: { $lt: FULLNESS_CRITICAL_PERCENT } } },
+        {
+            $addFields: {
+                collectionDueAt: {
+                    $toDate: {
+                        $add: [now, { $multiply: [{ $divide: [{ $subtract: [FULLNESS_CRITICAL_PERCENT, '$fullness'] }, '$status.fillRatePerDay'] }, DAY_MS] }],
+                    },
+                },
+            },
+        },
+        { $match: { collectionDueAt: { $lte: by(FULL_SOON_HOURS.at(-1)) } } },
+        {
+            $facet: {
+                counts: [{
+                    $group: {
+                        _id: null,
+                        ...Object.fromEntries(FULL_SOON_HOURS.map(hours => [
+                            `within${hours}h`, { $sum: { $cond: [{ $lte: ['$collectionDueAt', by(hours)] }, 1, 0] } },
+                        ])),
+                    },
+                }],
+                bins: [
+                    { $sort: { collectionDueAt: 1, _id: 1 } },
+                    { $limit: FULL_SOON_LIST_LIMIT },
+                    { $project: { binName: 1, fullness: 1, ratePerDay: '$status.fillRatePerDay', collectionDueAt: 1 } },
+                ],
+            },
+        },
+    ]);
+    const counts = result.counts[0] ?? {};
     return {
-        counts: Object.fromEntries(FULL_SOON_HOURS.map(hours => [
-            `within${hours}h`,
-            soon.filter(forecast => forecast.collectionDueAt.getTime() <= now + hours * HOUR_MS).length,
-        ])),
-        bins: soon.slice(0, FULL_SOON_LIST_LIMIT),
+        counts: Object.fromEntries(FULL_SOON_HOURS.map(hours => [`within${hours}h`, counts[`within${hours}h`] ?? 0])),
+        bins: result.bins,
     };
 }
 

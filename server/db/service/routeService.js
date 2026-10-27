@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 import { binLogModel, binModel, organizationModel, routeModel, routeReservationModel } from "../models/models.js";
 import { appendFilter, BINS_ONLY_FILTER, healthRank } from "../../utils/helpers.js";
-import { binFullness, collectionDueAt, detectCollections, fillRatePerDay, FULLNESS_EXPRESSION, fullnessPercent, rangeStart } from "../../utils/analytics.js";
+import { binFullness, collectionDueAt, detectCollections, FULLNESS_EXPRESSION, fullnessPercent } from "../../utils/analytics.js";
 import { lastSlotEpoch } from "../../utils/deviceSchedule.js";
-import { READINGS_FILTER, readingsByBin } from "./readingsService.js";
+import { READINGS_FILTER } from "./readingsService.js";
+import { FILL_RATE_FIELDS, withFreshFillRates } from "./fillRateService.js";
 import { timeZoneAt } from "../../utils/geo.js";
 import {
-    DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR, DEFAULT_ROUTE_ENGINE, DEFAULT_TIME_ZONE, FILL_RATE_WINDOW_DAYS,
+    DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR, DEFAULT_ROUTE_ENGINE, DEFAULT_TIME_ZONE,
     FULLNESS_CRITICAL_PERCENT, HOUR_MS, MINUTE_MS, OPEN_ROUTE_STATUSES, ROLES, ROUTE_CLAIM_VERIFY_HOURS, ROUTE_DAY_CLOSE_GRACE_MINUTES,
     ROUTE_ENGINES, ROUTE_FLEET_CANDIDATE_FACTOR, ROUTE_PLAN_ATTEMPTS, ROUTE_PLAN_HORIZON_HOURS, ROUTE_RESERVATION_GRACE_HOURS,
     ROUTE_STOP_SECONDS, WEIGHT_REFERENCE_KG,
@@ -349,13 +350,13 @@ async function binsDue(org, now) {
     const reserved = await reservedBinIds(org._id);
     const bins = await binModel.find(
         { ownerId: org._id, ...BINS_ONLY_FILTER, _id: { $nin: reserved } },
-        { binName: 1, location: 1, "status.level": 1, "status.levelValid": 1, "status.weight": 1, "status.scale": 1 },
+        { binName: 1, location: 1, "status.level": 1, "status.levelValid": 1, "status.weight": 1, "status.scale": 1, ...FILL_RATE_FIELDS },
     ).lean();
-    const readings = await readingsByBin(bins.map(bin => bin._id), rangeStart(FILL_RATE_WINDOW_DAYS, now));
+    const rates = await withFreshFillRates(bins, now);
     const horizon = now + ROUTE_PLAN_HORIZON_HOURS * HOUR_MS;
     return bins.map(bin => {
         const fullness = binFullness(bin);
-        const dueAt = collectionDueAt(fullness, fillRatePerDay(readings.get(String(bin._id)) ?? []), now);
+        const dueAt = collectionDueAt(fullness, rates.get(String(bin._id)), now);
         return { ...bin, fullness, dueAt };
     })
         .filter(bin => bin.dueAt && bin.dueAt.getTime() <= horizon)

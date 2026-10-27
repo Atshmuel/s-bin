@@ -7,6 +7,7 @@ import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
 import { fromDeviceLocation } from "../../utils/geo.js";
 import { fullnessPercent } from "../../utils/analytics.js";
 import { settleClaims } from "../../db/service/routeService.js";
+import { binFillRate } from "../../db/service/fillRateService.js";
 import {
     BATTERY_CRITICAL_PERCENT, BATTERY_WARNING_PERCENT, FULLNESS_CRITICAL_PERCENT, FULLNESS_WARNING_PERCENT,
     MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM,
@@ -140,6 +141,16 @@ export async function applyDeviceLog(bin, {
     }
     if (!isNewest) {
         return schedule;
+    }
+    // How fast it fills, with this report; a failure leaves it stale, to be
+    // worked out when next read.
+    if (!isGateway) {
+        try {
+            bin.status.fillRatePerDay = await binFillRate(bin._id);
+            bin.status.fillRateAt = new Date();
+        } catch (error) {
+            console.error(`Could not work out the fill rate of ${bin.binName}:`, error?.message ?? error);
+        }
     }
 
     bin.status.updatedAt = takenAt;
