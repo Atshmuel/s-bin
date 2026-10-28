@@ -123,7 +123,7 @@ export const DEFAULT_MESH_AWAKE_WINDOW_SECONDS = 10;
 export const MAX_MESH_AWAKE_WINDOW_SECONDS = 60;
 export const REPORT_INTERVAL_OPTIONS_MINUTES = Object.freeze([15, 30, 60, 120, 180, 240, 360, 720, 1440]);
 export const DEFAULT_REPORT_INTERVAL_MINUTES = 720;
-export const DEFAULT_REPORT_START_HOUR = 8;
+export const DEFAULT_REPORT_START_HOUR = 5;
 // Device sleep clocks run fast (about +1%), so a report this close before its
 // slot belongs to that slot: the next wake is the slot after it.
 export const EARLY_WAKE_TOLERANCE_SECONDS = 600;

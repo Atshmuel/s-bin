@@ -59,7 +59,7 @@ export const DEFAULT_THRESHOLDS = Object.freeze(Object.fromEntries(
 export const MAX_MESH_AWAKE_WINDOW_SECONDS = 60
 export const REPORT_INTERVAL_OPTIONS_MINUTES = Object.freeze([15, 30, 60, 120, 180, 240, 360, 720, 1440])
 export const DEFAULT_REPORT_INTERVAL_MINUTES = 720
-export const DEFAULT_REPORT_START_HOUR = 8
+export const DEFAULT_REPORT_START_HOUR = 5
 
 // Device commands; the known weight for a scale calibration is in grams, and
 // the device checks the same range.
