@@ -778,9 +778,34 @@
         "logs":"Logs",
         "insights":"Insights",
         "details":"Details",
+        "diagnostics":"Diagnostics",
         "connected":"Connected bins",
         "instructions":"Remote commands",
         "actions":"Manage"
+      },
+      "diagnostics":{
+        "description":"What the device last reported about itself ({{when}}).",
+        "emptyTitle":"No diagnostics yet",
+        "emptyDescription":"The device reports them from firmware 1.0.0 on; they show after its next report.",
+        "seconds":"s",
+        "none":"None",
+        "samplesOf_one":"{{count}} of 5",
+        "samplesOf_other":"{{count}} of 5",
+        "sections":{ "device":"Device", "power":"Power", "network":"Cellular network", "cycle":"Last cycle's times", "sensors":"Sensors", "mesh":"Link to the gateway" },
+        "hints":{ "resetReason":"Why the chip last started its code from scratch; normally a scheduled wake.", "wakeCause":"What woke it from sleep this cycle; normally the timer.", "pmuOffSource":"Why the power chip last cut the board's power; kept until the next cut, so it can be old." },
+        "fields":{
+          "firmwareVersion":"Firmware", "resetReason":"Last restart", "wakeCause":"Woken by", "pmuOffSource":"Last power cut",
+          "batteryMv":"Battery", "vbusMv":"USB / solar input", "systemMv":"System", "charger":"Charger", "chipTempC":"Chip temperature", "pmuTempC":"Power chip temperature",
+          "signal":"Signal", "rsrp":"RSRP", "rsrq":"RSRQ", "sinr":"SINR", "system":"System", "operator":"Operator (MCC-MNC)", "band":"Band", "cell":"Cell", "bytesSentLastCycle":"Bytes sent last cycle",
+          "modemMs":"Modem start", "networkMs":"Network and clock", "slotWaitMs":"Wait for the slot", "mqttMs":"Server connection", "gpsMs":"GPS fix",
+          "distanceSamples":"Sensor readings", "distanceSpreadMm":"Readings' spread", "scaleRawCounts":"Scale raw reading", "scaleZeroCounts":"Scale empty point", "scaleSpreadCounts":"Scale readings' spread",
+          "beaconRssi":"Gateway signal", "guardSeconds":"Wakes before its slot by", "missedCycles":"Beacons missed before", "residualPpm":"Clock uncertainty"
+        },
+        "signal":{ "good":"Good", "fair":"Fair", "weak":"Weak" },
+        "resetReasons":{ "poweron":"Power on", "external":"Reset button", "software":"Software restart", "panic":"Crash", "interrupt_wdt":"Watchdog (interrupt)", "task_wdt":"Watchdog (task)", "other_wdt":"Watchdog", "deepsleep":"Scheduled wake", "brownout":"Low voltage", "sdio":"SDIO", "usb":"USB", "jtag":"JTAG", "efuse":"eFuse error", "power_glitch":"Power glitch", "cpu_lockup":"CPU lockup", "unknown":"Unknown" },
+        "wakeCauses":{ "timer":"Timer", "ext0":"External pin", "ext1":"External pins", "touchpad":"Touch", "ulp":"Co-processor", "gpio":"GPIO", "uart":"Serial", "undefined":"Power on or reset", "other":"Other" },
+        "chargers":{ "none":"No battery", "trickle":"Trickle charging", "precharge":"Pre-charging", "constant_current":"Charging (constant current)", "constant_voltage":"Charging (topping up)", "done":"Charged", "stopped":"Not charging" },
+        "pmuOff":{ "pwronLow":"Power key held", "software":"Software", "pwronAlwaysLow":"Power key stuck", "vsysUnder":"System under-voltage", "vbusOver":"Input over-voltage", "dcdcUnder":"Rail under-voltage", "dcdcOver":"Rail over-voltage", "dieOverTemp":"Over-temperature" }
       },
       "deviceTitle":"Device",
       "actions":{

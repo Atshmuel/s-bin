@@ -24,6 +24,7 @@ import BinInsights from "@/components/bins/analytics/BinInsights"
 import { useAppSide } from "@/hooks/useAppSide"
 import { useTranslation } from "react-i18next"
 import DeviceInstructions from "@/components/bins/DeviceInstructions"
+import BinDiagnostics from "@/components/bins/BinDiagnostics"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useRemainingHeight } from "@/hooks/useRemainingHeight"
@@ -50,7 +51,7 @@ function BinDetails() {
     const { allLogs, totalLogs, isLoadingLogs, logsError } = useLogs(logsPagination.pageIndex + 1, logsPagination.pageSize,
         logsSearch, logsSort, { binId: id })
     const logsPageCount = totalLogs ? Math.ceil(totalLogs / logsPagination.pageSize) : 0
-    const { me, isAdmin } = useMe()
+    const { me, isAdmin, isOwner } = useMe()
     const isUser = me?.role === 'user'
     const isMobile = useIsMobile()
     const gateway = isGateway(bin)
@@ -208,10 +209,12 @@ function BinDetails() {
         "logs",
         "insights",
         "details",
+        // The device's own diagnostics: owners only (admins get conclusions later, in 2k).
+        ...(isOwner ? ["diagnostics"] : []),
         ...(gateway || connectedCount > 0 ? ["connected"] : []),
         ...(isAdmin ? ["instructions"] : []),
         ...(isUser ? [] : ["actions"]),
-    ], [isAdmin, isUser, gateway, connectedCount])
+    ], [isAdmin, isOwner, isUser, gateway, connectedCount])
     // Opening another device from its links keeps this page mounted; fall back
     // to the logs if the chosen tab does not exist for it.
     const activeTab = tabs.includes(tab) ? tab : "logs"
@@ -351,6 +354,7 @@ function BinDetails() {
                                             </CardContent>
                                         </Card>
                                     )}
+                                    {name === "diagnostics" && <BinDiagnostics bin={bin} />}
                                     {name === "actions" && <BinActions key={bin._id} bin={bin} />}
                                 </CarouselItem>
                             ))}

@@ -796,9 +796,35 @@
         "logs":"תיעודים",
         "insights":"תובנות",
         "details":"פרטים",
+        "diagnostics":"אבחון",
         "connected":"פחים מחוברים",
         "instructions":"פקודות מרחוק",
         "actions":"ניהול"
+      },
+      "diagnostics":{
+        "description":"מה שהמכשיר דיווח לאחרונה על עצמו ({{when}}).",
+        "emptyTitle":"אין עדיין אבחון",
+        "emptyDescription":"המכשיר מדווח עליו מקושחה 1.0.0 ואילך; הוא יוצג אחרי הדיווח הבא שלו.",
+        "seconds":"שנ׳",
+        "none":"אין",
+        "samplesOf_one":"{{count}} מתוך 5",
+        "samplesOf_two":"{{count}} מתוך 5",
+        "samplesOf_other":"{{count}} מתוך 5",
+        "sections":{ "device":"מכשיר", "power":"חשמל", "network":"רשת סלולרית", "cycle":"זמני המחזור האחרון", "sensors":"חיישנים", "mesh":"קשר לשער התקשורת" },
+        "hints":{ "resetReason":"למה השבב הפעיל את הקוד מההתחלה בפעם האחרונה; בדרך כלל התעוררות מתוזמנת.", "wakeCause":"מה העיר אותו מהשינה במחזור הזה; בדרך כלל הטיימר.", "pmuOffSource":"למה שבב החשמל ניתק לאחרונה את חשמל הלוח; נשמר עד הניתוק הבא, ולכן עשוי להיות ישן." },
+        "fields":{
+          "firmwareVersion":"קושחה", "resetReason":"הפעלה מחדש אחרונה", "wakeCause":"הוער על ידי", "pmuOffSource":"ניתוק חשמל אחרון",
+          "batteryMv":"סוללה", "vbusMv":"כניסת USB / סולארי", "systemMv":"מערכת", "charger":"מטען", "chipTempC":"טמפרטורת השבב", "pmuTempC":"טמפרטורת שבב החשמל",
+          "signal":"קליטה", "rsrp":"RSRP", "rsrq":"RSRQ", "sinr":"SINR", "system":"מערכת", "operator":"מפעיל (MCC-MNC)", "band":"תדר", "cell":"תא", "bytesSentLastCycle":"בתים שנשלחו במחזור הקודם",
+          "modemMs":"הפעלת המודם", "networkMs":"רשת ושעון", "slotWaitMs":"המתנה למועד", "mqttMs":"התחברות לשרת", "gpsMs":"קליטת GPS",
+          "distanceSamples":"קריאות החיישן", "distanceSpreadMm":"פיזור הקריאות", "scaleRawCounts":"קריאה גולמית של המשקל", "scaleZeroCounts":"נקודת האפס של המשקל", "scaleSpreadCounts":"פיזור קריאות המשקל",
+          "beaconRssi":"קליטת שער התקשורת", "guardSeconds":"מתעורר לפני המועד ב־", "missedCycles":"משואות שהוחמצו לפני כן", "residualPpm":"אי־ודאות השעון"
+        },
+        "signal":{ "good":"טובה", "fair":"בינונית", "weak":"חלשה" },
+        "resetReasons":{ "poweron":"חיבור לחשמל", "external":"כפתור איפוס", "software":"הפעלה מחדש בתוכנה", "panic":"קריסה", "interrupt_wdt":"שומר (פסיקה)", "task_wdt":"שומר (משימה)", "other_wdt":"שומר", "deepsleep":"התעוררות מתוזמנת", "brownout":"מתח נמוך", "sdio":"SDIO", "usb":"USB", "jtag":"JTAG", "efuse":"שגיאת eFuse", "power_glitch":"תקלת חשמל", "cpu_lockup":"נעילת מעבד", "unknown":"לא ידוע" },
+        "wakeCauses":{ "timer":"טיימר", "ext0":"פין חיצוני", "ext1":"פינים חיצוניים", "touchpad":"מגע", "ulp":"מעבד עזר", "gpio":"GPIO", "uart":"תקשורת טורית", "undefined":"הדלקה או איפוס", "other":"אחר" },
+        "chargers":{ "none":"אין סוללה", "trickle":"טעינה איטית", "precharge":"טעינה מקדימה", "constant_current":"נטען (זרם קבוע)", "constant_voltage":"נטען (השלמה)", "done":"טעון", "stopped":"לא נטען" },
+        "pmuOff":{ "pwronLow":"לחיצה על מקש ההפעלה", "software":"תוכנה", "pwronAlwaysLow":"מקש ההפעלה תקוע", "vsysUnder":"מתח מערכת נמוך", "vbusOver":"מתח כניסה גבוה", "dcdcUnder":"מתח פס נמוך", "dcdcOver":"מתח פס גבוה", "dieOverTemp":"התחממות יתר" }
       },
       "deviceTitle":"מכשיר",
       "actions":{
