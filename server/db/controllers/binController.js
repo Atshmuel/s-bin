@@ -85,7 +85,8 @@ export async function getAllUserBins(req, res) {
         ...listSortStages(req.query, BIN_SORT_FIELDS, { _id: 1 }),
         { $skip: skip },
         { $limit: limitNum },
-        { $project: { macAddress: 0, _sortRank: 0 } },
+        // Diagnostics are for the bin page only.
+        { $project: { macAddress: 0, _sortRank: 0, 'status.diagnostics': 0 } },
     ]
 
     try {
@@ -305,7 +306,8 @@ export async function getBinsInUserRadius(req, res) {
                     },
                 },
                 ...fullnessStages,
-                { $project: { macAddress: 0, deviceKey: 0 } }
+                // Diagnostics stay out: a planner's search can return thousands of bins.
+                { $project: { macAddress: 0, deviceKey: 0, 'status.diagnostics': 0 } }
             ]
         )
 

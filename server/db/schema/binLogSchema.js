@@ -26,6 +26,10 @@ export const binLogSchema = new mongoose.Schema({
     // clock was off when it synced.
     driftPpm: { type: Number, min: -MAX_ABS_DRIFT_PPM, max: MAX_ABS_DRIFT_PPM },
     clockErrorSeconds: { type: Number, min: -MAX_ABS_CLOCK_ERROR_SECONDS, max: MAX_ABS_CLOCK_ERROR_SECONDS },
+    // What the device reported about itself, its fields checked one by one
+    // (utils/diagnostics.js): firmware, restart, power, temperatures, sample
+    // spread, stage times, the cell, a leaf's guard.
+    diagnostics: { type: mongoose.Schema.Types.Mixed, default: undefined },
     connection: { type: String, enum: ["cellular", "mesh"] },
     gatewayId: { type: mongoose.Schema.Types.ObjectId, ref: "Bin" },
     hops: { type: Number, min: 1, max: 8 },

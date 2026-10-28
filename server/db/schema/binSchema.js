@@ -59,6 +59,10 @@ export const binSchema = new mongoose.Schema({
         // Relayed message IDs already stored, so gateway retries are not stored twice.
         recentMeshMessageIds: { type: [Number], default: [] },
         updatedAt: { type: Date, default: Date.now },
+        // The device's latest diagnostics (see utils/diagnostics.js) and its
+        // firmware, kept from its last report that had them.
+        diagnostics: { type: mongoose.Schema.Types.Mixed, default: undefined },
+        firmwareVersion: { type: String, default: null },
         // How fast it fills since its last emptying (% a day; null without a
         // rising trend), and when that was worked out: stale once a report
         // came after it (see db/service/fillRateService.js).

@@ -10,6 +10,7 @@ import { settleClaims } from "../../db/service/routeService.js";
 import { binFillRate } from "../../db/service/fillRateService.js";
 import { organizationThresholds } from "../../db/service/thresholdService.js";
 import { batteryLevel, fullnessLevel } from "../../utils/thresholds.js";
+import { cleanDiagnostics } from "../../utils/diagnostics.js";
 import {
     MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM,
 } from "../../utils/constants.js";
@@ -74,6 +75,7 @@ export async function applyDeviceLog(bin, {
     driftPpm,
     clockErrorSeconds,
     scale,
+    diagnostics: rawDiagnostics,
 }, { via, gatewayId = null, hops = null, rssi = null, measuredAt, reportIntervalMinutes, reportStartHour }) {
     const schedule = getNextReportSchedule(location, reportIntervalMinutes, reportStartHour);
     const takenAt = measuredAt ?? new Date();
@@ -110,6 +112,8 @@ export async function applyDeviceLog(bin, {
     if (healthMessage) messages.push(healthMessage);
     const message = messages.length > 0 ? messages.join(' ') : null;
 
+    // Whatever the device sent about itself that checks out (see utils/diagnostics.js).
+    const diagnostics = cleanDiagnostics(rawDiagnostics);
     const levelIsValid = !isGateway && sensorOk !== false;
     let query = {
         binId: bin._id,
@@ -120,6 +124,7 @@ export async function applyDeviceLog(bin, {
         battery,
         ...(lastAwakeSeconds === undefined ? {} : { lastAwakeSeconds }),
         ...clockDiagnostics({ driftPpm, clockErrorSeconds }),
+        ...(diagnostics ? { diagnostics } : {}),
         connection: via,
         ...(gatewayId === null ? {} : { gatewayId }),
         ...(hops === null ? {} : { hops }),
@@ -157,6 +162,11 @@ export async function applyDeviceLog(bin, {
     }
 
     bin.status.updatedAt = takenAt;
+    // The latest diagnostics stay on the bin; firmware without them leaves the last ones.
+    if (diagnostics) {
+        bin.status.diagnostics = diagnostics;
+        if (diagnostics.firmwareVersion) bin.status.firmwareVersion = diagnostics.firmwareVersion;
+    }
     bin.status.health = health;
     bin.status.healthMessage = healthMessage || "";
     if (!isGateway) {

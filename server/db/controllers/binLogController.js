@@ -84,7 +84,8 @@ export async function getAllLogs(req, res) {
                 ...listSortStages(req.query, LOG_SORT_FIELDS, { createdAt: -1, _id: -1 }),
                 { $skip: skip },
                 { $limit: limit },
-                { $project: { __v: 0, _sortRank: 0 } },
+                // Diagnostics are for the bin page only.
+                { $project: { __v: 0, _sortRank: 0, diagnostics: 0 } },
             ]),
             binLogModel.countDocuments(filter),
         ]);

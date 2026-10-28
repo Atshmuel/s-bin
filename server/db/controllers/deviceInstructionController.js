@@ -6,14 +6,17 @@ import {
     INSTRUCTION_PAYLOAD_MAX_BYTES, INSTRUCTIONS_LIST_LIMIT,
 } from "../../utils/constants.js";
 
-const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale"]);
+// refresh_location: the device takes a GPS fix at its next cycle (GNSS and
+// cellular data cannot run together on its modem), for a bin that was moved;
+// only devices with their own modem have GPS.
+const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale", "refresh_location"]);
 
 function isValidInstructionPayload(type, payload) {
     if (type === "report_now") {
         return Object.keys(payload).length === 0;
     }
 
-    if (type === "calibrate_empty_bin") {
+    if (type === "calibrate_empty_bin" || type === "refresh_location") {
         return Object.keys(payload).length === 0;
     }
 

@@ -16,7 +16,8 @@ import {
 // each, /api/overviews/<section>). Bins go out without their device key or
 // MAC address: the key is what a device authenticates with.
 
-const BIN_PUBLIC_PROJECTION = Object.freeze({ deviceKey: 0, macAddress: 0, 'status.recentMeshMessageIds': 0 });
+// Diagnostics stay out too: every device is read here, and none of them is shown.
+const BIN_PUBLIC_PROJECTION = Object.freeze({ deviceKey: 0, macAddress: 0, 'status.recentMeshMessageIds': 0, 'status.diagnostics': 0 });
 
 function isGatewayBin(bin) {
     return bin.kind === 'gateway';
