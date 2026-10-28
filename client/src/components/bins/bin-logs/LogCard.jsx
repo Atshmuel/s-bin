@@ -48,7 +48,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                                         <GaugeCircle size={16} /> {t("fillLevel")}:
                                     </span>
                                     <span>
-                                        {log.oldLevel}% → <b>{log.newLevel == null ? t("sensorUnavailable") : `${log.newLevel}%`}</b>
+                                        {log.oldLevel}% {isRight ? "→" : "←"} <b>{log.newLevel == null ? t("sensorUnavailable") : `${log.newLevel}%`}</b>
                                     </span>
                                 </div>
 
