@@ -99,11 +99,19 @@ jobs:
             echo "Logging into Docker Hub..."
             docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
-            echo "Pulling latest images..."
-            docker compose pull
-            
-            echo "Restarting containers..."
-            docker compose up -d --force-recreate
+            # Only the app's own images change from deploy to deploy; OSRM and
+            # VROOM keep running (recreating them reloads the road graph and
+            # changes VROOM's container IP).
+            echo "Pulling the app images..."
+            docker compose pull server client
+
+            echo "Restarting the app containers..."
+            docker compose up -d --force-recreate server client
+
+            # Starts OSRM or VROOM only if one is down or its definition in
+            # docker-compose.yml changed; a running, unchanged one is left alone.
+            echo "Making sure the routing containers run..."
+            docker compose up -d
 
             # Each pull leaves the previous :latest images behind as <none>.
             echo "Removing old images..."
