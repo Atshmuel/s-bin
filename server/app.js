@@ -18,6 +18,7 @@ import { routeRouter } from './routers/routeRouter.js';
 import { deviceRouter } from './routers/deviceRouter.js';
 import { setEmailServiceCredentials } from './utils/mailService.js';
 import { initMqtt } from './mqtt/mqttClient.js';
+import { syncDeviceAccounts } from './mqtt/brokerAccounts.js';
 import { IS_DEV_MACHINE as isDevMachine, LOCAL_CLIENT_ORIGIN } from './utils/constants.js';
 import { apiLimiter } from './middlewares/rateLimiters.js';
 
@@ -83,7 +84,7 @@ const main = async () => {
         if (isDevMachine) {
             console.log(`Developer machine (${process.env.SBIN_DEV_MACHINE}): MQTT, scheduled jobs and real emails are left to the deployed server.`);
         } else {
-            initMqtt();
+            initMqtt({ onPrivateConnect: syncDeviceAccounts });
             setEmailServiceCredentials()
             await import("./db/cron/cleanupOTP.js");
             await import("./db/cron/cleanupActivationToken.js");

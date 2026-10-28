@@ -383,8 +383,19 @@ export const IS_DEV_MACHINE = Boolean(process.env.SBIN_DEV_MACHINE) &&
 // The client's dev server, allowed only on a developer's machine.
 export const LOCAL_CLIENT_ORIGIN = "http://localhost:5173";
 
-// MQTT broker connection.
-export const MQTT_BROKER_URL = "mqtt://broker.hivemq.com:1883";
+// MQTT brokers. The public one, which devices used before 2i (no
+// credentials), stays while they move to the private one: MQTT_BROKER_URL,
+// MQTT_BROKER_USERNAME and MQTT_BROKER_PASSWORD in .env (the server's own
+// account; without them only the public broker is used).
+export const MQTT_PUBLIC_BROKER_URL = "mqtt://broker.hivemq.com:1883";
+// On the private broker (Mosquitto's dynamic security) each device has an
+// account: its MAC, its device key as the password, and the DEVICE_BROKER_ROLE,
+// which lets it publish and read only its own topics. The server keeps the
+// accounts in step, BROKER_ACCOUNT_BATCH commands a message.
+export const DEVICE_BROKER_ROLE = "device";
+export const BROKER_CONTROL_TOPIC = "$CONTROL/dynamic-security/v1";
+export const BROKER_ACCOUNT_BATCH = 100;
+export const BROKER_CONTROL_TIMEOUT_MS = 10 * SECOND_MS;
 export const MQTT_CONNECT_TIMEOUT_MS = 5 * SECOND_MS;
 export const MQTT_RECONNECT_MS = SECOND_MS;
 
