@@ -1143,6 +1143,7 @@
           "title": "Costs",
           "description": "What collecting costs the organization, in ₪. The money its routes spend and the system saves is counted from these; each starts from a common figure to change to the organization's own.",
           "invalid": "Needs a number from {{min}} to {{max}}.",
+          "reset": "Reset to defaults",
           "fields": {
             "dieselPerLiter": { "label": "Diesel", "hint": "The price of a litre.", "unit": "₪ / litre" },
             "crewPerHour": { "label": "Crew", "hint": "A truck's crew (the driver and the workers) for an hour on a route.", "unit": "₪ / hour" },

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
@@ -31,6 +32,8 @@ function OrgCostsSection({ id, organization }) {
     const [costs, setCosts] = useState(saved);
     const isChanged = FIELDS.some(field => costs[field] !== saved[field]);
     const isValid = FIELDS.every(field => isValidCost(field, costs[field]));
+    const defaults = asForm(null);
+    const isDefault = FIELDS.every(field => costs[field] === defaults[field]);
 
     const mutation = useMutation({
         mutationFn: updateCostSettingsApi,
@@ -81,6 +84,15 @@ function OrgCostsSection({ id, organization }) {
                     </SettingsRow>
                 );
             })}
+            {/* Fills in the defaults; Save applies them, like any change. */}
+            {!isDefault && (
+                <div className="px-6 py-4">
+                    <Button type="button" variant="outline" size="sm" disabled={mutation.isPending} onClick={() => setCosts(defaults)}>
+                        <RotateCcw data-icon="inline-start" />
+                        {t("components.orgSettingsPage.costs.reset")}
+                    </Button>
+                </div>
+            )}
         </SettingsSection>
     );
 }
