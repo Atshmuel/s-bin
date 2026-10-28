@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next"
 import DeviceInstructions from "@/components/bins/DeviceInstructions"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useRemainingHeight } from "@/hooks/useRemainingHeight"
 
 function BinDetails() {
     const { isRight } = useAppSide()
@@ -226,6 +227,9 @@ function BinDetails() {
             carouselApi.off("select", onSelect)
         }
     }, [carouselApi, tabs, setTab])
+    // The sections fill what is left of the screen and scroll inside it, so the
+    // page itself does not scroll (nor stretch to the tallest section).
+    const [panelRef, panelHeight] = useRemainingHeight()
     // The first move (the tab from the URL after a refresh) jumps without sliding.
     const hasPositionedRef = useRef(false)
     useEffect(() => {
@@ -285,6 +289,7 @@ function BinDetails() {
                         The default gutter between slides stays: without it the next section
                         shows in the carousel's 4px edge. */}
                     <Carousel
+                        ref={panelRef}
                         setApi={setCarouselApi}
                         allowDrag={isMobile}
                         opts={{ direction: isRight ? "ltr" : "rtl" }}
@@ -293,7 +298,10 @@ function BinDetails() {
                     >
                         <CarouselContent isRight className="items-start">
                             {tabs.map((name) => (
-                                <CarouselItem key={name} inert={name !== activeTab}>
+                                <CarouselItem key={name} inert={name !== activeTab}
+                                    // Only the shown section scrolls: a neighbour's scrollbar would peek into the gutter.
+                                    className={name === activeTab ? "overflow-y-auto overscroll-contain" : "overflow-hidden"}
+                                    style={panelHeight ? { height: panelHeight } : undefined}>
                                     {name === "logs" && (
                                         <Card>
                                             <CardHeader>
