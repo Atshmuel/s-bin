@@ -33,6 +33,11 @@ export function updateThresholdSettingsApi({ orgId, ...thresholds }) {
     return request(`${ORG_EP}/${orgId}/thresholds`, { method: "PATCH", body: thresholds });
 }
 
+// A new device registration code for the organization.
+export function regenerateRegistrationCodeApi({ orgId }) {
+    return request(`${ORG_EP}/${orgId}/registration-code`, { method: "POST" });
+}
+
 // What collecting costs the organization: any of COST_SETTINGS' fields.
 export function updateCostSettingsApi({ orgId, ...costs }) {
     return request(`${ORG_EP}/${orgId}/costs`, { method: "PATCH", body: costs });
