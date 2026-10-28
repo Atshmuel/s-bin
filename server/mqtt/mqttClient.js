@@ -10,18 +10,27 @@ export const mqttClient = mqtt.connect(MQTT_BROKER_URL, {
     reconnectPeriod: MQTT_RECONNECT_MS,
 });
 
-export function initMqtt() {
-    mqttClient.on("connect", () => {
-        console.log("Connected to MQTT broker");
-        mqttClient.subscribe(BIN_UPDATE_TOPIC, { qos: 1 }, (err) => {
-            if (err) console.error("Subscribe error:", err);
-            else console.log("Subscribed to ", BIN_UPDATE_TOPIC);
-        });
-        mqttClient.subscribe(BIN_REGISTER_TOPIC, { qos: 1 }, (err) => {
-            if (err) console.error("Subscribe error:", err);
-            else console.log("Subscribed to ", BIN_REGISTER_TOPIC);
-        });
+// The client connects as soon as this module loads, while the server is still
+// connecting to the database; initMqtt() runs after that. So the first
+// "connect" may already have happened: subscribe now if it has, and on every
+// (re)connect after.
+function subscribeToDevices() {
+    console.log("Connected to MQTT broker");
+    mqttClient.subscribe(BIN_UPDATE_TOPIC, { qos: 1 }, (err) => {
+        if (err) console.error("Subscribe error:", err);
+        else console.log("Subscribed to ", BIN_UPDATE_TOPIC);
     });
+    mqttClient.subscribe(BIN_REGISTER_TOPIC, { qos: 1 }, (err) => {
+        if (err) console.error("Subscribe error:", err);
+        else console.log("Subscribed to ", BIN_REGISTER_TOPIC);
+    });
+}
+
+export function initMqtt() {
+    mqttClient.on("connect", subscribeToDevices);
+    if (mqttClient.connected) subscribeToDevices();
+    mqttClient.on("offline", () => console.warn("MQTT broker unreachable; reconnecting."));
+    mqttClient.on("error", (err) => console.error("MQTT error:", err?.message ?? err));
 
     mqttClient.on("message", async (topic, message) => {
         try {
