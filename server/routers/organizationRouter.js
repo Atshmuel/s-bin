@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authRole, authToken } from "../middlewares/authMiddleware.js";
-import { createOrganization, getOrganizations, removeOrganization, updateCostSettings, updateFleetSettings, updateThresholdSettings, updateMapSettings, updateOrganization } from "../db/controllers/organizationController.js";
+import { createOrganization, getOrganizations, removeOrganization, regenerateRegistrationCode, updateCostSettings, updateFleetSettings, updateThresholdSettings, updateMapSettings, updateOrganization } from "../db/controllers/organizationController.js";
 import { validateBodyFields, validateParamExist } from '../middlewares/validationMiddleware.js'
 import { COST_SETTINGS, ROLES, THRESHOLD_SETTINGS } from "../utils/constants.js";
 
@@ -22,3 +22,5 @@ organizationRouter.patch('/:id/map', ownersAndAdmins, validateParamExist(), vali
 organizationRouter.patch('/:id/costs', ownersAndAdmins, validateParamExist(), validateBodyFields([], Object.keys(COST_SETTINGS)), updateCostSettings);
 // Fullness and battery cut-offs: owners for any organization, admins for their own (checked in the controller).
 organizationRouter.patch('/:id/thresholds', ownersAndAdmins, validateParamExist(), validateBodyFields([], Object.keys(THRESHOLD_SETTINGS)), updateThresholdSettings);
+// A new device registration code: owners for any organization, admins for their own (checked in the controller).
+organizationRouter.post('/:id/registration-code', ownersAndAdmins, validateParamExist(), regenerateRegistrationCode);

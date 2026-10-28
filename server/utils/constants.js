@@ -361,6 +361,14 @@ export const OTP_EXPIRY_MINUTES = 5;
 export const RATE_LIMIT_WINDOW_MS = 15 * MINUTE_MS;
 export const API_RATE_LIMIT = 600;
 export const AUTH_RATE_LIMIT = 10;
+// A new device registers over HTTPS with its organization's registration code
+// (2i): wrong codes from one address are limited to this many a window
+// (devices on one operator can share an address, so successes do not count).
+export const DEVICE_REGISTRATION_FAILURE_LIMIT = 20;
+// Registration codes: unambiguous letters and digits (no 0/O, 1/I/L), shown
+// as two groups of four; compared without case or the dash.
+export const REGISTRATION_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+export const REGISTRATION_CODE_LENGTH = 8;
 
 // A developer's machine leaves the devices, the scheduled jobs and real emails
 // to the deployed server (running them too would store every device report

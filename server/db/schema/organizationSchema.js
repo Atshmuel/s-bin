@@ -124,6 +124,10 @@ export const organizationSchema = new mongoose.Schema({
     },
     costs: { type: costsSchema, default: () => ({}) },
     thresholds: { type: thresholdsSchema, default: () => ({}) },
+    // The code a new device registers with in this organization (2i; see
+    // utils/registrationCode.js); made when first needed, owners and admins
+    // can make a new one.
+    registrationCode: { type: String, default: null },
     // What the last nightly plan did, for its settings ("why no routes today?").
     lastAutoPlan: { type: lastAutoPlanSchema, default: null },
 });
