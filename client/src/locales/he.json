@@ -1044,6 +1044,7 @@
       "confirmCalibration":"הוסף כיול לתור",
       "results":{
         "additional_report_published":"הדיווח נשלח",
+        "location_refresh_scheduled":"מיקום GPS ייקלט בדיווח הבא",
         "additional_report_publish_failed":"שליחת הדיווח נכשלה",
         "awake_window_extended":"המכשיר נשאר ער כמבוקש",
         "invalid_awake_extension_duration":"זמן ערות לא תקין",
@@ -1063,7 +1064,8 @@
         "report_now":"בקשת דיווח מיידי",
         "stay_awake":"הארכת זמן הערות",
         "calibrate_empty_bin":"כיול מחדש של פח ריק",
-        "calibrate_scale":"כיול משקל עם משקל ידוע"
+        "calibrate_scale":"כיול משקל עם משקל ידוע",
+        "refresh_location":"רענון מיקום ה־GPS בדיווח הבא"
       },
       "statuses":{
         "pending":"ממתינה",

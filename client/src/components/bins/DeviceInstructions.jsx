@@ -34,7 +34,9 @@ import { isGateway } from "@/utils/binHelpers";
 import { formatReportSchedule } from "@/utils/orgSettings";
 import { INSTRUCTIONS_PAGE_SIZE as PAGE_SIZE, MAX_AWAKE_MINUTES, MAX_SCALE_GRAMS, MIN_SCALE_GRAMS } from "@/utils/constants";
 
-const INSTRUCTION_TYPES = ["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale"];
+const INSTRUCTION_TYPES = ["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale", "refresh_location"];
+// Only a device with its own modem has an awake time to extend and a GPS.
+const OWN_MODEM_TYPES = ["stay_awake", "refresh_location"];
 const CALIBRATION_TYPES = ["calibrate_empty_bin", "calibrate_scale"];
 const DATE_FORMAT = "yyyy-MM-dd HH:mm";
 // The last report to the second, as on the bin page's tile.
@@ -74,10 +76,10 @@ function DeviceInstructions({ bin, className }) {
     const { isRight } = useAppSide();
     // Calibration needs the A02 sensor: every bin has one, including a bin that
     // relays for leaves; only a gateway does not. A leaf reaches commands
-    // through its gateway's ACK and has no awake time to extend.
+    // through its gateway's ACK and has no awake time to extend, nor a GPS.
     const viaMesh = bin.status?.connection?.via === "mesh";
     const instructionTypes = INSTRUCTION_TYPES.filter((type) =>
-        !(isGateway(bin) && CALIBRATION_TYPES.includes(type)) && !(viaMesh && type === "stay_awake"));
+        !(isGateway(bin) && CALIBRATION_TYPES.includes(type)) && !(viaMesh && OWN_MODEM_TYPES.includes(type)));
     const [instructionType, setInstructionType] = useState(instructionTypes[0]);
     const [durationMinutes, setDurationMinutes] = useState("5");
     const [scaleGrams, setScaleGrams] = useState("1000");

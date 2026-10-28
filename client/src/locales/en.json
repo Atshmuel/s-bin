@@ -1022,6 +1022,7 @@
       "confirmCalibration":"Queue calibration",
       "results":{
         "additional_report_published":"Report sent",
+        "location_refresh_scheduled":"A GPS fix will be taken at the next report",
         "additional_report_publish_failed":"The report could not be sent",
         "awake_window_extended":"Stayed awake as requested",
         "invalid_awake_extension_duration":"Invalid awake time",
@@ -1041,7 +1042,8 @@
         "report_now":"Request an immediate report",
         "stay_awake":"Extend awake time",
         "calibrate_empty_bin":"Recalibrate empty-bin reference",
-        "calibrate_scale":"Calibrate scale with a known weight"
+        "calibrate_scale":"Calibrate scale with a known weight",
+        "refresh_location":"Refresh the GPS location at the next report"
       },
       "statuses":{
         "pending":"Pending",
