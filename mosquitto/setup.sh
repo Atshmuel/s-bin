@@ -3,7 +3,7 @@
 # (from ~/s-bin). The certificate; the dynamic-security file with the
 # server's account, its password made here and written into server/.env
 # (MQTT_BROKER_URL / USERNAME / PASSWORD, replacing any older ones; a backup of
-# .env is kept; the password is never printed); the broker; the device role.
+# .env is kept; the password is never printed); the broker; the server's access.
 # The server creates the devices' accounts itself when it connects. Run again,
 # it keeps the accounts and only re-applies the roles.
 set -e
@@ -37,9 +37,5 @@ ctrl() {
 # The server (the init's admin role): every topic, besides the $CONTROL ones it has.
 ctrl addRoleACL admin publishClientSend '#' allow 1
 ctrl addRoleACL admin subscribePattern '#' allow 1
-# A device: its MAC is its username (%u); it sends its reports and reads its replies and commands.
-ctrl createRole device
-ctrl addRoleACL device publishClientSend 'bins/%u/update/#' allow 5
-ctrl addRoleACL device subscribePattern 'bins/ack/%u' allow 5
-ctrl addRoleACL device subscribePattern 'bins/command/%u' allow 5
-docker exec sbin-mosquitto mosquitto_ctrl -h localhost -p 1883 -u "$SERVER_USER" -P "$PASSWORD" dynsec getRole device
+# Each device gets a role of its own from the server (Mosquitto 2.0 does not fill %u into role ACLs).
+docker exec sbin-mosquitto mosquitto_ctrl -h localhost -p 1883 -u "$SERVER_USER" -P "$PASSWORD" dynsec getRole admin

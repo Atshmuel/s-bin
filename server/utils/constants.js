@@ -389,10 +389,11 @@ export const LOCAL_CLIENT_ORIGIN = "http://localhost:5173";
 // account; without them only the public broker is used).
 export const MQTT_PUBLIC_BROKER_URL = "mqtt://broker.hivemq.com:1883";
 // On the private broker (Mosquitto's dynamic security) each device has an
-// account: its MAC, its device key as the password, and the DEVICE_BROKER_ROLE,
-// which lets it publish and read only its own topics. The server keeps the
-// accounts in step, BROKER_ACCOUNT_BATCH commands a message.
-export const DEVICE_BROKER_ROLE = "device";
+// account: its MAC, its device key as the password, and a role of its own
+// (DEVICE_ROLE_PREFIX + MAC) that lets it publish and read only its own topics,
+// written out (Mosquitto 2.0 does not fill %u into role ACLs). The server keeps
+// them in step, BROKER_ACCOUNT_BATCH commands a message.
+export const DEVICE_ROLE_PREFIX = "device-";
 export const BROKER_CONTROL_TOPIC = "$CONTROL/dynamic-security/v1";
 export const BROKER_ACCOUNT_BATCH = 100;
 export const BROKER_CONTROL_TIMEOUT_MS = 10 * SECOND_MS;

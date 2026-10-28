@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { privateBrokerClient } from "./mqttClient.js";
 import { binModel } from "../db/models/models.js";
-import { BROKER_ACCOUNT_BATCH, BROKER_CONTROL_TIMEOUT_MS, BROKER_CONTROL_TOPIC, DEVICE_BROKER_ROLE } from "../utils/constants.js";
+import { BROKER_ACCOUNT_BATCH, BROKER_CONTROL_TIMEOUT_MS, BROKER_CONTROL_TOPIC, DEVICE_ROLE_PREFIX } from "../utils/constants.js";
 
 // The devices' accounts on the private broker (Mosquitto's dynamic security,
 // driven over its $CONTROL topic): the MAC as the username, the device key as
-// the password, the device role. Without a private broker nothing happens.
+// the password, and a role of its own that reaches only its topics. Without a
+// private broker nothing happens.
 
 const MAC_ADDRESS_PATTERN = /^([0-9A-F]{2}:){5}[0-9A-F]{2}$/i;
 const RESPONSE_TOPIC = `${BROKER_CONTROL_TOPIC}/response`;
@@ -62,47 +63,77 @@ async function runCommands(commands) {
     return responses;
 }
 
-const createCommand = (mac, deviceKey) => ({
-    command: "createClient", username: mac, password: deviceKey, roles: [{ rolename: DEVICE_BROKER_ROLE }],
+const roleName = mac => `${DEVICE_ROLE_PREFIX}${mac}`;
+
+// A device's role: it sends its reports, and reads its replies and commands.
+const createRoleCommand = mac => ({
+    command: "createRole",
+    rolename: roleName(mac),
+    acls: [
+        { acltype: "publishClientSend", topic: `bins/${mac}/update/#`, priority: 5, allow: true },
+        { acltype: "subscribeLiteral", topic: `bins/ack/${mac}`, priority: 5, allow: true },
+        { acltype: "subscribeLiteral", topic: `bins/command/${mac}`, priority: 5, allow: true },
+    ],
 });
+const createClientCommand = (mac, deviceKey) => ({
+    command: "createClient", username: mac, password: deviceKey, roles: [{ rolename: roleName(mac) }],
+});
+const deleteCommands = mac => [
+    { command: "deleteClient", username: mac },
+    { command: "deleteRole", rolename: roleName(mac) },
+];
 
 // A newly registered device's account; a failure is logged (the next sync repairs it).
 export async function createDeviceAccount(mac, deviceKey) {
     try {
-        await runCommands([createCommand(mac, deviceKey)]);
+        await runCommands([createRoleCommand(mac), createClientCommand(mac, deviceKey)]);
     } catch (error) {
         console.error(`Could not create the broker account of ${mac}:`, error?.message ?? error);
     }
 }
 
-// Deleted devices' accounts; a failure is logged (the next sync repairs it).
+// Deleted devices' accounts and roles; a failure is logged (the next sync repairs it).
 export async function deleteDeviceAccounts(macs) {
     try {
-        await runCommands(macs.filter(Boolean).map(mac => ({ command: "deleteClient", username: mac })));
+        await runCommands(macs.filter(Boolean).flatMap(deleteCommands));
     } catch (error) {
         console.error("Could not delete broker accounts:", error?.message ?? error);
     }
 }
 
-// Every device has an account and no account outlives its device: run on
-// each connect to the private broker, so it also creates the accounts of
-// devices from before it and repairs a missed create or delete. Only
-// accounts named like a MAC are touched (the server's own is not).
+// Every device has its account and role, and none outlives its device: run
+// on each connect to the private broker, so it also creates them for devices
+// from before it and repairs a missed create or delete. Only accounts named
+// like a MAC and roles named DEVICE_ROLE_PREFIX + MAC are touched.
 export async function syncDeviceAccounts() {
     try {
-        const [listing] = await runCommands([{ command: "listClients", verbose: false, count: -1, offset: 0 }]);
-        if (!listing) return;
-        const existing = new Set((listing.data?.clients ?? []).filter(name => MAC_ADDRESS_PATTERN.test(name)));
-        const devices = await binModel.find({ deviceKey: { $exists: true } }, { macAddress: 1, deviceKey: 1 }).lean();
-        const known = new Set(devices.map(device => device.macAddress));
-        const toCreate = devices.filter(device => device.macAddress && !existing.has(device.macAddress));
-        const toDelete = [...existing].filter(mac => !known.has(mac));
-        await runCommands([
-            ...toCreate.map(device => createCommand(device.macAddress, device.deviceKey)),
-            ...toDelete.map(mac => ({ command: "deleteClient", username: mac })),
+        const [clientList, roleList] = await runCommands([
+            { command: "listClients", verbose: false, count: -1, offset: 0 },
+            { command: "listRoles", verbose: false, count: -1, offset: 0 },
         ]);
-        if (toCreate.length || toDelete.length) {
-            console.log(`[Broker] Device accounts synced: ${toCreate.length} created, ${toDelete.length} deleted.`);
+        if (!clientList || !roleList) return;
+        const accounts = new Set((clientList.data?.clients ?? []).filter(name => MAC_ADDRESS_PATTERN.test(name)));
+        const roles = new Set((roleList.data?.roles ?? [])
+            .filter(name => name.startsWith(DEVICE_ROLE_PREFIX) && MAC_ADDRESS_PATTERN.test(name.slice(DEVICE_ROLE_PREFIX.length)))
+            .map(name => name.slice(DEVICE_ROLE_PREFIX.length)));
+        const devices = (await binModel.find({ deviceKey: { $exists: true } }, { macAddress: 1, deviceKey: 1 }).lean())
+            .filter(device => MAC_ADDRESS_PATTERN.test(device.macAddress ?? ""));
+        const known = new Set(devices.map(device => device.macAddress));
+        const commands = [];
+        for (const device of devices) {
+            const mac = device.macAddress;
+            if (!roles.has(mac)) commands.push(createRoleCommand(mac));
+            if (!accounts.has(mac)) commands.push(createClientCommand(mac, device.deviceKey));
+            else if (!roles.has(mac)) commands.push({ command: "addClientRole", username: mac, rolename: roleName(mac) });
+        }
+        const gone = [...new Set([...accounts, ...roles])].filter(mac => !known.has(mac));
+        for (const mac of gone) {
+            if (accounts.has(mac)) commands.push({ command: "deleteClient", username: mac });
+            if (roles.has(mac)) commands.push({ command: "deleteRole", rolename: roleName(mac) });
+        }
+        await runCommands(commands);
+        if (commands.length) {
+            console.log(`[Broker] Device accounts synced: ${commands.length} change(s) for ${devices.length} devices, ${gone.length} removed.`);
         }
     } catch (error) {
         console.error("[Broker] Could not sync the device accounts:", error?.message ?? error);
