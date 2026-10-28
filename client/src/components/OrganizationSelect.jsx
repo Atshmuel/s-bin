@@ -32,7 +32,7 @@ function OrganizationSelect() {
                 <SelectGroup>
                     <SelectItem isRight={isRight} value={ALL}>{t("components.organizationSelect.all")}</SelectItem>
                     {!orgsError && organizations?.map(org => (
-                        <SelectItem isRight={isRight} className="max-w-[320px] truncate" key={org._id} value={org._id}>{org.name}</SelectItem>
+                        <SelectItem isRight={isRight} className="truncate" key={org._id} value={org._id}>{org.name}</SelectItem>
                     ))}
                 </SelectGroup>
             </SelectContent>

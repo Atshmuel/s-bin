@@ -188,7 +188,7 @@ function UserInputs({ form, isCreating }) {
                                                     <SelectLabel isRight={isRight}>{orgsError ? t("newEntity.userInputs.fields.organization.error") : t("newEntity.userInputs.fields.organization.label")}</SelectLabel>
                                                     <div className="max-h-52 overflow-y-auto">
                                                         {!orgsError ? organizations?.map(m => (
-                                                            <SelectItem isRight={isRight} className="capitalize max-w-[320px] truncate" key={m._id} value={m._id}>{m.name}</SelectItem>
+                                                            <SelectItem isRight={isRight} className="capitalize truncate" key={m._id} value={m._id}>{m.name}</SelectItem>
                                                         )) : null}
                                                     </div>
                                                 </SelectGroup>
