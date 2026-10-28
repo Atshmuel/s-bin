@@ -66,9 +66,30 @@ function BinDiagnostics({ bin }) {
         ? formatDistanceToNow(new Date(bin.status.updatedAt), { addSuffix: true, locale: i18n.language === "he" ? he : undefined })
         : null
 
+    const issues = bin.status?.issues ?? []
+    const issueValue = issue => issue.type === "slow_cycle" ? Math.round(issue.value / 1000)
+        : issue.type === "unexpected_restart" ? t(key(`resetReasons.${issue.value}`))
+        : issue.value
     return (
         <div className="flex flex-col gap-4">
             <p className="text-sm text-muted-foreground">{t(key("description"), { when: reportedAt ?? "-" })}</p>
+            {issues.length > 0 && (
+                <Card className="border-amber-500/60">
+                    <CardHeader><CardTitle className="text-base">{t(key("issuesTitle"))}</CardTitle></CardHeader>
+                    <CardContent>
+                        <ul className="flex flex-col gap-2 text-sm">
+                            {issues.map(issue => (
+                                <li key={issue.type} className="flex flex-wrap items-center justify-between gap-2">
+                                    <Badge variant="pending">{t(key(`issues.${issue.type}`), { value: issueValue(issue) })}</Badge>
+                                    <span className="text-muted-foreground">
+                                        {t(key("issueSince"), { when: formatDistanceToNow(new Date(issue.since), { locale: i18n.language === "he" ? he : undefined }) })}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+                </Card>
+            )}
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <Section title={t(key("sections.device"))} rows={[
                     [t(key("fields.firmwareVersion")), d.firmwareVersion],

@@ -467,6 +467,7 @@
       },
       "reasons": {
         "contradicted": "סומן כנאסף, עדיין מלא",
+        "device": "בעיה במכשיר",
         "full": "כמעט מלא",
         "maintenance": "דורש תחזוקה",
         "offline": "לא מחובר",
@@ -811,6 +812,9 @@
         "samplesOf_two":"{{count}} מתוך 5",
         "samplesOf_other":"{{count}} מתוך 5",
         "sections":{ "device":"מכשיר", "power":"חשמל", "network":"רשת סלולרית", "cycle":"זמני המחזור האחרון", "sensors":"חיישנים", "mesh":"קשר לשער התקשורת" },
+        "issuesTitle":"בעיות פתוחות",
+        "issueSince":"כבר {{when}}",
+        "issues":{ "unexpected_restart":"הופעל מחדש באופן לא צפוי ({{value}})", "weak_signal":"קליטה סלולרית חלשה ({{value}} dBm)", "overheating":"התחמם ({{value}}°C)", "noisy_sensor":"חיישן המילוי לא יציב", "slow_cycle":"איטי בהתחברות ({{value}} שנ׳)", "weak_mesh_link":"קשר חלש לשער התקשורת" },
         "hints":{ "resetReason":"למה השבב הפעיל את הקוד מההתחלה בפעם האחרונה; בדרך כלל התעוררות מתוזמנת.", "wakeCause":"מה העיר אותו מהשינה במחזור הזה; בדרך כלל הטיימר.", "pmuOffSource":"למה שבב החשמל ניתק לאחרונה את חשמל הלוח; נשמר עד הניתוק הבא, ולכן עשוי להיות ישן." },
         "fields":{
           "firmwareVersion":"קושחה", "resetReason":"הפעלה מחדש אחרונה", "wakeCause":"הוער על ידי", "pmuOffSource":"ניתוק חשמל אחרון",

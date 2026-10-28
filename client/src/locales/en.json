@@ -458,6 +458,7 @@
       },
       "reasons": {
         "contradicted": "Marked collected, still full",
+        "device": "Device issue",
         "full": "Almost full",
         "maintenance": "Maintenance due",
         "offline": "Offline",
@@ -792,6 +793,9 @@
         "samplesOf_one":"{{count}} of 5",
         "samplesOf_other":"{{count}} of 5",
         "sections":{ "device":"Device", "power":"Power", "network":"Cellular network", "cycle":"Last cycle's times", "sensors":"Sensors", "mesh":"Link to the gateway" },
+        "issuesTitle":"Open issues",
+        "issueSince":"for {{when}}",
+        "issues":{ "unexpected_restart":"Restarted unexpectedly ({{value}})", "weak_signal":"Weak cellular signal ({{value}} dBm)", "overheating":"Running hot ({{value}}°C)", "noisy_sensor":"Fill sensor unsteady", "slow_cycle":"Slow to connect ({{value}} s)", "weak_mesh_link":"Weak link to its gateway" },
         "hints":{ "resetReason":"Why the chip last started its code from scratch; normally a scheduled wake.", "wakeCause":"What woke it from sleep this cycle; normally the timer.", "pmuOffSource":"Why the power chip last cut the board's power; kept until the next cut, so it can be old." },
         "fields":{
           "firmwareVersion":"Firmware", "resetReason":"Last restart", "wakeCause":"Woken by", "pmuOffSource":"Last power cut",
