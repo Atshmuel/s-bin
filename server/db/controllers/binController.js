@@ -28,9 +28,10 @@ export async function getBin(req, res) {
     query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(id))
     query = scopeToOrganization(query, req.user)
 
+    // The raw diagnostics are for owners (2k); anyone else gets the bin without them.
     const pipeline = [
         { $match: query },
-        { $project: { macAddress: 0 } }
+        { $project: { macAddress: 0, ...(req.user.role === ROLES.OWNER ? {} : { 'status.diagnostics': 0 }) } }
     ]
 
     try {
