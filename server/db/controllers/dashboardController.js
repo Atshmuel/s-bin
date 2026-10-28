@@ -49,6 +49,8 @@ export async function devicesWithReasons(user) {
         if (['warning', 'critical'].includes(batteryLevel(device.status?.battery, cutOffs))) reasons.push('battery');
         if (['warning', 'critical'].includes(device.status?.health)) reasons.push('health');
         if (contradicted.has(String(device._id))) reasons.push('contradicted');
+        // A device's own problems (its diagnostics) are for owners.
+        if (user.role === ROLES.OWNER && device.status?.issues?.length) reasons.push('device');
         return {
             ...device,
             fullness,

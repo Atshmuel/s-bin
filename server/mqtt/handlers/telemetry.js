@@ -11,6 +11,7 @@ import { binFillRate } from "../../db/service/fillRateService.js";
 import { organizationThresholds } from "../../db/service/thresholdService.js";
 import { batteryLevel, fullnessLevel } from "../../utils/thresholds.js";
 import { cleanDiagnostics } from "../../utils/diagnostics.js";
+import { detectIssues, nextIssues } from "../../utils/deviceIssues.js";
 import {
     MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM,
 } from "../../utils/constants.js";
@@ -169,8 +170,11 @@ export async function applyDeviceLog(bin, {
     }
 
     bin.status.updatedAt = takenAt;
-    // The latest diagnostics stay on the bin; firmware without them leaves the last ones.
+    // The latest diagnostics stay on the bin; firmware without them leaves the
+    // last ones. Its open issues follow them, against the diagnostics before.
     if (diagnostics) {
+        const open = (bin.status.issues ?? []).map(issue => issue.toObject?.() ?? issue);
+        bin.status.issues = nextIssues(open, detectIssues(diagnostics, bin.status.diagnostics), takenAt);
         bin.status.diagnostics = diagnostics;
         if (diagnostics.firmwareVersion) bin.status.firmwareVersion = diagnostics.firmwareVersion;
     }

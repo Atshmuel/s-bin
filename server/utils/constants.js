@@ -261,6 +261,26 @@ export const STATS_DAYS = 90;
 // itself (TTL indexes).
 export const LOG_RETENTION_DAYS = 90;
 export const DIAGNOSTICS_RETENTION_DAYS = 30;
+// A device's problems, found in its reports' diagnostics and raised to owners
+// (status.issues; see utils/deviceIssues.js). A condition closes in the first
+// report that reads fine again; an event (a restart) stays open
+// DEVICE_EVENT_ISSUE_DAYS after it last happened, so it is seen.
+export const DEVICE_ISSUE_TYPES = Object.freeze([
+    'unexpected_restart', 'weak_signal', 'overheating', 'noisy_sensor', 'slow_cycle', 'weak_mesh_link',
+]);
+export const DEVICE_ISSUE_LIMITS = Object.freeze({
+    weakRsrpDbm: -110,          // below this in two reports in a row
+    hotTempC: 70,               // the chip or the power chip
+    minDistanceSamples: 3,      // of the A02's five
+    noisyDistanceSpreadMm: 50,
+    slowCycleMs: 60 * 1000,     // modem, network and server connection together
+    leafMissedBeacons: 2,
+    weakBeaconRssiDbm: -90,
+});
+export const DEVICE_EVENT_ISSUE_DAYS = 7;
+// Restarts that mean something went wrong; a power-on that no timer woke is
+// the power chip cutting the power (or someone pressing reset).
+export const FAULT_RESET_REASONS = Object.freeze(['panic', 'interrupt_wdt', 'task_wdt', 'other_wdt', 'brownout', 'power_glitch', 'cpu_lockup']);
 export const STATS_LOOKBACK_MS = DAY_MS;
 export const STATS_SETTLE_MS = DAY_MS;
 export const STATS_REFRESH_MS = HOUR_MS;

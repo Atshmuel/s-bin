@@ -34,6 +34,27 @@ function deviceLabel(device) {
     return device.kind === 'gateway' ? `Gateway ${device.binName}` : device.binName;
 }
 
+// A device issue (see utils/deviceIssues.js) as a line of the owners' report.
+function issueLine(device, issue) {
+    const what = {
+        unexpected_restart: `restarted unexpectedly (${issue.value})`,
+        weak_signal: `weak cellular signal (${issue.value} dBm)`,
+        overheating: `running hot (${issue.value}°C)`,
+        noisy_sensor: `fill sensor unsteady`,
+        slow_cycle: `slow to connect (${Math.round(issue.value / 1000)} s)`,
+        weak_mesh_link: `weak link to its gateway`,
+    }[issue.type] ?? issue.type;
+    return `${deviceLabel(device)}: ${what}, since ${formatTime(issue.since, device.timezone, DATE_PARTS)}.`;
+}
+
+// The owners' extra section: each device's open issues.
+export function issueSection(devices) {
+    return {
+        title: 'Device issues',
+        lines: devices.flatMap(device => (device.status?.issues ?? []).map(issue => issueLine(device, issue))),
+    };
+}
+
 function offlineLine(device, devices) {
     const parts = [`${deviceLabel(device)}: last report ${formatTime(lastReportAt(device), device.timezone)}.`];
     const leaves = devices.filter(other => String(upstreamId(other)) === String(device._id));
@@ -154,7 +175,8 @@ export async function sendDailyReports(now = Date.now()) {
     }
 
     for (const report of reports) {
-        const users = recipients.filter(user => String(user.org) === String(report.orgId));
+        // A day with only device issues goes to the owners alone.
+        const users = report.sections.length > 0 ? recipients.filter(user => String(user.org) === String(report.orgId)) : [];
         report.sent = await sendToEach(users, {
             orgName: report.orgName,
             sectionsText: sectionsText(report.sections),
@@ -164,10 +186,10 @@ export async function sendDailyReports(now = Date.now()) {
     }
     const ownersSent = reports.length > 0 && await sendToEach(owners, {
         orgName: 'all organizations',
-        sectionsText: reports.map(report => `== ${report.orgName} ==\n\n${sectionsText(report.sections)}`).join('\n\n\n'),
+        sectionsText: reports.map(report => `== ${report.orgName} ==\n\n${sectionsText(report.ownerSections)}`).join('\n\n\n'),
         sectionsHtml: reports.map(report =>
             `<h2 style='margin:32px 0 0 0; font-size:18px; color:#0b7a57;'>${escapeHtml(report.orgName)}</h2>` +
-            sectionsHtml(report.sections)).join(''),
+            sectionsHtml(report.ownerSections)).join(''),
     });
 
     for (const report of reports) {
@@ -206,6 +228,9 @@ async function organizationReport(orgId, now) {
     }
 
     const { sections, newlyOffline } = reportSections(devices, dueSoon, now, contradictions, drivers);
-    if (sections.length === 0) return null;
-    return { orgId, orgName: org?.name ?? 'your organization', sections, newlyOffline };
+    // Device issues are for the owners only.
+    const issues = issueSection(devices);
+    const ownerSections = issues.lines.length > 0 ? [...sections, issues] : sections;
+    if (ownerSections.length === 0) return null;
+    return { orgId, orgName: org?.name ?? 'your organization', sections, ownerSections, newlyOffline };
 }
