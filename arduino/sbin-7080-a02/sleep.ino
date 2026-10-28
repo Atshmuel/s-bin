@@ -115,6 +115,9 @@ void enterDeepSleep(uint64_t sleepSeconds, uint32_t leadSeconds) {
     Serial.flush();
     delay(200);  // lets a monitor read the last lines before USB goes down
     lastAwakeSeconds = (millis() - lightSleptMs + 999UL) / 1000UL;
+    // This cycle's MQTT bytes go out with the next report.
+    bytesSentLastCycle = bytesSentThisCycle;
+    bytesSentThisCycle = 0;
     markSleepStart();
     esp_sleep_enable_timer_wakeup(correctedSleepSeconds * MICROSECONDS_PER_SECOND);
     esp_deep_sleep_start();

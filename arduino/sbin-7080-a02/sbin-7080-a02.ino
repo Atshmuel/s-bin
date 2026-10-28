@@ -36,7 +36,10 @@ void setup() {
     }
 
     constexpr uint32_t MODEM_RETRY_SLEEP_SECONDS = 15UL * 60UL;
-    if (!initializeModem()) {
+    uint32_t stageStartedAt = millis();
+    const bool modemReady = initializeModem();
+    stageTimes.modemMs = millis() - stageStartedAt;
+    if (!modemReady) {
         cutModemPower();
         enterDeepSleepForSetupRetry(MODEM_RETRY_SLEEP_SECONDS, "Modem initialization failed");
     }
@@ -47,14 +50,19 @@ void setup() {
     // On the network but without its time (the modem lost power and the network
     // has not sent the time yet), the report still goes out: the server's reply
     // sets the clock.
-    if (!synchronizeClockFromNetwork(CLOCK_SYNC_TIMEOUT_MS) && !modem.isNetworkConnected()) {
+    stageStartedAt = millis();
+    const bool clockReady = synchronizeClockFromNetwork(CLOCK_SYNC_TIMEOUT_MS);
+    stageTimes.networkMs = millis() - stageStartedAt;
+    if (!clockReady && !modem.isNetworkConnected()) {
         enterDeepSleepForSetupRetry(CLOCK_RETRY_SLEEP_SECONDS, "No valid network time");
     }
 
     // The slot sleep ended a few minutes early on purpose; wait for the slot
     // itself, so the window opens on it rather than wherever the drifting
     // sleep clock woke this gateway.
+    stageStartedAt = millis();
     waitForSlotStart();
+    stageTimes.slotWaitMs = millis() - stageStartedAt;
 
     // Open the mesh window only now: leaves set their clocks from the beacons,
     // and after a deep sleep this gateway's clock is off by about the whole
@@ -95,6 +103,9 @@ void loop() {
 
     if (gpsModeActive) {
         bool fixAcquired = updateGpsLocation();
+        if (fixAcquired || millis() - gpsAcquisitionStartedAt >= 300000UL) {
+            stageTimes.gpsMs = millis() - gpsAcquisitionStartedAt;
+        }
         if (fixAcquired) {
             Serial.printf("✅ GPS fix saved: %.6f, %.6f\n", latitude, longitude);
             if (!stopGpsAcquisition()) {
@@ -138,6 +149,9 @@ void loop() {
         delay(1000);
     }
 
+    if (cellularReady) {
+        readServingCell();
+    }
     bool mqttReady = false;
     if (cellularReady) {
         while (millis() - reportStartedAt < MAX_REPORT_WINDOW_MS) {
@@ -145,6 +159,7 @@ void loop() {
             mqttClient.loop();
             if (mqttClient.connected()) {
                 mqttReady = true;
+                stageTimes.mqttMs = millis() - reportStartedAt;
                 break;
             }
             delay(250);

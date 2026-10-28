@@ -71,3 +71,12 @@ time_t lastGpsUpdateEpoch = 0;
 unsigned long gpsAcquisitionStartedAt = 0;
 bool gpsAttemptDue = false;
 bool gpsFixUpdatedThisCycle = false;
+StageTimes stageTimes = {};
+uint8_t pmuOffSource = 0;
+uint8_t pmuOnSource = 0;
+bool lastScaleSampled = false;
+int32_t lastScaleRawCounts = 0;
+int32_t lastScaleSpreadCounts = 0;
+// Kept through deep sleep: the previous cycle's total goes out with this one.
+RTC_DATA_ATTR uint32_t bytesSentThisCycle = 0;
+RTC_DATA_ATTR uint32_t bytesSentLastCycle = 0;

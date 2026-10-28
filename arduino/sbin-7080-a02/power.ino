@@ -1,4 +1,12 @@
 #include "globals.h"
+#include <algorithm>
+
+namespace {
+// The A02 is read this many times per reading: the median is the distance, and
+// how far the samples spread shows a noisy sensor (rain, a bin lid, a loose wire).
+constexpr uint8_t DISTANCE_SAMPLES = 5;
+constexpr uint32_t DISTANCE_SAMPLE_GAP_MS = 60;
+}
 
 bool initializePowerManagement() {
     if (!PMU.begin(Wire1, AXP2101_SLAVE_ADDRESS, PMU_I2C_SDA_PIN, PMU_I2C_SCL_PIN)) {
@@ -35,6 +43,8 @@ void readPmuPowerSources() {
     };
     const uint8_t off = static_cast<uint8_t>(PMU.getPowerOffSource());
     const uint8_t on = static_cast<uint8_t>(PMU.getPowerOnSource());
+    pmuOffSource = off;
+    pmuOnSource = on;
     String reasons;
     for (uint8_t bit = 0; bit < 8; bit++) {
         if (off & (1 << bit)) {
@@ -99,7 +109,19 @@ void cutModemPower() {
 // trusted (its calibration just failed) counts as failed whatever it reads.
 DeviceReading takeReading(bool gpsTested, bool gpsOk, bool sensorTrusted) {
     DeviceReading reading;
-    reading.distanceMm = getDistanceMm();
+    int samples[DISTANCE_SAMPLES];
+    uint8_t valid = 0;
+    for (uint8_t i = 0; i < DISTANCE_SAMPLES; i++) {
+        const int distance = getDistanceMm();
+        if (distance > 0) {
+            samples[valid++] = distance;
+        }
+        delay(DISTANCE_SAMPLE_GAP_MS);
+    }
+    std::sort(samples, samples + valid);
+    reading.distanceSamples = valid;
+    reading.distanceMm = valid > 0 ? samples[valid / 2] : -1;
+    reading.distanceSpreadMm = valid > 1 ? samples[valid - 1] - samples[0] : 0;
     const bool sensorOk = sensorTrusted && reading.distanceMm > 0 &&
                           calculateFillLevel(reading.distanceMm) >= 0;
     if (!sensorOk) {

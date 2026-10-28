@@ -90,6 +90,16 @@ uint32_t processInstruction(const DeviceInstruction& instruction) {
             if (!publishTelemetry(takeReading(false, true, calibrated))) {
                 Serial.println("⚠️ The refreshed telemetry after calibration could not be published.");
             }
+        } else if (instruction.type == "refresh_location") {
+            // GNSS and cellular data cannot run together on the SIM7080, so the
+            // fix is taken at the next cycle, on the monthly refresh's path.
+            lastGpsAttemptEpoch = 0;
+            preferences.begin("credentials", false);
+            preferences.putLong64("gpsAttempt", 0);
+            preferences.end();
+            status = "completed";
+            result = "location_refresh_scheduled";
+            Serial.println("🛰️ A GPS refresh is scheduled for the next cycle.");
         } else if (instruction.type == "calibrate_scale") {
             Serial.printf("⚖️ Calibrating the scale with %lu g for instruction %s.\n",
                           static_cast<unsigned long>(instruction.grams), instruction.id.c_str());

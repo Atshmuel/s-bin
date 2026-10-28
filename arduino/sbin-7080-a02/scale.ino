@@ -93,8 +93,13 @@ ScaleResult readScaleRaw(int32_t& raw) {
         return SCALE_NOT_RESPONDING;
     }
     std::sort(samples, samples + SCALE_SAMPLES);
-    // The spread without the lowest and highest sample, which may be spikes.
-    if (samples[SCALE_SAMPLES - 2] - samples[1] > MAX_STABLE_SPREAD_COUNTS) {
+    // The spread without the lowest and highest sample, which may be spikes;
+    // kept for the diagnostics with the median, even when it is too wide.
+    const int32_t spread = samples[SCALE_SAMPLES - 2] - samples[1];
+    lastScaleSampled = true;
+    lastScaleRawCounts = samples[SCALE_SAMPLES / 2];
+    lastScaleSpreadCounts = spread;
+    if (spread > MAX_STABLE_SPREAD_COUNTS) {
         return SCALE_UNSTABLE;
     }
     raw = samples[SCALE_SAMPLES / 2];

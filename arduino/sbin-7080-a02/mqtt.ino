@@ -3,7 +3,8 @@
 namespace {
 constexpr char MQTT_SERVER[] = "broker.hivemq.com";
 constexpr uint16_t MQTT_PORT = 1883;
-constexpr uint16_t MQTT_BUFFER_SIZE = 1024;
+// A report with its diagnostics runs to about 1 KB.
+constexpr uint16_t MQTT_BUFFER_SIZE = 2048;
 constexpr unsigned long MQTT_RETRY_INTERVAL_MS = 5000;
 constexpr unsigned long REGISTRATION_INTERVAL_MS = 30000;
 // A report period outside this range is not a plausible schedule.
@@ -107,7 +108,7 @@ void publishRegistration(int batteryPercent) {
 
     char payload[256];
     size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
-    if (payloadLength == 0 || !mqttClient.publish(registrationTopic.c_str(), payload)) {
+    if (payloadLength == 0 || !mqttPublish(registrationTopic.c_str(), payload)) {
         Serial.println("❌ Failed to publish registration.");
         return;
     }
@@ -127,7 +128,7 @@ bool requestInstructionCheck(unsigned long timeoutMs) {
     char payload[160];
     size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
     if (payloadLength == 0 ||
-        !mqttClient.publish(instructionCheckTopic.c_str(), payload, false)) {
+        !mqttPublish(instructionCheckTopic.c_str(), payload, false)) {
         Serial.println("⚠️ Could not request server instructions; using the sleep fallback.");
         return false;
     }
@@ -165,7 +166,7 @@ bool publishInstructionResult(
 
     char payload[384];
     size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
-    if (payloadLength == 0 || !mqttClient.publish(
+    if (payloadLength == 0 || !mqttPublish(
             ("bins/" + DeviceMac + "/update/instruction-result").c_str(),
             payload,
             false)) {
@@ -331,7 +332,7 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     char payload[768];
     const size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
     if (payloadLength == 0 || payloadLength >= sizeof(payload) ||
-        !mqttClient.publish(relayTopic.c_str(), payload)) {
+        !mqttPublish(relayTopic.c_str(), payload)) {
         Serial.printf("❌ Could not publish the relayed reading of %s.\n", leafMac);
         return RELAY_NO_REPLY;
     }
@@ -358,7 +359,7 @@ bool publishTelemetry(const DeviceReading& reading) {
     int level = calculateFillLevel(reading.distanceMm);
     bool sensorOk = level >= 0;
 
-    StaticJsonDocument<768> doc;
+    StaticJsonDocument<1536> doc;
     doc["deviceKey"] = deviceKey;
     doc["sensorOk"] = sensorOk;
     if (sensorOk) {
@@ -382,8 +383,9 @@ bool publishTelemetry(const DeviceReading& reading) {
     if (reading.healthMessage.length() > 0) {
         doc["message"] = reading.healthMessage;
     }
+    addDiagnostics(doc["diagnostics"].to<JsonObject>(), reading);
 
-    char payload[768];
+    char payload[1536];
     size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
     if (payloadLength == 0 || payloadLength >= sizeof(payload) - 1) {
         Serial.println("❌ Failed to serialize telemetry.");
@@ -397,7 +399,7 @@ bool publishTelemetry(const DeviceReading& reading) {
         );
         return false;
     }
-    if (!mqttClient.publish(logTopic.c_str(), payload)) {
+    if (!mqttPublish(logTopic.c_str(), payload)) {
         Serial.println("❌ MQTT client rejected telemetry publish.");
         return false;
     }

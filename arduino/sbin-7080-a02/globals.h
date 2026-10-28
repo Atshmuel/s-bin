@@ -51,6 +51,10 @@
 // (re)connect, so the first lines are not lost.
 constexpr uint32_t USB_LOG_RECONNECT_WAIT_MS = 3000;
 
+// This firmware's version, reported in every diagnostics block (semver; bump
+// it by hand for every flash).
+constexpr char FIRMWARE_VERSION[] = "1.0.0";
+
 constexpr uint8_t MAX_PENDING_INSTRUCTIONS = 2;
 constexpr uint32_t MAX_AWAKE_EXTENSION_SECONDS = 3600;
 // How long the mesh window stays open each cycle for leaves to send their
@@ -132,8 +136,12 @@ extern bool gpsAttemptDue;
 extern bool gpsFixUpdatedThisCycle;
 
 // One reading of the bin's sensor, battery and health, as a report sends it.
+// The distance is the median of a few A02 samples; how many answered and how
+// far apart they were go into the diagnostics.
 struct DeviceReading {
     int distanceMm;
+    uint8_t distanceSamples;
+    int distanceSpreadMm;
     uint16_t batteryMillivolts;
     int batteryPercent;
     int32_t weightGrams;     // 0 unless scaleState is "ok"
@@ -141,6 +149,30 @@ struct DeviceReading {
     String health;
     String healthMessage;
 };
+
+// How long this cycle's stages took up to the report, in ms (0: did not run).
+struct StageTimes {
+    uint32_t modemMs;
+    uint32_t networkMs;
+    uint32_t slotWaitMs;
+    uint32_t mqttMs;
+    uint32_t gpsMs;
+};
+extern StageTimes stageTimes;
+// The AXP2101's power-off and power-on source registers, read at boot.
+extern uint8_t pmuOffSource;
+extern uint8_t pmuOnSource;
+// The last HX711 read's median raw counts and spread (see readScaleRaw()).
+extern bool lastScaleSampled;
+extern int32_t lastScaleRawCounts;
+extern int32_t lastScaleSpreadCounts;
+// MQTT payload bytes published this cycle and in the previous one.
+extern uint32_t bytesSentThisCycle;
+extern uint32_t bytesSentLastCycle;
+
+bool mqttPublish(const char* topic, const char* payload, bool retained = false);
+void readServingCell();
+void addDiagnostics(JsonObject diagnostics, const DeviceReading& reading);
 
 bool initializePowerManagement();
 void readPmuPowerSources();
