@@ -2,7 +2,7 @@ import { getBinByMacAndKeyShared, getOrgDeviceSettingsShared } from "../../db/se
 import { appendFilter, checkPayloadFields } from "../../utils/helpers.js";
 import { mqttClient } from "../mqttClient.js";
 import { BIN_ACK_TOPIC } from "../mqttTopics.js";
-import { binLogModel } from "../../db/models/models.js";
+import { binLogModel, deviceDiagnosticModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
 import { fromDeviceLocation } from "../../utils/geo.js";
 import { fullnessPercent } from "../../utils/analytics.js";
@@ -124,7 +124,6 @@ export async function applyDeviceLog(bin, {
         battery,
         ...(lastAwakeSeconds === undefined ? {} : { lastAwakeSeconds }),
         ...clockDiagnostics({ driftPpm, clockErrorSeconds }),
-        ...(diagnostics ? { diagnostics } : {}),
         connection: via,
         ...(gatewayId === null ? {} : { gatewayId }),
         ...(hops === null ? {} : { hops }),
@@ -138,6 +137,14 @@ export async function applyDeviceLog(bin, {
     query = appendFilter(query, message, 'message', message);
 
     const log = await binLogModel.create(query);
+    // Kept apart, for a shorter time than the log; never at the cost of the report.
+    if (diagnostics) {
+        try {
+            await deviceDiagnosticModel.create({ binId: bin._id, logId: log._id, createdAt: takenAt, diagnostics });
+        } catch (error) {
+            console.error(`Could not store the diagnostics of ${bin.binName}:`, error?.message ?? error);
+        }
+    }
     // A collection a driver marked on this bin is confirmed or contradicted by
     // its next report; never at the cost of storing the report.
     if (!isGateway) {

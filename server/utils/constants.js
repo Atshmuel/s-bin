@@ -255,6 +255,12 @@ export const DAYS_PER_MONTH = 365.25 / 12;
 // until then it is computed again when older than STATS_REFRESH_MS. Days are
 // filled STATS_CHUNK_DAYS at a time.
 export const STATS_DAYS = 90;
+// Storage: a log (one report) is kept LOG_RETENTION_DAYS (the analytics show
+// at most 90; the long history is in orgstats), a report's diagnostics
+// DIAGNOSTICS_RETENTION_DAYS (the bin keeps its latest); MongoDB deletes them
+// itself (TTL indexes).
+export const LOG_RETENTION_DAYS = 90;
+export const DIAGNOSTICS_RETENTION_DAYS = 30;
 export const STATS_LOOKBACK_MS = DAY_MS;
 export const STATS_SETTLE_MS = DAY_MS;
 export const STATS_REFRESH_MS = HOUR_MS;
