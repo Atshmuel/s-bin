@@ -22,27 +22,6 @@ struct ServingCell {
     int sinr = 0;
 } servingCell;
 
-const char* resetReasonText() {
-    switch (esp_reset_reason()) {
-        case ESP_RST_POWERON: return "poweron";
-        case ESP_RST_EXT: return "external";
-        case ESP_RST_SW: return "software";
-        case ESP_RST_PANIC: return "panic";
-        case ESP_RST_INT_WDT: return "interrupt_wdt";
-        case ESP_RST_TASK_WDT: return "task_wdt";
-        case ESP_RST_WDT: return "other_wdt";
-        case ESP_RST_DEEPSLEEP: return "deepsleep";
-        case ESP_RST_BROWNOUT: return "brownout";
-        case ESP_RST_SDIO: return "sdio";
-        case ESP_RST_USB: return "usb";
-        case ESP_RST_JTAG: return "jtag";
-        case ESP_RST_EFUSE: return "efuse";
-        case ESP_RST_PWR_GLITCH: return "power_glitch";
-        case ESP_RST_CPU_LOCKUP: return "cpu_lockup";
-        default: return "unknown";
-    }
-}
-
 const char* wakeCauseText() {
     switch (esp_sleep_get_wakeup_cause()) {
         case ESP_SLEEP_WAKEUP_UNDEFINED: return "undefined";
@@ -136,7 +115,7 @@ void readServingCell() {
 
 void addDiagnostics(JsonObject diagnostics, const DeviceReading& reading) {
     diagnostics["firmwareVersion"] = FIRMWARE_VERSION;
-    diagnostics["resetReason"] = resetReasonText();
+    diagnostics["resetReason"] = sbinmesh::resetReasonName(esp_reset_reason());
     diagnostics["wakeCause"] = wakeCauseText();
     diagnostics["chipTempC"] = roundf(temperatureRead() * 10) / 10;
     if (pmuAvailable) {
@@ -185,5 +164,33 @@ void addDiagnostics(JsonObject diagnostics, const DeviceReading& reading) {
     }
     if (bytesSentLastCycle > 0) {
         diagnostics["bytesSentLastCycle"] = bytesSentLastCycle;
+    }
+}
+
+// A relayed leaf's diagnostics (protocol v4), as the server's object.
+void addLeafDiagnostics(JsonObject diagnostics, const sbinmesh::LeafDiagnostics& leaf) {
+    char version[12];
+    snprintf(version, sizeof(version), "%u.%u.%u", leaf.firmwareVersion[0], leaf.firmwareVersion[1], leaf.firmwareVersion[2]);
+    diagnostics["firmwareVersion"] = version;
+    diagnostics["resetReason"] = sbinmesh::resetReasonName(leaf.resetReason);
+    if (leaf.flags & sbinmesh::DIAG_HAS_BATTERY_MV) {
+        diagnostics["batteryMv"] = leaf.batteryMv;
+    }
+    if (leaf.flags & sbinmesh::DIAG_HAS_CHIP_TEMP) {
+        diagnostics["chipTempC"] = leaf.chipTempC;
+    }
+    if (leaf.beaconRssi < 0) {
+        diagnostics["beaconRssi"] = leaf.beaconRssi;
+    }
+    diagnostics["guardSeconds"] = leaf.guardSeconds;
+    diagnostics["missedCycles"] = leaf.missedCycles;
+    diagnostics["residualPpm"] = leaf.residualPpm;
+    if (leaf.flags & sbinmesh::DIAG_HAS_DISTANCE_SPREAD) {
+        diagnostics["distanceSamples"] = leaf.distanceSamples;
+        diagnostics["distanceSpreadMm"] = leaf.distanceSpreadMm;
+    }
+    if (leaf.flags & sbinmesh::DIAG_HAS_SCALE_SAMPLE) {
+        diagnostics["scaleRawCounts"] = leaf.scaleRawCounts;
+        diagnostics["scaleSpreadCounts"] = leaf.scaleSpreadCounts;
     }
 }

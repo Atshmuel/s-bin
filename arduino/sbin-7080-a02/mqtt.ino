@@ -279,7 +279,7 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     sbinmesh::formatMac(data.header.origin, leafMac);
     const bool sensorOk = (data.flags & sbinmesh::DATA_SENSOR_OK) != 0;
 
-    StaticJsonDocument<768> doc;
+    StaticJsonDocument<1536> doc;
     doc["deviceKey"] = deviceKey;
     doc["leafMac"] = leafMac;
     doc["messageId"] = data.header.messageId;
@@ -318,6 +318,7 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     if (data.driftPpm != 0) {
         reading["driftPpm"] = data.driftPpm;
     }
+    addLeafDiagnostics(reading["diagnostics"].to<JsonObject>(), data.diagnostics);
     if (data.resultStatus == sbinmesh::RESULT_COMPLETED || data.resultStatus == sbinmesh::RESULT_FAILED) {
         char instructionId[sbinmesh::INSTRUCTION_ID_LENGTH * 2 + 1];
         for (size_t i = 0; i < sbinmesh::INSTRUCTION_ID_LENGTH; i++) {
@@ -329,7 +330,7 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
         result["result"] = leafResultText(data);
     }
 
-    char payload[768];
+    char payload[1536];
     const size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
     if (payloadLength == 0 || payloadLength >= sizeof(payload) ||
         !mqttPublish(relayTopic.c_str(), payload)) {

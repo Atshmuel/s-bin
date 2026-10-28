@@ -21,6 +21,9 @@ namespace {
 // of other organizations ignore each other.
 constexpr char ORGANIZATION_ID[] = "699760a44e48dff9a082101e";
 
+// This sketch's version, reported in its diagnostics (bump it for every flash).
+constexpr uint8_t FIRMWARE_VERSION[3] = {1, 0, 0};
+
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 // First boot, or after losing the gateway: without a clock or schedule the
 // leaf cannot know when the gateway's short window is, so it listens through
@@ -106,6 +109,9 @@ RTC_DATA_ATTR int64_t sleptSinceSyncMs = 0;
 // Drift estimate taken off the clock at each wake since the last beacon.
 RTC_DATA_ATTR int64_t clockCorrectedSinceSyncMs = 0;
 RTC_DATA_ATTR uint16_t lastAwakeSeconds = 0;
+// The last beacon's RSSI and the beacons missed before it, for the diagnostics.
+RTC_DATA_ATTR int8_t lastBeaconRssi = 0;
+RTC_DATA_ATTR uint8_t missedBeforeBeacon = 0;
 RTC_DATA_ATTR uint8_t fakeLevel = 10;
 RTC_DATA_ATTR uint8_t fakeBattery = 100;
 RTC_DATA_ATTR PendingReading pendingReadings[MAX_PENDING_READINGS];
@@ -174,7 +180,18 @@ DataPacket makeFakeReading() {
     reading.lastAwakeSeconds = lastAwakeSeconds;
     reading.meshAwakeWindowSeconds = meshWindowSeconds;
     reading.driftPpm = driftPpm;
+    // This board has no battery gauge, sensor or scale: those diagnostics stay out.
+    memcpy(reading.diagnostics.firmwareVersion, FIRMWARE_VERSION, sizeof(FIRMWARE_VERSION));
+    reading.diagnostics.resetReason = static_cast<uint8_t>(esp_reset_reason());
     return reading;
+}
+
+// The link as it is when a reading goes out (it may have waited cycles).
+void setLinkDiagnostics(DataPacket& reading) {
+    reading.diagnostics.beaconRssi = lastBeaconRssi;
+    reading.diagnostics.guardSeconds = static_cast<uint16_t>(min<uint32_t>(guardSeconds, UINT16_MAX));
+    reading.diagnostics.missedCycles = missedBeforeBeacon;
+    reading.diagnostics.residualPpm = static_cast<uint16_t>(min<uint32_t>(residualPpm, UINT16_MAX));
 }
 
 // Runs a command the gateway handed over (simulated: this leaf has no sensor
@@ -293,6 +310,8 @@ void applyBeacon(const BeaconPacket& beacon, const ReceivedFrame& frame, bool at
     }
     nextWakeEpoch = advertisedWake;
     meshWindowSeconds = beacon.meshWindowSeconds;
+    lastBeaconRssi = frame.rssi;
+    missedBeforeBeacon = missedCycles;
     missedCycles = 0;
     memcpy(gatewayMac, frame.sender, MAC_LENGTH);
 }
@@ -363,6 +382,7 @@ void sendPendingReadings() {
         PendingReading& pending = pendingReadings[0];
         pending.packet.ageSeconds =
             static_cast<uint32_t>(max<int64_t>(epochMsNow() - pending.takenAtMs, 0) / 1000);
+        setLinkDiagnostics(pending.packet);
         AckPacket ack = {};
         if (!deliverReading(pending.packet, ack)) {
             break;

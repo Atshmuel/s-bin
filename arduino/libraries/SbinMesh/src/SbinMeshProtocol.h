@@ -10,7 +10,8 @@
 namespace sbinmesh {
 
 constexpr uint16_t PACKET_MAGIC = 0x4253;  // "SB"
-constexpr uint8_t PROTOCOL_VERSION = 3;
+// 4: DATA carries the leaf's diagnostics (LeafDiagnostics).
+constexpr uint8_t PROTOCOL_VERSION = 4;
 constexpr uint8_t RADIO_CHANNEL = 1;
 constexpr uint8_t DEFAULT_TTL = 4;
 constexpr size_t MAX_FRAME_SIZE = 250;
@@ -95,6 +96,33 @@ struct __attribute__((packed)) BeaconPacket {
     uint8_t parentMac[MAC_LENGTH];  // all zero for a gateway
 };
 
+// Which of a leaf's optional diagnostics it measured.
+enum DiagnosticFlags : uint8_t {
+    DIAG_HAS_BATTERY_MV = 0x01,
+    DIAG_HAS_CHIP_TEMP = 0x02,
+    DIAG_HAS_DISTANCE_SPREAD = 0x04,
+    DIAG_HAS_SCALE_SAMPLE = 0x08,
+};
+
+// What a leaf reports about itself; the gateway turns it into the server's
+// "diagnostics" object. The reset reason is ESP-IDF's esp_reset_reason_t
+// (see resetReasonName()).
+struct __attribute__((packed)) LeafDiagnostics {
+    uint8_t firmwareVersion[3];   // major, minor, patch
+    uint8_t resetReason;
+    uint8_t flags;                // DiagnosticFlags
+    uint16_t batteryMv;
+    int8_t chipTempC;
+    int8_t beaconRssi;            // the gateway's beacon as the leaf heard it
+    uint16_t guardSeconds;        // how long before its slot it woke
+    uint8_t missedCycles;         // beacons missed in a row before this one
+    uint16_t residualPpm;         // the drift its estimate missed
+    uint8_t distanceSamples;
+    uint16_t distanceSpreadMm;
+    int32_t scaleRawCounts;
+    uint32_t scaleSpreadCounts;
+};
+
 // One telemetry reading from a leaf. The gateway turns it into the server's
 // JSON log, including the health string built from the failure counters.
 struct __attribute__((packed)) DataPacket {
@@ -124,6 +152,7 @@ struct __attribute__((packed)) DataPacket {
     uint8_t resultCode;           // ResultCode
     int32_t resultValue;          // the depth in mm, or the grams read
     uint32_t resultExtra;         // the grams placed, for a scale calibration
+    LeafDiagnostics diagnostics;
 };
 
 // Sent back hop by hop along the path the DATA came from.

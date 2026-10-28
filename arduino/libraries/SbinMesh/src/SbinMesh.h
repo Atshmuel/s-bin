@@ -4,6 +4,7 @@
 #include <esp_now.h>
 
 #include "SbinClockDrift.h"
+#include "SbinDiagnostics.h"
 #include "SbinMeshProtocol.h"
 
 // ESP-NOW Long Range radio for S-Bin mesh nodes. One MeshRadio per device;

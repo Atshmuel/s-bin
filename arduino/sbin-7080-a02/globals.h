@@ -173,6 +173,7 @@ extern uint32_t bytesSentLastCycle;
 bool mqttPublish(const char* topic, const char* payload, bool retained = false);
 void readServingCell();
 void addDiagnostics(JsonObject diagnostics, const DeviceReading& reading);
+void addLeafDiagnostics(JsonObject diagnostics, const sbinmesh::LeafDiagnostics& leaf);
 
 bool initializePowerManagement();
 void readPmuPowerSources();
