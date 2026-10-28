@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { add } from 'date-fns'
-import { DAY_MS, FIRST_SERVICE_AFTER_DAYS, MAX_LAST_AWAKE_SECONDS, SERVICE_INTERVAL_DAYS } from '../../utils/constants.js'
+import { DAY_MS, DEVICE_ISSUE_TYPES, FIRST_SERVICE_AFTER_DAYS, MAX_LAST_AWAKE_SECONDS, SERVICE_INTERVAL_DAYS } from '../../utils/constants.js'
 export const binSchema = new mongoose.Schema({
     binName: {
         type: String,
@@ -63,6 +63,17 @@ export const binSchema = new mongoose.Schema({
         // firmware, kept from its last report that had them.
         diagnostics: { type: mongoose.Schema.Types.Mixed, default: undefined },
         firmwareVersion: { type: String, default: null },
+        // Its open problems, from its diagnostics (utils/deviceIssues.js): what,
+        // since when, last seen, and the value that showed it.
+        issues: {
+            type: [new mongoose.Schema({
+                type: { type: String, enum: DEVICE_ISSUE_TYPES, required: true },
+                since: { type: Date, required: true },
+                lastSeenAt: { type: Date, required: true },
+                value: mongoose.Schema.Types.Mixed,
+            }, { _id: false })],
+            default: [],
+        },
         // How fast it fills since its last emptying (% a day; null without a
         // rising trend), and when that was worked out: stale once a report
         // came after it (see db/service/fillRateService.js).

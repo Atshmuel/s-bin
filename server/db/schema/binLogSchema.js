@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM, MAX_LAST_AWAKE_SECONDS } from '../../utils/constants.js'
+import { DAY_MS, LOG_RETENTION_DAYS, MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM, MAX_LAST_AWAKE_SECONDS } from '../../utils/constants.js'
 
 export const binLogSchema = new mongoose.Schema({
     binId: {
@@ -26,10 +26,6 @@ export const binLogSchema = new mongoose.Schema({
     // clock was off when it synced.
     driftPpm: { type: Number, min: -MAX_ABS_DRIFT_PPM, max: MAX_ABS_DRIFT_PPM },
     clockErrorSeconds: { type: Number, min: -MAX_ABS_CLOCK_ERROR_SECONDS, max: MAX_ABS_CLOCK_ERROR_SECONDS },
-    // What the device reported about itself, its fields checked one by one
-    // (utils/diagnostics.js): firmware, restart, power, temperatures, sample
-    // spread, stage times, the cell, a leaf's guard.
-    diagnostics: { type: mongoose.Schema.Types.Mixed, default: undefined },
     connection: { type: String, enum: ["cellular", "mesh"] },
     gatewayId: { type: mongoose.Schema.Types.ObjectId, ref: "Bin" },
     hops: { type: Number, min: 1, max: 8 },
@@ -48,16 +44,14 @@ export const binLogSchema = new mongoose.Schema({
     },
     message: String,
 
-}, { timestamps: true });
+    // A log never changes once written: no updatedAt or version key.
+}, { timestamps: { createdAt: true, updatedAt: false }, versionKey: false });
 
-
-// Every bin page and analytics query reads one bin's logs by time.
+// Every bin page and analytics query reads one bin's logs by time. The only
+// other index is the one that deletes logs after LOG_RETENTION_DAYS; the logs
+// page sorts its other columns without one (storage over sort speed).
 binLogSchema.index({ binId: 1, createdAt: -1 });
-// The logs page's sorts (newest first by default), _id breaking ties.
-binLogSchema.index({ createdAt: -1, _id: -1 });
-binLogSchema.index({ newLevel: -1, _id: -1 });
-binLogSchema.index({ weight: -1, _id: -1 });
-binLogSchema.index({ battery: -1, _id: -1 });
+binLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: LOG_RETENTION_DAYS * DAY_MS / 1000 });
 
 binLogSchema.virtual("bin", {
     ref: "Bin",

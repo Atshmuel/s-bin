@@ -8,6 +8,7 @@ import {
 } from '../../utils/constants.js'
 import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
 import { scopedThresholds } from '../service/thresholdService.js'
+import { deleteDeviceAccounts } from '../../mqtt/brokerAccounts.js'
 import { thresholdExpression } from '../../utils/thresholds.js'
 import { reservedBinIds } from '../service/routeService.js'
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
@@ -28,9 +29,10 @@ export async function getBin(req, res) {
     query = appendFilter(query, true, '_id', new mongoose.Types.ObjectId(id))
     query = scopeToOrganization(query, req.user)
 
+    // The raw diagnostics are for owners (2k); anyone else gets the bin without them.
     const pipeline = [
         { $match: query },
-        { $project: { macAddress: 0 } }
+        { $project: { macAddress: 0, ...(req.user.role === ROLES.OWNER ? {} : { 'status.diagnostics': 0 }) } }
     ]
 
     try {
@@ -375,6 +377,7 @@ export async function deleteBin(req, res) {
         removeBinConfig(deleteBinResult.macAddress)
 
         await session.commitTransaction();
+        deleteDeviceAccounts([deleteBinResult.macAddress]);
         return res.status(200).json({
             message: 'Bins and logs deleted successfully',
             deletedLogs: deleteLogsResult
@@ -400,7 +403,7 @@ export async function deleteBinsBatch(req, res) {
     const session = await mongoose.startSession();
     try {
         session.startTransaction();
-        const binsToDelete = await binModel.find(query, "_id", { session });
+        const binsToDelete = await binModel.find(query, "_id macAddress", { session });
         const binsToDeleteIds = binsToDelete.map(b => b._id);
 
         if (binsToDeleteIds.length === 0) {
@@ -416,6 +419,7 @@ export async function deleteBinsBatch(req, res) {
             removeBinConfig(bin.macAddress);
         })
         await session.commitTransaction();
+        deleteDeviceAccounts(binsToDelete.map(bin => bin.macAddress));
 
         return res.status(200).json({
             message: 'Bins and logs deleted successfully',

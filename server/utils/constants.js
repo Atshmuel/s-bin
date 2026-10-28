@@ -255,6 +255,32 @@ export const DAYS_PER_MONTH = 365.25 / 12;
 // until then it is computed again when older than STATS_REFRESH_MS. Days are
 // filled STATS_CHUNK_DAYS at a time.
 export const STATS_DAYS = 90;
+// Storage: a log (one report) is kept LOG_RETENTION_DAYS (the analytics show
+// at most 90; the long history is in orgstats), a report's diagnostics
+// DIAGNOSTICS_RETENTION_DAYS (the bin keeps its latest); MongoDB deletes them
+// itself (TTL indexes).
+export const LOG_RETENTION_DAYS = 90;
+export const DIAGNOSTICS_RETENTION_DAYS = 30;
+// A device's problems, found in its reports' diagnostics and raised to owners
+// (status.issues; see utils/deviceIssues.js). A condition closes in the first
+// report that reads fine again; an event (a restart) stays open
+// DEVICE_EVENT_ISSUE_DAYS after it last happened, so it is seen.
+export const DEVICE_ISSUE_TYPES = Object.freeze([
+    'unexpected_restart', 'weak_signal', 'overheating', 'noisy_sensor', 'slow_cycle', 'weak_mesh_link',
+]);
+export const DEVICE_ISSUE_LIMITS = Object.freeze({
+    weakRsrpDbm: -110,          // below this in two reports in a row
+    hotTempC: 70,               // the chip or the power chip
+    minDistanceSamples: 3,      // of the A02's five
+    noisyDistanceSpreadMm: 50,
+    slowCycleMs: 60 * 1000,     // modem, network and server connection together
+    leafMissedBeacons: 2,
+    weakBeaconRssiDbm: -90,
+});
+export const DEVICE_EVENT_ISSUE_DAYS = 7;
+// Restarts that mean something went wrong; a power-on that no timer woke is
+// the power chip cutting the power (or someone pressing reset).
+export const FAULT_RESET_REASONS = Object.freeze(['panic', 'interrupt_wdt', 'task_wdt', 'other_wdt', 'brownout', 'power_glitch', 'cpu_lockup']);
 export const STATS_LOOKBACK_MS = DAY_MS;
 export const STATS_SETTLE_MS = DAY_MS;
 export const STATS_REFRESH_MS = HOUR_MS;
@@ -335,6 +361,14 @@ export const OTP_EXPIRY_MINUTES = 5;
 export const RATE_LIMIT_WINDOW_MS = 15 * MINUTE_MS;
 export const API_RATE_LIMIT = 600;
 export const AUTH_RATE_LIMIT = 10;
+// A new device registers over HTTPS with its organization's registration code
+// (2i): wrong codes from one address are limited to this many a window
+// (devices on one operator can share an address, so successes do not count).
+export const DEVICE_REGISTRATION_FAILURE_LIMIT = 20;
+// Registration codes: unambiguous letters and digits (no 0/O, 1/I/L), shown
+// as two groups of four; compared without case or the dash.
+export const REGISTRATION_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+export const REGISTRATION_CODE_LENGTH = 8;
 
 // A developer's machine leaves the devices, the scheduled jobs and real emails
 // to the deployed server (running them too would store every device report
@@ -349,8 +383,20 @@ export const IS_DEV_MACHINE = Boolean(process.env.SBIN_DEV_MACHINE) &&
 // The client's dev server, allowed only on a developer's machine.
 export const LOCAL_CLIENT_ORIGIN = "http://localhost:5173";
 
-// MQTT broker connection.
-export const MQTT_BROKER_URL = "mqtt://broker.hivemq.com:1883";
+// MQTT brokers. The public one, which devices used before 2i (no
+// credentials), stays while they move to the private one: MQTT_BROKER_URL,
+// MQTT_BROKER_USERNAME and MQTT_BROKER_PASSWORD in .env (the server's own
+// account; without them only the public broker is used).
+export const MQTT_PUBLIC_BROKER_URL = "mqtt://broker.hivemq.com:1883";
+// On the private broker (Mosquitto's dynamic security) each device has an
+// account: its MAC, its device key as the password, and a role of its own
+// (DEVICE_ROLE_PREFIX + MAC) that lets it publish and read only its own topics,
+// written out (Mosquitto 2.0 does not fill %u into role ACLs). The server keeps
+// them in step, BROKER_ACCOUNT_BATCH commands a message.
+export const DEVICE_ROLE_PREFIX = "device-";
+export const BROKER_CONTROL_TOPIC = "$CONTROL/dynamic-security/v1";
+export const BROKER_ACCOUNT_BATCH = 100;
+export const BROKER_CONTROL_TIMEOUT_MS = 10 * SECOND_MS;
 export const MQTT_CONNECT_TIMEOUT_MS = 5 * SECOND_MS;
 export const MQTT_RECONNECT_MS = SECOND_MS;
 

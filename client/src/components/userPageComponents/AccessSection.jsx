@@ -109,7 +109,7 @@ function AccessSection({ id, user }) {
                                 placeholder: t("components.userManagementCard.organizationField.placeholder"),
                                 errorText: t("components.userManagementCard.organizationField.error"),
                                 items: organizations?.map(org => (
-                                    <SelectItem key={org._id} value={org._id} className="max-w-[320px] truncate">{org.name}</SelectItem>
+                                    <SelectItem key={org._id} value={org._id} className="truncate">{org.name}</SelectItem>
                                 )),
                             })}
                         </SettingsRow>

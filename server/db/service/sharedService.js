@@ -4,6 +4,7 @@ import { binModel, binLogModel, templateModel, userModel, userSettingModel, orga
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { DAY_MS, LOG_TYPES_DAYS, ROLES } from "../../utils/constants.js";
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
+import { deleteDeviceAccounts } from '../../mqtt/brokerAccounts.js';
 import { DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR } from '../../utils/constants.js'
 
 //Bins
@@ -55,7 +56,7 @@ export async function deleteOrgRefs(orgId) {
         });
 
         //delete organization bins and their logs
-        const bins = await binModel.find({ ownerId: orgId }, '_id', { session })
+        const bins = await binModel.find({ ownerId: orgId }, '_id macAddress', { session })
         await binModel.deleteMany({ ownerId: orgId }, { session });
 
         //reset bin to pre-registered state
@@ -71,6 +72,7 @@ export async function deleteOrgRefs(orgId) {
         await deleteLogsForBins(binIds, session)
 
         await session.commitTransaction();
+        deleteDeviceAccounts(bins.map(bin => bin.macAddress));
         return org;
     }
     catch (error) {

@@ -458,6 +458,7 @@
       },
       "reasons": {
         "contradicted": "Marked collected, still full",
+        "device": "Device issue",
         "full": "Almost full",
         "maintenance": "Maintenance due",
         "offline": "Offline",
@@ -684,87 +685,94 @@
         }
       }
     },
-    "addBin":{
-      "toasts":{
-        "ownerIdCopied":"Owner ID copied to clipboard!",
-        "ownerIdNotReady":"Owner ID isn't ready yet. Please wait a moment and try again.",
-        "copyFailed":"Failed to copy to clipboard."
+    "addBin": {
+      "toasts": {
+        "orgIdCopied": "Organization ID copied!",
+        "codeCopied": "Registration code copied!",
+        "copyFailed": "Failed to copy to clipboard."
       },
-      "intro":{
-        "title":"Add a New Bin (4 quick steps)",
-        "description":"You'll temporarily connect to the bin's Wi‑Fi to send it your regular Wi‑Fi details and your Owner ID. This usually takes 1–3 minutes."
+      "intro": {
+        "title": "Add a device (4 steps, about 10 minutes)",
+        "description": "A new device opens a Wi-Fi network of its own for setup. Your phone joins it for a minute to enter the organization's ID and registration code; after that the device works over cellular on its own."
       },
-      "progress":"Step {{current}} of {{total}}",
-      "navigation":{
-        "back":"Back",
-        "ready":"I'm Ready",
-        "formSubmitted":"I Submitted the Form",
-        "windowClosed":"Window Closed"
+      "progress": "Step {{current}} of {{total}}",
+      "navigation": {
+        "back": "Back",
+        "ready": "I'm ready",
+        "onSetupPage": "I'm on the setup page",
+        "saved": "I pressed Save",
+        "toBins": "Go to the bins list"
       },
-      "stepOne":{
-        "title":"Step 1: Prep",
-        "description":"Get your Wi-Fi details ready - you see them here but need to type them later.",
-        "wifiSection":"Your Network Details (Write these down!)",
-        "wifiName":"Network Name (SSID) - Must be exact!",
-        "wifiPassword":"Network Password",
-        "organizationLabel":"Organization",
-        "organizationPlaceholder":"Select the bin's organization",
-        "organizationError":"Failed to load organizations",
-        "organizationRequired":"Select an organization first",
-        "ownerIdLabel":"Owner ID",
-        "ownerIdLoading":"Loading…",
-        "ownerIdHint":"Copy this ID for the setup form.",
-        "ownerIdPurpose":"Links the bin to your account.",
-        "nextStepTitle":"Next Step",
-        "nextStepNote":"Connect to the bin and enter your Wi-Fi details + Owner ID.",
-        "important":"Create Note",
-        "importantNote":"Wi-Fi name is case-sensitive! Any mistake will fail the connection."
+      "fields": {
+        "orgId": "Organization ID",
+        "code": "Registration code",
+        "copyOrgId": "Copy the organization ID",
+        "copyCode": "Copy the registration code"
       },
-      "stepTwo":{
-        "title":"Step 2: Connect",
-        "description":"Connect to the bin and enter details.",
-        "instructions":"Connection Steps",
-        "step1":"Power on bin (LED blinks slowly).",
-        "step2":"Phone/PC -> Connect to Wi-Fi: Bin-XXXXX.",
-        "step3":"Setup page opens automatically (or go to 192.168.4.1).",
-        "step4":"Enter your Wi-Fi details & Owner ID.",
-        "formFields":"Form Details",
-        "field1":"Your Wi-Fi Name & Password.",
-        "field2":"Owner ID (from Step 1).",
-        "field3":"Click 'Save & Start Calibration'.",
-        "wifiClarificationTitle":"Which Wi-Fi?",
-        "wifiClarificationNote":"Enter your HOME/OFFICE Wi-Fi, not the Bin-XXXXX network.",
-        "noInternetTitle":"No Internet?",
-        "noInternetNote":"Normal while connected to the bin.",
-        "captivePortalTitle":"Page blocked?",
-        "captivePortalNote":"Manually open 192.168.4.1 in browser."
+      "stepOne": {
+        "title": "Prepare",
+        "description": "What the device's setup page will ask for, and what the device needs for its first start.",
+        "organizationLabel": "Organization",
+        "organizationPlaceholder": "Select the device's organization",
+        "organizationError": "Failed to load organizations",
+        "organizationRequired": "Select an organization first",
+        "loading": "Loading…",
+        "fieldsHint": "Both are also in the organization's settings. Keep the code to the people who install devices.",
+        "checklistTitle": "Before you start",
+        "checklist": {
+          "empty": "The bin is empty and its lid closed: its first start measures the empty bin's depth for 20 seconds, and everything else is measured against it.",
+          "power": "A SIM card is in and the battery is charged.",
+          "sky": "The device is outdoors or by a window: it needs a GPS fix before it can register.",
+          "phone": "Your phone is at hand: it joins the device's network for a minute."
+        }
       },
-      "stepThree":{
-        "title":"Step 3: Calibrate",
-        "description":"Wait for auto-calibration (~20s).",
-        "whatHappens":"Calibration Sequence",
-        "process1":"Green LED Blinks 3x -> Solid 20s -> Blinks 3x.",
-        "process2":"Solid Green = Calibrating. DO NOT MOVE BIN!",
-        "process3":"On success: Setup window closes.",
-        "process4":"Bin connects to your network.",
-        "waitTitle":"Please Wait",
-        "waitNote":"Don't switch networks until window closes.",
-        "timeoutTitle":"Taking long?",
-        "timeoutNote":"If >2 mins, retry setup.",
-        "nextStepTitle":"Next",
-        "nextStepNote":"After window closes, reconnect to your Wi-Fi."
+      "stepTwo": {
+        "title": "Connect your phone to the device",
+        "description": "The device's own network, only for setup.",
+        "steps": {
+          "powerOn": "Turn the device on. A device that has not joined an organization opens a Wi-Fi network named S-Bin-A02-… .",
+          "joinNetwork": "On your phone, open the Wi-Fi settings and join that network (it has no password).",
+          "openPage": "The setup page opens by itself. If it does not, open http://192.168.4.1 in the browser."
+        },
+        "noInternetTitle": "No internet on this network",
+        "noInternetNote": "It is the device's network, not the internet: your phone may warn about that. Stay connected until the details are saved.",
+        "noNetworkTitle": "No such network?",
+        "noNetworkNote": "The device has joined an organization before, so it does not open its setup network. An owner can reset it with \"Delete via MAC\" in the side menu; it then opens the network again."
       },
-      "stepFour":{
-        "title":"Done!",
-        "description":"Setup complete.",
-        "finalSteps":"What Now?",
-        "final1":"Reconnect to your regular Wi-Fi.",
-        "final2":"New bin appears in list shortly.",
-        "noteTitle":"Missing?",
-        "noteDescription":"Refresh page. If missing, check Wi-Fi password & retry.",
-        "troubleshootTitle":"Troubleshoot",
-        "troubleshoot1":"Wrong Wi-Fi name/password?",
-        "troubleshoot2":"Not connected to internet?"
+      "stepThree": {
+        "title": "Enter the details",
+        "description": "On the device's setup page.",
+        "steps": {
+          "enter": "Enter the organization ID and the registration code (copy them from here).",
+          "save": "Press \"Save and connect\".",
+          "restart": "The device restarts and its network closes; your phone goes back to its usual network."
+        }
+      },
+      "stepFour": {
+        "title": "Wait for its first report",
+        "description": "From here the device works on its own, over cellular.",
+        "whatHappens": "What the device does now",
+        "steps": {
+          "cellular": "Connects to the cellular network.",
+          "gps": "Takes its first GPS fix (outdoors, a few minutes).",
+          "measure": "Measures the empty bin for 20 seconds (keep it empty, closed and still).",
+          "register": "Registers in the organization and sends its first report."
+        },
+        "timeTitle": "How long",
+        "timeNote": "Usually 5 to 10 minutes. Then it appears in the bins list, named Bin-… (it can be renamed on its page).",
+        "calibrationTitle": "Measuring the empty bin",
+        "calibration": {
+          "how": "The device keeps the deepest distance it measures in 20 seconds as the empty bin; if no reading comes, it tries once more.",
+          "notEmpty": "Something in the bin then counts as empty: every later fill level reads too low.",
+          "redo": "Measured with something inside? Empty the bin and send \"Recalibrate empty-bin reference\" from the bin page's Remote commands; it runs at the device's next report.",
+          "scale": "A bin with a scale: send that same command once with the bin empty (it also sets the scale's zero), then \"Calibrate scale with a known weight\"."
+        },
+        "troubleshootTitle": "Not in the list after 15 minutes?",
+        "troubleshoot": {
+          "notListed": "Check the SIM card and the cellular coverage where it stands.",
+          "noFix": "No GPS fix indoors: move it outdoors; it keeps trying.",
+          "wrongDetails": "A wrong ID or code: the device opens its setup network again; repeat steps 2 and 3."
+        }
       },
       "noOrganization": {
         "code": "No Organizational Affiliation",
@@ -778,9 +786,37 @@
         "logs":"Logs",
         "insights":"Insights",
         "details":"Details",
+        "diagnostics":"Diagnostics",
         "connected":"Connected bins",
         "instructions":"Remote commands",
         "actions":"Manage"
+      },
+      "diagnostics":{
+        "description":"What the device last reported about itself ({{when}}).",
+        "emptyTitle":"No diagnostics yet",
+        "emptyDescription":"The device reports them from firmware 1.0.0 on; they show after its next report.",
+        "seconds":"s",
+        "none":"None",
+        "samplesOf_one":"{{count}} of 5",
+        "samplesOf_other":"{{count}} of 5",
+        "sections":{ "device":"Device", "power":"Power", "network":"Cellular network", "cycle":"Last cycle's times", "sensors":"Sensors", "mesh":"Link to the gateway" },
+        "issuesTitle":"Open issues",
+        "issueSince":"for {{when}}",
+        "issues":{ "unexpected_restart":"Restarted unexpectedly ({{value}})", "weak_signal":"Weak cellular signal ({{value}} dBm)", "overheating":"Running hot ({{value}}°C)", "noisy_sensor":"Fill sensor unsteady", "slow_cycle":"Slow to connect ({{value}} s)", "weak_mesh_link":"Weak link to its gateway" },
+        "hints":{ "resetReason":"Why the chip last started its code from scratch; normally a scheduled wake.", "wakeCause":"What woke it from sleep this cycle; normally the timer.", "pmuOffSource":"Why the power chip last cut the board's power; kept until the next cut, so it can be old." },
+        "fields":{
+          "firmwareVersion":"Firmware", "resetReason":"Last restart", "wakeCause":"Woken by", "pmuOffSource":"Last power cut",
+          "batteryMv":"Battery", "vbusMv":"USB / solar input", "systemMv":"System", "charger":"Charger", "chipTempC":"Chip temperature", "pmuTempC":"Power chip temperature",
+          "signal":"Signal", "rsrp":"RSRP", "rsrq":"RSRQ", "sinr":"SINR", "system":"System", "operator":"Operator (MCC-MNC)", "band":"Band", "cell":"Cell", "bytesSentLastCycle":"Bytes sent last cycle",
+          "modemMs":"Modem start", "networkMs":"Network and clock", "slotWaitMs":"Wait for the slot", "mqttMs":"Server connection", "gpsMs":"GPS fix",
+          "distanceSamples":"Sensor readings", "distanceSpreadMm":"Readings' spread", "scaleRawCounts":"Scale raw reading", "scaleZeroCounts":"Scale empty point", "scaleSpreadCounts":"Scale readings' spread",
+          "beaconRssi":"Gateway signal", "guardSeconds":"Wakes before its slot by", "missedCycles":"Beacons missed before", "residualPpm":"Clock uncertainty"
+        },
+        "signal":{ "good":"Good", "fair":"Fair", "weak":"Weak" },
+        "resetReasons":{ "poweron":"Power on", "external":"Reset button", "software":"Software restart", "panic":"Crash", "interrupt_wdt":"Watchdog (interrupt)", "task_wdt":"Watchdog (task)", "other_wdt":"Watchdog", "deepsleep":"Scheduled wake", "brownout":"Low voltage", "sdio":"SDIO", "usb":"USB", "jtag":"JTAG", "efuse":"eFuse error", "power_glitch":"Power glitch", "cpu_lockup":"CPU lockup", "unknown":"Unknown" },
+        "wakeCauses":{ "timer":"Timer", "ext0":"External pin", "ext1":"External pins", "touchpad":"Touch", "ulp":"Co-processor", "gpio":"GPIO", "uart":"Serial", "undefined":"Power on or reset", "other":"Other" },
+        "chargers":{ "none":"No battery", "trickle":"Trickle charging", "precharge":"Pre-charging", "constant_current":"Charging (constant current)", "constant_voltage":"Charging (topping up)", "done":"Charged", "stopped":"Not charging" },
+        "pmuOff":{ "pwronLow":"Power key held", "software":"Software", "pwronAlwaysLow":"Power key stuck", "vsysUnder":"System under-voltage", "vbusOver":"Input over-voltage", "dcdcUnder":"Rail under-voltage", "dcdcOver":"Rail over-voltage", "dieOverTemp":"Over-temperature" }
       },
       "deviceTitle":"Device",
       "actions":{
@@ -1090,13 +1126,21 @@
       },
       "general": {
         "title": "General",
-        "description": "The organization's name and its ID.",
+        "description": "The organization's name, its ID and the code new devices register with.",
         "name": "Name",
         "nameHint": "How the organization appears across the app.",
         "nameReadOnly": "Only an owner can rename an organization.",
         "orgId": "Organization ID",
         "orgIdHint": "Entered in a device's setup so it joins this organization.",
-        "copyId": "Copy the organization ID"
+        "copyId": "Copy the organization ID",
+          "registrationCode": "Registration code",
+          "registrationCodeHint": "Entered in a new device's setup with the ID; without it a device cannot join. Keep it to the people who install devices.",
+          "copyCode": "Copy the registration code",
+          "regenerateCode": "Make a new registration code",
+          "regenerateTitle": "Make a new registration code?",
+          "regenerateDescription": "The current code stops working for new devices. Devices already registered keep working.",
+          "regenerateConfirm": "Make a new code",
+          "codeRegenerated": "A new registration code was made."
       },
       "danger": {
           "delete": "Delete this organization"

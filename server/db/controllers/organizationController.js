@@ -3,10 +3,11 @@ import { organizationModel } from "../models/models.js";
 import { deleteOrgRefs } from "../service/sharedService.js";
 import { COST_SETTINGS, THRESHOLD_SETTINGS, MAX_MESH_AWAKE_WINDOW_SECONDS, REPORT_INTERVAL_OPTIONS_MINUTES } from "../../utils/constants.js";
 import { ROLES } from "../../utils/constants.js";
+import { generateRegistrationCode } from "../../utils/registrationCode.js";
 
 const MESH_SETTINGS_PROJECTION = {
     name: 1, meshAwakeWindowSeconds: 1, reportIntervalMinutes: 1, reportStartHour: 1, fleet: 1, depot: 1, routePlanningHour: 1, lastAutoPlan: 1,
-    clusterUntilZoom: 1, costs: 1, thresholds: 1,
+    clusterUntilZoom: 1, costs: 1, thresholds: 1, registrationCode: 1,
 };
 
 
@@ -27,7 +28,7 @@ export async function getOrganizations(req, res) {
 export async function createOrganization(req, res) {
     const { name } = req.body;
     try {
-        const newOrg = await organizationModel.create({ name });
+        const newOrg = await organizationModel.create({ name, registrationCode: generateRegistrationCode() });
         return res.status(201).json(newOrg);
     } catch (error) {
         return res.status(500).json({ message: error?.message || "Internal server error 'createOrganization'" });
@@ -65,11 +66,19 @@ export async function updateOrganization(req, res) {
 export async function getMeshSettings(req, res) {
     const { role, org } = req.user;
     const query = role === ROLES.OWNER ? {} : { _id: org };
-    const { costs, ...withoutCosts } = MESH_SETTINGS_PROJECTION;
-    const projection = [ROLES.OWNER, ROLES.ADMIN].includes(role) ? MESH_SETTINGS_PROJECTION : withoutCosts;
+    // Costs and the registration code are for owners and admins.
+    const isManager = [ROLES.OWNER, ROLES.ADMIN].includes(role);
+    const { costs, registrationCode, ...forOthers } = MESH_SETTINGS_PROJECTION;
     try {
-        const organizations = await organizationModel.find(query, projection)
+        const organizations = await organizationModel.find(query, isManager ? MESH_SETTINGS_PROJECTION : forOthers)
             .sort({ name: 1 });
+        // An organization from before the codes gets its first one when a manager looks.
+        if (isManager) {
+            for (const organization of organizations.filter(org => !org.registrationCode)) {
+                organization.registrationCode = generateRegistrationCode();
+                await organizationModel.updateOne({ _id: organization._id, registrationCode: null }, { $set: { registrationCode: organization.registrationCode } });
+            }
+        }
         return res.status(200).json({ organizations });
     } catch (error) {
         return res.status(500).json({ message: error?.message || "Internal server error 'getMeshSettings'" });
@@ -255,5 +264,23 @@ export async function updateThresholdSettings(req, res) {
             return res.status(400).json({ message: Object.values(error.errors ?? {})[0]?.message ?? error.message });
         }
         return res.status(500).json({ message: error?.message || "Internal server error 'updateThresholdSettings'" });
+    }
+}
+
+// A new registration code for the organization (owners for any, admins for
+// their own); devices registered already keep working, new ones need it.
+export async function regenerateRegistrationCode(req, res) {
+    const { id } = req.params;
+    const { role, org } = req.user;
+    if (role !== ROLES.OWNER && id !== org) {
+        return res.status(403).json({ message: "You can only change your own organization's settings." });
+    }
+    try {
+        const organization = await organizationModel.findByIdAndUpdate(id, { $set: { registrationCode: generateRegistrationCode() } },
+            { new: true, projection: MESH_SETTINGS_PROJECTION });
+        if (!organization) return res.status(404).json({ message: "Organization not found." });
+        return res.status(200).json({ organization });
+    } catch (error) {
+        return res.status(500).json({ message: error?.message || "Internal server error 'regenerateRegistrationCode'" });
     }
 }
