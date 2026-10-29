@@ -29,7 +29,7 @@ const COARSE_ACCURACY_M = 100
 // location, so it goes in the link that sets the device up. With location access already
 // granted it is taken as soon as the wizard opens. Without it the device takes
 // a GPS fix instead.
-function BinLocation({ value, onChange }) {
+function BinLocation({ value, onChange, copied, onCopy }) {
     const { t } = useTranslation()
     const [locating, setLocating] = useState(false)
 
@@ -66,13 +66,18 @@ function BinLocation({ value, onChange }) {
     return (
         <div className="bg-muted p-4 rounded-lg space-y-2">
             <p className="font-medium text-sm">{t(key("location.title"))}</p>
-            <div className="flex items-center gap-2">
-                {value ? (
-                    <code className="flex-1 bg-background p-3 rounded border text-sm font-mono" dir="ltr">{value.text}</code>
-                ) : (
-                    <p className="flex-1 bg-background p-3 rounded border text-sm text-muted-foreground">{t(key("location.none"))}</p>
-                )}
-                <Button variant="outline" onClick={locate} disabled={locating} className="shrink-0">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="flex flex-1 items-center gap-2">
+                    {value ? (
+                        <code className="flex-1 bg-background p-3 rounded border text-sm font-mono" dir="ltr">{value.text}</code>
+                    ) : (
+                        <p className="flex-1 bg-background p-3 rounded border text-sm text-muted-foreground">{t(key("location.none"))}</p>
+                    )}
+                    <Button variant="outline" size="icon" onClick={onCopy} className="shrink-0" disabled={!value} aria-label={t(key("fields.copyLocation"))}>
+                        {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                </div>
+                <Button variant="outline" onClick={locate} disabled={locating} className="w-full shrink-0 sm:w-auto">
                     <LocateFixed className="h-4 w-4" />
                     {locating ? t(key("location.locating")) : t(key(value ? "location.again" : "location.useMine"))}
                 </Button>
@@ -260,7 +265,8 @@ function AddBin() {
                                     )}
                                 </div>
                             )}
-                            <BinLocation value={binLocation} onChange={setBinLocation} />
+                            <BinLocation value={binLocation} onChange={setBinLocation}
+                                copied={copied === "location"} onCopy={() => copy("location", binLocation?.text)} />
                             <div className="bg-muted p-4 rounded-lg space-y-3">
                                 <p className="font-medium text-sm">{t(key("stepOne.checklistTitle"))}</p>
                                 <Checklist items={["empty", "power", "sky", "phone", "scale"].map(item => t(key(`stepOne.checklist.${item}`)))} />

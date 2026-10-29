@@ -689,7 +689,8 @@
       "toasts": {
         "orgIdCopied": "Organization ID copied!",
         "codeCopied": "Registration code copied!",
-        "copyFailed": "Failed to copy to clipboard."
+        "copyFailed": "Failed to copy to clipboard.",
+        "locationCopied": "Location copied!"
       },
       "intro": {
         "title": "Add a device (4 steps, about 10 minutes)",
@@ -707,7 +708,8 @@
         "orgId": "Organization ID",
         "code": "Registration code",
         "copyOrgId": "Copy the organization ID",
-        "copyCode": "Copy the registration code"
+        "copyCode": "Copy the registration code",
+        "copyLocation": "Copy the location"
       },
       "stepOne": {
         "title": "Prepare",
