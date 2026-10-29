@@ -765,7 +765,7 @@
           "how": "The device keeps the deepest distance it measures in 20 seconds as the empty bin; if no reading comes, it tries once more.",
           "notEmpty": "Something in the bin then counts as empty: every later fill level reads too low.",
           "redo": "Measured with something inside? Empty the bin and send \"Recalibrate empty-bin reference\" from the bin page's Remote commands; it runs at the device's next report.",
-          "scale": "A bin with a scale: send that same command once with the bin empty (it also sets the scale's zero), then \"Calibrate scale with a known weight\"."
+          "scale": "A bin with a scale: this measurement also sets the scale's zero. To weigh in grams, put an object of known weight in the bin and send \"Calibrate scale with a known weight\" from the same Remote commands."
         },
         "troubleshootTitle": "Not in the list after 15 minutes?",
         "troubleshoot": {

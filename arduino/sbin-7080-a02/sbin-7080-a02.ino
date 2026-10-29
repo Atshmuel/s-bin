@@ -73,10 +73,17 @@ void setup() {
     // A failed calibration does not block reporting: the cycle reports
     // sensorOk=false with a calibration health message, and the next wake retries.
     constexpr uint8_t CALIBRATION_ATTEMPTS = 2;
+    const bool depthWasMissing = binDepthMm <= 0;
     for (uint8_t attempt = 1; binDepthMm <= 0 && attempt <= CALIBRATION_ATTEMPTS; attempt++) {
         if (!calibrateBinDepth()) {
             Serial.printf("⚠️ Calibration attempt %u of %u failed.\n", attempt, CALIBRATION_ATTEMPTS);
         }
+    }
+    // The empty bin is also the scale's zero, as with calibrate_empty_bin; a
+    // bin without a scale does not answer and stays uncalibrated. The scale
+    // factor needs a known weight, so it is set later with calibrate_scale.
+    if (depthWasMissing && binDepthMm > 0) {
+        zeroScale();
     }
 
     gpsAttemptDue = shouldRefreshGpsLocation();
