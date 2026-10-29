@@ -411,4 +411,7 @@ export const CRON_SCHEDULES = Object.freeze({
     routePlanning: "2 * * * *",
     // Hourly: each organization's recent days in numbers (and any missing).
     orgStats: "12 * * * *",
+    // Hourly: the private broker's device accounts match the bins (a deletion
+    // the broker missed, e.g. made from a developer machine, is caught here).
+    brokerAccounts: "27 * * * *",
 });

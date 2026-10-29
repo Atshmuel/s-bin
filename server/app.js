@@ -92,6 +92,7 @@ const main = async () => {
             await import("./db/cron/dailyReport.js");
             await import("./db/cron/routePlanning.js");
             await import("./db/cron/orgStats.js");
+            await import("./db/cron/brokerAccounts.js");
         }
         app.listen(SERVER_PORT, () => {
             console.log(mongoose.connection.readyState === 1 && `Connected to DB..`);
