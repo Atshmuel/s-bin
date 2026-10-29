@@ -53,6 +53,11 @@ constexpr int HTTPS_CONNECT_TIMEOUT_S = 30;
 constexpr unsigned long HTTPS_RESPONSE_TIMEOUT_MS = 20000UL;
 constexpr size_t HTTPS_MAX_BODY = 1024;
 constexpr uint8_t HTTPS_MUX = 1;  // the MQTT socket is mux 0
+
+// Lives as long as the modem: TinyGSM keeps a pointer to each client by its
+// mux and writes through it on later socket checks, so a client on the stack
+// left that pointer in freed stack (it zeroed a byte of the next telemetry).
+TinyGsmClientSecure httpsClient(modem, HTTPS_MUX);
 }
 
 // Loads the roots into the modem as SBIN_CA_FILE (every boot: about a second,
@@ -86,7 +91,7 @@ bool loadModemCaCertificate() {
 // POSTs JSON to the server over HTTPS; returns the HTTP status (0 when it
 // could not be reached) and fills `reply` with the JSON answer.
 int postJson(const char* path, JsonDocument& request, JsonDocument& reply) {
-    TinyGsmClientSecure https(modem, HTTPS_MUX);
+    TinyGsmClientSecure& https = httpsClient;
     https.setCertificate(SBIN_CA_FILE);
     if (!https.connect(SBIN_SERVER_HOST, HTTPS_PORT, HTTPS_CONNECT_TIMEOUT_S)) {
         Serial.printf("⚠️ Could not reach the server over HTTPS (%s).\n", path);
