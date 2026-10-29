@@ -10,8 +10,8 @@ import { useQuery } from "@tanstack/react-query"
 import { getMeshSettings } from "@/services/apiMeshSettings"
 import { useMe } from "@/hooks/users/auth/useMe"
 import { useRemainingHeight } from "@/hooks/useRemainingHeight"
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2, CircleCheck, Copy, Info, KeyRound, ListChecks, Smartphone } from "lucide-react"
-import { useState } from "react"
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2, CircleCheck, Copy, Send, Info, KeyRound, ListChecks, LocateFixed, Smartphone } from "lucide-react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
@@ -19,6 +19,73 @@ import ErrorPage from "../generals/ErrorPage"
 
 const TOTAL_STEPS = 4
 const key = name => `pages.addBin.${name}`
+const SETUP_PAGE_URL = "http://192.168.4.1/"
+// A phone fix less precise than this (Wi-Fi or cell based) is worth retaking outdoors.
+const COARSE_ACCURACY_M = 100
+
+// The bin's location, from this phone's own location service (the installer
+// stands next to the bin); it is never typed in. The device's setup page cannot
+// ask the phone itself: it is plain http, where browsers do not give out the
+// location, so it goes in the link that sets the device up. With location access already
+// granted it is taken as soon as the wizard opens. Without it the device takes
+// a GPS fix instead.
+function BinLocation({ value, onChange }) {
+    const { t } = useTranslation()
+    const [locating, setLocating] = useState(false)
+
+    const locate = () => {
+        if (!navigator.geolocation) {
+            toast.error(t(key("location.unsupported")))
+            return
+        }
+        setLocating(true)
+        navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+                onChange({
+                    text: `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`,
+                    accuracy: Math.round(coords.accuracy),
+                })
+                setLocating(false)
+            },
+            () => {
+                toast.error(t(key("location.failed")))
+                setLocating(false)
+            },
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 },
+        )
+    }
+    useEffect(() => {
+        navigator.permissions?.query({ name: "geolocation" })
+            .then(status => { if (status.state === "granted") locate() })
+            .catch(() => {})
+        // Once, when the wizard opens.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    const coarse = value && value.accuracy > COARSE_ACCURACY_M
+    return (
+        <div className="bg-muted p-4 rounded-lg space-y-2">
+            <p className="font-medium text-sm">{t(key("location.title"))}</p>
+            <div className="flex items-center gap-2">
+                {value ? (
+                    <code className="flex-1 bg-background p-3 rounded border text-sm font-mono" dir="ltr">{value.text}</code>
+                ) : (
+                    <p className="flex-1 bg-background p-3 rounded border text-sm text-muted-foreground">{t(key("location.none"))}</p>
+                )}
+                <Button variant="outline" onClick={locate} disabled={locating} className="shrink-0">
+                    <LocateFixed className="h-4 w-4" />
+                    {locating ? t(key("location.locating")) : t(key(value ? "location.again" : "location.useMine"))}
+                </Button>
+            </div>
+            {value && (
+                <p className={coarse ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>
+                    {t(key(coarse ? "location.coarse" : "location.accuracy"), { meters: value.accuracy })}
+                </p>
+            )}
+            <p className="text-xs text-muted-foreground">{t(key("location.hint"))}</p>
+        </div>
+    )
+}
 
 // One value the device's setup page asks for, with a copy button.
 function CopyField({ label, value, placeholder, copied, onCopy, copyLabel }) {
@@ -105,9 +172,9 @@ function Step({ number, icon: Icon, name, height, children, onBack, onNext, next
 
 // Adding a device: the bin joins an organization through its own setup page.
 // A new device opens a Wi-Fi network of its own (only for this); a phone on it
-// enters the organization's ID and registration code; the device then restarts
-// and works over cellular: it takes a GPS fix, measures the empty bin,
-// registers and reports.
+// enters the organization's ID, registration code and (optionally) the bin's
+// location; the device then restarts and works over cellular: it measures the
+// empty bin, takes a GPS fix only when no location was given, registers and reports.
 function AddBin() {
     const { me, isOwner } = useMe()
     const { isRight } = useAppSide()
@@ -116,6 +183,7 @@ function AddBin() {
     const [api, setApi] = useState(null)
     const [copied, setCopied] = useState(null)
     const [selectedOrgId, setSelectedOrgId] = useState(null)
+    const [binLocation, setBinLocation] = useState(null)
     const { data: organizations, isLoadingOrgs, orgsError } = useOrganizations()
 
     // Owners have no organization of their own, so they pick the one the bin belongs to.
@@ -136,6 +204,11 @@ function AddBin() {
             toast.error(t(key("toasts.copyFailed")))
         }
     }
+    // Opened on the phone while it is on the device's network, this link sets
+    // the device up in one tap (an https page cannot send it in the background).
+    const setupLink = ownerId && registrationCode
+        ? `${SETUP_PAGE_URL}setup?${new URLSearchParams({ orgId: ownerId, code: registrationCode, ...(binLocation ? { location: binLocation.text } : {}) })}`
+        : null
     const fields = (
         <div className="bg-muted p-4 rounded-lg space-y-3">
             <CopyField label={t(key("fields.orgId"))} value={ownerId} placeholder={waiting}
@@ -187,11 +260,10 @@ function AddBin() {
                                     )}
                                 </div>
                             )}
-                            {fields}
-                            <p className="text-xs text-muted-foreground">{t(key("stepOne.fieldsHint"))}</p>
+                            <BinLocation value={binLocation} onChange={setBinLocation} />
                             <div className="bg-muted p-4 rounded-lg space-y-3">
                                 <p className="font-medium text-sm">{t(key("stepOne.checklistTitle"))}</p>
-                                <Checklist items={["empty", "power", "sky", "phone"].map(item => t(key(`stepOne.checklist.${item}`)))} />
+                                <Checklist items={["empty", "power", "sky", "phone", "scale"].map(item => t(key(`stepOne.checklist.${item}`)))} />
                             </div>
                         </Step>
 
@@ -206,12 +278,26 @@ function AddBin() {
                         </Step>
 
                         <Step number={3} height={panelHeight} icon={KeyRound} name="stepThree" onBack={back} onNext={next} nextLabel={t(key("navigation.saved"))}>
+                            {setupLink && (
+                                <div className="bg-primary/10 p-4 rounded-lg space-y-2">
+                                    <Button asChild className="w-full">
+                                        <a href={setupLink} target="_blank" rel="noreferrer">
+                                            <Send className="h-4 w-4" />
+                                            {t(key("stepThree.send"))}
+                                        </a>
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground">{t(key("stepThree.sendHint"))}</p>
+                                    <p className={binLocation ? "text-xs text-muted-foreground" : "text-xs text-destructive"}>
+                                        {binLocation
+                                            ? <>{t(key("stepThree.withLocation"))} <span dir="ltr">{binLocation.text} (±{binLocation.accuracy} m)</span></>
+                                            : t(key("stepThree.withoutLocation"))}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">{t(key("stepThree.steps.restart"))}</p>
+                                </div>
+                            )}
+                            <p className="text-sm text-muted-foreground">{t(key("stepThree.steps.enter"))}</p>
                             {fields}
-                            <div className="bg-muted p-4 rounded-lg">
-                                <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                                    {["enter", "save", "restart"].map(item => <li key={item}>{t(key(`stepThree.steps.${item}`))}</li>)}
-                                </ol>
-                            </div>
+                            <p className="text-xs text-muted-foreground">{t(key("stepThree.fieldsHint"))}</p>
                         </Step>
 
                         <Step number={4} height={panelHeight} icon={CircleCheck} name="stepFour" onBack={back}

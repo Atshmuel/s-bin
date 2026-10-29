@@ -21,6 +21,7 @@ String registrationCode = "";
 float latitude = 0;
 float longitude = 0;
 bool hasGpsFix = false;
+bool setupLocationPending = false;
 bool gpsModeActive = false;
 bool configurationPortalActive = false;
 int binDepthMm = 0;

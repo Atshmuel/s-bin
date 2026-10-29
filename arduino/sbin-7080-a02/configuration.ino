@@ -3,6 +3,19 @@
 namespace {
 const IPAddress portalIp(192, 168, 4, 1);
 const byte dnsPort = 53;
+// The time a location from the setup page is saved with (it has none).
+constexpr int64_t SETUP_LOCATION_EPOCH = 1;
+
+// "lat, lng" (as the add-device page's link carries it); false when it is not two
+// numbers in range, or is 0, 0 (no location).
+bool parseLocation(String text, float& lat, float& lng) {
+    text.trim();
+    char extra = 0;
+    if (sscanf(text.c_str(), "%f , %f %c", &lat, &lng, &extra) != 2) {
+        return false;
+    }
+    return lat >= -90.0f && lat <= 90.0f && lng >= -180.0f && lng <= 180.0f && !(lat == 0.0f && lng == 0.0f);
+}
 
 const char setupPortalHtml[] PROGMEM = R"rawliteral(
 <!doctype html>
@@ -466,6 +479,70 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
 </body>
 </html>
 )rawliteral";
+
+// The answer to the add-device page's link (GET /setup), which the phone's
+// browser shows as is: saved or not, in the phone's language.
+const char setupLinkReplyHtml[] PROGMEM = R"rawliteral(<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark"><title>S-Bin</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; text-align: center;
+         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background: #f3f7f5; color: #17231d; }
+  p { color: #5c6c63; max-width: 360px; }
+  @media (prefers-color-scheme: dark) { body { background: #101914; color: #f1f6f2; } p { color: #b3c2b8; } }
+</style></head>
+<body><main><h1 id="title"></h1><p id="body"></p></main>
+<script>
+  const saved = %SAVED%;
+  const he = (navigator.language || "").toLowerCase().startsWith("he");
+  const text = {
+    en: {
+      saved: ["Saved", "The device is restarting and will register over cellular. You can go back to the S-Bin app."],
+      failed: ["Not saved", "The link is missing the organization or the code, or its location is invalid. Open http://192.168.4.1 to enter them by hand."]
+    },
+    he: {
+      saved: ["נשמר", "המכשיר מופעל מחדש וירשם ברשת הסלולרית. אפשר לחזור לאפליקציית S-Bin."],
+      failed: ["לא נשמר", "בקישור חסרים הארגון או הקוד, או שהמיקום בו שגוי. פתחו את http://192.168.4.1 כדי להזין אותם ידנית."]
+    }
+  }[he ? "he" : "en"][saved ? "saved" : "failed"];
+  document.documentElement.lang = he ? "he" : "en";
+  document.documentElement.dir = he ? "rtl" : "ltr";
+  document.title = "S-Bin | " + text[0];
+  document.getElementById("title").textContent = text[0];
+  document.getElementById("body").textContent = text[1];
+</script></body></html>
+)rawliteral";
+
+// Saves the organization, the code and the optional location (orgId, code,
+// location) from the setup form or the add-device page's link; false, with
+// why, when they are missing or the location is not valid.
+bool saveSetupFromRequest(String& error) {
+    String submittedOrgId = configServer.arg("orgId");
+    String submittedCode = configServer.arg("code");
+    submittedOrgId.trim();
+    submittedCode.trim();
+    if (submittedOrgId.length() == 0 || submittedCode.length() == 0) {
+        error = "The organization ID and the registration code are required";
+        return false;
+    }
+
+    // Optional (only the link carries it): without it the device waits for a
+    // GPS fix before registering.
+    String submittedLocation = configServer.arg("location");
+    submittedLocation.trim();
+    float lat = 0;
+    float lng = 0;
+    if (submittedLocation.length() > 0 && !parseLocation(submittedLocation, lat, lng)) {
+        error = "The location must be latitude, longitude (for example 32.0853, 34.7818)";
+        return false;
+    }
+
+    saveSetup(submittedOrgId, submittedCode);
+    if (submittedLocation.length() > 0) {
+        saveSetupLocation(lat, lng);
+    }
+    return true;
+}
 }
 
 String getChipMac() {
@@ -504,6 +581,7 @@ void loadDeviceSettings() {
     scaleZeroSet = preferences.isKey("scaleZero");
     scaleZero = preferences.getInt("scaleZero", 0);
     scaleCountsPerGram = preferences.getFloat("scaleFactor", 0.0f);
+    setupLocationPending = preferences.getBool("setupLoc", false);
     bool hasStoredLocation = preferences.isKey("gpsEpoch");
     preferences.end();
 
@@ -518,6 +596,33 @@ void saveSetup(const String& orgId, const String& code) {
     preferences.putString("ownerId", orgId);
     preferences.putString("regCode", code);
     preferences.end();
+}
+
+// The bin's location from the setup page (the installer's phone, next to the
+// bin), so registration does not wait for a GPS fix. The page runs before the
+// clock is set, so the location gets SETUP_LOCATION_EPOCH instead of a time.
+void saveSetupLocation(float lat, float lng) {
+    preferences.begin("credentials", false);
+    preferences.putFloat("gpsLat", lat);
+    preferences.putFloat("gpsLon", lng);
+    preferences.putLong64("gpsEpoch", SETUP_LOCATION_EPOCH);
+    preferences.remove("gpsAttempt");
+    preferences.putBool("setupLoc", true);
+    preferences.end();
+}
+
+// Once the clock is set: the setup location counts as this month's fix, so GPS
+// refines it at the next monthly refresh instead of holding up the first report.
+void acceptSetupLocation() {
+    if (!setupLocationPending || !isSystemClockValid()) {
+        return;
+    }
+    recordGpsAttempt();
+    setupLocationPending = false;
+    preferences.begin("credentials", false);
+    preferences.remove("setupLoc");
+    preferences.end();
+    Serial.println("📍 Using the location from the setup page; GPS refines it at the monthly refresh.");
 }
 
 // A registration the server refused (a wrong organization or code): forget
@@ -558,17 +663,27 @@ bool startConfigurationPortal() {
         configServer.send_P(200, "text/html; charset=utf-8", setupPortalHtml);
     });
     configServer.on("/setup", HTTP_POST, []() {
-        String submittedOrgId = configServer.arg("orgId");
-        String submittedCode = configServer.arg("code");
-        submittedOrgId.trim();
-        submittedCode.trim();
-        if (submittedOrgId.length() == 0 || submittedCode.length() == 0) {
-            configServer.send(400, "text/plain", "The organization ID and the registration code are required");
+        String error;
+        if (!saveSetupFromRequest(error)) {
+            configServer.send(400, "text/plain", error);
             return;
         }
-
-        saveSetup(submittedOrgId, submittedCode);
         configServer.send(200, "text/plain", "Saved. The device is restarting.");
+        delay(1000);
+        ESP.restart();
+    });
+    // The add-device page's one-tap link: /setup?orgId=…&code=…&location=lat,lng
+    // (an https page cannot send it in the background, so the phone opens it).
+    configServer.on("/setup", HTTP_GET, []() {
+        String error;
+        const bool saved = saveSetupFromRequest(error);
+        String page = FPSTR(setupLinkReplyHtml);
+        page.replace("%SAVED%", saved ? "true" : "false");
+        configServer.send(saved ? 200 : 400, "text/html; charset=utf-8", page);
+        if (!saved) {
+            Serial.println("⚠️ Setup link refused: " + error);
+            return;
+        }
         delay(1000);
         ESP.restart();
     });

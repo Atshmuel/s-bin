@@ -53,7 +53,7 @@ constexpr uint32_t USB_LOG_RECONNECT_WAIT_MS = 3000;
 
 // This firmware's version, reported in every diagnostics block (semver; bump
 // it by hand for every flash).
-constexpr char FIRMWARE_VERSION[] = "1.1.0";
+constexpr char FIRMWARE_VERSION[] = "1.2.0";
 
 // The S-Bin servers (2i): registration over HTTPS, reports over MQTT with TLS
 // on the private broker, both checked against SBIN_CA_FILE in the modem.
@@ -107,6 +107,8 @@ extern String registrationCode;
 extern float latitude;
 extern float longitude;
 extern bool hasGpsFix;
+// A location from the setup page that GPS has not been scheduled around yet.
+extern bool setupLocationPending;
 extern bool lastCalibrationFailed;
 extern bool gpsModeActive;
 extern bool configurationPortalActive;
@@ -257,6 +259,8 @@ bool startConfigurationPortal();
 void handleConfigurationPortal();
 void loadDeviceSettings();
 void saveSetup(const String& orgId, const String& code);
+void saveSetupLocation(float lat, float lng);
+void acceptSetupLocation();
 void saveDeviceKey(const String& key);
 void clearDeviceSettings();
 String getChipMac();

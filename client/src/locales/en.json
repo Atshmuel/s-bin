@@ -693,14 +693,14 @@
       },
       "intro": {
         "title": "Add a device (4 steps, about 10 minutes)",
-        "description": "A new device opens a Wi-Fi network of its own for setup. Your phone joins it for a minute to enter the organization's ID and registration code; after that the device works over cellular on its own."
+        "description": "A new device opens a Wi-Fi network of its own for setup. Your phone joins it for a minute to enter the organization's ID, registration code and the bin's location; after that the device works over cellular on its own."
       },
       "progress": "Step {{current}} of {{total}}",
       "navigation": {
         "back": "Back",
         "ready": "I'm ready",
         "onSetupPage": "I'm on the setup page",
-        "saved": "I pressed Save",
+        "saved": "I sent it",
         "toBins": "Go to the bins list"
       },
       "fields": {
@@ -711,19 +711,19 @@
       },
       "stepOne": {
         "title": "Prepare",
-        "description": "What the device's setup page will ask for, and what the device needs for its first start.",
+        "description": "The bin's location, and what the device needs for its first start.",
         "organizationLabel": "Organization",
         "organizationPlaceholder": "Select the device's organization",
         "organizationError": "Failed to load organizations",
         "organizationRequired": "Select an organization first",
         "loading": "Loading…",
-        "fieldsHint": "Both are also in the organization's settings. Keep the code to the people who install devices.",
         "checklistTitle": "Before you start",
         "checklist": {
           "empty": "The bin is empty and its lid closed: its first start measures the empty bin's depth for 20 seconds, and everything else is measured against it.",
           "power": "A SIM card is in and the battery is charged.",
-          "sky": "The device is outdoors or by a window: it needs a GPS fix before it can register.",
-          "phone": "Your phone is at hand: it joins the device's network for a minute."
+          "sky": "Optional: take the bin's location below, to skip waiting for GPS. Without it the device must be outdoors for a GPS fix before it can register.",
+          "phone": "Your phone is at hand: it joins the device's network for a minute.",
+          "scale": "A bin with a scale: have an object of known weight ready, to calibrate the scale after the first report."
         }
       },
       "stepTwo": {
@@ -732,7 +732,7 @@
         "steps": {
           "powerOn": "Turn the device on. A device that has not joined an organization opens a Wi-Fi network named S-Bin-A02-… .",
           "joinNetwork": "On your phone, open the Wi-Fi settings and join that network (it has no password).",
-          "openPage": "The setup page opens by itself. If it does not, open http://192.168.4.1 in the browser."
+          "openPage": "A setup page may open by itself: you can leave it and come back to this page (on an iPhone choose \"Use without internet\" if asked)."
         },
         "noInternetTitle": "No internet on this network",
         "noInternetNote": "It is the device's network, not the internet: your phone may warn about that. Stay connected until the details are saved.",
@@ -740,13 +740,17 @@
         "noNetworkNote": "The device has joined an organization before, so it does not open its setup network. An owner can reset it with \"Delete via MAC\" in the side menu; it then opens the network again."
       },
       "stepThree": {
-        "title": "Enter the details",
-        "description": "On the device's setup page.",
+        "title": "Send the details to the device",
+        "description": "From this page, while your phone is on the device's network.",
         "steps": {
-          "enter": "Enter the organization ID and the registration code (copy them from here).",
-          "save": "Press \"Save and connect\".",
+          "enter": "Can't use the button? On the device's setup page (http://192.168.4.1) enter the organization ID and the registration code below, and press \"Save and connect\". That way no location is passed: the device takes a GPS fix.",
           "restart": "The device restarts and its network closes; your phone goes back to its usual network."
-        }
+        },
+        "send": "Send to the device",
+        "sendHint": "Tap it while your phone is on the device's network: the device saves the organization, the code and the location, and restarts. Nothing to type.",
+        "fieldsHint": "Both are also in the organization's settings. Keep the code to the people who install devices.",
+        "withLocation": "Sends the bin's location:",
+        "withoutLocation": "No location taken: the device will wait for a GPS fix. To skip that, go back to step 1 and take it before joining the device's network (the phone needs internet for it)."
       },
       "stepFour": {
         "title": "Wait for its first report",
@@ -754,7 +758,7 @@
         "whatHappens": "What the device does now",
         "steps": {
           "cellular": "Connects to the cellular network.",
-          "gps": "Takes its first GPS fix (outdoors, a few minutes).",
+          "gps": "Uses the location it was sent; without one, takes its first GPS fix (outdoors, a few minutes).",
           "measure": "Measures the empty bin for 20 seconds (keep it empty, closed and still).",
           "register": "Registers in the organization and sends its first report."
         },
@@ -770,7 +774,7 @@
         "troubleshootTitle": "Not in the list after 15 minutes?",
         "troubleshoot": {
           "notListed": "Check the SIM card and the cellular coverage where it stands.",
-          "noFix": "No GPS fix indoors: move it outdoors; it keeps trying.",
+          "noFix": "No location sent and no GPS fix indoors: move it outdoors (it keeps trying), or set it up again with the Send button.",
           "wrongDetails": "A wrong ID or code: the device opens its setup network again; repeat steps 2 and 3."
         }
       },
@@ -778,6 +782,18 @@
         "code": "No Organizational Affiliation",
         "description": "You do not have an organization associated with your account. Please join an organization or contact technical support to create one.",
         "buttonText": "Back to Dashboard"
+      },
+      "location": {
+        "title": "Bin location (optional)",
+        "none": "Not taken: the device will use GPS",
+        "useMine": "Use my location",
+        "again": "Take it again",
+        "locating": "Locating…",
+        "accuracy": "Accurate to about {{meters}} m.",
+        "coarse": "Only accurate to about {{meters}} m: step outdoors next to the bin and take it again.",
+        "hint": "Stand next to the bin and take your phone's location; the Send button in step 3 passes it to the device, so it registers right away. Without it the device waits for a GPS fix outdoors first.",
+        "unsupported": "This browser cannot give a location; the device will use GPS.",
+        "failed": "Could not get your location (is location access allowed?); the device will use GPS."
       }
     },
     "binDetails":{

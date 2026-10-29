@@ -86,6 +86,7 @@ void setup() {
         zeroScale();
     }
 
+    acceptSetupLocation();
     gpsAttemptDue = shouldRefreshGpsLocation();
     if (gpsAttemptDue) {
         Serial.println("🛰️ Monthly GPS refresh is due.");
