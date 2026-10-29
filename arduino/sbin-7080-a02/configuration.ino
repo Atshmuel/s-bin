@@ -28,6 +28,7 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
       --border: #d9e4dc;
       --green: #16734a;
       --green-hover: #105c3a;
+      --button-text: #ffffff;
       --green-soft: #e7f4ec;
       --focus: #146c43;
       --shadow: 0 24px 70px rgba(28, 58, 41, .13);
@@ -47,6 +48,7 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
       --border: #35463b;
       --green: #5bc58a;
       --green-hover: #77d99f;
+      --button-text: #102016;
       --green-soft: #233d2d;
       --focus: #83e3a8;
       --shadow: 0 24px 70px rgba(0, 0, 0, .34);
@@ -180,7 +182,7 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
       transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
     }
 
-    input::placeholder { color: var(--muted); opacity: .8; }
+    input::placeholder { color: var(--muted); opacity: 1; }
 
     input:focus {
       border-color: var(--focus);
@@ -206,7 +208,7 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
       border: 0;
       border-radius: 12px;
       background: var(--green);
-      color: #fff;
+      color: var(--button-text);
       font-weight: 700;
       cursor: pointer;
       transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
@@ -405,9 +407,15 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
       applyTheme();
     });
 
-    themePreference.addEventListener("change", () => {
+    function onSystemThemeChange() {
       if (themeOverride === null) applyTheme();
-    });
+    }
+
+    if (themePreference.addEventListener) {
+      themePreference.addEventListener("change", onSystemThemeChange);
+    } else {
+      themePreference.addListener(onSystemThemeChange);
+    }
 
     document.getElementById("setupForm").addEventListener("submit", async (event) => {
       event.preventDefault();
