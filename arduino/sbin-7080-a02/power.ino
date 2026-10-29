@@ -25,6 +25,9 @@ bool initializePowerManagement() {
     PMU.enableBattDetection();
     PMU.enableBattVoltageMeasure();
     PMU.enableVbusVoltageMeasure();
+    // Off by default: until enabled, getTemperature() reads a stale register
+    // (385.7 °C), which the server drops as out of range.
+    PMU.enableTemperatureMeasure();
 
     pmuAvailable = true;
     return true;
