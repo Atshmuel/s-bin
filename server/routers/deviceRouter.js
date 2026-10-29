@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
-import { registerDeviceOverHttps } from "../db/controllers/deviceController.js";
+import { deviceStatus, registerDeviceOverHttps } from "../db/controllers/deviceController.js";
 import { DEVICE_REGISTRATION_FAILURE_LIMIT, RATE_LIMIT_WINDOW_MS } from "../utils/constants.js";
 
 // Devices themselves (no user session).
@@ -17,3 +17,5 @@ const registrationLimiter = rateLimit({
 });
 
 deviceRouter.post("/register", registrationLimiter, registerDeviceOverHttps);
+// Whether a device the broker refused still exists (see deviceStatus).
+deviceRouter.post("/status", registrationLimiter, deviceStatus);

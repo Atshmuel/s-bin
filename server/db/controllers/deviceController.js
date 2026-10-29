@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { organizationModel } from "../models/models.js";
+import { binModel, organizationModel } from "../models/models.js";
 import { registerDevice } from "../service/deviceRegistrationService.js";
 import { registrationCodeMatches } from "../../utils/registrationCode.js";
 
@@ -24,5 +24,26 @@ export async function registerDeviceOverHttps(req, res) {
     } catch (error) {
         console.error("HTTPS device registration failed:", error);
         return res.status(500).json({ message: "Registration failed." });
+    }
+}
+
+// A device the broker refused asks whether it still exists (its MAC and
+// device key): 200 when its bin is there with that key, 410 when its bin was
+// deleted (it then resets and opens its setup page), 403 when the MAC is
+// there with another key. Only 410 resets a device, so a broker that lost its
+// accounts never wipes the fleet.
+export async function deviceStatus(req, res) {
+    const { mac, deviceKey } = req.body ?? {};
+    if (typeof mac !== "string" || typeof deviceKey !== "string" || !deviceKey) {
+        return res.status(400).json({ message: "mac and deviceKey are required." });
+    }
+    try {
+        const bin = await binModel.findOne({ macAddress: mac }, { deviceKey: 1 }).lean();
+        if (!bin) return res.status(410).json({ status: "deleted" });
+        if (bin.deviceKey !== deviceKey) return res.status(403).json({ message: "Wrong device key." });
+        return res.status(200).json({ status: "active" });
+    } catch (error) {
+        console.error("Device status check failed:", error);
+        return res.status(500).json({ message: "Status check failed." });
     }
 }
