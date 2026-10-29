@@ -233,7 +233,7 @@ function BinsList() {
             description={t("pages.binsList.deletion.confirmationDescription")}
             inputLabel={t("pages.binsList.deletion.typeDelete")}
             isDeleting={isDeleting}
-            onConfirm={() => deleteBins({ binIds })}
+            onConfirm={() => deleteBins({ binIds }, { onSuccess: () => setBinIds([]) })}
         />
     }
 
