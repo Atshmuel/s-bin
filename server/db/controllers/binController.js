@@ -1,12 +1,12 @@
 import mongoose from 'mongoose'
-import { binModel, deviceInstructionModel, organizationModel } from '../models/models.js'
+import { binModel, organizationModel } from '../models/models.js'
 import { appendFilter, BINS_ONLY_FILTER, healthRank, listSortStages, scopeToOrganization } from '../../utils/helpers.js'
 import { FULLNESS_EXPRESSION } from '../../utils/analytics.js'
 import { isLngLat } from '../../utils/geo.js'
 import {
     DEFAULT_PAGE_SIZE, MAP_CELL_PX, MAP_VIEW_LIMIT, ROLES,
 } from '../../utils/constants.js'
-import { deleteLogsForBins, getOrgDeviceSettingsShared, updateMaintenance } from '../service/sharedService.js'
+import { deleteDeviceData, getOrgDeviceSettingsShared, invalidateOrgStats, updateMaintenance } from '../service/sharedService.js'
 import { scopedThresholds } from '../service/thresholdService.js'
 import { deleteDeviceAccounts } from '../../mqtt/brokerAccounts.js'
 import { thresholdExpression } from '../../utils/thresholds.js'
@@ -371,13 +371,13 @@ export async function deleteBin(req, res) {
             return res.status(404).json({ message: "Bin not found or access denied" });
         }
 
-        const deleteLogsResult = await deleteLogsForBins([id], session)
-        await deviceInstructionModel.deleteMany({ binId: deleteBinResult._id }, { session })
+        const deleteLogsResult = await deleteDeviceData([deleteBinResult._id], session)
 
         removeBinConfig(deleteBinResult.macAddress)
 
         await session.commitTransaction();
         deleteDeviceAccounts([deleteBinResult.macAddress]);
+        await invalidateOrgStats([deleteBinResult.ownerId]);
         return res.status(200).json({
             message: 'Bins and logs deleted successfully',
             deletedLogs: deleteLogsResult
@@ -403,7 +403,7 @@ export async function deleteBinsBatch(req, res) {
     const session = await mongoose.startSession();
     try {
         session.startTransaction();
-        const binsToDelete = await binModel.find(query, "_id macAddress", { session });
+        const binsToDelete = await binModel.find(query, "_id macAddress ownerId", { session });
         const binsToDeleteIds = binsToDelete.map(b => b._id);
 
         if (binsToDeleteIds.length === 0) {
@@ -412,14 +412,14 @@ export async function deleteBinsBatch(req, res) {
         }
 
         const deleteBinsResult = await binModel.deleteMany({ _id: { $in: binsToDeleteIds } }, { session });
-        const deleteLogsResult = await deleteLogsForBins(binsToDeleteIds, session)
-        await deviceInstructionModel.deleteMany({ binId: { $in: binsToDeleteIds } }, { session })
+        const deleteLogsResult = await deleteDeviceData(binsToDeleteIds, session)
 
         binsToDelete.forEach(bin => {
             removeBinConfig(bin.macAddress);
         })
         await session.commitTransaction();
         deleteDeviceAccounts(binsToDelete.map(bin => bin.macAddress));
+        await invalidateOrgStats([...new Set(binsToDelete.map(bin => String(bin.ownerId)))]);
 
         return res.status(200).json({
             message: 'Bins and logs deleted successfully',

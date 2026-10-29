@@ -1,8 +1,11 @@
 import mongoose from 'mongoose'
 import { sendEmail } from '../../utils/mailService.js'
-import { binModel, binLogModel, templateModel, userModel, userSettingModel, organizationModel } from '../models/models.js'
+import {
+    binModel, binLogModel, deviceDiagnosticModel, deviceInstructionModel, organizationModel, orgStatModel, routeModel,
+    routeReservationModel, templateModel, userModel, userSettingModel,
+} from '../models/models.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
-import { DAY_MS, LOG_TYPES_DAYS, ROLES } from "../../utils/constants.js";
+import { DAY_MS, LOG_RETENTION_DAYS, LOG_TYPES_DAYS, ROLES } from "../../utils/constants.js";
 import { removeBinConfig } from '../../mqtt/mqttHandlers.js';
 import { deleteDeviceAccounts } from '../../mqtt/brokerAccounts.js';
 import { DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_REPORT_START_HOUR } from '../../utils/constants.js'
@@ -67,9 +70,11 @@ export async function deleteOrgRefs(orgId) {
         const org = await organizationModel.findByIdAndDelete(orgId, { session });
         if (!org) throw new Error("Organization not found");
 
-        //logs deletion blocked due to data collection for analysis
-        const binIds = bins.map(b => b._id)
-        await deleteLogsForBins(binIds, session)
+        // Everything its devices left, and its own: routes, reservations, day stats.
+        await deleteDeviceData(bins.map(b => b._id), session)
+        await routeModel.deleteMany({ orgId }, { session })
+        await routeReservationModel.deleteMany({ orgId }, { session })
+        await orgStatModel.deleteMany({ orgId }, { session })
 
         await session.commitTransaction();
         deleteDeviceAccounts(bins.map(bin => bin.macAddress));
@@ -107,10 +112,25 @@ export async function deleteUserRefs(userId) {
     }
 }
 
-export async function deleteLogsForBins(binIds, session) {
+// Everything deleted devices left: their logs, diagnostics, waiting commands
+// and route reservations (routes keep their stops, as history). Returns how
+// many logs went.
+export async function deleteDeviceData(binIds, session) {
     if (!Array.isArray(binIds) || binIds.length === 0) return 0
-    const deleteResult = await binLogModel.deleteMany({ binId: { $in: binIds } }, { session })
+    const filter = { binId: { $in: binIds } }
+    const deleteResult = await binLogModel.deleteMany(filter, { session })
+    await deviceDiagnosticModel.deleteMany(filter, { session })
+    await deviceInstructionModel.deleteMany(filter, { session })
+    await routeReservationModel.deleteMany(filter, { session })
     return deleteResult.deletedCount;
+}
+
+// The organizations' day stats over the days their logs still cover are
+// recomputed without deleted devices (marked stale; see statsService). Older
+// days keep their numbers: there are no logs left to count them again from.
+export async function invalidateOrgStats(orgIds) {
+    const from = new Date(Date.now() - LOG_RETENTION_DAYS * DAY_MS).toISOString().slice(0, 10)
+    await orgStatModel.updateMany({ orgId: { $in: orgIds }, day: { $gte: from } }, { $set: { computedAt: new Date(0) } })
 }
 
 //Users
