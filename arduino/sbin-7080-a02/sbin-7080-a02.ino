@@ -151,9 +151,19 @@ void loop() {
 
     if (cellularReady) {
         readServingCell();
+        // The roots the broker's and the registration's TLS are checked against.
+        loadModemCaCertificate();
+    }
+    // A new device registers over HTTPS first: the broker takes it only with
+    // the device key it gets back. A wrong organization or code reopens the
+    // setup page; anything else is tried again next cycle.
+    if (cellularReady && hasGpsFix && deviceKey.length() == 0) {
+        if (registerOverHttps(reading.batteryPercent) == REGISTRATION_REFUSED) {
+            reopenSetupPortal();
+        }
     }
     bool mqttReady = false;
-    if (cellularReady) {
+    if (cellularReady && deviceKey.length() > 0) {
         while (millis() - reportStartedAt < MAX_REPORT_WINDOW_MS) {
             maintainMqttConnection();
             mqttClient.loop();
@@ -168,17 +178,10 @@ void loop() {
 
     bool reportSent = false;
     if (mqttReady && hasGpsFix) {
-        // A new device registers first; the server's reply carries its device key.
-        while (deviceKey.length() == 0 && millis() - reportStartedAt < MAX_REPORT_WINDOW_MS) {
-            publishRegistration(reading.batteryPercent);
-            serviceMqttFor(250);
-        }
-        if (deviceKey.length() > 0) {
-            const uint32_t previousAckCount = scheduleAckCounter;
-            reportSent = publishTelemetry(reading);
-            if (reportSent) {
-                waitForMqttReply(scheduleAckCounter, previousAckCount, 15000UL);
-            }
+        const uint32_t previousAckCount = scheduleAckCounter;
+        reportSent = publishTelemetry(reading);
+        if (reportSent) {
+            waitForMqttReply(scheduleAckCounter, previousAckCount, 15000UL);
         }
     } else if (!hasGpsFix) {
         Serial.println("❌ Cannot register/report until the first GPS location is acquired.");

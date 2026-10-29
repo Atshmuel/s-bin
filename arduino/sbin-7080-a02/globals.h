@@ -53,7 +53,18 @@ constexpr uint32_t USB_LOG_RECONNECT_WAIT_MS = 3000;
 
 // This firmware's version, reported in every diagnostics block (semver; bump
 // it by hand for every flash).
-constexpr char FIRMWARE_VERSION[] = "1.0.0";
+constexpr char FIRMWARE_VERSION[] = "1.1.0";
+
+// The S-Bin servers (2i): registration over HTTPS, reports over MQTT with TLS
+// on the private broker, both checked against SBIN_CA_FILE in the modem.
+constexpr char SBIN_SERVER_HOST[] = "s-bins.duckdns.org";
+constexpr char SBIN_CA_FILE[] = "sbinca.pem";
+
+enum RegistrationOutcome {
+    REGISTRATION_DONE,
+    REGISTRATION_REFUSED,  // wrong organization or code: the setup page opens again
+    REGISTRATION_RETRY,
+};
 
 constexpr uint8_t MAX_PENDING_INSTRUCTIONS = 2;
 constexpr uint32_t MAX_AWAKE_EXTENSION_SECONDS = 3600;
@@ -92,6 +103,7 @@ extern WebServer configServer;
 extern String DeviceMac;
 extern String ownerId;
 extern String deviceKey;
+extern String registrationCode;
 extern float latitude;
 extern float longitude;
 extern bool hasGpsFix;
@@ -244,7 +256,7 @@ bool maintainCellularConnection();
 bool startConfigurationPortal();
 void handleConfigurationPortal();
 void loadDeviceSettings();
-void saveOwnerId(const String& id);
+void saveSetup(const String& orgId, const String& code);
 void saveDeviceKey(const String& key);
 void clearDeviceSettings();
 String getChipMac();
@@ -265,7 +277,10 @@ void maintainMqttConnection();
 void mqttCallback(char* topic, byte* payload, unsigned int length);
 void serviceMqttFor(unsigned long waitMs);
 bool waitForMqttReply(const uint32_t& counter, uint32_t previousValue, unsigned long timeoutMs);
-void publishRegistration(int batteryPercent);
+bool loadModemCaCertificate();
+RegistrationOutcome registerOverHttps(int batteryPercent);
+void checkDeviceAfterRefusedLogin();
+void reopenSetupPortal();
 bool publishTelemetry(const DeviceReading& reading);
 bool requestInstructionCheck(unsigned long timeoutMs);
 bool publishInstructionResult(const String& instructionId, const String& status, const String& result);

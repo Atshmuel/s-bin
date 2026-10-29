@@ -303,6 +303,13 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
                    aria-describedby="orgHint" placeholder="e.g. your organization ID">
             <p id="orgHint" class="hint" data-i18n="orgHint">Enter the organization ID provided by your S-Bin administrator.</p>
           </div>
+          <div class="form-group">
+            <label for="code" data-i18n="codeLabel">Registration code</label>
+            <input id="code" name="code" type="text" required autocomplete="off"
+                   autocapitalize="characters" spellcheck="false" dir="ltr"
+                   aria-describedby="codeHint" placeholder="XXXX-XXXX">
+            <p id="codeHint" class="hint" data-i18n="codeHint">The organization's registration code, from the add-device page or its settings.</p>
+          </div>
           <button id="submitBtn" class="submit" type="submit">
             <span id="submitLabel" data-i18n="submit">Save and connect</span>
             <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="currentColor"><path d="M5 12h12.17l-5.59-5.59L13 5l7 7-7 7-1.41-1.41L17.17 13H5v-1z"/></svg>
@@ -325,6 +332,8 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
         description: "Connect this device to your organization to get started.",
         orgLabel: "Organization ID",
         orgHint: "Enter the organization ID provided by your S-Bin administrator.",
+        codeLabel: "Registration code",
+        codeHint: "The organization's registration code, from the add-device page or its settings.",
         placeholder: "e.g. your organization ID",
         submit: "Save and connect",
         submitting: "Saving...",
@@ -344,6 +353,8 @@ const char setupPortalHtml[] PROGMEM = R"rawliteral(
         description: "חברו את המכשיר לארגון שלכם כדי להתחיל.",
         orgLabel: "מזהה ארגון",
         orgHint: "הזינו את מזהה הארגון שקיבלתם ממנהל מערכת S-Bin.",
+        codeLabel: "קוד רישום",
+        codeHint: "קוד הרישום של הארגון, מדף הוספת המכשיר או מהגדרות הארגון.",
         placeholder: "לדוגמה: מזהה הארגון שלכם",
         submit: "שמירה והתחברות",
         submitting: "שומר...",
@@ -471,6 +482,7 @@ String getChipMac() {
 void loadDeviceSettings() {
     preferences.begin("credentials", true);
     ownerId = preferences.getString("ownerId", "");
+    registrationCode = preferences.getString("regCode", "");
     deviceKey = preferences.getString("deviceKey", "");
     binDepthMm = preferences.getInt("binDepthMm", 0);
     latitude = preferences.getFloat("gpsLat", 0.0f);
@@ -501,10 +513,23 @@ void loadDeviceSettings() {
                 lastGpsUpdateEpoch > 0;
 }
 
-void saveOwnerId(const String& id) {
+void saveSetup(const String& orgId, const String& code) {
     preferences.begin("credentials", false);
-    preferences.putString("ownerId", id);
+    preferences.putString("ownerId", orgId);
+    preferences.putString("regCode", code);
     preferences.end();
+}
+
+// A registration the server refused (a wrong organization or code): forget
+// them and restart into the setup page, so they can be entered again.
+void reopenSetupPortal() {
+    Serial.println("🔁 Registration refused; opening the setup page again.");
+    preferences.begin("credentials", false);
+    preferences.remove("ownerId");
+    preferences.remove("regCode");
+    preferences.end();
+    delay(500);
+    ESP.restart();
 }
 
 void saveDeviceKey(const String& key) {
@@ -534,14 +559,16 @@ bool startConfigurationPortal() {
     });
     configServer.on("/setup", HTTP_POST, []() {
         String submittedOrgId = configServer.arg("orgId");
+        String submittedCode = configServer.arg("code");
         submittedOrgId.trim();
-        if (submittedOrgId.length() == 0) {
-            configServer.send(400, "text/plain", "orgId is required");
+        submittedCode.trim();
+        if (submittedOrgId.length() == 0 || submittedCode.length() == 0) {
+            configServer.send(400, "text/plain", "The organization ID and the registration code are required");
             return;
         }
 
-        saveOwnerId(submittedOrgId);
-        configServer.send(200, "text/plain", "orgId saved. The device is restarting.");
+        saveSetup(submittedOrgId, submittedCode);
+        configServer.send(200, "text/plain", "Saved. The device is restarting.");
         delay(1000);
         ESP.restart();
     });
@@ -553,7 +580,7 @@ bool startConfigurationPortal() {
     configurationPortalActive = true;
 
     Serial.println("Configuration AP started: " + apName);
-    Serial.println("Connect to the AP and open http://192.168.4.1 to enter orgId.");
+    Serial.println("Connect to the AP and open http://192.168.4.1 to enter the organization ID and registration code.");
     return true;
 }
 

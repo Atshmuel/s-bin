@@ -1,24 +1,21 @@
 #include "globals.h"
 
 namespace {
-constexpr char MQTT_SERVER[] = "broker.hivemq.com";
-constexpr uint16_t MQTT_PORT = 1883;
+// The private broker, with TLS; the device logs in with its MAC and device key.
+constexpr uint16_t MQTT_PORT = 8883;
 // A report with its diagnostics runs to about 1 KB.
 constexpr uint16_t MQTT_BUFFER_SIZE = 2048;
 constexpr unsigned long MQTT_RETRY_INTERVAL_MS = 5000;
-constexpr unsigned long REGISTRATION_INTERVAL_MS = 30000;
 // A report period outside this range is not a plausible schedule.
 constexpr uint64_t MIN_SLOT_PERIOD_SECONDS = 60;
 constexpr uint64_t MAX_SLOT_PERIOD_SECONDS = 24ULL * 60ULL * 60ULL;
 
-String registrationTopic = "bins/register";
 String acknowledgementTopic;
 String commandTopic;
 String instructionCheckTopic;
 String logTopic;
 String relayTopic;
 unsigned long lastMqttAttemptAt = 0;
-unsigned long lastRegistrationAt = 0;
 
 // The relay upload currently waiting for the server's relay_result.
 String waitingRelayLeafMac;
@@ -54,7 +51,8 @@ void setupMqtt() {
     logTopic = "bins/" + DeviceMac + "/update/log";
     relayTopic = "bins/" + DeviceMac + "/update/relay";
 
-    mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
+    gsmClient.setCertificate(SBIN_CA_FILE);
+    mqttClient.setServer(SBIN_SERVER_HOST, MQTT_PORT);
     mqttClient.setCallback(mqttCallback);
     mqttClient.setKeepAlive(60);
     mqttClient.setSocketTimeout(15);
@@ -64,7 +62,8 @@ void setupMqtt() {
 }
 
 void maintainMqttConnection() {
-    if (mqttClient.connected()) {
+    // The broker takes only registered devices: the device key is the password.
+    if (mqttClient.connected() || deviceKey.length() == 0) {
         return;
     }
     if (millis() - lastMqttAttemptAt < MQTT_RETRY_INTERVAL_MS) {
@@ -75,9 +74,16 @@ void maintainMqttConnection() {
     String clientId = "BinClient-" + DeviceMac;
     Serial.print("Connecting to MQTT...");
 
-    if (!mqttClient.connect(clientId.c_str())) {
+    if (!mqttClient.connect(clientId.c_str(), DeviceMac.c_str(), deviceKey.c_str())) {
         Serial.print(" failed, state=");
         Serial.println(mqttClient.state());
+        // Refused credentials: once a boot, ask the server whether this device was deleted.
+        static bool statusChecked = false;
+        const int state = mqttClient.state();
+        if (!statusChecked && (state == MQTT_CONNECT_BAD_CREDENTIALS || state == MQTT_CONNECT_UNAUTHORIZED)) {
+            statusChecked = true;
+            checkDeviceAfterRefusedLogin();
+        }
         return;
     }
 
@@ -88,33 +94,6 @@ void maintainMqttConnection() {
     if (!mqttClient.subscribe(commandTopic.c_str())) {
         Serial.println("❌ Failed to subscribe to device commands.");
     }
-}
-
-void publishRegistration(int batteryPercent) {
-    if (!mqttClient.connected() || !hasGpsFix || ownerId.length() == 0) {
-        return;
-    }
-    if (lastRegistrationAt != 0 &&
-        millis() - lastRegistrationAt < REGISTRATION_INTERVAL_MS) {
-        return;
-    }
-
-    StaticJsonDocument<256> doc;
-    doc["mac"] = DeviceMac;
-    doc["orgId"] = ownerId;
-    doc["battery"] = batteryPercent;
-    doc["location"][0] = latitude;
-    doc["location"][1] = longitude;
-
-    char payload[256];
-    size_t payloadLength = serializeJson(doc, payload, sizeof(payload));
-    if (payloadLength == 0 || !mqttPublish(registrationTopic.c_str(), payload)) {
-        Serial.println("❌ Failed to publish registration.");
-        return;
-    }
-
-    lastRegistrationAt = millis();
-    Serial.println("Registration published: " + String(payload));
 }
 
 bool requestInstructionCheck(unsigned long timeoutMs) {

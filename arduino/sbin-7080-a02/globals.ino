@@ -6,7 +6,8 @@ XPowersPMU PMU;
 HardwareSerial SerialModem(1);
 HardwareSerial SerialSensor(2);
 TinyGsm modem(SerialModem);
-TinyGsmClient gsmClient(modem);
+// The MQTT socket, with TLS (mux 0; registration uses mux 1).
+TinyGsmClientSecure gsmClient(modem, 0);
 PubSubClient mqttClient(gsmClient);
 
 Preferences preferences;
@@ -16,6 +17,7 @@ WebServer configServer(80);
 String DeviceMac = "";
 String ownerId = "";
 String deviceKey = "";
+String registrationCode = "";
 float latitude = 0;
 float longitude = 0;
 bool hasGpsFix = false;
