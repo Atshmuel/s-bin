@@ -3,6 +3,7 @@
 // first, each { at: Date, level, weight, battery }, level in % and weight in
 // kg, either null when the device had none.
 
+import { FAULT_CAUSES } from "./faults.js";
 import {
     BATTERY_CRITICAL_PERCENT, COLLECTION_LEVEL_DROP, COLLECTION_WEIGHT_DROP_MIN_KG, COLLECTION_WEIGHT_DROP_RATIO,
     FULLNESS_CRITICAL_PERCENT, MIN_TREND_POINTS, MIN_TREND_SPAN_MS, WEIGHT_REFERENCE_KG, DAY_MS, MINUTE_MS,
@@ -168,8 +169,8 @@ export function isValidTimeZone(timeZone) {
     }
 }
 
-// What a health message says went wrong, by the texts the firmware and the
-// server write; a message can name several causes.
+// What an older firmware's or server's English health message says went
+// wrong; a message can name several causes. Newer logs carry fault codes.
 const HEALTH_CAUSES = Object.freeze({
     fillSensor: /A02|Empty-bin calibration/,
     battery: /AXP2101|Battery level/,
@@ -177,11 +178,16 @@ const HEALTH_CAUSES = Object.freeze({
     gps: /GNSS/,
 });
 
-export function healthCauses(message) {
-    if (typeof message !== "string") return [];
-    return Object.entries(HEALTH_CAUSES)
-        .filter(([, pattern]) => pattern.test(message))
-        .map(([cause]) => cause);
+// The causes of a log's problems: from its fault codes (see utils/faults.js)
+// and, for logs from before them, its English message. Each cause once.
+export function healthCauses({ faults, message } = {}) {
+    const causes = new Set((faults ?? []).map(fault => FAULT_CAUSES[fault.code]).filter(Boolean));
+    if (typeof message === "string") {
+        for (const [cause, pattern] of Object.entries(HEALTH_CAUSES)) {
+            if (pattern.test(message)) causes.add(cause);
+        }
+    }
+    return [...causes];
 }
 
 export const HEALTH_CAUSE_NAMES = Object.freeze(Object.keys(HEALTH_CAUSES));

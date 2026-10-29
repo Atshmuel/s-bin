@@ -11,6 +11,7 @@ import { binFillRate } from "../../db/service/fillRateService.js";
 import { organizationThresholds } from "../../db/service/thresholdService.js";
 import { batteryLevel, fullnessLevel } from "../../utils/thresholds.js";
 import { cleanDiagnostics } from "../../utils/diagnostics.js";
+import { cleanFaults } from "../../utils/faults.js";
 import { detectIssues, nextIssues } from "../../utils/deviceIssues.js";
 import {
     MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM,
@@ -71,6 +72,7 @@ export async function applyDeviceLog(bin, {
     sensorOk,
     battery,
     weight,
+    faults: rawFaults,
     message: healthMessage,
     lastAwakeSeconds,
     driftPpm,
@@ -105,13 +107,15 @@ export async function applyDeviceLog(bin, {
         : fullnessState === 'warning' || batteryState === 'warning' || health === 'warning'
             ? 'warning'
             : 'info';
-    const messages = [];
-    if (fullnessState === 'critical') messages.push('Bin is almost full.');
-    else if (fullnessState === 'warning') messages.push('Bin is filling up.');
-    if (batteryState === 'critical') messages.push('Battery level is critical.');
-    else if (batteryState === 'warning') messages.push('Battery level is low.');
-    if (healthMessage) messages.push(healthMessage);
-    const message = messages.length > 0 ? messages.join(' ') : null;
+    // What went wrong, as codes (see utils/faults.js): the fullness and the
+    // battery from here, then the device's own. Older firmware sends English
+    // text instead, kept as the log's message.
+    const deviceFaults = cleanFaults(rawFaults);
+    const faults = [
+        ...(fullnessState === 'critical' ? [{ code: 'bin_full' }] : fullnessState === 'warning' ? [{ code: 'bin_filling' }] : []),
+        ...(batteryState === 'critical' ? [{ code: 'battery_critical' }] : batteryState === 'warning' ? [{ code: 'battery_low' }] : []),
+        ...deviceFaults,
+    ];
 
     // Whatever the device sent about itself that checks out (see utils/diagnostics.js).
     const diagnostics = cleanDiagnostics(rawDiagnostics);
@@ -135,7 +139,8 @@ export async function applyDeviceLog(bin, {
         weight: weightKg,
         createdAt: takenAt,
     };
-    query = appendFilter(query, message, 'message', message);
+    if (faults.length > 0) query.faults = faults;
+    query = appendFilter(query, healthMessage, 'message', healthMessage);
 
     const log = await binLogModel.create(query);
     // Kept apart, for a shorter time than the log; never at the cost of the report.
@@ -179,6 +184,7 @@ export async function applyDeviceLog(bin, {
         if (diagnostics.firmwareVersion) bin.status.firmwareVersion = diagnostics.firmwareVersion;
     }
     bin.status.health = health;
+    bin.status.faults = deviceFaults.length > 0 ? deviceFaults : undefined;
     bin.status.healthMessage = healthMessage || "";
     if (!isGateway) {
         bin.status.levelValid = levelIsValid;
@@ -195,9 +201,6 @@ export async function applyDeviceLog(bin, {
     bin.status.connection = { via, gatewayId, hops, rssi };
     bin.location.coordinates = location;
     bin.timezone = schedule.timeZone;
-    if (message) {
-        bin.maintenance.notes = `Last updated via MQTT on ${new Date().toLocaleString()}, message: ${message}`;
-    }
     await bin.save();
     return schedule;
 }

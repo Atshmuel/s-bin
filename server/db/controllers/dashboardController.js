@@ -143,7 +143,7 @@ async function recentLogs(user) {
     const names = new Map(bins.map(bin => [String(bin._id), bin.binName]));
     const logs = await binLogModel.find(
         { binId: { $in: bins.map(bin => bin._id) }, createdAt: { $gte: new Date(Date.now() - RECENT_LOGS_HOURS * HOUR_MS) } },
-        { binId: 1, type: 1, severity: 1, newLevel: 1, weight: 1, health: 1, message: 1, createdAt: 1 },
+        { binId: 1, type: 1, severity: 1, newLevel: 1, weight: 1, health: 1, faults: 1, message: 1, createdAt: 1 },
     ).sort({ createdAt: -1 }).limit(RECENT_LOGS_LIMIT).lean();
     return {
         logs: logs.map(log => ({

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import { binLogModel, binModel, routeModel, userModel } from '../models/models.js'
-import { READINGS_FILTER, readingsByBin } from '../service/readingsService.js'
+import { READINGS_FILTER, WITH_PROBLEMS_FILTER, readingsByBin } from '../service/readingsService.js'
+import { describeFaults } from '../../utils/faults.js'
 import { BINS_ONLY_FILTER, scopeToOrganization } from '../../utils/helpers.js'
 import { getOrgDeviceSettingsShared, intervalsByOrg } from '../service/sharedService.js'
 import { DASHBOARD_SECTIONS, devicesWithReasons } from './dashboardController.js'
@@ -387,13 +388,17 @@ async function connectivityOverview(user) {
 async function healthCausesOverview(user, { days, timeZone }) {
     const bins = await scopedBins(user, {}, { _id: 1 });
     const start = rangeStart(days);
-    // Counted per day and message in the database: devices send few distinct
-    // messages, so this returns far fewer rows than there are logs.
+    // Counted per day, fault codes and message in the database: there are few
+    // distinct ones, so this returns far fewer rows than there are logs.
     const groups = await binLogModel.aggregate([
-        { $match: { binId: { $in: bins.map(bin => bin._id) }, ...READINGS_FILTER, createdAt: { $gte: start }, message: { $exists: true, $ne: null } } },
+        { $match: { binId: { $in: bins.map(bin => bin._id) }, ...READINGS_FILTER, createdAt: { $gte: start }, ...WITH_PROBLEMS_FILTER } },
         {
             $group: {
-                _id: { day: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: timeZone } }, message: '$message' },
+                _id: {
+                    day: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: timeZone } },
+                    codes: '$faults.code',
+                    message: '$message',
+                },
                 count: { $sum: 1 },
             },
         },
@@ -404,7 +409,8 @@ async function healthCausesOverview(user, { days, timeZone }) {
     for (const group of groups) {
         const counts = byDay.get(group._id.day);
         if (!counts) continue;
-        for (const cause of healthCauses(group._id.message)) counts[cause] += group.count;
+        const faults = (group._id.codes ?? []).map(code => ({ code }));
+        for (const cause of healthCauses({ faults, message: group._id.message })) counts[cause] += group.count;
     }
     return { daily: [...byDay].map(([day, counts]) => ({ day, ...counts })) };
 }
@@ -543,8 +549,8 @@ export async function buildFleetBriefing(user) {
             { $group: { _id: '$binId', count: { $sum: 1 } } },
         ]),
         binLogModel.find(
-            { binId: { $in: ids }, ...READINGS_FILTER, createdAt: { $gte: weekStart }, message: { $exists: true, $ne: null } },
-            { message: 1 },
+            { binId: { $in: ids }, ...READINGS_FILTER, createdAt: { $gte: weekStart }, ...WITH_PROBLEMS_FILTER },
+            { faults: 1, message: 1 },
         ).lean(),
         intervalsByOrg(devices),
         scopedThresholds(user),
@@ -593,7 +599,7 @@ export async function buildFleetBriefing(user) {
             batteryPercent: device.status?.battery ?? null,
             batteryDaysUntilCritical: roundTo(batteryDaysLeft(device.status?.battery, batteryRate, cutOffs.batteryCritical)),
             health: device.status?.health ?? null,
-            reportedProblem: device.status?.healthMessage || null,
+            reportedProblem: describeFaults(device.status?.faults) || device.status?.healthMessage || null,
             hoursSinceLastReport: lastReport ? roundTo((now - new Date(lastReport).getTime()) / HOUR_MS, 1) : null,
             onTimeReportsPercentThisWeek: reliability.percent,
         };
@@ -606,7 +612,7 @@ export async function buildFleetBriefing(user) {
     const rules = thresholds.size === 1 ? [...thresholds.values()][0] : DEFAULT_THRESHOLDS;
     const problemsByCause = Object.fromEntries(HEALTH_CAUSE_NAMES.map(cause => [cause, 0]));
     for (const log of problemLogs) {
-        for (const cause of healthCauses(log.message)) problemsByCause[cause]++;
+        for (const cause of healthCauses(log)) problemsByCause[cause]++;
     }
 
     return {

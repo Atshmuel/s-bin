@@ -148,12 +148,18 @@ describe('days', () => {
 });
 
 describe('healthCauses', () => {
-    test('names every cause a message gives', () => {
-        assert.deepEqual(healthCauses('A02 not responding. Battery level is low.'), ['fillSensor', 'battery']);
-        assert.deepEqual(healthCauses('HX711 not responding.'), ['scale']);
+    test('names every cause the fault codes give, each once', () => {
+        assert.deepEqual(healthCauses({ faults: [{ code: 'distance_sensor' }, { code: 'battery_low' }, { code: 'calibration_failed' }] }),
+            ['fillSensor', 'battery']);
+        assert.deepEqual(healthCauses({ faults: [{ code: 'scale', cycles: 2 }] }), ['scale']);
     });
-    test('is empty for no message', () => {
-        assert.deepEqual(healthCauses(null), []);
-        assert.deepEqual(healthCauses('All good.'), []);
+    test('reads an older log\'s English message', () => {
+        assert.deepEqual(healthCauses({ message: 'A02 not responding. Battery level is low.' }), ['fillSensor', 'battery']);
+        assert.deepEqual(healthCauses({ message: 'HX711 not responding.' }), ['scale']);
+    });
+    test('is empty without a problem', () => {
+        assert.deepEqual(healthCauses({}), []);
+        assert.deepEqual(healthCauses(), []);
+        assert.deepEqual(healthCauses({ faults: [{ code: 'bin_full' }], message: 'All good.' }), []);
     });
 });

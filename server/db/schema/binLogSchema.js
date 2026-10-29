@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { faultSchema } from "./faultSchema.js";
 import { DAY_MS, LOG_RETENTION_DAYS, MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM, MAX_LAST_AWAKE_SECONDS } from '../../utils/constants.js'
 
 export const binLogSchema = new mongoose.Schema({
@@ -42,6 +43,9 @@ export const binLogSchema = new mongoose.Schema({
         enum: ["sensor", "manual", "system"],
         default: "sensor",
     },
+    // What went wrong (see utils/faults.js); `message` is an older firmware's
+    // English text, or a technician's note.
+    faults: { type: [faultSchema], default: undefined },
     message: String,
 
     // A log never changes once written: no updatedAt or version key.

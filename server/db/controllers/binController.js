@@ -111,7 +111,7 @@ export async function getAllUserBins(req, res) {
 const MAP_MARKER_PROJECTION = Object.freeze({
     binName: 1, kind: 1, location: 1, ownerId: 1,
     'status.level': 1, 'status.levelValid': 1, 'status.weight': 1, 'status.scale': 1, 'status.battery': 1,
-    'status.health': 1, 'status.healthMessage': 1, 'status.updatedAt': 1, 'status.connection': 1,
+    'status.health': 1, 'status.faults': 1, 'status.healthMessage': 1, 'status.updatedAt': 1, 'status.connection': 1,
 });
 
 function wrapLongitude(lng) {

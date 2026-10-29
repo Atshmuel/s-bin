@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { faultSchema } from "./faultSchema.js";
 import { add } from 'date-fns'
 import { DAY_MS, DEVICE_ISSUE_TYPES, FIRST_SERVICE_AFTER_DAYS, MAX_LAST_AWAKE_SECONDS, SERVICE_INTERVAL_DAYS } from '../../utils/constants.js'
 export const binSchema = new mongoose.Schema({
@@ -39,6 +40,9 @@ export const binSchema = new mongoose.Schema({
             enum: ["good", "warning", "critical"],
             default: "good"
         },
+        // The device's own faults at its last report (see utils/faults.js);
+        // healthMessage is an older firmware's English text instead.
+        faults: { type: [faultSchema], default: undefined },
         healthMessage: { type: String, default: "" },
         levelValid: { type: Boolean, default: true },
         level: { type: Number, default: 0, required: true },

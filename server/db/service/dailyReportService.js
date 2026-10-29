@@ -4,6 +4,7 @@ import { devicesWithReasons } from '../controllers/dashboardController.js'
 import { fullSoon } from '../controllers/analyticsController.js'
 import { recentContradictions } from './routeService.js'
 import { isValidTimeZone } from '../../utils/analytics.js'
+import { describeFaults } from '../../utils/faults.js'
 import { lastReportAt, upstreamId } from '../../utils/offline.js'
 import { DAILY_REPORT_DUE_WITHIN_HOURS, DAY_MS, HOUR_MS, ROLES } from '../../utils/constants.js'
 
@@ -111,8 +112,10 @@ export function reportSections(devices, dueSoon, now = Date.now(), contradiction
         },
         {
             title: 'Health problems',
-            lines: withReason('health').map(device => `${deviceLabel(device)}: ${device.status.health}` +
-                (device.status.healthMessage ? `, ${device.status.healthMessage}` : '.')),
+            lines: withReason('health').map(device => {
+                const problem = describeFaults(device.status.faults) || device.status.healthMessage;
+                return `${deviceLabel(device)}: ${device.status.health}` + (problem ? `, ${problem}` : '.');
+            }),
         },
         {
             title: 'Maintenance overdue',

@@ -26,7 +26,7 @@ async function expireStalePendingInstructions(cutoff) {
 
     const bins = await binModel.find({ _id: { $in: [...typesByBin.keys()] } });
     for (const bin of bins) {
-        const types = [...new Set(typesByBin.get(bin._id.toString()))].join(", ");
+        const types = [...new Set(typesByBin.get(bin._id.toString()))];
         const level = bin.status.levelValid === false ? null : bin.status.level;
         await binLogModel.create({
             binId: bin._id,
@@ -38,7 +38,7 @@ async function expireStalePendingInstructions(cutoff) {
             newLevel: level,
             battery: bin.status.battery,
             weight: bin.status.weight,
-            message: `Device did not pick up pending instructions (${types}) within 3 days; it may be offline or out of coverage.`,
+            faults: [{ code: "instructions_expired", types }],
         });
     }
     console.log(`[Cron] Expired ${stale.length} pending device instructions for ${bins.length} bins`);
