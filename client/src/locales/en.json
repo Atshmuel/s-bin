@@ -46,6 +46,27 @@
             "good":"No current device issues reported.",
             "detailsUnavailable":"No diagnostic details were reported."
         },
+        "faults": {
+          "when": {
+            "once": "in the last report",
+            "repeated": "in 2 or more reports in a row",
+            "onceMonthly": "in the last monthly attempt",
+            "repeatedMonthly": "in 2 or more monthly attempts in a row"
+          },
+          "bin_full": "Bin is almost full.",
+          "bin_filling": "Bin is filling up.",
+          "battery_critical": "Battery level is critical.",
+          "battery_low": "Battery level is low.",
+          "calibration_failed": "Empty-bin calibration failed.",
+          "calibration_failed_mm": "Empty-bin calibration failed (distance {{mm}} mm).",
+          "distance_sensor": "The distance sensor did not answer {{when}}.",
+          "fill_calculation": "The fill level could not be worked out {{when}}.",
+          "fill_calculation_mm": "The fill level could not be worked out at {{mm}} mm {{when}}.",
+          "pmu": "The power chip or the battery measurement failed {{when}}.",
+          "gps": "The GPS location refresh failed {{when}}.",
+          "scale": "The scale reading failed {{when}}.",
+          "instructions_expired": "The device did not pick up its pending commands ({{types}}) within 3 days; it may be offline or out of coverage."
+        },
     "severities":{
       "critical":"Critical",
       "warning":"Warning",

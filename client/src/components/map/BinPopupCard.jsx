@@ -30,7 +30,7 @@ function BinPopupCard({ bin, gatewayName, relayCount = 0 }) {
                     <span className="truncate text-base font-semibold">{bin.binName}</span>
                     <div className="w-fit"><DeviceRoleBadge bin={bin} /></div>
                 </div>
-                <HealthBadge health={bin.status.health} message={bin.status.healthMessage} />
+                <HealthBadge health={bin.status.health} faults={bin.status.faults} message={bin.status.healthMessage} />
             </div>
 
             <Separator />

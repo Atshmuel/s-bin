@@ -15,7 +15,7 @@ function BinHeader({ bin, className }) {
                 <CardTitle className="truncate text-xl">{bin.binName}</CardTitle>
                 <div className="flex flex-wrap items-center gap-2">
                     <DeviceRoleBadge bin={bin} />
-                    <HealthBadge health={bin.status.health} message={bin.status.healthMessage} />
+                    <HealthBadge health={bin.status.health} faults={bin.status.faults} message={bin.status.healthMessage} />
                 </div>
                 {bin.reportSchedule && (
                     <CardDescription>

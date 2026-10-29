@@ -161,6 +161,7 @@ function BinsList() {
                 return (
                     <HealthBadge
                         health={row.original.status.health}
+                        faults={row.original.status.faults}
                         message={row.original.status.healthMessage}
                     />
                 );

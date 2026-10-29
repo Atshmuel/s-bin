@@ -2,9 +2,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getVariant } from "@/utils/binHelpers";
 import { useTranslation } from "react-i18next";
+import { useFaultText } from "@/hooks/useFaultText";
 
-function HealthBadge({ health, message, className }) {
+// The health level, with what went wrong (fault codes, or an older
+// firmware's message) in its tooltip.
+function HealthBadge({ health, faults, message, className }) {
     const { t } = useTranslation();
+    const faultText = useFaultText();
+    const problem = faultText(faults, message);
     const fallbackMessage = t(`healthTooltip.${health}`, {
         defaultValue: t("healthTooltip.detailsUnavailable"),
     });
@@ -20,7 +25,7 @@ function HealthBadge({ health, message, className }) {
                 </Badge>
             </TooltipTrigger>
             <TooltipContent>
-                {message || fallbackMessage}
+                {problem || fallbackMessage}
             </TooltipContent>
         </Tooltip>
     );

@@ -46,6 +46,27 @@
         "good":"לא דווחו כרגע תקלות במכשיר.",
         "detailsUnavailable":"לא התקבל פירוט אבחון."
     },
+    "faults": {
+      "when": {
+        "once": "בדיווח האחרון",
+        "repeated": "ב־2 דיווחים רצופים או יותר",
+        "onceMonthly": "בניסיון החודשי האחרון",
+        "repeatedMonthly": "ב־2 ניסיונות חודשיים רצופים או יותר"
+      },
+      "bin_full": "הפח כמעט מלא.",
+      "bin_filling": "הפח מתמלא.",
+      "battery_critical": "רמת הסוללה קריטית.",
+      "battery_low": "רמת הסוללה נמוכה.",
+      "calibration_failed": "כיול הפח הריק נכשל.",
+      "calibration_failed_mm": "כיול הפח הריק נכשל (מרחק {{mm}} מ״מ).",
+      "distance_sensor": "חיישן המרחק לא ענה {{when}}.",
+      "fill_calculation": "לא ניתן היה לחשב את רמת המילוי {{when}}.",
+      "fill_calculation_mm": "לא ניתן היה לחשב את רמת המילוי במרחק {{mm}} מ״מ {{when}}.",
+      "pmu": "שבב הכוח או מדידת הסוללה נכשלו {{when}}.",
+      "gps": "רענון מיקום ה־GPS נכשל {{when}}.",
+      "scale": "קריאת המשקל נכשלה {{when}}.",
+      "instructions_expired": "המכשיר לא אסף את הפקודות שחיכו לו ({{types}}) תוך 3 ימים; ייתכן שהוא מנותק או מחוץ לכיסוי."
+    },
     "severities":{
       "critical":"קריטי",
       "warning":"אזהרה",

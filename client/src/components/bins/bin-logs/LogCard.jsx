@@ -7,9 +7,12 @@ import { useTranslation } from "react-i18next"
 import { useAppSide } from "@/hooks/useAppSide"
 import { formatSleepDuration, formatDate } from "@/utils/helpers"
 import { isGateway } from "@/utils/binHelpers"
+import { useFaultText } from "@/hooks/useFaultText"
 
 function LogCard({ log, isLoading = true, ...props }) {
     const { t } = useTranslation()
+    const faultText = useFaultText()
+    const problem = log ? faultText(log.faults, log.message) : null
     const { isRight } = useAppSide()
     const isInfo = log?.severity === "info"
     const gateway = isGateway(log?.bin)
@@ -66,7 +69,7 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 <span className="font-medium flex items-center gap-2">
                                     <Activity size={16} /> {t("healthStatus")}:
                                 </span>
-                                <HealthBadge health={log.health} message={log.message} />
+                                <HealthBadge health={log.health} faults={log.faults} message={log.message} />
                             </div>
 
                             <div className="flex justify-between">
@@ -85,10 +88,10 @@ function LogCard({ log, isLoading = true, ...props }) {
                                 </div>
                             )}
 
-                            {log.message &&
+                            {problem &&
                                 <div className="space-y-1">
                                     <span className="font-medium">{t("components.logCard.message")}:</span>
-                                    <p>{log.message}</p>
+                                    <p>{problem}</p>
                                 </div>
                             }
 

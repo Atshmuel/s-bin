@@ -133,6 +133,7 @@ function AllLogs() {
                 return (
                     <HealthBadge
                         health={row.original.health}
+                        faults={row.original.faults}
                         message={row.original.message}
                     />
                 );
