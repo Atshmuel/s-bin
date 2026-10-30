@@ -53,6 +53,10 @@ describe('meshKeysHeader', () => {
         assert.ok(header.includes(`MESH_LEAF_KEY[32] = {${LEAF_KEY.match(/../g).map(b => `0x${b}`).join(', ')}};`));
         assert.ok(header.includes(`MESH_BEACON_KEY[32] = {${BEACON_KEY.match(/../g).map(b => `0x${b}`).join(', ')}};`));
     });
+    test('names the board it is for, so another one refuses it', () => {
+        assert.match(header, /MESH_KEY_MAC\[6\] = \{0x28, 0x84, 0x85, 0x38, 0x66, 0x44\};/);
+        assert.match(meshKeysHeader({ organizationKey: ORGANIZATION_KEY, keyId: 1, mac: '44:1D:64:BD:63:6C' }), /MESH_KEY_MAC\[6\] = \{0x44, 0x1d, 0x64, 0xbd, 0x63, 0x6c\};/);
+    });
     test('never holds the organization\'s key', () => {
         assert.ok(!header.includes(ORGANIZATION_KEY));
         assert.ok(!header.includes(ORGANIZATION_KEY.match(/../g).map(b => `0x${b}`).join(', ')));

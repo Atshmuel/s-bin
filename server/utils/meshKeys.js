@@ -49,6 +49,8 @@ export function meshKeysHeader({ organizationKey, keyId, mac }) {
         "#include <stdint.h>",
         "",
         `constexpr uint8_t MESH_KEY_ID = ${keyId};`,
+        // The sketch refuses to run on another board than the one these keys were made for.
+        `constexpr uint8_t MESH_KEY_MAC[6] = ${cArray(mac.replaceAll(":", "").toLowerCase())};`,
         `constexpr uint8_t MESH_LEAF_KEY[32] = ${cArray(deriveLeafKey(organizationKey, mac))};`,
         `constexpr uint8_t MESH_BEACON_KEY[32] = ${cArray(deriveBeaconKey(organizationKey))};`,
         "",
