@@ -143,6 +143,7 @@ void refreshLeafLocation() {
     recordGpsAttempt();
     bool alreadyOn = false;
     bool fixed = false;
+    restoreModemPower();  // cut at the start of the wake
     if (powerOnModem(alreadyOn) && startGpsAcquisition()) {
         const unsigned long startedAt = millis();
         while (!fixed && millis() - startedAt < LEAF_GPS_TIMEOUT_MS) {

@@ -108,6 +108,19 @@ void cutModemPower() {
     Serial.println("🔌 Modem power rails turned off.");
 }
 
+// Turns the modem's rails back on (as initializePowerManagement() does at boot)
+// for a leaf, which cut them, to power the modem for a GPS fix.
+void restoreModemPower() {
+    if (!pmuAvailable) {
+        return;
+    }
+    PMU.setDC3Voltage(3300);
+    PMU.enableDC3();
+    PMU.setBLDO2Voltage(3300);
+    PMU.enableBLDO2();
+    delay(100);
+}
+
 // Reads the A02 and the battery and updates the health counters. A sensor not
 // trusted (its calibration just failed) counts as failed whatever it reads.
 DeviceReading takeReading(bool gpsTested, bool gpsOk, bool sensorTrusted) {
