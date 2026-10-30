@@ -5,6 +5,8 @@ import { BIN_ACK_TOPIC } from "../mqttTopics.js";
 import { binModel, deviceInstructionModel } from "../../db/models/models.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
 import { INSTRUCTION_RESULT_MAX_LENGTH, LEAF_INSTRUCTION_TYPES, MAX_LEAF_INSTRUCTIONS } from "../../utils/constants.js";
+import { generateRandomToken } from "../../utils/helpers.js";
+import { deleteDeviceAccounts } from "../brokerAccounts.js";
 
 // The oldest pending command of each leaf this gateway relays for.
 async function pendingLeafInstructions(gateway) {
@@ -28,10 +30,33 @@ async function pendingLeafInstructions(gateway) {
         .map(instruction => ({ ...instruction, leafMac: macByLeaf.get(instruction.binId.toString()) }));
 }
 
+// A gateway that ran become_leaf: its bin becomes a mesh leaf's (meshOnly, a
+// key nobody holds) and its broker account goes, so a later SIM makes it a
+// gateway again through registration, in the same bin.
+async function demoteToLeaf(binId) {
+    const bin = await binModel.findOneAndUpdate(
+        { _id: binId, meshOnly: { $ne: true } },
+        { $set: { meshOnly: true, deviceKey: generateRandomToken() } },
+        { projection: { macAddress: 1 } }
+    );
+    if (bin) {
+        await deleteDeviceAccounts([bin.macAddress]);
+        console.log(`[Mesh] ${bin.macAddress} became a mesh leaf.`);
+    }
+}
+
 // Records a device's result for one of its commands; a repeat of a result
 // already recorded is accepted, another final status is not. Returns the
 // instruction, or null when the result does not apply.
 export async function applyInstructionResult(binId, { instructionId, status, result }) {
+    const instruction = await recordInstructionResult(binId, { instructionId, status, result });
+    if (instruction?.type === "become_leaf" && instruction.status === "completed") {
+        await demoteToLeaf(binId);
+    }
+    return instruction;
+}
+
+async function recordInstructionResult(binId, { instructionId, status, result }) {
     if (!mongoose.Types.ObjectId.isValid(instructionId) ||
         !["completed", "failed"].includes(status) ||
         (result !== undefined && (typeof result !== "string" || result.length > INSTRUCTION_RESULT_MAX_LENGTH))) {

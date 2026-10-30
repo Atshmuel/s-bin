@@ -13,7 +13,8 @@ export const ROLES = Object.freeze({
 // Commands a mesh leaf can run; its gateway hands each over in the ACK to the
 // leaf's next reading. stay_awake is not among them: a leaf can only talk
 // while its gateway's mesh window is open, so staying awake gains nothing.
-export const LEAF_INSTRUCTION_TYPES = Object.freeze(["report_now", "calibrate_empty_bin", "calibrate_scale"])
+// become_leaf reaches a gateway that reports through another one this way.
+export const LEAF_INSTRUCTION_TYPES = Object.freeze(["report_now", "calibrate_empty_bin", "calibrate_scale", "become_leaf"])
 
 export const ROLE_LEVEL = {
     [ROLES.OWNER]: 4,

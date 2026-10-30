@@ -1182,8 +1182,12 @@
       "scaleGramsLimit": "Zero the scale first (recalibrate the empty bin), then put an object of known weight in the bin: 100 g to 200 kg. To check the scale afterwards, place a different known weight and request a report.",
       "gramsValue": "{{grams}} g placed",
       "confirmCalibration": "Queue calibration",
+      "becomeLeafConfirmationTitle": "Turn this gateway into a mesh leaf?",
+      "becomeLeafConfirmationDescription": "At its next report the device stops being a gateway and reports through another gateway of the organization, keeping this bin, its settings and calibration. Until then nothing changes. The leaves that report through it lose their mesh window and need another gateway in range. Putting a SIM card in and restarting it makes it a gateway again.",
+      "confirmBecomeLeaf": "Turn into a leaf",
       "results": {
         "additional_report_published": "Report sent",
+        "became_leaf": "The device is now a mesh leaf",
         "location_refresh_scheduled": "A GPS fix will be taken at the next report",
         "additional_report_publish_failed": "The report could not be sent",
         "awake_window_extended": "Stayed awake as requested",
@@ -1205,7 +1209,8 @@
         "stay_awake": "Extend awake time",
         "calibrate_empty_bin": "Recalibrate empty-bin reference",
         "calibrate_scale": "Calibrate scale with a known weight",
-        "refresh_location": "Refresh the GPS location at the next report"
+        "refresh_location": "Refresh the GPS location at the next report",
+        "become_leaf": "Turn into a mesh leaf (stop being a gateway)"
       },
       "statuses": {
         "pending": "Pending",

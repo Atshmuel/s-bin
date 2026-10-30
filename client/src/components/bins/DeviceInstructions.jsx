@@ -1,3 +1,4 @@
+import { useMe } from "@/hooks/users/auth/useMe";
 import { format } from "date-fns";
 import { LoaderCircle, Send, X } from "lucide-react";
 import { useState } from "react";
@@ -34,7 +35,20 @@ import { isGateway } from "@/utils/binHelpers";
 import { formatReportSchedule } from "@/utils/orgSettings";
 import { INSTRUCTIONS_PAGE_SIZE as PAGE_SIZE, MAX_AWAKE_MINUTES, MAX_SCALE_GRAMS, MIN_SCALE_GRAMS } from "@/utils/constants";
 
-const INSTRUCTION_TYPES = ["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale", "refresh_location"];
+const INSTRUCTION_TYPES = ["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale", "refresh_location", "become_leaf"];
+// Commands that ask first: what each changes is not undone by the next report.
+const CONFIRMED_TYPES = {
+    calibrate_empty_bin: {
+        title: "calibrationConfirmationTitle",
+        description: "calibrationConfirmationDescription",
+        action: "confirmCalibration",
+    },
+    become_leaf: {
+        title: "becomeLeafConfirmationTitle",
+        description: "becomeLeafConfirmationDescription",
+        action: "confirmBecomeLeaf",
+    },
+};
 // Only a device with its own modem has an awake time to extend and a GPS.
 const OWN_MODEM_TYPES = ["stay_awake", "refresh_location"];
 const CALIBRATION_TYPES = ["calibrate_empty_bin", "calibrate_scale"];
@@ -78,12 +92,17 @@ function DeviceInstructions({ bin, className }) {
     // relays for leaves; only a gateway does not. A leaf reaches commands
     // through its gateway's ACK and has no awake time to extend, nor a GPS.
     const viaMesh = bin.status?.connection?.via === "mesh";
+    // Only an owner, and only for a device with a device key of its own (it
+    // registered with a SIM), can turn a gateway into a leaf; the server checks too.
+    const { isOwner } = useMe();
     const instructionTypes = INSTRUCTION_TYPES.filter((type) =>
-        !(isGateway(bin) && CALIBRATION_TYPES.includes(type)) && !(viaMesh && OWN_MODEM_TYPES.includes(type)));
+        !(isGateway(bin) && CALIBRATION_TYPES.includes(type)) && !(viaMesh && OWN_MODEM_TYPES.includes(type)) &&
+        !(type === "become_leaf" && (bin.meshOnly || !isOwner)));
     const [instructionType, setInstructionType] = useState(instructionTypes[0]);
     const [durationMinutes, setDurationMinutes] = useState("5");
     const [scaleGrams, setScaleGrams] = useState("1000");
-    const [showCalibrationConfirmation, setShowCalibrationConfirmation] = useState(false);
+    const [confirmingType, setConfirmingType] = useState(null);
+    const confirmation = CONFIRMED_TYPES[confirmingType];
     const [page, setPage] = useState(0);
 
     const { instructions, isLoadingInstructions, instructionsError } = useDeviceInstructions(bin._id);
@@ -204,8 +223,8 @@ function DeviceInstructions({ bin, className }) {
                                 className="cursor-pointer self-start sm:self-auto"
                                 disabled={isEnqueuing || durationInvalid || gramsInvalid}
                                 onClick={() => {
-                                    if (instructionType === "calibrate_empty_bin") {
-                                        setShowCalibrationConfirmation(true);
+                                    if (CONFIRMED_TYPES[instructionType]) {
+                                        setConfirmingType(instructionType);
                                     } else {
                                         enqueueSelectedInstruction();
                                     }
@@ -329,14 +348,14 @@ function DeviceInstructions({ bin, className }) {
                 </CardContent>
             </Card>
 
-            <AlertDialog open={showCalibrationConfirmation} onOpenChange={setShowCalibrationConfirmation}>
+            <AlertDialog open={Boolean(confirmation)} onOpenChange={(open) => !open && setConfirmingType(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {t("components.deviceInstructions.calibrationConfirmationTitle")}
+                            {confirmation && t(`components.deviceInstructions.${confirmation.title}`)}
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            {t("components.deviceInstructions.calibrationConfirmationDescription")}
+                            {confirmation && t(`components.deviceInstructions.${confirmation.description}`)}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -344,11 +363,11 @@ function DeviceInstructions({ bin, className }) {
                         <AlertDialogAction
                             onClick={(event) => {
                                 event.preventDefault();
-                                setShowCalibrationConfirmation(false);
+                                setConfirmingType(null);
                                 enqueueSelectedInstruction();
                             }}
                         >
-                            {t("components.deviceInstructions.confirmCalibration")}
+                            {confirmation && t(`components.deviceInstructions.${confirmation.action}`)}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

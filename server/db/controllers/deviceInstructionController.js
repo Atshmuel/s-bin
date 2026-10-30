@@ -9,10 +9,13 @@ import {
 // refresh_location: the device takes a GPS fix at its next cycle (GNSS and
 // cellular data cannot run together on its modem), for a bin that was moved;
 // only devices with their own modem have GPS.
-const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale", "refresh_location"]);
+// become_leaf: a gateway (a device that registered with its own SIM) stops
+// being one and reports as a mesh leaf, keeping its bin, settings and
+// calibration; a leaf that later finds a SIM becomes a gateway again.
+const supportedInstructionTypes = new Set(["report_now", "stay_awake", "calibrate_empty_bin", "calibrate_scale", "refresh_location", "become_leaf"]);
 
 function isValidInstructionPayload(type, payload) {
-    if (type === "report_now") {
+    if (type === "report_now" || type === "become_leaf") {
         return Object.keys(payload).length === 0;
     }
 
@@ -65,6 +68,13 @@ export async function enqueueDeviceInstruction(req, res) {
     if (!bin || (req.user.role !== ROLES.OWNER &&
         bin.ownerId?.toString() !== req.user.org)) {
         return res.status(404).json({ message: "Bin not found." });
+    }
+    // It changes how the organization's mesh is built: the system's owners only.
+    if (type === "become_leaf" && req.user.role !== ROLES.OWNER) {
+        return res.status(403).json({ message: "Only an owner can turn a gateway into a leaf." });
+    }
+    if (type === "become_leaf" && bin.meshOnly) {
+        return res.status(400).json({ message: "This device is already a mesh leaf." });
     }
     // A bin reporting through a gateway gets commands at its gateway's mesh window.
     if (bin.status?.connection?.via === "mesh" && !LEAF_INSTRUCTION_TYPES.includes(type)) {

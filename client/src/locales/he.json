@@ -1205,8 +1205,12 @@
       "scaleGramsLimit": "קודם יש לאפס את המשקל (כיול מחדש של פח ריק), ואז להניח בפח חפץ שמשקלו ידוע: 100 גרם עד 200 ק״ג. כדי לבדוק את המשקל אחר כך, אפשר להניח משקל ידוע אחר ולבקש דיווח.",
       "gramsValue": "הונחו {{grams}} גרם",
       "confirmCalibration": "הוסף כיול לתור",
+      "becomeLeafConfirmationTitle": "להפוך את השער לעלה ברשת?",
+      "becomeLeafConfirmationDescription": "בדיווח הבא המכשיר יפסיק להיות שער וידווח דרך שער אחר של הארגון, והפח, ההגדרות והכיול שלו יישמרו. עד אז שום דבר לא משתנה. העלים שמדווחים דרכו יאבדו את חלון הרשת שלהם ויצטרכו שער אחר בטווח. הכנסת כרטיס SIM והפעלה מחדש יחזירו אותו להיות שער.",
+      "confirmBecomeLeaf": "הפוך לעלה",
       "results": {
         "additional_report_published": "הדיווח נשלח",
+        "became_leaf": "המכשיר הוא עכשיו עלה ברשת",
         "location_refresh_scheduled": "מיקום GPS ייקלט בדיווח הבא",
         "additional_report_publish_failed": "שליחת הדיווח נכשלה",
         "awake_window_extended": "המכשיר נשאר ער כמבוקש",
@@ -1228,7 +1232,8 @@
         "stay_awake": "הארכת זמן הערות",
         "calibrate_empty_bin": "כיול מחדש של פח ריק",
         "calibrate_scale": "כיול משקל עם משקל ידוע",
-        "refresh_location": "רענון מיקום ה־GPS בדיווח הבא"
+        "refresh_location": "רענון מיקום ה־GPS בדיווח הבא",
+        "become_leaf": "הפיכה לעלה ברשת (הפסקת תפקיד השער)"
       },
       "statuses": {
         "pending": "ממתינה",
