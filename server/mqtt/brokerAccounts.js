@@ -83,6 +83,21 @@ const deleteCommands = mac => [
     { command: "deleteRole", rolename: roleName(mac) },
 ];
 
+// A device's account with this key, whether or not one is there already (a
+// leaf promoted to a gateway may have one from before); a failure is logged.
+export async function setDeviceAccount(mac, deviceKey) {
+    try {
+        await runCommands([
+            createRoleCommand(mac),
+            createClientCommand(mac, deviceKey),
+            { command: "setClientPassword", username: mac, password: deviceKey },
+            { command: "addClientRole", username: mac, rolename: roleName(mac) },
+        ]);
+    } catch (error) {
+        console.error(`Could not set the broker account of ${mac}:`, error?.message ?? error);
+    }
+}
+
 // A newly registered device's account; a failure is logged (the next sync repairs it).
 export async function createDeviceAccount(mac, deviceKey) {
     try {
@@ -116,7 +131,8 @@ export async function syncDeviceAccounts() {
         const roles = new Set((roleList.data?.roles ?? [])
             .filter(name => name.startsWith(DEVICE_ROLE_PREFIX) && MAC_ADDRESS_PATTERN.test(name.slice(DEVICE_ROLE_PREFIX.length)))
             .map(name => name.slice(DEVICE_ROLE_PREFIX.length)));
-        const devices = (await binModel.find({ deviceKey: { $exists: true } }, { macAddress: 1, deviceKey: 1 }).lean())
+        // A mesh leaf never connects (its gateway reports for it), so it has no account.
+        const devices = (await binModel.find({ deviceKey: { $exists: true }, meshOnly: { $ne: true } }, { macAddress: 1, deviceKey: 1 }).lean())
             .filter(device => MAC_ADDRESS_PATTERN.test(device.macAddress ?? ""));
         const known = new Set(devices.map(device => device.macAddress));
         const commands = [];

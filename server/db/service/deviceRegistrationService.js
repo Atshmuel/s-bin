@@ -3,7 +3,7 @@ import { getOrgDeviceSettingsShared, organizationExist } from "./sharedService.j
 import { generateRandomToken } from "../../utils/helpers.js";
 import { getNextReportSchedule } from "../../utils/deviceSchedule.js";
 import { fromDeviceLocation } from "../../utils/geo.js";
-import { createDeviceAccount } from "../../mqtt/brokerAccounts.js";
+import { createDeviceAccount, setDeviceAccount } from "../../mqtt/brokerAccounts.js";
 
 const MAC_ADDRESS_PATTERN = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
 
@@ -51,7 +51,8 @@ export async function registerDevice({ mac, orgId, location, battery, kind = "bi
             },
         });
         if (modifiedCount === 0) return { status: "exists" };
-        await createDeviceAccount(mac, deviceKey);
+        // The leaf's bin may have had an account with its unused key: replaced.
+        await setDeviceAccount(mac, deviceKey);
         return registered;
     }
     // The MAC's first two bytes and the time keep new names apart, e.g. "Bin-1D:44-3125".
