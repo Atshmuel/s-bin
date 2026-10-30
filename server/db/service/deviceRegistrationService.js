@@ -18,13 +18,19 @@ function isDeviceLocation(location) {
 // with its key and first schedule, "exists" (a known MAC never gets its key
 // again), "invalid" or "no_organization". Shared by the HTTPS registration
 // and the old MQTT one.
+//
+// The one known MAC that registers is a mesh leaf of the same organization
+// that found a SIM and became a gateway: its bin (created from relayed
+// readings, so meshOnly) keeps its name and history and gets a device key.
+// Any other bin, a gateway reporting through the mesh included, is "exists".
 export async function registerDevice({ mac, orgId, location, battery, kind = "bin" }) {
     if (typeof mac !== "string" || !MAC_ADDRESS_PATTERN.test(mac) || !["bin", "gateway"].includes(kind) ||
         !isDeviceLocation(location) || typeof battery !== "number" || battery < 0 || battery > 100) {
         return { status: "invalid" };
     }
     if (!await organizationExist(orgId)) return { status: "no_organization" };
-    if (await binModel.exists({ macAddress: mac })) return { status: "exists" };
+    const existing = await binModel.findOne({ macAddress: mac }, { ownerId: 1, meshOnly: 1 }).lean();
+    if (existing && (!existing.meshOnly || String(existing.ownerId) !== String(orgId))) return { status: "exists" };
 
     // Checked above in the device's [lat, lng]; stored as [lng, lat].
     const lngLat = fromDeviceLocation(location);
@@ -32,6 +38,22 @@ export async function registerDevice({ mac, orgId, location, battery, kind = "bi
     const { timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds } =
         getNextReportSchedule(lngLat, reportIntervalMinutes, reportStartHour);
     const deviceKey = generateRandomToken();
+    const registered = { status: "registered", deviceKey, timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds, meshAwakeWindowSeconds };
+
+    if (existing) {
+        // Still meshOnly in the filter, so two registrations at once promote it once.
+        const { modifiedCount } = await binModel.updateOne({ _id: existing._id, meshOnly: true }, {
+            $set: {
+                kind, deviceKey, meshOnly: false,
+                location: { type: "Point", coordinates: lngLat },
+                timezone: timeZone,
+                "status.battery": battery,
+            },
+        });
+        if (modifiedCount === 0) return { status: "exists" };
+        await createDeviceAccount(mac, deviceKey);
+        return registered;
+    }
     // The MAC's first two bytes and the time keep new names apart, e.g. "Bin-1D:44-3125".
     const binName = `${kind === "gateway" ? "Gateway" : "Bin"}-${mac.slice(0, 5)}-${Date.now().toString().slice(-4)}`;
     try {
@@ -48,5 +70,5 @@ export async function registerDevice({ mac, orgId, location, battery, kind = "bi
     }
     // Its account on the private broker, before the device first connects.
     await createDeviceAccount(mac, deviceKey);
-    return { status: "registered", deviceKey, timeZone, nextWakeEpoch, followingWakeEpoch, sleepDurationSeconds, meshAwakeWindowSeconds };
+    return registered;
 }

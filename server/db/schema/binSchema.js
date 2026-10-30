@@ -19,6 +19,13 @@ export const binSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    // Created from a reading a gateway relayed: a leaf whose device key it never
+    // got. Only such a bin can be taken over by a registration with its MAC (a
+    // leaf that found a SIM and became a gateway); see registerDevice.
+    meshOnly: {
+        type: Boolean,
+        default: false,
+    },
     location: {
         type: {
             type: String,

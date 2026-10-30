@@ -52,6 +52,7 @@ async function findOrCreateLeafBin(leafMac, gateway, record) {
             macAddress: leafMac,
             ownerId: gateway.ownerId,
             deviceKey: generateRandomToken(),
+            meshOnly: true,
             location: { type: "Point", coordinates: record.location },
             timezone: getNextReportSchedule(record.location).timeZone,
             status: { battery: record.battery },
