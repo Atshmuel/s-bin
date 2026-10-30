@@ -713,7 +713,7 @@
       "navigation": {
         "back": "Back",
         "ready": "I'm ready",
-        "onSetupPage": "I'm on the setup page",
+        "onSetupPage": "I joined the network",
         "saved": "I sent it",
         "toBins": "Go to the bins list"
       },
@@ -746,11 +746,11 @@
         "description": "The device's own network, only for setup.",
         "steps": {
           "powerOn": "Turn the device on. A device that has not joined an organization opens a Wi-Fi network named S-Bin-A02-… .",
-          "joinNetwork": "On your phone, open the Wi-Fi settings and join that network (it has no password).",
-          "openPage": "A setup page may open by itself: you can leave it and come back to this page (on an iPhone choose \"Use without internet\" if asked)."
+          "joinNetwork": "On your phone, open the Wi-Fi settings and join that network (it has no password). The phone warns that it has no internet: choose to stay connected (on an iPhone \"Use without internet\", on Android \"Yes\" or \"Keep connection\").",
+          "openPage": "Do not wait for a setup page and do not type anything: come back to this page (switch back to your browser) and go on."
         },
         "noInternetTitle": "No internet on this network",
-        "noInternetNote": "It is the device's network, not the internet: your phone may warn about that. Stay connected until the details are saved.",
+        "noInternetNote": "It is the device's network, not the internet, so this warning is expected. If the next step's button does not open the device, turn off your mobile data for a minute (some phones prefer it over a Wi-Fi network without internet) and try again. Stay connected until the details are saved.",
         "noNetworkTitle": "No such network?",
         "noNetworkNote": "The device has joined an organization before, so it does not open its setup network. An owner can reset it with \"Delete via MAC\" in the side menu; it then opens the network again."
       },
