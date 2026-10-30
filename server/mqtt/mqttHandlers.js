@@ -1,5 +1,3 @@
-import { BIN_REGISTER_TOPIC } from "./mqttTopics.js";
-import { handleRegistration } from "./handlers/registration.js";
 import { handleDeviceLog } from "./handlers/telemetry.js";
 import { handleRelay } from "./handlers/relay.js";
 import { handleInstructionCheck, handleInstructionResult } from "./handlers/instructions.js";
@@ -7,11 +5,6 @@ import { handleInstructionCheck, handleInstructionResult } from "./handlers/inst
 export { removeBinConfig } from "./handlers/commands.js";
 
 export async function handleMqttMessage(topic, payload) {
-    if (topic === BIN_REGISTER_TOPIC) {
-        await handleRegistration(payload);
-        return;
-    }
-
     const parts = topic.split("/"); // bins/<mac>/update/<field>
     if (parts.length !== 4) {
         console.warn("Unknown topic format:", topic);

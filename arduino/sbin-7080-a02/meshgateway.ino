@@ -11,8 +11,8 @@ namespace {
 constexpr uint8_t RELAY_QUEUE_SIZE = 16;
 constexpr uint32_t BEACON_INTERVAL_MS = 500;
 constexpr uint32_t MESH_TASK_STACK_BYTES = 6144;
-// The server needs a few seconds per relayed reading (the public broker both
-// ways and several database writes).
+// The server needs a few seconds per relayed reading (the broker both ways
+// and several database writes).
 constexpr unsigned long RELAY_RESULT_TIMEOUT_MS = 10000;
 // A slow reply does not end the upload: the reading is sent again (the server
 // recognises the repeat by its message ID) until the server stays silent this

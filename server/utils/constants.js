@@ -383,11 +383,8 @@ export const IS_DEV_MACHINE = Boolean(process.env.SBIN_DEV_MACHINE) &&
 // The client's dev server, allowed only on a developer's machine.
 export const LOCAL_CLIENT_ORIGIN = "http://localhost:5173";
 
-// MQTT brokers. The public one, which devices used before 2i (no
-// credentials), stays while they move to the private one: MQTT_BROKER_URL,
-// MQTT_BROKER_USERNAME and MQTT_BROKER_PASSWORD in .env (the server's own
-// account; without them only the public broker is used).
-export const MQTT_PUBLIC_BROKER_URL = "mqtt://broker.hivemq.com:1883";
+// The MQTT broker is the private one in .env: MQTT_BROKER_URL,
+// MQTT_BROKER_USERNAME and MQTT_BROKER_PASSWORD (the server's own account).
 // On the private broker (Mosquitto's dynamic security) each device has an
 // account: its MAC, its device key as the password, and a role of its own
 // (DEVICE_ROLE_PREFIX + MAC) that lets it publish and read only its own topics,

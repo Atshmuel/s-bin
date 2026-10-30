@@ -84,7 +84,7 @@ const main = async () => {
         if (isDevMachine) {
             console.log(`Developer machine (${process.env.SBIN_DEV_MACHINE}): MQTT, scheduled jobs and real emails are left to the deployed server.`);
         } else {
-            initMqtt({ onPrivateConnect: syncDeviceAccounts });
+            initMqtt({ onConnect: syncDeviceAccounts });
             setEmailServiceCredentials()
             await import("./db/cron/cleanupOTP.js");
             await import("./db/cron/cleanupActivationToken.js");

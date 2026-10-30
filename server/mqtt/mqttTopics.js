@@ -1,4 +1,3 @@
-export const BIN_REGISTER_TOPIC = "bins/register";
 export const BIN_UPDATE_TOPIC = "bins/+/update/#";
 
 // Used by server to notify all bins of any info,
