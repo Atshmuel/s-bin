@@ -1,4 +1,5 @@
 #include "globals.h"
+#include <esp_mac.h>
 
 namespace {
 const IPAddress portalIp(192, 168, 4, 1);
@@ -545,12 +546,13 @@ bool saveSetupFromRequest(String& error) {
 }
 }
 
+// The device's MAC: its radio's (Wi-Fi station), the one its mesh packets
+// carry, esptool prints and an S3's USB port names, so a device has one name
+// whether it reports over cellular or through a gateway. Before 2.1.0 this read
+// ESP.getEfuseMac()'s bytes from the wrong end (the same MAC reversed).
 String getChipMac() {
-    const uint64_t mac64 = ESP.getEfuseMac();
     uint8_t mac[sbinmesh::MAC_LENGTH];
-    for (size_t i = 0; i < sbinmesh::MAC_LENGTH; i++) {
-        mac[i] = (mac64 >> (8 * (5 - i))) & 0xFF;
-    }
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
     char macText[18];
     sbinmesh::formatMac(mac, macText);
     return String(macText);
