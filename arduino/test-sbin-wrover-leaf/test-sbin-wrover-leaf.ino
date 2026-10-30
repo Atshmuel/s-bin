@@ -69,6 +69,13 @@ constexpr uint32_t FIRST_RESIDUAL_PPM = 15000;
 // covering 5,000 ppm.
 constexpr uint32_t MIN_RESIDUAL_PPM = 2500;
 constexpr uint32_t LISTEN_SLACK_SECONDS = 5;
+#if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
+// An S3's native USB port disappears at every deep sleep (the WROVER's USB
+// chip keeps its port), so on that build every boot waits this long for a
+// Serial Monitor to (re)connect, or the first lines are lost. On battery it
+// just times out; it uses up at most this much of the wake guard.
+constexpr uint32_t USB_LOG_RECONNECT_WAIT_MS = 3000;
+#endif
 constexpr uint8_t SEND_ATTEMPTS = 3;
 constexpr uint32_t ACK_TIMEOUT_MS = 1500;
 constexpr uint8_t MAX_PENDING_READINGS = 4;
@@ -455,6 +462,12 @@ void sleepUntilNextSlot() {
 
 void setup() {
     Serial.begin(115200);
+#if defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
+    const uint32_t usbWaitStartedAt = millis();
+    while (!Serial && millis() - usbWaitStartedAt < USB_LOG_RECONNECT_WAIT_MS) {
+        delay(10);
+    }
+#endif
     Serial.println("\n=== S-Bin WROVER simulated mesh leaf ===");
     loadSavedDrift();
     // Add the deep sleep that just ended to the sleep since the last beacon.
