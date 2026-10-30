@@ -30,6 +30,10 @@ struct LeafHooks {
     // Runs a command from an ACK and sets its result on the fresh reading taken
     // for it (resultStatus, resultCode, resultValue, resultExtra).
     void (*runInstruction)(const AckPacket& ack, DataPacket& reading);
+    // Optional: after the readings went out to a gateway (the clock is set from
+    // its beacon), before the next sleep is worked out, so slow work (a GPS
+    // fix) does not make the leaf late for its slot.
+    void (*afterDelivery)();
     // Optional: last thing before the deep sleep (rails off, logs flushed).
     void (*beforeSleep)();
 };

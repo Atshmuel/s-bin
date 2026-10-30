@@ -1,38 +1,80 @@
 #include "globals.h"
 
-bool initializeModem() {
+// Opens the modem's UART and powers the SIM7080 on unless it already answers
+// AT (alreadyOn); false when it does not answer at all.
+bool powerOnModem(bool& alreadyOn) {
     pinMode(BOARD_MODEM_DTR_PIN, OUTPUT);
     digitalWrite(BOARD_MODEM_DTR_PIN, LOW);
 
     SerialModem.begin(115200, SERIAL_8N1, BOARD_MODEM_RXD_PIN, BOARD_MODEM_TXD_PIN);
     delay(100);
 
-    const bool alreadyOn = modem.testAT(1000);
+    alreadyOn = modem.testAT(1000);
     if (alreadyOn) {
         Serial.println("✅ Modem already responds to AT; skipping PWRKEY pulse.");
-    } else {
-        Serial.println("Modem is not responding to AT; powering it on.");
-        pinMode(BOARD_MODEM_PWR_PIN, OUTPUT);
-        digitalWrite(BOARD_MODEM_PWR_PIN, LOW);
-        delay(100);
-        digitalWrite(BOARD_MODEM_PWR_PIN, HIGH);
-        delay(1000);
-        digitalWrite(BOARD_MODEM_PWR_PIN, LOW);
+        return true;
+    }
+    Serial.println("Modem is not responding to AT; powering it on.");
+    pinMode(BOARD_MODEM_PWR_PIN, OUTPUT);
+    digitalWrite(BOARD_MODEM_PWR_PIN, LOW);
+    delay(100);
+    digitalWrite(BOARD_MODEM_PWR_PIN, HIGH);
+    delay(1000);
+    digitalWrite(BOARD_MODEM_PWR_PIN, LOW);
 
-        Serial.println("🚀 Booting SIM7080G...");
-        unsigned long startedAt = millis();
-        bool modemResponding = false;
-        while (millis() - startedAt < 30000UL) {
-            if (modem.testAT(500)) {
-                modemResponding = true;
-                break;
-            }
-            delay(500);
+    Serial.println("🚀 Booting SIM7080G...");
+    const unsigned long startedAt = millis();
+    while (millis() - startedAt < 30000UL) {
+        if (modem.testAT(500)) {
+            return true;
         }
-        if (!modemResponding) {
-            Serial.println("❌ No AT response after power-on. Check modem power, PWRKEY=41, and UART1 (RX=4, TX=5).");
-            return false;
+        delay(500);
+    }
+    Serial.println("❌ No AT response after power-on. Check modem power, PWRKEY=41, and UART1 (RX=4, TX=5).");
+    return false;
+}
+
+// Asks the modem whether a SIM card is in, without TinyGSM's init (which
+// fails without one). Right after power-on the card can read "not ready" for
+// a few seconds, so only a clear answer counts; anything else is SIM_UNKNOWN.
+SimCardState probeSimCard() {
+    bool alreadyOn = false;
+    if (!powerOnModem(alreadyOn)) {
+        return SIM_UNKNOWN;
+    }
+    modem.sendAT("+CMEE=2");  // errors as text: "SIM not inserted"
+    modem.waitResponse();
+    const unsigned long startedAt = millis();
+    while (millis() - startedAt < 15000UL) {
+        modem.sendAT("+CPIN?");
+        const int8_t answer = modem.waitResponse(3000L, "+CPIN: READY", "+CPIN: SIM P", "SIM not inserted");
+        if (answer == 1 || answer == 2) {
+            modem.waitResponse();
+            Serial.println("📶 A SIM card is in.");
+            return SIM_PRESENT;
         }
+        if (answer == 3) {
+            Serial.println("📴 No SIM card.");
+            return SIM_ABSENT;
+        }
+        delay(1000);
+    }
+    Serial.println("⚠️ The modem gave no clear answer about the SIM card.");
+    return SIM_UNKNOWN;
+}
+
+// Turns the modem off (its own power-down, then the rails), for a leaf.
+void powerOffModem() {
+    if (modem.testAT(500)) {
+        modem.poweroff();
+    }
+    cutModemPower();
+}
+
+bool initializeModem() {
+    bool alreadyOn = false;
+    if (!powerOnModem(alreadyOn)) {
+        return false;
     }
 
     if (!modem.init()) {

@@ -35,6 +35,12 @@ void setup() {
         return;
     }
 
+    // Without a SIM this device is a mesh leaf, whose whole wake is the leaf cycle.
+    decideDeviceRole();
+    if (deviceRole == ROLE_LEAF) {
+        runAsLeaf();
+    }
+
     constexpr uint32_t MODEM_RETRY_SLEEP_SECONDS = 15UL * 60UL;
     uint32_t stageStartedAt = millis();
     const bool modemReady = initializeModem();

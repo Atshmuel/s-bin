@@ -63,6 +63,15 @@ enum ResultCode : uint8_t {
     RESULT_SCALE_CALIBRATED = 4,       // scale_calibrated_<extra>_reads_<value>
     RESULT_SCALE_NOT_RESPONDING = 5,   // scale_not_responding
     RESULT_UNSUPPORTED = 6,            // unsupported_instruction_type
+    RESULT_SCALE_ERROR = 7,            // the scale's code for value (ScaleError)
+};
+
+// Why a leaf's scale command failed, as RESULT_SCALE_ERROR's value.
+enum ScaleError : uint8_t {
+    SCALE_ERROR_UNSTABLE = 1,          // scale_unstable
+    SCALE_ERROR_NOT_ZEROED = 2,        // scale_not_zeroed
+    SCALE_ERROR_NO_LOAD_CHANGE = 3,    // scale_no_load_change
+    SCALE_ERROR_INVALID_WEIGHT = 4,    // scale_invalid_weight
 };
 
 // A leaf's scale, as the server's report field "scale".

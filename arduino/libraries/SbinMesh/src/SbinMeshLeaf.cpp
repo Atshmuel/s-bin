@@ -523,6 +523,9 @@ void runLeafCycle(const LeafConfig& leafConfig) {
     }
 
     sendPendingReadings();
+    if (config->hooks.afterDelivery != nullptr) {
+        config->hooks.afterDelivery();
+    }
     sleepUntilNextSlot();
 }
 

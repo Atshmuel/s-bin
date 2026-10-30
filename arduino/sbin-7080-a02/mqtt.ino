@@ -231,6 +231,14 @@ String leafResultText(const sbinmesh::DataPacket& data) {
             return "scale_calibrated_" + String(data.resultExtra) + "_reads_" + String(data.resultValue);
         case sbinmesh::RESULT_SCALE_NOT_RESPONDING:
             return "scale_not_responding";
+        case sbinmesh::RESULT_SCALE_ERROR:
+            switch (data.resultValue) {
+                case sbinmesh::SCALE_ERROR_UNSTABLE: return "scale_unstable";
+                case sbinmesh::SCALE_ERROR_NOT_ZEROED: return "scale_not_zeroed";
+                case sbinmesh::SCALE_ERROR_NO_LOAD_CHANGE: return "scale_no_load_change";
+                case sbinmesh::SCALE_ERROR_INVALID_WEIGHT: return "scale_invalid_weight";
+                default: return "scale_error";
+            }
         default:
             return "unsupported_instruction_type";
     }

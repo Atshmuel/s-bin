@@ -561,6 +561,7 @@ void loadDeviceSettings() {
     ownerId = preferences.getString("ownerId", "");
     registrationCode = preferences.getString("regCode", "");
     deviceKey = preferences.getString("deviceKey", "");
+    deviceRole = static_cast<DeviceRole>(preferences.getUChar("role", ROLE_UNKNOWN));
     binDepthMm = preferences.getInt("binDepthMm", 0);
     latitude = preferences.getFloat("gpsLat", 0.0f);
     longitude = preferences.getFloat("gpsLon", 0.0f);
