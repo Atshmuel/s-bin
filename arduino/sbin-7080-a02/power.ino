@@ -149,7 +149,6 @@ DeviceReading takeReading(bool gpsTested, bool gpsOk, bool sensorTrusted) {
         }
     }
     reading.health = updateDeviceHealth(sensorOk, pmuOk, gpsTested, gpsOk, scaleTested, scaleOk);
-    reading.healthMessage = getDeviceHealthMessage(reading.distanceMm);
     return reading;
 }
 
@@ -209,60 +208,51 @@ String healthFromFailureCounts(uint8_t sensorFailures, uint8_t pmuFailures, uint
     return "good";
 }
 
-String getDeviceHealthMessage(int distanceMm) {
-    String message = buildHealthMessage(
-        sensorFailureCycles,
-        pmuFailureCycles,
-        gpsFailureCycles,
-        binDepthMm <= 0 || lastCalibrationFailed,
-        distanceMm
-    );
-    if (scaleFailureCycles > 0) {
-        if (message.length() > 0) {
-            message += "; ";
-        }
-        message += "HX711 scale reading failed in ";
-        message += scaleFailureCycles >= 2 ? "2 or more consecutive reporting cycles" : "the previous reporting cycle";
+// What went wrong, as codes the server checks and the app words in the
+// user's language (see the server's utils/faults.js); each fault's cycles are
+// how many reporting cycles in a row it has lasted (2: two or more).
+namespace {
+void addFault(JsonArray faults, const char* code, uint8_t failures, int distanceMm = INT32_MIN) {
+    JsonObject fault = faults.add<JsonObject>();
+    fault["code"] = code;
+    if (failures > 0) {
+        fault["cycles"] = min<uint8_t>(failures, 2);
     }
-    return message;
+    if (distanceMm != INT32_MIN) {
+        fault["mm"] = distanceMm;
+    }
+}
+}
+
+// This bin's own faults: its parts, and its scale (which leaves do not have).
+void addOwnFaults(JsonArray faults, int distanceMm) {
+    addFaults(faults, sensorFailureCycles, pmuFailureCycles, gpsFailureCycles,
+              binDepthMm <= 0 || lastCalibrationFailed, distanceMm);
+    if (scaleFailureCycles > 0) {
+        addFault(faults, "scale", scaleFailureCycles);
+    }
 }
 
 // Shared by this bin's own reports and the readings it relays for mesh leaves.
-String buildHealthMessage(
+void addFaults(
+    JsonArray faults,
     uint8_t sensorFailures,
     uint8_t pmuFailures,
     uint8_t gpsFailures,
     bool calibrationFailed,
     int distanceMm
 ) {
-    String message;
     if (sensorFailures > 0 && calibrationFailed) {
-        message = "Empty-bin calibration failed (A02 distance: ";
-        message += String(distanceMm);
-        message += " mm)";
+        addFault(faults, "calibration_failed", 0, distanceMm);
+    } else if (sensorFailures > 0 && distanceMm <= 0) {
+        addFault(faults, "distance_sensor", sensorFailures);
     } else if (sensorFailures > 0) {
-        message = distanceMm <= 0
-            ? "A02 sensor issue (distance: -1 mm) in "
-            : "A02 fill-level calculation failed at distance ";
-        if (distanceMm > 0) {
-            message += String(distanceMm);
-            message += " mm in ";
-        }
-        message += sensorFailures >= 2 ? "2 or more consecutive reporting cycles" : "the previous reporting cycle";
+        addFault(faults, "fill_calculation", sensorFailures, distanceMm);
     }
     if (pmuFailures > 0) {
-        if (message.length() > 0) {
-            message += "; ";
-        }
-        message += "AXP2101 PMU or battery measurement failed in ";
-        message += pmuFailures >= 2 ? "2 or more consecutive reporting cycles" : "the previous reporting cycle";
+        addFault(faults, "pmu", pmuFailures);
     }
     if (gpsFailures > 0) {
-        if (message.length() > 0) {
-            message += "; ";
-        }
-        message += "GNSS location refresh failed in ";
-        message += gpsFailures >= 2 ? "2 or more consecutive monthly attempts" : "the previous monthly attempt";
+        addFault(faults, "gps", gpsFailures);
     }
-    return message;
 }

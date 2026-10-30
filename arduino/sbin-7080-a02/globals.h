@@ -53,7 +53,7 @@ constexpr uint32_t USB_LOG_RECONNECT_WAIT_MS = 3000;
 
 // This firmware's version, reported in every diagnostics block (semver; bump
 // it by hand for every flash).
-constexpr char FIRMWARE_VERSION[] = "1.2.0";
+constexpr char FIRMWARE_VERSION[] = "1.3.0";
 
 // The S-Bin servers (2i): registration over HTTPS, reports over MQTT with TLS
 // on the private broker, both checked against SBIN_CA_FILE in the modem.
@@ -161,7 +161,6 @@ struct DeviceReading {
     int32_t weightGrams;     // 0 unless scaleState is "ok"
     const char* scaleState;  // "ok", "uncalibrated" or "failed"
     String health;
-    String healthMessage;
 };
 
 // How long this cycle's stages took up to the report, in ms (0: did not run).
@@ -197,9 +196,10 @@ DeviceReading takeReading(bool gpsTested, bool gpsOk, bool sensorTrusted);
 uint16_t readBatteryMillivolts();
 int readBatteryPercent();
 String updateDeviceHealth(bool sensorOk, bool pmuOk, bool gpsTested, bool gpsOk, bool scaleTested, bool scaleOk);
-String getDeviceHealthMessage(int distanceMm);
+void addOwnFaults(JsonArray faults, int distanceMm);
 String healthFromFailureCounts(uint8_t sensorFailures, uint8_t pmuFailures, uint8_t gpsFailures);
-String buildHealthMessage(
+void addFaults(
+    JsonArray faults,
     uint8_t sensorFailures,
     uint8_t pmuFailures,
     uint8_t gpsFailures,

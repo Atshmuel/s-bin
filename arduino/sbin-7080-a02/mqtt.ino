@@ -285,11 +285,11 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
         reading["location"][0] = data.latitude;
         reading["location"][1] = data.longitude;
     }
-    const String message = buildHealthMessage(
-        data.sensorFailureCycles, data.pmuFailureCycles, data.gpsFailureCycles,
-        (data.flags & sbinmesh::DATA_CALIBRATION_FAILED) != 0, data.distanceMm);
-    if (message.length() > 0) {
-        reading["message"] = message;
+    JsonArray faults = reading["faults"].to<JsonArray>();
+    addFaults(faults, data.sensorFailureCycles, data.pmuFailureCycles, data.gpsFailureCycles,
+              (data.flags & sbinmesh::DATA_CALIBRATION_FAILED) != 0, data.distanceMm);
+    if (faults.size() == 0) {
+        reading.remove("faults");
     }
     if (data.lastAwakeSeconds > 0) {
         reading["lastAwakeSeconds"] = data.lastAwakeSeconds;
@@ -360,8 +360,10 @@ bool publishTelemetry(const DeviceReading& reading) {
     doc["scale"] = reading.scaleState;
     doc["location"][0] = latitude;
     doc["location"][1] = longitude;
-    if (reading.healthMessage.length() > 0) {
-        doc["message"] = reading.healthMessage;
+    JsonArray faults = doc["faults"].to<JsonArray>();
+    addOwnFaults(faults, reading.distanceMm);
+    if (faults.size() == 0) {
+        doc.remove("faults");
     }
     addDiagnostics(doc["diagnostics"].to<JsonObject>(), reading);
 
