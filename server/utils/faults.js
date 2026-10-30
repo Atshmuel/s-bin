@@ -6,8 +6,10 @@
 
 // A device's own faults, each with how many reporting cycles in a row it has
 // lasted (2: two or more) and, for the distance sensor, the distance it read.
+// The last two come from a gateway that reports through another one.
 export const DEVICE_FAULT_CODES = Object.freeze([
     "calibration_failed", "distance_sensor", "fill_calculation", "pmu", "gps", "scale",
+    "sim_missing", "cellular_unavailable",
 ]);
 export const SERVER_FAULT_CODES = Object.freeze([
     "bin_full", "bin_filling", "battery_critical", "battery_low", "instructions_expired",
@@ -58,6 +60,8 @@ const FAULT_TEXT = Object.freeze({
     pmu: ({ cycles }) => `The power chip or battery measurement failed ${inCycles(cycles)}.`,
     gps: ({ cycles }) => `The GPS refresh failed ${cycles >= MAX_FAULT_CYCLES ? "in 2 or more consecutive monthly attempts" : "in the previous monthly attempt"}.`,
     scale: ({ cycles }) => `The scale reading failed ${inCycles(cycles)}.`,
+    sim_missing: () => "There is no SIM card in the device; it reports through another gateway.",
+    cellular_unavailable: () => "The device cannot reach the cellular network; it reports through another gateway.",
     instructions_expired: ({ types }) => `Device did not pick up pending instructions${types?.length ? ` (${types.join(", ")})` : ""} within 3 days; it may be offline or out of coverage.`,
 });
 

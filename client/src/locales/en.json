@@ -65,6 +65,8 @@
     "pmu": "The power chip or the battery measurement failed {{when}}.",
     "gps": "The GPS location refresh failed {{when}}.",
     "scale": "The scale reading failed {{when}}.",
+    "sim_missing": "There is no SIM card in the device; it reports through another gateway.",
+    "cellular_unavailable": "The device cannot reach the cellular network; it reports through another gateway.",
     "instructions_expired": "The device did not pick up its pending commands ({{types}}) within 3 days; it may be offline or out of coverage."
   },
   "severities": {
