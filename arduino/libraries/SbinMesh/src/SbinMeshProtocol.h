@@ -11,11 +11,16 @@ namespace sbinmesh {
 
 constexpr uint16_t PACKET_MAGIC = 0x4253;  // "SB"
 // 4: DATA carries the leaf's diagnostics (LeafDiagnostics).
-constexpr uint8_t PROTOCOL_VERSION = 4;
+// 5: every packet ends with an 8-byte authentication tag (SbinMeshAuth.h); the
+// header names the key, a beacon carries a nonce for its mesh window and DATA
+// echoes it.
+constexpr uint8_t PROTOCOL_VERSION = 5;
 constexpr uint8_t RADIO_CHANNEL = 1;
 constexpr uint8_t DEFAULT_TTL = 4;
 constexpr size_t MAX_FRAME_SIZE = 250;
 constexpr size_t MAC_LENGTH = 6;
+// The tag after each packet's struct: HMAC-SHA256, cut to this many bytes.
+constexpr size_t TAG_LENGTH = 8;
 // The longest report interval is a day, 25 hours on the day clocks go back; a
 // wake time further ahead than this is stale (saved while a clock was wrong).
 constexpr uint32_t MAX_WAKE_AHEAD_SECONDS = 26UL * 60UL * 60UL;
@@ -83,6 +88,7 @@ struct __attribute__((packed)) PacketHeader {
     uint32_t messageId;           // random per message; retries reuse it
     uint8_t hops;                 // radio hops travelled so far
     uint8_t ttl;                  // dropped when it reaches 0
+    uint8_t keyId;                // which generation of the organization's key signed it
 };
 
 // Broadcast by gateways (hopsToGateway = 0) during the mesh window.
@@ -94,6 +100,9 @@ struct __attribute__((packed)) BeaconPacket {
     uint32_t nextWakeEpoch;       // when leaves should wake next (UTC seconds)
     uint8_t meshWindowSeconds;
     uint8_t parentMac[MAC_LENGTH];  // all zero for a gateway
+    // Random for each mesh window of the gateway; the DATA a leaf sends in
+    // answer echoes it, so a recorded DATA is useless in a later window.
+    uint32_t cycleNonce;
 };
 
 // Which of a leaf's optional diagnostics it measured.
@@ -127,6 +136,7 @@ struct __attribute__((packed)) LeafDiagnostics {
 // JSON log, including the health string built from the failure counters.
 struct __attribute__((packed)) DataPacket {
     PacketHeader header;
+    uint32_t beaconNonce;         // the cycleNonce of the beacon this answers
     uint8_t flags;                // DataFlags
     uint8_t level;                // 0-100, valid when DATA_SENSOR_OK
     uint8_t battery;              // 0-100
@@ -168,9 +178,9 @@ struct __attribute__((packed)) AckPacket {
     uint32_t instructionValue;    // calibrate_scale: the known grams
 };
 
-static_assert(sizeof(PacketHeader) == 20, "PacketHeader layout changed");
-static_assert(sizeof(BeaconPacket) <= MAX_FRAME_SIZE, "BeaconPacket too large");
-static_assert(sizeof(DataPacket) <= MAX_FRAME_SIZE, "DataPacket too large");
-static_assert(sizeof(AckPacket) <= MAX_FRAME_SIZE, "AckPacket too large");
+static_assert(sizeof(PacketHeader) == 21, "PacketHeader layout changed");
+static_assert(sizeof(BeaconPacket) + TAG_LENGTH <= MAX_FRAME_SIZE, "BeaconPacket too large");
+static_assert(sizeof(DataPacket) + TAG_LENGTH <= MAX_FRAME_SIZE, "DataPacket too large");
+static_assert(sizeof(AckPacket) + TAG_LENGTH <= MAX_FRAME_SIZE, "AckPacket too large");
 
 }  // namespace sbinmesh

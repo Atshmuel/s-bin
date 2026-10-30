@@ -5,12 +5,14 @@
 
 #include "SbinClockDrift.h"
 #include "SbinDiagnostics.h"
+#include "SbinMeshAuth.h"
 #include "SbinMeshProtocol.h"
 
 // ESP-NOW Long Range radio for S-Bin mesh nodes. One MeshRadio per device;
 // all sends must come from a single task (the mesh task on gateways, the main
 // loop on leaves). Received frames are already filtered to this node's
-// network, protocol version and a minimum length.
+// network, protocol version and a minimum length, and receive() hands on only
+// those with a valid tag (see SbinMeshAuth.h).
 
 namespace sbinmesh {
 
@@ -64,6 +66,10 @@ public:
     bool begin(const char* ownerId);
     void end();
 
+    // The keys that sign and check this node's packets; without them every
+    // received packet is dropped. The pointer must outlive the radio.
+    void setAuth(MeshAuth* auth) { auth_ = auth; }
+
     const uint8_t* macAddress() const { return mac_; }
     uint32_t networkId() const { return networkId_; }
 
@@ -78,7 +84,9 @@ public:
     bool sendTo(const uint8_t mac[MAC_LENGTH], const void* packet, size_t length,
                 uint32_t timeoutMs = 200);
 
-    // Waits up to timeoutMs for the next frame from this node's network.
+    // Waits up to timeoutMs for the next frame from this node's network that
+    // passes its authentication; the others are dropped (and counted by the
+    // MeshAuth) without reaching the caller.
     bool receive(ReceivedFrame& frame, uint32_t timeoutMs);
 
 private:
@@ -95,6 +103,8 @@ private:
     volatile bool waitingForSend_ = false;
     volatile bool lastSendDelivered_ = false;
     uint8_t pendingDestination_[MAC_LENGTH] = {};
+    MeshAuth* auth_ = nullptr;
+    bool warnedNoKey_ = false;
 };
 
 }  // namespace sbinmesh

@@ -189,8 +189,29 @@ bool MeshRadio::receive(ReceivedFrame& frame, uint32_t timeoutMs) {
     if (receiveQueue_ == nullptr) {
         return false;
     }
-    return xQueueReceive(static_cast<QueueHandle_t>(receiveQueue_), &frame,
-                         pdMS_TO_TICKS(timeoutMs)) == pdTRUE;
+    // The tag is checked here, in the caller's task, and not in the radio's
+    // callback, which must stay short.
+    const uint32_t startedAt = millis();
+    for (;;) {
+        const uint32_t elapsed = millis() - startedAt;
+        const uint32_t remaining = elapsed >= timeoutMs ? 0 : timeoutMs - elapsed;
+        if (xQueueReceive(static_cast<QueueHandle_t>(receiveQueue_), &frame,
+                          pdMS_TO_TICKS(remaining)) != pdTRUE) {
+            return false;
+        }
+        if (auth_ != nullptr && auth_->hasKey()) {
+            if (auth_->verify(frame.data, frame.length) == AuthResult::OK) {
+                return true;
+            }
+        } else if (!warnedNoKey_) {
+            warnedNoKey_ = true;
+            Serial.println("⚠️ No mesh key yet: every mesh packet is dropped.");
+        }
+        // Dropped; a flood of bad packets cannot hold the caller past its time.
+        if (millis() - startedAt >= timeoutMs) {
+            return false;
+        }
+    }
 }
 
 void MeshRadio::onReceive(const esp_now_recv_info_t* info, const uint8_t* data, int length) {
