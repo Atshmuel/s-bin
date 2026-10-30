@@ -16,6 +16,9 @@
 #define SBIN_LEAF_HAS_KEYS 0
 #endif
 
+// Set by a gateway reporting through another one: why it cannot itself.
+uint8_t leafFallbackFlags = 0;
+
 namespace {
 constexpr uint32_t NO_KEYS_RETRY_SLEEP_SECONDS = 15UL * 60UL;
 constexpr unsigned long LEAF_GPS_TIMEOUT_MS = 300000UL;
@@ -38,7 +41,7 @@ void fillLeafReading(sbinmesh::DataPacket& data) {
     const int level = calculateFillLevel(reading.distanceMm);
     const bool sensorOk = !lastCalibrationFailed && reading.distanceMm > 0 && level >= 0;
 
-    data.flags = 0;
+    data.flags = leafFallbackFlags;
     if (sensorOk) {
         data.flags |= sbinmesh::DATA_SENSOR_OK;
         data.level = static_cast<uint8_t>(level);
@@ -170,6 +173,17 @@ void prepareLeafSleep() {
 }
 }
 
+// The leaf cycle's settings with these keys: this board's measurements and commands.
+sbinmesh::LeafConfig makeLeafConfig(const sbinmesh::LeafKeys& keys) {
+    sbinmesh::LeafConfig config = {};
+    config.organizationId = ownerId.c_str();
+    memcpy(config.firmwareVersion, FIRMWARE_VERSION_NUMBERS, sizeof(FIRMWARE_VERSION_NUMBERS));
+    config.keys = keys;
+    config.hooks.fillReading = fillLeafReading;
+    config.hooks.runInstruction = runLeafInstruction;
+    return config;
+}
+
 void runAsLeaf() {
     Serial.println("🌿 Running as a mesh leaf.");
     powerOffModem();
@@ -184,20 +198,17 @@ void runAsLeaf() {
         zeroScale();
     }
 
-    sbinmesh::LeafConfig config = {};
-    config.organizationId = ownerId.c_str();
-    memcpy(config.firmwareVersion, FIRMWARE_VERSION_NUMBERS, sizeof(FIRMWARE_VERSION_NUMBERS));
+    sbinmesh::LeafKeys keys = {};
 #if SBIN_LEAF_HAS_KEYS
-    memcpy(config.keys.mac, MESH_KEY_MAC, sbinmesh::MAC_LENGTH);
-    memcpy(config.keys.leafKey, MESH_LEAF_KEY, sbinmesh::KEY_LENGTH);
-    memcpy(config.keys.beaconKey, MESH_BEACON_KEY, sbinmesh::KEY_LENGTH);
-    config.keys.keyId = MESH_KEY_ID;
+    memcpy(keys.mac, MESH_KEY_MAC, sbinmesh::MAC_LENGTH);
+    memcpy(keys.leafKey, MESH_LEAF_KEY, sbinmesh::KEY_LENGTH);
+    memcpy(keys.beaconKey, MESH_BEACON_KEY, sbinmesh::KEY_LENGTH);
+    keys.keyId = MESH_KEY_ID;
 #else
     enterDeepSleepForSetupRetry(NO_KEYS_RETRY_SLEEP_SECONDS,
                                 "This leaf has no mesh keys (build it with mesh_keys.h)");
 #endif
-    config.hooks.fillReading = fillLeafReading;
-    config.hooks.runInstruction = runLeafInstruction;
+    sbinmesh::LeafConfig config = makeLeafConfig(keys);
     config.hooks.afterDelivery = refreshLeafLocation;
     config.hooks.beforeSleep = prepareLeafSleep;
     // The config must outlive the cycle, which never returns.

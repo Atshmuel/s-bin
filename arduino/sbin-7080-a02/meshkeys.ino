@@ -1,4 +1,6 @@
 #include "globals.h"
+#include <esp_mac.h>
+#include <SbinMeshLeaf.h>
 
 // The organization's mesh key (2m): the server gives it in the registration
 // reply and in an ack, and it is kept in flash. The generation before stays
@@ -115,6 +117,22 @@ void restartIfMeshKeyIsNew(bool meshWindowRan) {
     Serial.flush();
     delay(500);
     ESP.restart();
+}
+
+// This gateway's own keys as a leaf, derived from the organization key (as
+// its gateways derive them to check its packets), for when it reports through
+// another gateway; false without a key.
+bool ownLeafKeys(sbinmesh::LeafKeys& keys) {
+    if (currentKeyId == 0) {
+        return false;
+    }
+    esp_read_mac(keys.mac, ESP_MAC_WIFI_STA);
+    const sbinmesh::Key leafKey = sbinmesh::deriveLeafKey(currentKey, keys.mac);
+    const sbinmesh::Key beaconKey = sbinmesh::deriveBeaconKey(currentKey);
+    memcpy(keys.leafKey, leafKey.bytes, sbinmesh::KEY_LENGTH);
+    memcpy(keys.beaconKey, beaconKey.bytes, sbinmesh::KEY_LENGTH);
+    keys.keyId = currentKeyId;
+    return true;
 }
 
 // A mesh window opened with the key: the restart (if any) worked.

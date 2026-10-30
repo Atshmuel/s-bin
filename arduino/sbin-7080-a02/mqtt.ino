@@ -296,6 +296,13 @@ RelayUploadResult publishRelayRecord(const RelayRecord& record, unsigned long ti
     JsonArray faults = reading["faults"].to<JsonArray>();
     addFaults(faults, data.sensorFailureCycles, data.pmuFailureCycles, data.gpsFailureCycles,
               (data.flags & sbinmesh::DATA_CALIBRATION_FAILED) != 0, data.distanceMm);
+    // A gateway reporting through this one says why it cannot itself.
+    if (data.flags & sbinmesh::DATA_SIM_MISSING) {
+        faults.add<JsonObject>()["code"] = "sim_missing";
+    }
+    if (data.flags & sbinmesh::DATA_NO_CELLULAR) {
+        faults.add<JsonObject>()["code"] = "cellular_unavailable";
+    }
     if (faults.size() == 0) {
         reading.remove("faults");
     }

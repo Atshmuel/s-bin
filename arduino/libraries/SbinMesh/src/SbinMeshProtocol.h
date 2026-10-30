@@ -86,6 +86,9 @@ enum DataFlags : uint8_t {
     DATA_SENSOR_OK = 0x01,
     DATA_HAS_LOCATION = 0x02,
     DATA_CALIBRATION_FAILED = 0x04,
+    // From a gateway that reports through another one (it cannot itself):
+    DATA_SIM_MISSING = 0x08,           // no SIM card in it
+    DATA_NO_CELLULAR = 0x10,           // its modem or the network failed
 };
 
 struct __attribute__((packed)) PacketHeader {

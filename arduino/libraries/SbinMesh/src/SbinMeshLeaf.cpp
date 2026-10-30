@@ -459,7 +459,55 @@ uint32_t guardFor(uint64_t sleepSeconds) {
     const time_t wakeAt = static_cast<time_t>(nextWakeEpoch) - guardSeconds;
     deepSleepFor(wakeAt > now + 1 ? static_cast<uint64_t>(wakeAt - now) : 1);
 }
+// The radio with this board's keys; false, with why, when it cannot start.
+bool startRadio() {
+    if (!radio.begin(config->organizationId)) {
+        return false;
+    }
+    // The keys are for one board: another's would only ever be dropped.
+    if (memcmp(radio.macAddress(), config->keys.mac, MAC_LENGTH) != 0) {
+        char own[18];
+        char expected[18];
+        formatMac(radio.macAddress(), own);
+        formatMac(config->keys.mac, expected);
+        Serial.printf("❌ mesh_keys.h is for %s, not for this board (%s): make it again for this MAC and flash.\n",
+                      expected, own);
+        radio.end();
+        return false;
+    }
+    Key leafKey;
+    Key beaconKey;
+    memcpy(leafKey.bytes, config->keys.leafKey, KEY_LENGTH);
+    memcpy(beaconKey.bytes, config->keys.beaconKey, KEY_LENGTH);
+    meshAuth.useLeafKeys(radio.macAddress(), leafKey, beaconKey, config->keys.keyId);
+    radio.setAuth(&meshAuth);
+    return true;
+}
 }  // namespace
+
+LeafExchange runLeafExchange(const LeafConfig& leafConfig, uint32_t listenMs) {
+    config = &leafConfig;
+    LeafExchange result = {};
+    if (!startRadio()) {
+        return result;
+    }
+    Serial.printf("👂 Listening up to %lu s for another gateway's beacon.\n",
+                  static_cast<unsigned long>(listenMs / 1000));
+    // Queued before listening, so a beacon that sets the clock moves its time too.
+    queueReading(makeReading());
+    // Not checked against this clock: it is the one that may be wrong.
+    if (waitForBeacon(listenMs, false)) {
+        result.heardBeacon = true;
+        sendPendingReadings();
+        result.delivered = pendingCount == 0;
+        result.nextWakeEpoch = nextWakeEpoch;
+    } else {
+        Serial.printf("⚠️ No beacon heard; %u reading(s) kept for the next try.\n", pendingCount);
+    }
+    reportDroppedPackets();
+    radio.end();
+    return result;
+}
 
 void runLeafCycle(const LeafConfig& leafConfig) {
     config = &leafConfig;
@@ -480,25 +528,9 @@ void runLeafCycle(const LeafConfig& leafConfig) {
         }
     }
 
-    if (!radio.begin(config->organizationId)) {
+    if (!startRadio()) {
         deepSleepFor(COLD_JOIN_RETRY_SLEEP_SECONDS);
     }
-    // The keys are for one board: another's would only ever be dropped.
-    if (memcmp(radio.macAddress(), config->keys.mac, MAC_LENGTH) != 0) {
-        char own[18];
-        char expected[18];
-        formatMac(radio.macAddress(), own);
-        formatMac(config->keys.mac, expected);
-        Serial.printf("❌ mesh_keys.h is for %s, not for this board (%s): make it again for this MAC and flash.\n",
-                      expected, own);
-        deepSleepFor(COLD_JOIN_RETRY_SLEEP_SECONDS);
-    }
-    Key leafKey;
-    Key beaconKey;
-    memcpy(leafKey.bytes, config->keys.leafKey, KEY_LENGTH);
-    memcpy(beaconKey.bytes, config->keys.beaconKey, KEY_LENGTH);
-    meshAuth.useLeafKeys(radio.macAddress(), leafKey, beaconKey, config->keys.keyId);
-    radio.setAuth(&meshAuth);
 
     const bool coldJoin = !clockValid() || nextWakeEpoch == 0;
     uint32_t listenMs = COLD_JOIN_LISTEN_MS;

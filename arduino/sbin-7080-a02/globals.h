@@ -22,6 +22,7 @@
 #include <sys/time.h>
 #include <esp_sleep.h>
 #include <SbinMesh.h>
+#include <SbinMeshLeaf.h>
 
 // LilyGO T-SIM7080G-S3 V1 board pins
 #define BOARD_MODEM_PWR_PIN 41
@@ -53,9 +54,9 @@ constexpr uint32_t USB_LOG_RECONNECT_WAIT_MS = 3000;
 
 // This firmware's version, reported in every diagnostics block (semver; bump
 // it by hand for every flash).
-constexpr char FIRMWARE_VERSION[] = "2.1.2";
+constexpr char FIRMWARE_VERSION[] = "2.2.0";
 // The same as numbers, for a leaf's diagnostics (keep the two in step).
-constexpr uint8_t FIRMWARE_VERSION_NUMBERS[3] = {2, 1, 2};
+constexpr uint8_t FIRMWARE_VERSION_NUMBERS[3] = {2, 2, 0};
 
 // The S-Bin servers (2i): registration over HTTPS, reports over MQTT with TLS
 // on the private broker, both checked against SBIN_CA_FILE in the modem.
@@ -278,6 +279,13 @@ void powerOffModem();
 extern DeviceRole deviceRole;
 void decideDeviceRole();
 [[noreturn]] void runAsLeaf();
+sbinmesh::LeafConfig makeLeafConfig(const sbinmesh::LeafKeys& keys);
+extern uint8_t leafFallbackFlags;
+// Reporting through another gateway (fallback.ino).
+bool ownLeafKeys(sbinmesh::LeafKeys& keys);
+bool reportsFailedTooOften();
+void recordReportOutcome(bool reportSent);
+bool reportThroughAnotherGateway(uint8_t reasonFlag);
 int getDistanceMm();
 bool maintainCellularConnection();
 bool startConfigurationPortal();

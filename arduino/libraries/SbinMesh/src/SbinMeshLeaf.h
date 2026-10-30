@@ -48,4 +48,16 @@ struct LeafConfig {
 // One wake, from the boot to the deep sleep; it never returns.
 [[noreturn]] void runLeafCycle(const LeafConfig& config);
 
+struct LeafExchange {
+    bool heardBeacon;
+    bool delivered;          // every queued reading was ACKed
+    uint32_t nextWakeEpoch;  // the slot the beacon announced, 0 without one
+};
+
+// One delivery as a leaf, for a gateway that cannot reach the server: listens
+// up to listenMs for another gateway's beacon, sends the queued readings and
+// returns, leaving the sleep to the caller. A reading not delivered stays
+// queued (in RTC memory) for the next try.
+LeafExchange runLeafExchange(const LeafConfig& config, uint32_t listenMs);
+
 }  // namespace sbinmesh

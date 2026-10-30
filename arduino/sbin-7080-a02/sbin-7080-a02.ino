@@ -41,13 +41,25 @@ void setup() {
         runAsLeaf();
     }
 
-    constexpr uint32_t MODEM_RETRY_SLEEP_SECONDS = 15UL * 60UL;
     uint32_t stageStartedAt = millis();
     const bool modemReady = initializeModem();
     stageTimes.modemMs = millis() - stageStartedAt;
     if (!modemReady) {
-        cutModemPower();
-        enterDeepSleepForSetupRetry(MODEM_RETRY_SLEEP_SECONDS, "Modem initialization failed");
+        // It cannot report itself (no SIM, or a modem that does not start), so it
+        // reports through another gateway and sleeps to its next slot.
+        const uint8_t reason = probeSimCard() == SIM_ABSENT ? sbinmesh::DATA_SIM_MISSING
+                                                            : sbinmesh::DATA_NO_CELLULAR;
+        powerOffModem();
+        recordReportOutcome(false);
+        reportThroughAnotherGateway(reason);
+        enterDeepSleepUntilNextReport();
+    }
+    // Two cycles in a row without a report: through another gateway first, at
+    // the slot (its own window would serve no one if the report fails again),
+    // then its own link as usual.
+    const bool reportingThroughMesh = reportsFailedTooOften();
+    if (reportingThroughMesh) {
+        reportThroughAnotherGateway(sbinmesh::DATA_NO_CELLULAR);
     }
 
     // Long enough for a cold cellular attach; the modem is powered off between retries.
@@ -60,6 +72,7 @@ void setup() {
     const bool clockReady = synchronizeClockFromNetwork(CLOCK_SYNC_TIMEOUT_MS);
     stageTimes.networkMs = millis() - stageStartedAt;
     if (!clockReady && !modem.isNetworkConnected()) {
+        recordReportOutcome(false);
         enterDeepSleepForSetupRetry(CLOCK_RETRY_SLEEP_SECONDS, "No valid network time");
     }
 
@@ -74,7 +87,9 @@ void setup() {
     // and after a deep sleep this gateway's clock is off by about the whole
     // sleep-clock drift until it is corrected from the network. The report
     // runs in parallel with the window.
-    beginMeshWindow();
+    if (!reportingThroughMesh) {
+        beginMeshWindow();
+    }
 
     // A failed calibration does not block reporting: the cycle reports
     // sensorOk=false with a calibration health message, and the next wake retries.
@@ -202,6 +217,7 @@ void loop() {
     }
 
     Serial.println(reportSent ? "✅ Reporting cycle completed." : "⚠️ Reporting cycle ended without a telemetry report.");
+    recordReportOutcome(reportSent);
     // Again mid-cycle: the boot and pre-sleep lines often miss a monitor.
     if (pmuPowerSources.length() > 0) {
         Serial.println(pmuPowerSources);
