@@ -341,6 +341,9 @@ bool publishTelemetry(const DeviceReading& reading) {
 
     StaticJsonDocument<1536> doc;
     doc["deviceKey"] = deviceKey;
+    // The mesh key's generation this gateway holds (0: none); the server sends
+    // the key in its ack when it differs.
+    doc["meshKeyId"] = meshKeyGeneration();
     doc["sensorOk"] = sensorOk;
     if (sensorOk) {
         doc["level"] = level;
@@ -408,6 +411,10 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
                 saveDeviceKey(deviceKey);
                 Serial.println("✅ Device key received and saved.");
             }
+        }
+
+        if (doc["meshKey"].is<const char*>() && doc["meshKeyId"].is<int>()) {
+            storeMeshKeyFromServer(doc["meshKey"].as<const char*>(), doc["meshKeyId"].as<int>());
         }
 
         // First, so the wake time below is checked against a corrected clock.

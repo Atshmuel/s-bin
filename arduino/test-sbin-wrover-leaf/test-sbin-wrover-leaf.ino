@@ -6,7 +6,18 @@
 // learned from a gateway beacon, sends a fake reading over ESP-NOW LR, waits
 // for the gateway's ACK and deep-sleeps until the next slot.
 //
-// Board: "ESP32 Dev Module" (esp32:esp32:esp32). Serial monitor: 115200 baud.
+// Its packets are signed and the gateway's checked (2m) with the keys in
+// mesh_keys.h, made for this board by server/scripts/mesh-keys.mjs (see
+// mesh_keys.example.h).
+//
+// Board: "ESP32 Dev Module" (esp32:esp32:esp32), or the LilyGO S3 (the SIM is
+// not used). Serial monitor: 115200 baud.
+
+#if __has_include("mesh_keys.h")
+#include "mesh_keys.h"
+#else
+#error "mesh_keys.h is missing: make it with server/scripts/mesh-keys.mjs (see mesh_keys.example.h)."
+#endif
 
 #include <Preferences.h>
 #include <SbinMesh.h>
@@ -22,7 +33,7 @@ namespace {
 constexpr char ORGANIZATION_ID[] = "699760a44e48dff9a082101e";
 
 // This sketch's version, reported in its diagnostics (bump it for every flash).
-constexpr uint8_t FIRMWARE_VERSION[3] = {1, 0, 0};
+constexpr uint8_t FIRMWARE_VERSION[3] = {2, 0, 0};
 
 constexpr uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
 // First boot, or after losing the gateway: without a clock or schedule the
@@ -128,6 +139,10 @@ RTC_DATA_ATTR uint8_t pendingCount = 0;
 RTC_DATA_ATTR uint8_t lastInstructionId[INSTRUCTION_ID_LENGTH] = {};
 
 MeshRadio radio;
+// This leaf's two keys, and the nonce of the beacon it last heard: a reading
+// echoes it, so the gateway knows it is for this window.
+MeshAuth meshAuth;
+uint32_t windowNonce = 0;
 Preferences preferences;
 uint8_t gatewayMac[MAC_LENGTH] = {};
 
@@ -337,6 +352,18 @@ bool waitForBeacon(uint32_t listenMs, bool atScheduledSlot) {
             !isValidEpoch(static_cast<int64_t>(beacon->epochMs / 1000))) {
             continue;
         }
+        // The signature says it is a gateway's; its time says it is not an old
+        // recording. Checked against this clock only on a scheduled wake (in a
+        // cold join the clock may be anywhere), by as much as the guard covers.
+        const int64_t beaconNowMs = static_cast<int64_t>(beacon->epochMs) + (millis() - frame.receivedAtMs);
+        const int64_t toleranceMs =
+            static_cast<int64_t>(guardSeconds + meshWindowSeconds + LISTEN_SLACK_SECONDS) * 1000;
+        if (!beaconTimeIsFresh(atScheduledSlot && clockValid(), beaconNowMs, epochMsNow(), toleranceMs)) {
+            Serial.printf("⚠️ A beacon's time is %+lld s from this clock; ignored.\n",
+                          static_cast<long long>((beaconNowMs - epochMsNow()) / 1000));
+            continue;
+        }
+        windowNonce = beacon->cycleNonce;
         char macText[18];
         formatMac(frame.sender, macText);
         Serial.printf("📶 Beacon #%lu from gateway %s, RSSI %d dBm, next wake %lu, window %u s.\n",
@@ -352,8 +379,19 @@ bool waitForBeacon(uint32_t listenMs, bool atScheduledSlot) {
 // Sends one reading and waits for the gateway's ACK, copied to `ack`; retries
 // reuse the same message ID so the gateway and server can recognise duplicates.
 bool deliverReading(const DataPacket& reading, AckPacket& ack) {
+    // Signed with this leaf's key, with the window's nonce inside; the retries
+    // send the same bytes.
+    DataPacket packet = reading;
+    packet.beaconNonce = windowNonce;
+    uint8_t frameToSend[sizeof(DataPacket) + TAG_LENGTH];
+    memcpy(frameToSend, &packet, sizeof(packet));
+    const size_t frameLength = meshAuth.signData(frameToSend, sizeof(packet));
+    if (frameLength == 0) {
+        Serial.println("❌ Could not sign the reading.");
+        return false;
+    }
     for (uint8_t attempt = 1; attempt <= SEND_ATTEMPTS; attempt++) {
-        if (!radio.sendTo(gatewayMac, &reading, sizeof(reading))) {
+        if (!radio.sendTo(gatewayMac, frameToSend, frameLength)) {
             Serial.printf("⚠️ Reading %08lX not confirmed by the radio (attempt %u).\n",
                           static_cast<unsigned long>(reading.header.messageId), attempt);
             continue;
@@ -403,7 +441,20 @@ void sendPendingReadings() {
     }
 }
 
+// What the radio dropped for failing its check this wake, by reason.
+void reportDroppedPackets() {
+    const uint32_t badTags = meshAuth.dropped(AuthResult::BAD_TAG);
+    const uint32_t unknownKeys = meshAuth.dropped(AuthResult::UNKNOWN_KEY_ID);
+    const uint32_t badLengths = meshAuth.dropped(AuthResult::BAD_LENGTH);
+    if (badTags + unknownKeys + badLengths > 0) {
+        Serial.printf("🛡️ Dropped mesh packets: %lu bad tag, %lu unknown key ID, %lu bad length.\n",
+                      static_cast<unsigned long>(badTags), static_cast<unsigned long>(unknownKeys),
+                      static_cast<unsigned long>(badLengths));
+    }
+}
+
 void deepSleepFor(uint64_t sleepSeconds) {
+    reportDroppedPackets();
     const uint64_t timerSeconds = applyDriftCorrection(sleepSeconds, driftPpm);
     Serial.printf("💤 Deep sleep for %llu s (timer %llu s, drift %+ld ppm, guard %lu s).\n",
                   static_cast<unsigned long long>(sleepSeconds),
@@ -492,6 +543,22 @@ void setup() {
     if (!radio.begin(ORGANIZATION_ID)) {
         deepSleepFor(COLD_JOIN_RETRY_SLEEP_SECONDS);
     }
+    // The keys are for one board: another's would only ever be dropped.
+    if (memcmp(radio.macAddress(), MESH_KEY_MAC, MAC_LENGTH) != 0) {
+        char own[18];
+        char expected[18];
+        formatMac(radio.macAddress(), own);
+        formatMac(MESH_KEY_MAC, expected);
+        Serial.printf("❌ mesh_keys.h is for %s, not for this board (%s): make it again for this MAC and flash.\n",
+                      expected, own);
+        deepSleepFor(COLD_JOIN_RETRY_SLEEP_SECONDS);
+    }
+    Key leafKey;
+    Key beaconKey;
+    memcpy(leafKey.bytes, MESH_LEAF_KEY, KEY_LENGTH);
+    memcpy(beaconKey.bytes, MESH_BEACON_KEY, KEY_LENGTH);
+    meshAuth.useLeafKeys(radio.macAddress(), leafKey, beaconKey, MESH_KEY_ID);
+    radio.setAuth(&meshAuth);
 
     const bool coldJoin = !clockValid() || nextWakeEpoch == 0;
     uint32_t listenMs = COLD_JOIN_LISTEN_MS;

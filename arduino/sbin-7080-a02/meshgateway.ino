@@ -10,7 +10,7 @@ using namespace sbinmesh;
 namespace {
 constexpr uint8_t RELAY_QUEUE_SIZE = 16;
 constexpr uint32_t BEACON_INTERVAL_MS = 500;
-constexpr uint32_t MESH_TASK_STACK_BYTES = 6144;
+constexpr uint32_t MESH_TASK_STACK_BYTES = 8192;
 // The server needs a few seconds per relayed reading (the broker both ways
 // and several database writes).
 constexpr unsigned long RELAY_RESULT_TIMEOUT_MS = 10000;
@@ -29,6 +29,9 @@ constexpr int64_t SLOT_MATCH_SECONDS = 600;
 constexpr uint32_t MAX_BEACON_HOLD_MS = 30000;
 
 MeshRadio meshRadio;
+// The organization's key and this window's nonce (2m): every beacon and ACK
+// sent is signed, every packet received is checked, by the radio's receive().
+MeshAuth meshAuth;
 DuplicateFilter duplicateFilter;
 SemaphoreHandle_t relayQueueMutex = nullptr;
 SemaphoreHandle_t meshWindowDone = nullptr;
@@ -148,7 +151,13 @@ void sendBeacon() {
     beacon.epochMs = static_cast<uint64_t>(epochMsNow());
     beacon.nextWakeEpoch = leafWakeEpochToAdvertise();
     beacon.meshWindowSeconds = static_cast<uint8_t>(meshAwakeWindowSeconds);
-    meshRadio.broadcast(&beacon, sizeof(beacon));
+    beacon.cycleNonce = meshAuth.windowNonce();
+    uint8_t frame[sizeof(BeaconPacket) + TAG_LENGTH];
+    memcpy(frame, &beacon, sizeof(beacon));
+    const size_t length = meshAuth.signBeacon(frame, sizeof(beacon));
+    if (length > 0) {
+        meshRadio.broadcast(frame, length);
+    }
 }
 
 void handleMeshFrame(const ReceivedFrame& frame) {
@@ -183,7 +192,12 @@ void handleMeshFrame(const ReceivedFrame& frame) {
     ack.ackedMessageId = messageId;
     ack.status = duplicate ? ACK_DUPLICATE : ACK_STORED;
     attachLeafInstruction(ack, origin);
-    const bool acked = meshRadio.sendTo(frame.sender, &ack, sizeof(ack));
+    // Signed with the key generation the reading used, so a leaf not yet given
+    // a new key after a rotation can still check it.
+    uint8_t ackFrame[sizeof(AckPacket) + TAG_LENGTH];
+    memcpy(ackFrame, &ack, sizeof(ack));
+    const size_t ackLength = meshAuth.signAck(ackFrame, sizeof(ack), data->header.keyId);
+    const bool acked = ackLength > 0 && meshRadio.sendTo(frame.sender, ackFrame, ackLength);
 
     char macText[18];
     formatMac(origin, macText);
@@ -225,6 +239,17 @@ void meshGatewayTask(void*) {
     }
     meshRadio.end();
     Serial.printf("📡 Mesh window closed; %u leaf reading(s) waiting for upload.\n", relayQueueCount);
+    // What the radio dropped for failing its check: a leaf set up with the
+    // wrong key shows as bad tags, a recording replayed later as stale ones.
+    const uint32_t badTags = meshAuth.dropped(AuthResult::BAD_TAG);
+    const uint32_t staleNonces = meshAuth.dropped(AuthResult::STALE_NONCE);
+    const uint32_t unknownKeys = meshAuth.dropped(AuthResult::UNKNOWN_KEY_ID);
+    const uint32_t badLengths = meshAuth.dropped(AuthResult::BAD_LENGTH);
+    if (badTags + staleNonces + unknownKeys + badLengths > 0) {
+        Serial.printf("🛡️ Dropped mesh packets: %lu bad tag, %lu stale nonce, %lu unknown key ID, %lu bad length.\n",
+                      static_cast<unsigned long>(badTags), static_cast<unsigned long>(staleNonces),
+                      static_cast<unsigned long>(unknownKeys), static_cast<unsigned long>(badLengths));
+    }
     meshTaskRunning = false;
     xSemaphoreGive(meshWindowDone);
     vTaskDelete(nullptr);
@@ -244,6 +269,11 @@ void beginMeshWindow() {
         Serial.println("⚠️ No network time this cycle; skipping the mesh window.");
         return;
     }
+    if (meshKeyGeneration() == 0) {
+        // Without the organization's key nothing it sends could be checked by a leaf.
+        Serial.println("🔑 No mesh key yet; no mesh window this cycle (the server gives it with the first report).");
+        return;
+    }
     meshWindowStarted = true;
     ensureMeshMutex();
     if (meshWindowDone == nullptr) {
@@ -254,6 +284,13 @@ void beginMeshWindow() {
         Serial.println("❌ Mesh radio unavailable; no mesh window this cycle.");
         return;
     }
+    applyMeshKeys(meshAuth);
+    meshRadio.setAuth(&meshAuth);
+    // A new random nonce for this window, once the radio is on (its random
+    // numbers are only truly random then).
+    meshAuth.startWindow(MeshRadio::newMessageId());
+    meshAuth.resetCounts();
+    clearMeshKeyRestartFlag();
 
     const int64_t now = static_cast<int64_t>(time(nullptr));
     meshWindowSlotEpoch =
@@ -284,6 +321,10 @@ void beginMeshWindow() {
                       static_cast<unsigned long>(beaconSeq),
                       static_cast<unsigned long>(leafWakeEpochToAdvertise()));
     }
+}
+
+bool meshWindowStartedThisCycle() {
+    return meshWindowStarted;
 }
 
 // Waits for the window to close, then uploads the readings received in it.

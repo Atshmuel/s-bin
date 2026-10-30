@@ -137,6 +137,9 @@ RegistrationOutcome registerOverHttps(int batteryPercent) {
         deviceKey = reply["deviceKey"].as<String>();
         saveDeviceKey(deviceKey);
         Serial.println("✅ Registered; device key received and saved.");
+        if (reply["meshKey"].is<const char*>() && reply["meshKeyId"].is<int>()) {
+            storeMeshKeyFromServer(reply["meshKey"].as<const char*>(), reply["meshKeyId"].as<int>());
+        }
         return REGISTRATION_DONE;
     }
     Serial.printf("⚠️ Registration answered %d: %s\n", status, reply["message"] | "no message");

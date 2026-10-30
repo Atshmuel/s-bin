@@ -584,6 +584,7 @@ void loadDeviceSettings() {
     setupLocationPending = preferences.getBool("setupLoc", false);
     bool hasStoredLocation = preferences.isKey("gpsEpoch");
     preferences.end();
+    loadMeshKeys();
 
     hasGpsFix = hasStoredLocation &&
                 latitude >= -90.0f && latitude <= 90.0f &&

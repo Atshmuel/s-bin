@@ -207,6 +207,7 @@ void loop() {
     if (deviceKey.length() > 0) {
         processPendingInstructions(INSTRUCTION_CHECK_TIMEOUT_MS);
     }
+    restartIfMeshKeyIsNew(meshWindowStartedThisCycle());
     endMeshWindow();
     enterDeepSleepUntilNextReport();
 }

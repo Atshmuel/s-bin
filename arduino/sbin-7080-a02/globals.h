@@ -53,7 +53,7 @@ constexpr uint32_t USB_LOG_RECONNECT_WAIT_MS = 3000;
 
 // This firmware's version, reported in every diagnostics block (semver; bump
 // it by hand for every flash).
-constexpr char FIRMWARE_VERSION[] = "1.3.0";
+constexpr char FIRMWARE_VERSION[] = "2.0.0";
 
 // The S-Bin servers (2i): registration over HTTPS, reports over MQTT with TLS
 // on the private broker, both checked against SBIN_CA_FILE in the modem.
@@ -259,6 +259,15 @@ bool startConfigurationPortal();
 void handleConfigurationPortal();
 void loadDeviceSettings();
 void saveSetup(const String& orgId, const String& code);
+
+// The organization's mesh key (meshkeys.ino).
+void loadMeshKeys();
+uint8_t meshKeyGeneration();
+void applyMeshKeys(sbinmesh::MeshAuth& auth);
+void storeMeshKeyFromServer(const char* keyHex, int keyId);
+void restartIfMeshKeyIsNew(bool meshWindowRan);
+void clearMeshKeyRestartFlag();
+bool meshWindowStartedThisCycle();
 void saveSetupLocation(float lat, float lng);
 void acceptSetupLocation();
 void saveDeviceKey(const String& key);
