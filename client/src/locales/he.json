@@ -1,360 +1,354 @@
-
 {
-    "login": "התחברות",
-    "logout": "התנתקות",
-    "settings": "הגדרות",
-    "profile": "פרופיל משתמש",
-    "filter": "סינון פחים",
-    "route": "חשב מסלול",
-    "dashboard": "לוח בקרה",
-    "bins":"פחים",
-    "bin":"פח",
-    "map":"מפה",
-    "add":"הוספה",
-    "submit":"שלח",
-    "logs":"תיעודים",
-    "analytics":"אנליטיקות",
-        "units":{
-        "kg":"ק״ג",
-        "seconds":"שניות",
-        "minutes":"דק׳",
-        "hours":"שעות"
+  "login": "התחברות",
+  "logout": "התנתקות",
+  "settings": "הגדרות",
+  "profile": "פרופיל משתמש",
+  "filter": "סינון פחים",
+  "route": "חשב מסלול",
+  "dashboard": "לוח בקרה",
+  "bins": "פחים",
+  "bin": "פח",
+  "map": "מפה",
+  "add": "הוספה",
+  "submit": "שלח",
+  "logs": "יומני אירועים",
+  "analytics": "אנליטיקה",
+  "units": {
+    "kg": "ק״ג",
+    "seconds": "שניות",
+    "minutes": "דק׳",
+    "hours": "שעות"
+  },
+  "lastAwakeTime": "זמן ערות במחזור הקודם",
+  "backToBin": "חזרה לפח",
+  "user": "משתמש",
+  "your": "שלך",
+  "you": "את/ה",
+  "roles": {
+    "owner": "בעלים",
+    "admin": "מנהל מערכת",
+    "user": "משתמש",
+    "driver": "נהג",
+    "technician": "טכנאי"
+  },
+  "levels": {
+    "critical": "קריטי",
+    "warning": "אזהרה",
+    "good": "טוב",
+    "all": "הכל"
+  },
+  "sensorUnavailable": "לא זמין",
+  "gateway": "שער תקשורת",
+  "healthTooltip": {
+    "critical": "זוהתה תקלה קריטית בחומרה או באחד הרכיבים.",
+    "warning": "המכשיר דיווח על תקלה בחומרה או באחד הרכיבים.",
+    "good": "לא דווחו כרגע תקלות במכשיר.",
+    "detailsUnavailable": "לא התקבל פירוט אבחון."
+  },
+  "faults": {
+    "when": {
+      "once": "בדיווח האחרון",
+      "repeated": "ב־2 דיווחים רצופים או יותר",
+      "onceMonthly": "בניסיון החודשי האחרון",
+      "repeatedMonthly": "ב־2 ניסיונות חודשיים רצופים או יותר"
     },
- "lastAwakeTime":"זמן ערות במחזור הקודם",
-"backToBin":"חזרה לפח",
-"user":"משתמש",
-"your":"שלך",
-"you":"את/ה",
-    "roles":{
-       "owner": "בעלים",
-        "admin": "מנהל מערכת",
-        "user": "משתמש",
-        "driver": "נהג",
-      "technician": "טכנאי"
-    },
-    "levels":{
-        "critical":"קריטי",
-        "warning":"אזהרה",
-        "good":"טוב",
-        "all":"הכל"
-    },  
-    "sensorUnavailable":"לא זמין",
-    "gateway":"שער תקשורת",
-    "healthTooltip":{
-        "critical":"זוהתה תקלה קריטית בחומרה או באחד הרכיבים.",
-        "warning":"המכשיר דיווח על תקלה בחומרה או באחד הרכיבים.",
-        "good":"לא דווחו כרגע תקלות במכשיר.",
-        "detailsUnavailable":"לא התקבל פירוט אבחון."
-    },
-    "faults": {
-      "when": {
-        "once": "בדיווח האחרון",
-        "repeated": "ב־2 דיווחים רצופים או יותר",
-        "onceMonthly": "בניסיון החודשי האחרון",
-        "repeatedMonthly": "ב־2 ניסיונות חודשיים רצופים או יותר"
-      },
-      "bin_full": "הפח כמעט מלא.",
-      "bin_filling": "הפח מתמלא.",
-      "battery_critical": "רמת הסוללה קריטית.",
-      "battery_low": "רמת הסוללה נמוכה.",
-      "calibration_failed": "כיול הפח הריק נכשל.",
-      "calibration_failed_mm": "כיול הפח הריק נכשל (מרחק {{mm}} מ״מ).",
-      "distance_sensor": "חיישן המרחק לא ענה {{when}}.",
-      "fill_calculation": "לא ניתן היה לחשב את רמת המילוי {{when}}.",
-      "fill_calculation_mm": "לא ניתן היה לחשב את רמת המילוי במרחק {{mm}} מ״מ {{when}}.",
-      "pmu": "שבב הכוח או מדידת הסוללה נכשלו {{when}}.",
-      "gps": "רענון מיקום ה־GPS נכשל {{when}}.",
-      "scale": "קריאת המשקל נכשלה {{when}}.",
-      "instructions_expired": "המכשיר לא אסף את הפקודות שחיכו לו ({{types}}) תוך 3 ימים; ייתכן שהוא מנותק או מחוץ לכיסוי."
-    },
-    "severities":{
-      "critical":"קריטי",
-      "warning":"אזהרה",
-      "info":"מידע"
-    },
-    "types":{
-      "maintenance": "תחזוקה",
-      "error": "שגיאה",
-      "log": "תיעוד"
-    },
-    "statuses":{
-      "pending":"בהמתנה",
-      "active":"פעיל",
-      "inactive":"לא פעיל",
-      "suspended":"מושהה"
-    },
-    "sources":{
-          "sensor":"חיישן",
-          "system":"מערכת",
-          "manual":"ידני"
-    } ,
-    "users": "משתמשים",
-    "organization": "ארגון",
-    "newEntity":{
-        "title":"צור ישות חדשה",
-        "createNewUser":"צור משתמש חדש",
-        "createNewOrganization":"צור ארגון חדש",
-        "createNewUserSubtitle":"מלא את הפרטים ליצירת משתמש חדש",
-        "createNewOrganizationSubtitle":"מלא את הפרטים ליצירת ארגון חדש",
-        "fillInputs":"מלא את השדות",
-        "submitSheet":"שלח לשמירת השינויים",
-       "userInputs": {
-    "fields": {
-      "fullName": {
-        "label": "שם מלא",
-        "placeholder": "שם פרטי ושם משפחה"
-      },
-      "email": {
-        "label": "כתובת אימייל",
-        "placeholder": "כתובת אימייל"
-      },
-      "password": {
-        "label": "סיסמה חדשה"
-      },
-      "role": {
-        "label": "תפקיד משתמש",
-        "description": "שדה זה מעניק למשתמש הרשאות נוספות",
-        "options": {
-          "user": "משתמש",
-          "driver": "נהג",
-          "technician": "טכנאי",
-          "admin": "מנהל",
-          "owner": "בעלים"
+    "bin_full": "הפח כמעט מלא.",
+    "bin_filling": "הפח מתמלא.",
+    "battery_critical": "רמת הסוללה קריטית.",
+    "battery_low": "רמת הסוללה נמוכה.",
+    "calibration_failed": "כיול הפח הריק נכשל.",
+    "calibration_failed_mm": "כיול הפח הריק נכשל (מרחק {{mm}} מ״מ).",
+    "distance_sensor": "חיישן המרחק לא ענה {{when}}.",
+    "fill_calculation": "לא ניתן היה לחשב את רמת המילוי {{when}}.",
+    "fill_calculation_mm": "לא ניתן היה לחשב את רמת המילוי במרחק {{mm}} מ״מ {{when}}.",
+    "pmu": "שבב הכוח או מדידת הסוללה נכשלו {{when}}.",
+    "gps": "רענון מיקום ה־GPS נכשל {{when}}.",
+    "scale": "קריאת המשקל נכשלה {{when}}.",
+    "instructions_expired": "המכשיר לא אסף את הפקודות שחיכו לו ({{types}}) תוך 3 ימים; ייתכן שהוא מנותק או מחוץ לכיסוי."
+  },
+  "severities": {
+    "critical": "קריטי",
+    "warning": "אזהרה",
+    "info": "מידע"
+  },
+  "types": {
+    "maintenance": "תחזוקה",
+    "error": "שגיאה",
+    "log": "תיעוד"
+  },
+  "statuses": {
+    "pending": "בהמתנה",
+    "active": "פעיל",
+    "inactive": "לא פעיל",
+    "suspended": "מושהה"
+  },
+  "sources": {
+    "sensor": "חיישן",
+    "system": "מערכת",
+    "manual": "ידני"
+  },
+  "users": "משתמשים",
+  "organization": "ארגון",
+  "newEntity": {
+    "title": "צור ישות חדשה",
+    "createNewUser": "צור משתמש חדש",
+    "createNewOrganization": "צור ארגון חדש",
+    "createNewUserSubtitle": "מלא את הפרטים ליצירת משתמש חדש",
+    "createNewOrganizationSubtitle": "מלא את הפרטים ליצירת ארגון חדש",
+    "fillInputs": "מלא את השדות",
+    "submitSheet": "שלח לשמירת השינויים",
+    "userInputs": {
+      "fields": {
+        "fullName": {
+          "label": "שם מלא",
+          "placeholder": "שם פרטי ושם משפחה"
+        },
+        "email": {
+          "label": "כתובת אימייל",
+          "placeholder": "כתובת אימייל"
+        },
+        "password": {
+          "label": "סיסמה חדשה"
+        },
+        "role": {
+          "label": "תפקיד משתמש",
+          "description": "שדה זה מעניק למשתמש הרשאות נוספות",
+          "options": {
+            "user": "משתמש",
+            "driver": "נהג",
+            "technician": "טכנאי",
+            "admin": "מנהל",
+            "owner": "בעלים"
+          }
+        },
+        "status": {
+          "label": "סטטוס משתמש",
+          "description": "שינוי סטטוס עשוי לגרום לחסימת המשתמש",
+          "options": {
+            "pending": "בהמתנה",
+            "active": "פעיל",
+            "inactive": "לא פעיל",
+            "suspended": "מושהה"
+          }
+        },
+        "organization": {
+          "label": "ארגון",
+          "placeholder": "בחר ארגון",
+          "error": "שגיאה בטעינת ארגונים"
+        },
+        "manager": {
+          "label": "מנהל אחראי",
+          "placeholder": "בחר מנהל",
+          "error": "שגיאה בטעינת מנהלים"
         }
       },
-      "status": {
-        "label": "סטטוס משתמש",
-        "description": "שינוי סטטוס עשוי לגרום לחסימת המשתמש",
-        "options": {
-          "pending": "בהמתנה",
-          "active": "פעיל",
-          "inactive": "לא פעיל",
-          "suspended": "מושהה"
+      "validation": {
+        "name": {
+          "required": "שם הוא שדה חובה",
+          "notEmpty": "שם לא יכול להיות ריק או להכיל רווחים בלבד",
+          "fullName": "יש להזין שם פרטי ושם משפחה",
+          "noWhitespace": "השם לא יכול להתחיל או להסתיים ברווח"
+        },
+        "email": {
+          "required": "אימייל הוא שדה חובה",
+          "invalid": "כתובת אימייל לא תקינה",
+          "notEmpty": "אימייל לא יכול להיות ריק או להכיל רווחים בלבד",
+          "noWhitespace": "האימייל לא יכול להתחיל או להסתיים ברווח"
+        },
+        "password": {
+          "required": "סיסמה היא שדה חובה",
+          "minLength": "הסיסמה חייבת להכיל לפחות 8 תווים",
+          "maxLength": "הסיסמה לא יכולה להכיל יותר מ-30 תווים",
+          "lowercase": "הסיסמה חייבת להכיל לפחות אות קטנה אחת",
+          "uppercase": "הסיסמה חייבת להכיל לפחות אות גדולה אחת",
+          "number": "הסיסמה חייבת להכיל לפחות ספרה אחת",
+          "special": "הסיסמה חייבת להכיל לפחות תו מיוחד (!@#$%^&*)"
         }
       },
-      "organization": {
-        "label": "ארגון",
-        "placeholder": "בחר ארגון",
-        "error": "שגיאה בטעינת ארגונים"
-      },
-      "manager": {
-        "label": "מנהל אחראי",
-        "placeholder": "בחר מנהל",
-        "error": "שגיאה בטעינת מנהלים"
+      "loading": {
+        "organizations": "טוען ארגונים...",
+        "managers": "טוען מנהלים..."
       }
     },
-
-    "validation": {
-      "name": {
-        "required": "שם הוא שדה חובה",
-        "notEmpty": "שם לא יכול להיות ריק או להכיל רווחים בלבד",
-        "fullName": "יש להזין שם פרטי ושם משפחה",
-        "noWhitespace": "השם לא יכול להתחיל או להסתיים ברווח"
+    "orgInputs": {
+      "fields": {
+        "name": {
+          "label": "שם הארגון",
+          "placeholder": "שם הארגון"
+        }
       },
-      "email": {
-        "required": "אימייל הוא שדה חובה",
-        "invalid": "כתובת אימייל לא תקינה",
-        "notEmpty": "אימייל לא יכול להיות ריק או להכיל רווחים בלבד",
-        "noWhitespace": "האימייל לא יכול להתחיל או להסתיים ברווח"
-      },
-      "password": {
-        "required": "סיסמה היא שדה חובה",
-        "minLength": "הסיסמה חייבת להכיל לפחות 8 תווים",
-        "maxLength": "הסיסמה לא יכולה להכיל יותר מ-30 תווים",
-        "lowercase": "הסיסמה חייבת להכיל לפחות אות קטנה אחת",
-        "uppercase": "הסיסמה חייבת להכיל לפחות אות גדולה אחת",
-        "number": "הסיסמה חייבת להכיל לפחות ספרה אחת",
-        "special": "הסיסמה חייבת להכיל לפחות תו מיוחד (!@#$%^&*)"
+      "validation": {
+        "name": {
+          "required": "שם הארגון הוא שדה חובה",
+          "notEmpty": "שם הארגון לא יכול להיות ריק או להכיל רווחים בלבד"
+        }
       }
-    },
-
-    "loading": {
-      "organizations": "טוען ארגונים...",
-      "managers": "טוען מנהלים..."
     }
   },
-        "orgInputs": {
-            "fields": {
-                "name": {
-                    "label": "שם הארגון",
-                    "placeholder": "שם הארגון"
-                }
-            },
-            "validation": {
-                "name": {
-                    "required": "שם הארגון הוא שדה חובה",
-                    "notEmpty": "שם הארגון לא יכול להיות ריק או להכיל רווחים בלבד"
-                }
-            }
-        }
+  "reset": "איפוס",
+  "technician": "טכנאי",
+  "save": "שמור",
+  "cancel": "ביטול",
+  "edit": "ערוך",
+  "delete": "מחק",
+  "loading": "טוען...",
+  "error": "שגיאה",
+  "binName": "שם הפח",
+  "fillLevel": "רמת מילוי",
+  "healthStatus": "מצב תקינות",
+  "lastUpdated": "עודכן לאחרונה",
+  "viewBin": "הצג פח",
+  "columns": "עמודות",
+  "sidebar": {
+    "managment": {
+      "title": "ניהול",
+      "subtitles": {
+        "bins": "פחים",
+        "users": "משתמשים",
+        "organizations": "ארגונים",
+        "organization": "הארגון",
+        "routes": "מסלולים"
+      },
+      "items": {
+        "binList": "רשימת פחים",
+        "routeList": "רשימת מסלולים",
+        "addBin": "הוסף פח",
+        "map": "מפה",
+        "logs": "תיעודים",
+        "userList": "רשימת משתמשים",
+        "organizationList": "רשימת ארגונים",
+        "orgSettings": "הגדרות הארגון"
+      }
     },
-    "reset": "איפוס",
-    "technician": "טכנאי",
-    "save": "שמור",
-    "cancel": "ביטול",
-    "edit": "ערוך",
-    "delete": "מחק",
-    "loading": "טוען...",
-    "error": "שגיאה",
-    "binName": "שם הפח",
-    "fillLevel": "רמת מילוי",
-  "healthStatus":"מצב בריאות",
-
-    "lastUpdated": "עודכן לאחרונה",
-    "viewBin": "הצג פח",
-    "columns": "עמודות",
-    "sidebar": {
-        "managment":{
-            "title":"ניהול",
-            "subtitles":{
-            "bins":"פחים",
-            "users":"משתמשים",
-            "organizations": "ארגונים",
-            "organization": "הארגון",
-            "routes": "מסלולים"
-            },
-            "items":{
-                "binList":"רשימת פחים",
-                "routeList": "רשימת מסלולים",
-                "addBin":"הוסף פח",
-                "map":"מפה",
-                "logs":"תיעודים",
-                "userList":"רשימת משתמשים",
-                "organizationList": "רשימת ארגונים",
-                "orgSettings": "הגדרות הארגון"
-            }
-        },
-        "general":{
-            "title":"כללי",
-            "items":{
-                "dashboard":"לוח בקרה",
-                "analytics":"אנליטיקות"
-            }
-        }
-
+    "general": {
+      "title": "כללי",
+      "items": {
+        "dashboard": "לוח בקרה",
+        "analytics": "אנליטיקות"
+      }
+    }
+  },
+  "mapLegend": {
+    "search": {
+      "binRadius": "פחים ברדיוס של",
+      "fillLevel": "מלאות בין",
+      "healthStatus": "מצב בריאות הפחים",
+      "clearFilters": "נקה מסננים",
+      "title": "חיפוש פחים",
+      "kilometers": "ק״מ"
     },
-     "mapLegend":{
-       "search": {
-         "binRadius": "פחים ברדיוס של",
-         "fillLevel": "מלאות בין",
-         "healthStatus": "מצב בריאות הפחים",
-         "clearFilters": "נקה מסננים",
-         "title": "חיפוש פחים",
-         "kilometers": "ק״מ"
-       },
-       "drive": {
-         "start": "התחלת נסיעה",
-         "resume": "חזרה לנסיעה",
-         "locating": "מאתר את המיקום שלך…",
-         "meters": "במרחק {{count}} מ׳",
-         "kilometers": "במרחק {{count}} ק״מ",
-         "next": "הבא: עצירה {{order}} מתוך {{count}}",
-         "allDone": "כל העצירות הושלמו",
-         "backToDepot": "חזרה לנקודת ההתחלה",
-         "follow": "עקוב אחריי",
-         "done": "בוצע",
-         "previous": "הקודמת",
-         "previousHint": "פתיחה מחדש של עצירה {{order}}, שסומנה אחרונה כבוצעה",
-         "previousSkippedHint": "החזרת עצירה {{order}}, שדולגה אחרונה",
-         "doneCount": "{{count}} בוצעו",
-         "skippedCount": "{{count}} דולגו",
-         "leftCount": "{{count}} נותרו",
-         "inTruck": "≈ {{load}} מתוך {{capacity}} ק״ג במשאית",
-         "stop": "סיום נסיעה",
-         "stopShort": "עצירה",
-         "followHint": "להשאיר את המפה על המיקום שלכם",
-         "reorderHint": "לסדר את העצירות שנותרו מהמקום שבו אתם נמצאים",
-         "navigateHint": "ניווט לעצירה הבאה ב־{{app}}",
-         "doneHint": "לסמן את העצירה כנאספה (המיקום שלכם נשמר כהוכחה)",
-         "finishHint": "לסיים את המסלול; פחים שלא בוצעו ישוחררו למסלולים אחרים",
-         "previousNone": "אין עדיין מה לבטל",
-         "stopHint": "לצאת מהנסיעה; המסלול נשאר בדרך",
-         "finish": "סיום המסלול",
-         "skip": "דילוג",
-         "skipHint": "אי אפשר לאסוף את הפח הזה: שחררו אותו למסלול אחר",
-         "reorder": "סידור מחדש מכאן"
-       },
-       "route": {
-         "type": "סוג מסלול",
-         "maintenance": "תחזוקה",
-         "collection": "איסוף",
-         "title": "תכנון מסלול",
-         "description": "מסלול למשאית אחת: הפחים המלאים ביותר שהיא יכולה לשאת, ברדיוס מנקודת ההתחלה (החניון אם הוגדר). ביקור תחזוקה עובר במכשירים במצב בריאות ירוד.",
-         "noBinsCollection": "אין פחים ברדיוס {{radius}} ק״מ שמלאים {{min}}–{{max}}%.",
-         "noBinsMaintenance": "אין מכשירים ברדיוס {{radius}} ק״מ שמתאימים לסינון הבריאות ({{health}}).",
-         "openPanel": "תכנון מסלול",
-         "closePanel": "סגירת תכנון המסלול",
-         "minFullness": "איסוף פחים ממלאות של {{percent}}%",
-         "stopsTitle": "העצירות, לפי סדר הנסיעה",
-         "stopsHint": "המספרים במפה הם סדר העצירות.",
-         "stopTooltip": "עצירה {{order}} מתוך {{count}} · {{name}}",
-         "stopRow": "מלא ב־{{percent}}%",
-         "organization": "ארגון",
-         "truck": "משאית",
-         "truckOption": "{{name}} · {{kg}} ק״ג",
-         "noFleet": "לא הוגדרו משאיות: המסלול עובר בכל הפחים שנמצאו. הוסיפו משאיות בהגדרות הארגון.",
-         "fromDepot": "יוצא מהחניון של הארגון וחוזר אליו.",
-         "fromHere": "יוצא מהמיקום שלכם, או ממרכז המפה (לא הוגדר חניון).",
-         "summaryStops_one": "עצירה אחת",
-         "summaryStops_two": "שתי עצירות",
-         "summaryStops_other": "{{count}} עצירות",
-         "summaryTime": "{{hours}} ש׳ {{minutes}} דק׳",
+    "drive": {
+      "start": "התחלת נסיעה",
+      "resume": "חזרה לנסיעה",
+      "locating": "מאתר את המיקום שלך…",
+      "meters": "במרחק {{count}} מ׳",
+      "kilometers": "במרחק {{count}} ק״מ",
+      "next": "הבא: עצירה {{order}} מתוך {{count}}",
+      "allDone": "כל העצירות הושלמו",
+      "backToDepot": "חזרה לנקודת ההתחלה",
+      "follow": "עקוב אחריי",
+      "done": "בוצע",
+      "previous": "הקודמת",
+      "previousHint": "פתיחה מחדש של עצירה {{order}}, שסומנה אחרונה כבוצעה",
+      "previousSkippedHint": "החזרת עצירה {{order}}, שדולגה אחרונה",
+      "doneCount": "{{count}} בוצעו",
+      "skippedCount": "{{count}} דולגו",
+      "leftCount": "{{count}} נותרו",
+      "inTruck": "≈ {{load}} מתוך {{capacity}} ק״ג במשאית",
+      "stop": "סיום נסיעה",
+      "stopShort": "עצירה",
+      "followHint": "להשאיר את המפה על המיקום שלכם",
+      "reorderHint": "לסדר את העצירות שנותרו מהמקום שבו אתם נמצאים",
+      "navigateHint": "ניווט לעצירה הבאה ב־{{app}}",
+      "doneHint": "לסמן את העצירה כנאספה (המיקום שלכם נשמר כהוכחה)",
+      "finishHint": "לסיים את המסלול; פחים שלא בוצעו ישוחררו למסלולים אחרים",
+      "previousNone": "אין פעולות לביטול כרגע",
+      "stopHint": "לצאת מהנסיעה; המסלול נשאר בדרך",
+      "finish": "סיום המסלול",
+      "skip": "דילוג",
+      "skipHint": "אי אפשר לאסוף את הפח הזה: שחררו אותו למסלול אחר",
+      "reorder": "סידור מחדש מכאן"
+    },
+    "route": {
+      "type": "סוג מסלול",
+      "maintenance": "תחזוקה",
+      "collection": "איסוף",
+      "title": "תכנון מסלול",
+      "description": "מסלול למשאית אחת: הפחים המלאים ביותר שהיא יכולה לשאת, בטווח נסיעה מנקודת ההתחלה (החניון, אם הוגדר). ביקור תחזוקה עובר בין המכשירים שמצב התקינות שלהם ירוד.",
+      "noBinsCollection": "אין פחים ברדיוס {{radius}} ק״מ שמלאים {{min}}–{{max}}%.",
+      "noBinsMaintenance": "אין מכשירים ברדיוס {{radius}} ק״מ שמתאימים לסינון הבריאות ({{health}}).",
+      "openPanel": "תכנון מסלול",
+      "closePanel": "סגירת תכנון המסלול",
+      "minFullness": "איסוף פחים שמלאים ב־{{percent}}% ומעלה",
+      "stopsTitle": "העצירות, לפי סדר הנסיעה",
+      "stopsHint": "המספרים במפה הם סדר העצירות.",
+      "stopTooltip": "עצירה {{order}} מתוך {{count}} · {{name}}",
+      "stopRow": "מלא ב־{{percent}}%",
+      "organization": "ארגון",
+      "truck": "משאית",
+      "truckOption": "{{name}} · {{kg}} ק״ג",
+      "noFleet": "לא הוגדרו משאיות: המסלול עובר בכל הפחים שנמצאו. הוסיפו משאיות בהגדרות הארגון.",
+      "fromDepot": "יוצא מהחניון של הארגון וחוזר אליו.",
+      "fromHere": "יוצא מהמיקום שלכם, או ממרכז המפה (לא הוגדר חניון).",
+      "summaryStops_one": "עצירה אחת",
+      "summaryStops_two": "שתי עצירות",
+      "summaryStops_other": "{{count}} עצירות",
+      "summaryTime": "{{hours}} ש׳ {{minutes}} דק׳",
       "summaryMinutes": "{{minutes}} דק׳",
-         "summaryLoad": "{{load}} מתוך {{capacity}} ק״ג ({{truck}})",
-         "startsAtDepot": "מהחניון ובחזרה.",
-         "startsHere": "מנקודת ההתחלה המסומנת במפה.",
-         "leftOut_one": "פח אחד נוסף נשאר לסבב אחר.",
-         "leftOut_two": "שני פחים נוספים נשארו לסבב אחר.",
-         "leftOut_other": "{{count}} פחים נוספים נשארו לסבב אחר.",
-         "start": "התחלה",
-         "end": "סיום",
-         "startEnd": "התחלה · סיום",
-         "stopFullness": "מלא ב־{{percent}}%",
-         "stopLoad": "כ־{{kg}} ק״ג",
-         "clear": "נקה מסלול"
-       },
-       "locations": {
-         "myLocation": "המיקום שלי",
-         "flyToLocation": "עבור למיקום זה",
-         "toggleMapType": "החלף סוג מפה",
-         "youAreHere": "את/ה כאן"
-       },
-       "errors": {
-         "gepError": "מיקום אינו נתמך על ידי הדפדפן שלך",
-         "locationDenied": "גישה למיקום נדחתה. אנא אפשר זאת בהגדרות הדפדפן שלך.",
-         "locationUnavailable": "מידע על המיקום אינו זמין.",
-         "locationTimeout": "בקשת המיקום פגה. נסה שוב.",
-         "unknownError": "אירעה שגיאה לא ידועה בעת קבלת המיקום."
-       },
-       "open": "אפשרויות מפה",
-      "openHint": "חיפוש פחים ואפשרויות מפה",
-       "close": "סגור את אפשרויות המפה",
-       "key": {
-         "open": "מה מוצג במפה",
-         "close": "סגור את המקרא",
-         "title": "מה מוצג במפה",
-         "fullnessLow": "מלא פחות מ־{{warning}}%",
-         "fullnessMid": "מלא {{warning}}–{{belowCritical}}%",
-         "fullnessHigh": "מלא {{critical}}% ומעלה",
-         "gatewayBattery": "מלאות היא רמת המילוי או המשקל, הגבוה מביניהם. לשער אין מלאות; הצבע שלו מראה את הסוללה.",
-         "cluster": "קבוצה של מכשירים קרובים, בצבע של הדחוף מביניהם"
-       }
-     },
-      "globalTable":{
-    "next":"הבא",
-    "previous":"הקודם",
-    "noResults":"לא נמצאו תוצאות",
-    "nothingToShow":"אין נתונים זמינים להצגה כרגע.",
-        "noSearchResults":"אין תוצאות התואמות את החיפוש שלך.",
+      "summaryLoad": "{{load}} מתוך {{capacity}} ק״ג ({{truck}})",
+      "startsAtDepot": "מהחניון ובחזרה.",
+      "startsHere": "מנקודת ההתחלה המסומנת במפה.",
+      "leftOut_one": "פח אחד נוסף נשאר לסבב אחר.",
+      "leftOut_two": "שני פחים נוספים נשארו לסבב אחר.",
+      "leftOut_other": "{{count}} פחים נוספים נשארו לסבב אחר.",
+      "start": "התחלה",
+      "end": "סיום",
+      "startEnd": "התחלה · סיום",
+      "stopFullness": "מלא ב־{{percent}}%",
+      "stopLoad": "כ־{{kg}} ק״ג",
+      "clear": "נקה מסלול"
+    },
+    "locations": {
+      "myLocation": "המיקום שלי",
+      "flyToLocation": "עבור למיקום זה",
+      "toggleMapType": "החלף סוג מפה",
+      "youAreHere": "את/ה כאן"
+    },
+    "errors": {
+      "gepError": "מיקום אינו נתמך על ידי הדפדפן שלך",
+      "locationDenied": "גישה למיקום נדחתה. אנא אפשר זאת בהגדרות הדפדפן שלך.",
+      "locationUnavailable": "מידע על המיקום אינו זמין.",
+      "locationTimeout": "בקשת המיקום פגה. נסה שוב.",
+      "unknownError": "אירעה שגיאה לא ידועה בעת קבלת המיקום."
+    },
+    "open": "אפשרויות מפה",
+    "openHint": "חיפוש פחים ואפשרויות מפה",
+    "close": "סגור את אפשרויות המפה",
+    "key": {
+      "open": "מה מוצג במפה",
+      "close": "סגור את המקרא",
+      "title": "מה מוצג במפה",
+      "fullnessLow": "מלא פחות מ־{{warning}}%",
+      "fullnessMid": "מלא {{warning}}–{{belowCritical}}%",
+      "fullnessHigh": "מלא {{critical}}% ומעלה",
+      "gatewayBattery": "מלאות היא רמת המילוי או המשקל, הגבוה מביניהם. לשער אין מלאות; הצבע שלו מראה את הסוללה.",
+      "cluster": "קבוצה של מכשירים קרובים, בצבע של הדחוף מביניהם"
+    }
+  },
+  "globalTable": {
+    "next": "הבא",
+    "previous": "הקודם",
+    "noResults": "לא נמצאו תוצאות",
+    "nothingToShow": "אין נתונים זמינים להצגה כרגע.",
+    "noSearchResults": "אין תוצאות התואמות את החיפוש שלך.",
     "tablePage": "מתוך"
-
   },
-  "deviceRoles":{
-    "gateway":"שער תקשורת",
-    "gatewayBin":"פח תקשורת",
-    "meshBin":"פח רשת"
+  "deviceRoles": {
+    "gateway": "שער תקשורת",
+    "gatewayBin": "פח תקשורת",
+    "meshBin": "פח רשת"
   },
-  "pages":{
+  "pages": {
     "routes": {
       "title": "מסלולים",
       "newRoute": "מסלול חדש",
@@ -400,16 +394,16 @@
         "noFit": "אף פח לא נכנס למשאית.",
         "noDepot": "מסלולים יוצאים מהחניון של הארגון וחוזרים אליו, והוא לא הוגדר.",
         "toSettings": "הגדירו אותו בהגדרות הארגון.",
-      "description": "איסוף למשאית אחת לוקח את הפחים המלאים ביותר שהיא יכולה לשאת באזור; ביקור תחזוקה עובר במכשירים במצב בריאות ירוד. המסלול יוצא מהחניון וחוזר אליו.",
-      "matches_one": "אפשר לקחת כאן פח אחד",
-      "matches_two": "אפשר לקחת כאן שני פחים",
-      "matches_other": "אפשר לקחת כאן {{count}} פחים",
-      "fit_one": "בערך אחד נכנס למשאית",
-      "fit_two": "בערך שניים נכנסים למשאית",
-      "fit_other": "בערך {{count}} נכנסים למשאית",
-      "backToDepot": "חזרה לחניון",
-      "clickMap": "לחצו על המפה כדי להזיז את האזור. פחים שבמסלולים אחרים לא נכללים.",
-      "depot": "חניון"
+        "description": "מסלול איסוף למשאית אחת כולל את הפחים המלאים ביותר שהיא יכולה לשאת באזור. ביקור תחזוקה עובר בין המכשירים שמצב התקינות שלהם ירוד. המסלול מתחיל בחניון ומסתיים בו.",
+        "matches_one": "אפשר לקחת כאן פח אחד",
+        "matches_two": "אפשר לקחת כאן שני פחים",
+        "matches_other": "אפשר לקחת כאן {{count}} פחים",
+        "fit_one": "בערך אחד נכנס למשאית",
+        "fit_two": "בערך שניים נכנסים למשאית",
+        "fit_other": "בערך {{count}} נכנסים למשאית",
+        "backToDepot": "חזרה לחניון",
+        "clickMap": "לחצו על המפה כדי להזיז את האזור. פחים שבמסלולים אחרים לא נכללים.",
+        "depot": "חניון"
       },
       "key": {
         "title": "מה מפת המסלול מציגה",
@@ -447,7 +441,7 @@
         "skipDescription": "הפח יישאר למסלול אחר. השתמשו בזה כשאי אפשר לאסוף אותו (חסום, חסר)."
       }
     },
-    "dashboard":{
+    "dashboard": {
       "titles": {
         "quickOverview": {
           "title": "סקירה מהירה",
@@ -461,15 +455,15 @@
       "cards": {
         "offline": {
           "title": "מכשירים לא מחוברים",
-          "description_one": "החמיצו דיווח אחד ברצף.",
+          "description_one": "הוחמץ דיווח רצוף אחד.",
           "description_two": "החמיצו שני דיווחים ברצף, כולל שערים.",
-          "description_other": "החמיצו {{count}} דיווחים ברצף, כולל שערים."
+          "description_other": "הוחמצו {{count}} דיווחים ברצף, כולל שערים."
         },
         "fullSoon": {
           "title": "איסוף נדרש תוך 24 שעות",
-          "description_one": "פח אחד תוך 48 שעות.",
+          "description_one": "פח אחד צפוי להזדקק לאיסוף בתוך 48 שעות.",
           "description_two": "שני פחים תוך 48 שעות.",
-          "description_other": "{{count}} פחים תוך 48 שעות."
+          "description_other": "{{count}} פחים צפויים להזדקק לאיסוף בתוך 48 שעות."
         },
         "almostFull": {
           "title": "פחים כמעט מלאים",
@@ -537,531 +531,623 @@
         }
       }
     },
-    "binsList":{
-      "title":"רשימת פחים",
-      "description":"נהל את הפחים שלך על ידי צפייה, עריכה או מחיקה שלהם.",
-      "columns":{
+    "binsList": {
+      "title": "פחים",
+      "description": "נהל את הפחים שלך באמצעות צפייה בהם, עריכתם או מחיקתם.",
+      "columns": {
         "type": "סוג",
-        "binName":"שם הפח",
-        "location":"מיקום",
-        "fillLevel":"רמת מילוי",
-        "healthStatus":"מצב בריאות",
-        "batteryLevel":"רמת סוללה",
-        "lastMaintenance":"תחזוקה אחרונה"
+        "binName": "שם הפח",
+        "location": "מיקום",
+        "fillLevel": "רמת מילוי",
+        "healthStatus": "מצב בריאות",
+        "batteryLevel": "רמת סוללה",
+        "lastMaintenance": "תחזוקה אחרונה"
       },
-      "deletion":{
-        "confirmationTitle":"אשר מחיקה לצמיתות",
-        "confirmationDescription":"פעולה זו תמחק לצמיתות את הפחים המסומנים, לאשר על ידי הקלדת 'מחק' בשדה למטה, פעולה זו אינה ניתנת לביטול.",
-        "typeDelete":"הקלד: 'מחק' כדי לבצע את המחיקה"
+      "deletion": {
+        "confirmationTitle": "אשר מחיקה לצמיתות",
+        "confirmationDescription": "פעולה זו תמחק לצמיתות את הפחים המסומנים, לאשר על ידי הקלדת 'מחק' בשדה למטה, פעולה זו אינה ניתנת לביטול.",
+        "typeDelete": "כדי לאשר את המחיקה, הקלד „מחק”."
       },
-      "locateBin":"אתר את הפח על המפה"
+      "locateBin": "אתר את הפח על המפה"
     },
-    "logList":{
-      "title":"כל התיעודים",
-      "columns":{
-        "binName":"שם הפח",
-        "createAt":"נוצר בתאריך",
-        "severity":"חומרה",
-        "fillLevel":"רמת מילוי",
-        "batteryLevel":"רמת סוללה",
-        "healthStatus":"מצב בריאות",
-        "source":"מקור",
-        "viewLog":"הצג תיעוד"
+    "logList": {
+      "title": "כל התיעודים",
+      "columns": {
+        "binName": "שם הפח",
+        "createAt": "נוצר בתאריך",
+        "severity": "חומרה",
+        "fillLevel": "רמת מילוי",
+        "batteryLevel": "רמת סוללה",
+        "healthStatus": "מצב בריאות",
+        "source": "מקור",
+        "viewLog": "הצג תיעוד"
       },
-      "sensor":"חיישן",
-      "system":"מערכת",
-      "manual":"ידני"
+      "sensor": "חיישן",
+      "system": "מערכת",
+      "manual": "ידני"
     },
-       "userList":{
-      "title":"רשימת משתמשים",
-      "columns":{
-        "fullName":"שם מלא",
-        "email":"אימייל",
-        "role":"תפקיד",
-        "accountStatus":"מצב חשבון",
-        "organization":"ארגון",
-        "manager":"מנהל"
+    "userList": {
+      "title": "משתמשים",
+      "columns": {
+        "fullName": "שם מלא",
+        "email": "אימייל",
+        "role": "תפקיד",
+        "accountStatus": "מצב חשבון",
+        "organization": "ארגון",
+        "manager": "מנהל"
       },
-      "viewManager":"הצג מנהל",
-      "managerNotAssigned":"לא הוקצה מנהל"
+      "viewManager": "הצג מנהל",
+      "managerNotAssigned": "לא הוקצה מנהל"
     },
-    "analytics":{
-      "aiOverview":{
-        "title": "סקירת מבוססת AI",
+    "analytics": {
+      "aiOverview": {
+        "title": "סקירה מבוססת AI",
         "noInsightsYet": "אין תובנות שנוצרו על ידי AI זמינות כרגע. אנא בדוק מאוחר יותר.",
         "waitingForData": "מערכת ה-AI מעבדת כרגע נתונים ליצירת תובנות. זה עשוי לקחת כמה רגעים."
       },
-      "fleetHealthOverview":{
-        "title":"סקירת בריאות צי הפחים",
-        "description":"תובנות בזמן אמת על הבריאות הכוללת של צי הפחים שלך.",
-        "footer":"מצב בריאות הפחים בזמן אמת בהתבסס על נתוני חיישנים."
+      "fleetHealthOverview": {
+        "title": "סקירת בריאות צי הפחים",
+        "description": "תובנות בזמן אמת על הבריאות הכוללת של צי הפחים שלך.",
+        "footer": "מצב התקינות של הפחים בזמן אמת, בהתבסס על נתוני החיישנים."
       },
-      "binsEventDistribution":{
-        "title":"התפגלות תיעודים של הפחים",
-        "description":"התפלגות אירועי שדווחו על ידי הפחים ב-30 הימים האחרונים לפי רמות חומרה."
+      "binsEventDistribution": {
+        "title": "התפלגות אירועי הפחים",
+        "description": "התפלגות אירועי שדווחו על ידי הפחים ב-30 הימים האחרונים לפי רמות חומרה."
       },
-      "pie":{
-        "bins":"פחים",
-        "good":"טוב",
-        "warning":"אזהרה",
-        "critical":"קריטי"
+      "pie": {
+        "bins": "פחים",
+        "good": "טוב",
+        "warning": "אזהרה",
+        "critical": "קריטי"
       },
-      "bar":{
-        "maintenance":"תחזוקה",
-        "error":"שגיאה",
-        "log":"תיעוד"
+      "bar": {
+        "maintenance": "תחזוקה",
+        "error": "שגיאה",
+        "log": "תיעוד"
       },
-      "sections":{
-      "costs": {
-        "title": "כסף",
-        "description": "כמה עלה האיסוף וכמה S-Bin חסכה מול לוח הזמנים הקבוע הקודם.",
-        "summary": "נחסכו {{saved}} · {{net}} אחרי עלות S-Bin.",
-        "spent": "הוצאות",
-        "saved": "חיסכון",
-        "avoided": "איסופים שנחסכו",
-        "co2": "CO₂ שנחסך",
-        "co2Value": "{{value}} ק״ג",
-        "spentOn": {
-          "fuel": "סולר",
-          "crew": "צוות",
-          "disposal": "הטמנה",
-          "system": "S-Bin",
-          "systemDevices_one": "S-Bin (מכשיר אחד)",
-          "systemDevices_two": "S-Bin (שני מכשירים)",
-          "systemDevices_other": "S-Bin ({{count}} מכשירים)"
+      "sections": {
+        "costs": {
+          "title": "עלויות וחיסכון",
+          "description": "עלות האיסוף והחיסכון של S-Bin בהשוואה ללוח הזמנים הקבוע הקודם.",
+          "summary": "נחסכו {{saved}} · {{net}} אחרי עלות S-Bin.",
+          "spent": "הוצאות",
+          "saved": "חיסכון",
+          "avoided": "איסופים שנחסכו",
+          "co2": "CO₂ שנחסך",
+          "co2Value": "{{value}} ק״ג",
+          "spentOn": {
+            "fuel": "סולר",
+            "crew": "צוות",
+            "disposal": "הטמנה",
+            "system": "S-Bin",
+            "systemDevices_one": "S-Bin ({{count}} מכשיר)",
+            "systemDevices_two": "S-Bin (שני מכשירים)",
+            "systemDevices_other": "S-Bin ({{count}} מכשירים)"
+          },
+          "collections": "{{actual}} איסופים מול {{baseline}} בלוח הזמנים הקודם ({{bins}} פחים).",
+          "unit": {
+            "driven": "איסוף עולה בערך {{cost}} בסולר ובצוות ({{km}} ק״מ, {{minutes}} דק׳), לפי המסלולים שנסעו.",
+            "planned": "איסוף עולה בערך {{cost}} בסולר ובצוות ({{km}} ק״מ, {{minutes}} דק׳), הערכה לפי המסלולים המתוכננים עד שייסעו מסלולים.",
+            "none": "החיסכון יוצג כשלארגון יהיה מסלול מתוכנן או שנסע, שממנו נלמדת עלות האיסוף."
+          },
+          "estimated": "{{estimated}} מתוך {{tonnes}} טון הוערכו לפי מידת המילוי (פחים בלי משקל).",
+          "prices": "המחירים מהגדרות העלויות של הארגון"
         },
-        "collections": "{{actual}} איסופים מול {{baseline}} בלוח הזמנים הקודם ({{bins}} פחים).",
-        "unit": {
-          "driven": "איסוף עולה בערך {{cost}} בסולר ובצוות ({{km}} ק״מ, {{minutes}} דק׳), לפי המסלולים שנסעו.",
-          "planned": "איסוף עולה בערך {{cost}} בסולר ובצוות ({{km}} ק״מ, {{minutes}} דק׳), הערכה לפי המסלולים המתוכננים עד שייסעו מסלולים.",
-          "none": "החיסכון יוצג כשלארגון יהיה מסלול מתוכנן או שנסע, שממנו נלמדת עלות האיסוף."
-        },
-        "estimated": "{{estimated}} מתוך {{tonnes}} טון הוערכו לפי מידת המילוי (פחים בלי משקל).",
-        "prices": "המחירים מהגדרות העלויות של הארגון"
-      },
-      "routes": {
-        "title": "מסלולי איסוף",
-        "description": "עדיין אין מסלולים בטווח הזה.",
-        "summary_one": "{{count}} מתוך {{routes}} מסלולים הסתיימו.",
-        "summary_two": "{{count}} מתוך {{routes}} מסלולים הסתיימו.",
-        "summary_other": "{{count}} מתוך {{routes}} מסלולים הסתיימו.",
-        "collected": "פחים שנאספו",
-        "skippedTotal": "פחים שדולגו",
-        "confirmed": "אושרו בדיווחי הפחים",
-        "contradicted": "נסתרו",
-        "done": "נאספו",
-        "skipped": "דולגו",
-        "time_one": "מסלול ארך בממוצע {{actual}}, מתוכנן {{planned}} (מסלול {{count}} שהנהג סיים).",
-        "time_two": "מסלול ארך בממוצע {{actual}}, מתוכנן {{planned}} ({{count}} מסלולים שהנהגים סיימו).",
-        "time_other": "מסלול ארך בממוצע {{actual}}, מתוכנן {{planned}} ({{count}} מסלולים שהנהגים סיימו).",
-        "noTime": "עדיין אין מסלול שהנהג סיים: הזמן יוצג כשיהיה.",
-        "noDrivers": "עדיין לא סומנו איסופים.",
-        "columns": {
-          "driver": "נהג",
-          "routes": "מסלולים",
-          "collected": "נאספו",
-          "confirmed": "אושרו",
+        "routes": {
+          "title": "מסלולי איסוף",
+          "description": "עדיין אין מסלולים בטווח הזה.",
+          "summary_one": "{{count}} מתוך {{routes}} מסלולים הסתיימו.",
+          "summary_two": "{{count}} מתוך {{routes}} מסלולים הסתיימו.",
+          "summary_other": "{{count}} מתוך {{routes}} מסלולים הסתיימו.",
+          "collected": "פחים שנאספו",
+          "skippedTotal": "פחים שדולגו",
+          "confirmed": "אושרו בדיווחי הפחים",
           "contradicted": "נסתרו",
-          "minutesPerStop": "דקות לפח"
-        }
-      },
-        "bins":"פחים",
-        "devices":"מכשירים",
-        "fullSoon":{
-          "title":"איסוף נדרש בקרוב",
-          "description":"פחים שצפויים להגיע ל־{{percent}}% מלאות ולדרוש איסוף, לפי קצב המילוי של כל אחד מאז שרוקן לאחרונה.",
-          "within":"תוך {{count}} שעות",
-          "none":"אין פח שצפוי לדרוש איסוף ב־48 השעות הקרובות."
+          "done": "נאספו",
+          "skipped": "דולגו",
+          "time_one": "מסלול ארך בממוצע {{actual}}, מתוכנן {{planned}} (מסלול {{count}} שהנהג סיים).",
+          "time_two": "מסלול ארך בממוצע {{actual}}, מתוכנן {{planned}} ({{count}} מסלולים שהנהגים סיימו).",
+          "time_other": "מסלול ארך בממוצע {{actual}}, מתוכנן {{planned}} ({{count}} מסלולים שהנהגים סיימו).",
+          "noTime": "עדיין אין מסלול שהנהג סיים: הזמן יוצג כשיהיה.",
+          "noDrivers": "עדיין לא סומנו איסופים.",
+          "columns": {
+            "driver": "נהג",
+            "routes": "מסלולים",
+            "collected": "נאספו",
+            "confirmed": "אושרו",
+            "contradicted": "נסתרו",
+            "minutesPerStop": "דקות לפח"
+          }
         },
-        "fullness":{
-          "title":"מלאות",
-          "description":"פחים לפי כמה הם מלאים עכשיו (רמת המילוי או המשקל, הגבוה מביניהם).",
-          "unknown_one":"לפח אחד אין חיישן מילוי או משקל תקינים.",
-          "unknown_two":"לשני פחים אין חיישן מילוי או משקל תקינים.",
-          "unknown_other":"ל־{{count}} פחים אין חיישן מילוי או משקל תקינים."
+        "bins": "פחים",
+        "devices": "מכשירים",
+        "fullSoon": {
+          "title": "איסוף נדרש בקרוב",
+          "description": "פחים שצפויים להגיע ל־{{percent}}% מלאות ולדרוש איסוף, לפי קצב המילוי של כל אחד מאז שרוקן לאחרונה.",
+          "within": "תוך {{count}} שעות",
+          "none": "אין פח שצפוי לדרוש איסוף ב־48 השעות הקרובות."
         },
-        "collections":{
-          "title":"ריקונים",
-          "description":"ריקונים ביום, מזוהים לפי ירידה ברמת המילוי או במשקל.",
-          "summary_one":"ריקון אחד בתקופה הזו, במלאות ממוצעת של {{percent}}%.",
-          "summary_two":"שני ריקונים בתקופה הזו, במלאות ממוצעת של {{percent}}%.",
-          "summary_other":"{{count}} ריקונים בתקופה הזו, במלאות ממוצעת של {{percent}}%.",
-          "count":"ריקונים",
-          "fullness":"מלאות לפני (%)"
+        "fullness": {
+          "title": "מלאות",
+          "description": "פחים לפי כמה הם מלאים עכשיו (רמת המילוי או המשקל, הגבוה מביניהם).",
+          "unknown_one": "לפח אחד אין חיישן מילוי או משקל תקינים.",
+          "unknown_two": "לשני פחים אין חיישן מילוי או משקל תקינים.",
+          "unknown_other": "ל־{{count}} פחים אין חיישן מילוי או משקל תקינים."
         },
-        "waste":{
-          "title":"פסולת שנאספה",
-          "description":"רק פחים עם משקל מכויל נשקלים; אף אחד מהם לא רוקן בתקופה הזו.",
-          "summary":"{{kg}} ק״ג נאספו בתקופה הזו.",
-          "kg":"ק״ג שנאספו"
+        "collections": {
+          "title": "ריקונים",
+          "description": "ריקונים ביום, מזוהים לפי ירידה ברמת המילוי או במשקל.",
+          "summary_one": "ריקון אחד בתקופה הזו, במלאות ממוצעת של {{percent}}%.",
+          "summary_two": "שני ריקונים בתקופה הזו, במלאות ממוצעת של {{percent}}%.",
+          "summary_other": "{{count}} ריקונים בתקופה הזו, במלאות ממוצעת של {{percent}}%.",
+          "count": "ריקונים",
+          "fullness": "מלאות לפני (%)"
         },
-        "battery":{
-          "title":"סוללה",
-          "description":"מכשירים לפי רמת הסוללה, ואלה שצפויים לרדת מתחת ל־20% בקרוב.",
-          "daysLeft_one":"עוד כיום עד 20%",
-          "daysLeft_two":"עוד כיומיים עד 20%",
-          "daysLeft_other":"עוד כ־{{count}} ימים עד 20%",
-          "none":"אין מכשיר שצפוי לרדת מתחת ל־20% ב־{{count}} הימים הקרובים."
+        "waste": {
+          "title": "פסולת שנאספה",
+          "description": "רק פחים עם משקל מכויל נשקלים; אף אחד מהם לא רוקן בתקופה הזו.",
+          "summary": "{{kg}} ק״ג נאספו בתקופה הזו.",
+          "kg": "ק״ג שנאספו"
         },
-        "connectivity":{
-          "title":"קישוריות",
-          "description":"איך המכשירים מגיעים לשרת, והדיווחים שהגיעו בזמן ב־{{count}} הימים האחרונים.",
-          "onTime":"בזמן",
-          "gateways":"שערים",
-          "leaves_one":"פח אחד",
-          "leaves_two":"שני פחים",
-          "leaves_other":"{{count}} פחים",
-          "leastReliable":"מחמיצים הכי הרבה דיווחים"
+        "battery": {
+          "title": "סוללה",
+          "description": "מכשירים לפי רמת הסוללה, ואלה שצפויים לרדת מתחת ל־20% בקרוב.",
+          "daysLeft_one": "עוד כיום עד 20%",
+          "daysLeft_two": "עוד כיומיים עד 20%",
+          "daysLeft_other": "עוד כ־{{count}} ימים עד 20%",
+          "none": "אין מכשיר שצפוי לרדת מתחת ל־20% ב־{{count}} הימים הקרובים."
         },
-        "healthCauses":{
-          "title":"תקלות",
-          "description":"דיווחים עם תקלה ביום, לפי מה שהשתבש.",
-          "fillSensor":"חיישן מילוי",
-          "battery":"סוללה",
-          "scale":"משקל",
-          "gps":"GPS"
+        "connectivity": {
+          "title": "קישוריות",
+          "description": "איך המכשירים מגיעים לשרת, והדיווחים שהגיעו בזמן ב־{{count}} הימים האחרונים.",
+          "onTime": "בזמן",
+          "gateways": "שערים",
+          "leaves_one": "פח אחד",
+          "leaves_two": "שני פחים",
+          "leaves_other": "{{count}} פחים",
+          "leastReliable": "מחמיצים הכי הרבה דיווחים"
+        },
+        "healthCauses": {
+          "title": "תקלות",
+          "description": "דיווחים עם תקלה ביום, לפי מה שהשתבש.",
+          "fillSensor": "חיישן מילוי",
+          "battery": "סוללה",
+          "scale": "משקל",
+          "gps": "GPS"
         }
       }
-
     },
- "addBin": {
-   "toasts": {
-     "orgIdCopied": "מזהה הארגון הועתק!",
-     "codeCopied": "קוד הרישום הועתק!",
-     "copyFailed": "ההעתקה נכשלה.",
-     "locationCopied": "המיקום הועתק!"
-   },
-   "intro": {
-     "title": "הוספת מכשיר (4 שלבים, כ־10 דקות)",
-     "description": "מכשיר חדש פותח רשת Wi-Fi משלו לצורך ההגדרה. הטלפון מתחבר אליה לדקה כדי להזין את מזהה הארגון, קוד הרישום ומיקום הפח; משם המכשיר עובד לבד, ברשת הסלולרית."
-   },
-   "progress": "שלב {{current}} מתוך {{total}}",
-   "navigation": {
-     "back": "חזרה",
-     "ready": "אני מוכן/ה",
-     "onSetupPage": "אני בדף ההגדרה",
-     "saved": "שלחתי",
-     "toBins": "לרשימת הפחים"
-   },
-   "fields": {
-     "orgId": "מזהה ארגון",
-     "code": "קוד רישום",
-     "copyOrgId": "העתקת מזהה הארגון",
-     "copyCode": "העתקת קוד הרישום",
-     "copyLocation": "העתקת המיקום"
-   },
-   "stepOne": {
-     "title": "הכנה",
-     "description": "מיקום הפח, ומה המכשיר צריך להפעלה הראשונה.",
-     "organizationLabel": "ארגון",
-     "organizationPlaceholder": "בחרו את הארגון של המכשיר",
-     "organizationError": "טעינת הארגונים נכשלה",
-     "organizationRequired": "בחרו קודם ארגון",
-     "loading": "טוען…",
-     "checklistTitle": "לפני שמתחילים",
-     "checklist": {
-       "empty": "הפח ריק והמכסה סגור: ההפעלה הראשונה מודדת את עומק הפח הריק במשך 20 שניות, וכל המדידות אחר כך נמדדות מולו.",
-       "power": "כרטיס SIM בפנים והסוללה טעונה.",
-       "sky": "לא חובה: קחו את מיקום הפח למטה, כדי לא לחכות ל־GPS. בלעדיו המכשיר צריך להיות בחוץ לקליטת GPS לפני שהוא יכול להירשם.",
-       "phone": "הטלפון בהישג יד: הוא מתחבר לרשת של המכשיר לדקה.",
-       "scale": "פח עם משקל: הכינו חפץ שמשקלו ידוע, לכיול המשקל אחרי הדיווח הראשון."
-     }
-   },
-   "stepTwo": {
-     "title": "חיבור הטלפון למכשיר",
-     "description": "הרשת של המכשיר עצמו, רק להגדרה.",
-     "steps": {
-       "powerOn": "הדליקו את המכשיר. מכשיר שעוד לא הצטרף לארגון פותח רשת Wi-Fi בשם S-Bin-A02-… .",
-       "joinNetwork": "בטלפון, פתחו את הגדרות ה־Wi-Fi והתחברו לרשת הזו (אין לה סיסמה).",
-       "openPage": "ייתכן שדף הגדרה ייפתח לבד: אפשר להשאיר אותו ולחזור לדף הזה (באייפון בחרו \"השתמש ללא אינטרנט\" אם תישאלו)."
-     },
-     "noInternetTitle": "אין אינטרנט ברשת הזו",
-     "noInternetNote": "זו הרשת של המכשיר, לא האינטרנט: הטלפון עשוי להזהיר על כך. הישארו מחוברים עד שהפרטים נשמרים.",
-     "noNetworkTitle": "אין רשת כזו?",
-     "noNetworkNote": "המכשיר כבר הצטרף לארגון בעבר, ולכן אינו פותח את רשת ההגדרה. בעלים יכול לאפס אותו עם \"מחק באמצעות MAC\" בתפריט הצד; אז הוא יפתח אותה שוב."
-   },
-   "stepThree": {
-     "title": "שליחת הפרטים למכשיר",
-     "description": "מהדף הזה, כשהטלפון מחובר לרשת של המכשיר.",
-     "steps": {
-       "enter": "הכפתור לא עובד? בדף ההגדרה של המכשיר (http://192.168.4.1) הזינו את מזהה הארגון ואת קוד הרישום שלמטה ולחצו על \"שמירה והתחברות\". כך לא עובר מיקום: המכשיר יקלוט GPS.",
-       "restart": "המכשיר מופעל מחדש והרשת שלו נסגרת; הטלפון חוזר לרשת הרגילה שלו."
-     },
-     "send": "שליחה למכשיר",
-     "sendHint": "לחצו כשהטלפון מחובר לרשת של המכשיר: המכשיר שומר את הארגון, הקוד והמיקום, ומופעל מחדש. בלי להקליד כלום.",
-     "fieldsHint": "שניהם מופיעים גם בהגדרות הארגון. שמרו את הקוד אצל מי שמתקין מכשירים.",
-     "withLocation": "נשלח גם מיקום הפח:",
-     "withoutLocation": "לא נלקח מיקום: המכשיר יחכה לקליטת GPS. כדי לחסוך את זה, חזרו לשלב 1 וקחו אותו לפני ההתחברות לרשת של המכשיר (הטלפון צריך אינטרנט בשביל זה)."
-   },
-   "stepFour": {
-     "title": "המתנה לדיווח הראשון",
-     "description": "מכאן המכשיר עובד לבד, ברשת הסלולרית.",
-     "whatHappens": "מה המכשיר עושה עכשיו",
-     "steps": {
-       "cellular": "מתחבר לרשת הסלולרית.",
-       "gps": "משתמש במיקום שנשלח אליו; בלעדיו, קולט מיקום GPS ראשון (בחוץ, כמה דקות).",
-       "measure": "מודד את הפח הריק במשך 20 שניות (השאירו אותו ריק, סגור ובלי תזוזה).",
-       "register": "נרשם בארגון ושולח את הדיווח הראשון."
-     },
-     "timeTitle": "כמה זמן",
-     "timeNote": "בדרך כלל 5 עד 10 דקות. אז הוא מופיע ברשימת הפחים, בשם Bin-… (אפשר לשנות את השם בדף שלו).",
-     "calibrationTitle": "מדידת הפח הריק",
-     "calibration": {
-       "how": "המכשיר שומר את המרחק העמוק ביותר שמדד ב־20 השניות כעומק הפח הריק; אם לא התקבלה קריאה, הוא מנסה פעם נוספת.",
-       "notEmpty": "מה שהיה בפח באותו רגע נחשב אז כ\"ריק\": כל רמות המילוי אחר כך יוצגו נמוכות מדי.",
-       "redo": "נמדד כשהיה משהו בפנים? רוקנו את הפח ושלחו \"כיול מחדש של פח ריק\" מפקודות מרחוק בדף הפח; הפקודה תתבצע בדיווח הבא של המכשיר.",
-       "scale": "פח עם משקל: המדידה הזו גם מאפסת את המשקל. כדי לשקול בגרמים, שימו בפח חפץ שמשקלו ידוע ושלחו \"כיול משקל עם משקל ידוע\" מאותן פקודות מרחוק."
-     },
-     "troubleshootTitle": "לא ברשימה אחרי 15 דקות?",
-     "troubleshoot": {
-       "notListed": "בדקו את כרטיס ה־SIM ואת הקליטה הסלולרית במקום.",
-       "noFix": "לא נשלח מיקום ואין קליטת GPS בפנים: הוציאו אותו החוצה (הוא ממשיך לנסות), או הגדירו אותו שוב עם כפתור השליחה.",
-       "wrongDetails": "מזהה או קוד שגויים: המכשיר פותח שוב את רשת ההגדרה; חזרו על שלבים 2 ו־3."
-     }
-   },
-   "noOrganization": {
-     "code": "אינך משויך לארגון",
-     "description": "אין לך ארגון משויך לחשבון. אנא הצטרפ/י לארגון או פנה לתמיכה הטכנית ליצירת ארגון.",
-     "buttonText": "חזרה ללוח הבקרה"
-   },
-   "location": {
-     "title": "מיקום הפח (לא חובה)",
-     "none": "לא נלקח: המכשיר ישתמש ב־GPS",
-     "useMine": "המיקום שלי",
-     "again": "דגימת מיקום",
-     "locating": "מאתר…",
-     "accuracy": "דיוק של כ־{{meters}} מ׳.",
-     "coarse": "דיוק של כ־{{meters}} מ׳ בלבד: צאו החוצה ליד הפח וקחו שוב.",
-     "hint": "עמדו ליד הפח וקחו את מיקום הטלפון; כפתור השליחה בשלב 3 מעביר אותו למכשיר, כך שהוא נרשם מיד. בלעדיו המכשיר מחכה קודם לקליטת GPS בחוץ.",
-     "unsupported": "הדפדפן הזה לא נותן מיקום; המכשיר ישתמש ב־GPS.",
-     "failed": "לא הצלחנו לקבל את המיקום (האם הגישה למיקום מאושרת?); המכשיר ישתמש ב־GPS."
-   }
- },
-  "binDetails":{
-      "tabs":{
-        "label":"חלקי דף הפח",
-        "logs":"תיעודים",
-        "insights":"תובנות",
-        "details":"פרטים",
-        "diagnostics":"אבחון",
-        "connected":"פחים מחוברים",
-        "instructions":"פקודות מרחוק",
-        "actions":"ניהול"
+    "addBin": {
+      "toasts": {
+        "orgIdCopied": "מזהה הארגון הועתק!",
+        "codeCopied": "קוד הרישום הועתק!",
+        "copyFailed": "ההעתקה נכשלה.",
+        "locationCopied": "המיקום הועתק!"
       },
-      "diagnostics":{
-        "description":"מה שהמכשיר דיווח לאחרונה על עצמו ({{when}}).",
-        "emptyTitle":"אין עדיין אבחון",
-        "emptyDescription":"המכשיר מדווח עליו מקושחה 1.0.0 ואילך; הוא יוצג אחרי הדיווח הבא שלו.",
-        "seconds":"שנ׳",
-        "none":"אין",
-        "samplesOf_one":"{{count}} מתוך 5",
-        "samplesOf_two":"{{count}} מתוך 5",
-        "samplesOf_other":"{{count}} מתוך 5",
-        "sections":{ "device":"מכשיר", "power":"חשמל", "network":"רשת סלולרית", "cycle":"זמני המחזור האחרון", "sensors":"חיישנים", "mesh":"קשר לשער התקשורת" },
-        "issuesTitle":"בעיות פתוחות",
-        "issueSince":"כבר {{when}}",
-        "issues":{ "unexpected_restart":"הופעל מחדש באופן לא צפוי ({{value}})", "weak_signal":"קליטה סלולרית חלשה ({{value}} dBm)", "overheating":"התחמם ({{value}}°C)", "noisy_sensor":"חיישן המילוי לא יציב", "slow_cycle":"איטי בהתחברות ({{value}} שנ׳)", "weak_mesh_link":"קשר חלש לשער התקשורת" },
-        "hints":{ "resetReason":"למה השבב הפעיל את הקוד מההתחלה בפעם האחרונה; בדרך כלל התעוררות מתוזמנת.", "wakeCause":"מה העיר אותו מהשינה במחזור הזה; בדרך כלל הטיימר.", "pmuOffSource":"למה שבב החשמל ניתק לאחרונה את חשמל הלוח; נשמר עד הניתוק הבא, ולכן עשוי להיות ישן." },
-        "fields":{
-          "firmwareVersion":"קושחה", "resetReason":"הפעלה מחדש אחרונה", "wakeCause":"הוער על ידי", "pmuOffSource":"ניתוק חשמל אחרון",
-          "batteryMv":"סוללה", "vbusMv":"כניסת USB / סולארי", "systemMv":"מערכת", "charger":"מטען", "chipTempC":"טמפרטורת השבב", "pmuTempC":"טמפרטורת שבב החשמל",
-          "signal":"קליטה", "rsrp":"RSRP", "rsrq":"RSRQ", "sinr":"SINR", "system":"מערכת", "operator":"מפעיל (MCC-MNC)", "band":"תדר", "cell":"תא", "bytesSentLastCycle":"בתים שנשלחו במחזור הקודם",
-          "modemMs":"הפעלת המודם", "networkMs":"רשת ושעון", "slotWaitMs":"המתנה למועד", "mqttMs":"התחברות לשרת", "gpsMs":"קליטת GPS",
-          "distanceSamples":"קריאות החיישן", "distanceSpreadMm":"פיזור הקריאות", "scaleRawCounts":"קריאה גולמית של המשקל", "scaleZeroCounts":"נקודת האפס של המשקל", "scaleSpreadCounts":"פיזור קריאות המשקל",
-          "beaconRssi":"קליטת שער התקשורת", "guardSeconds":"מתעורר לפני המועד ב־", "missedCycles":"משואות שהוחמצו לפני כן", "residualPpm":"אי־ודאות השעון"
+      "intro": {
+        "title": "הוספת מכשיר (4 שלבים, כ־10 דקות)",
+        "description": "מכשיר חדש פותח רשת Wi-Fi משלו לצורך ההגדרה. הטלפון מתחבר אליה לדקה כדי להזין את מזהה הארגון, קוד הרישום ומיקום הפח; משם המכשיר עובד לבד, ברשת הסלולרית."
+      },
+      "progress": "שלב {{current}} מתוך {{total}}",
+      "navigation": {
+        "back": "חזרה",
+        "ready": "אני מוכן/ה",
+        "onSetupPage": "אני בדף ההגדרה",
+        "saved": "שלחתי",
+        "toBins": "לרשימת הפחים"
+      },
+      "fields": {
+        "orgId": "מזהה ארגון",
+        "code": "קוד רישום",
+        "copyOrgId": "העתקת מזהה הארגון",
+        "copyCode": "העתקת קוד הרישום",
+        "copyLocation": "העתקת המיקום"
+      },
+      "stepOne": {
+        "title": "הכנה",
+        "description": "מיקום הפח, ומה המכשיר צריך להפעלה הראשונה.",
+        "organizationLabel": "ארגון",
+        "organizationPlaceholder": "בחרו את הארגון של המכשיר",
+        "organizationError": "טעינת הארגונים נכשלה",
+        "organizationRequired": "בחרו קודם ארגון",
+        "loading": "טוען…",
+        "checklistTitle": "לפני שמתחילים",
+        "checklist": {
+          "empty": "הפח ריק והמכסה סגור: ההפעלה הראשונה מודדת את עומק הפח הריק במשך 20 שניות, וכל המדידות אחר כך נמדדות מולו.",
+          "power": "כרטיס SIM בפנים והסוללה טעונה.",
+          "sky": "לא חובה: קחו את מיקום הפח למטה, כדי לא לחכות ל־GPS. בלעדיו המכשיר צריך להיות בחוץ לקליטת GPS לפני שהוא יכול להירשם.",
+          "phone": "הטלפון בהישג יד: הוא מתחבר לרשת של המכשיר לדקה.",
+          "scale": "פח עם משקל: הכינו חפץ שמשקלו ידוע, לכיול המשקל אחרי הדיווח הראשון."
+        }
+      },
+      "stepTwo": {
+        "title": "חיבור הטלפון למכשיר",
+        "description": "הרשת של המכשיר עצמו, רק להגדרה.",
+        "steps": {
+          "powerOn": "הדליקו את המכשיר. מכשיר שעוד לא הצטרף לארגון פותח רשת Wi-Fi בשם S-Bin-A02-… .",
+          "joinNetwork": "בטלפון, פתחו את הגדרות ה־Wi-Fi והתחברו לרשת הזו (אין לה סיסמה).",
+          "openPage": "ייתכן שדף הגדרה ייפתח לבד: אפשר להשאיר אותו ולחזור לדף הזה (באייפון בחרו \"השתמש ללא אינטרנט\" אם תישאלו)."
         },
-        "signal":{ "good":"טובה", "fair":"בינונית", "weak":"חלשה" },
-        "resetReasons":{ "poweron":"חיבור לחשמל", "external":"כפתור איפוס", "software":"הפעלה מחדש בתוכנה", "panic":"קריסה", "interrupt_wdt":"שומר (פסיקה)", "task_wdt":"שומר (משימה)", "other_wdt":"שומר", "deepsleep":"התעוררות מתוזמנת", "brownout":"מתח נמוך", "sdio":"SDIO", "usb":"USB", "jtag":"JTAG", "efuse":"שגיאת eFuse", "power_glitch":"תקלת חשמל", "cpu_lockup":"נעילת מעבד", "unknown":"לא ידוע" },
-        "wakeCauses":{ "timer":"טיימר", "ext0":"פין חיצוני", "ext1":"פינים חיצוניים", "touchpad":"מגע", "ulp":"מעבד עזר", "gpio":"GPIO", "uart":"תקשורת טורית", "undefined":"הדלקה או איפוס", "other":"אחר" },
-        "chargers":{ "none":"אין סוללה", "trickle":"טעינה איטית", "precharge":"טעינה מקדימה", "constant_current":"נטען (זרם קבוע)", "constant_voltage":"נטען (השלמה)", "done":"טעון", "stopped":"לא נטען" },
-        "pmuOff":{ "pwronLow":"לחיצה על מקש ההפעלה", "software":"תוכנה", "pwronAlwaysLow":"מקש ההפעלה תקוע", "vsysUnder":"מתח מערכת נמוך", "vbusOver":"מתח כניסה גבוה", "dcdcUnder":"מתח פס נמוך", "dcdcOver":"מתח פס גבוה", "dieOverTemp":"התחממות יתר" }
+        "noInternetTitle": "אין אינטרנט ברשת הזו",
+        "noInternetNote": "זו הרשת של המכשיר, לא האינטרנט: הטלפון עשוי להזהיר על כך. הישארו מחוברים עד שהפרטים נשמרים.",
+        "noNetworkTitle": "אין רשת כזו?",
+        "noNetworkNote": "המכשיר כבר הצטרף לארגון בעבר, ולכן אינו פותח את רשת ההגדרה. בעלים יכול לאפס אותו עם \"מחק באמצעות MAC\" בתפריט הצד; אז הוא יפתח אותה שוב."
       },
-      "deviceTitle":"מכשיר",
-      "actions":{
-        "renameTitle":"שינוי שם",
-        "renameDescription":"עד {{count}} תווים.",
-        "deleteTitle":"מחיקת המכשיר",
-        "deleteDescription":"מוחק את המכשיר, את כל התיעודים שלו ואת הרישום שלו. אי אפשר לבטל את הפעולה."
+      "stepThree": {
+        "title": "שליחת הפרטים למכשיר",
+        "description": "מהדף הזה, כשהטלפון מחובר לרשת של המכשיר.",
+        "steps": {
+          "enter": "הכפתור לא עובד? בדף ההגדרה של המכשיר (http://192.168.4.1) הזינו את מזהה הארגון ואת קוד הרישום שלמטה ולחצו על \"שמירה והתחברות\". כך לא עובר מיקום: המכשיר יקלוט GPS.",
+          "restart": "המכשיר מופעל מחדש והרשת שלו נסגרת; הטלפון חוזר לרשת הרגילה שלו."
+        },
+        "send": "שליחה למכשיר",
+        "sendHint": "לחצו כשהטלפון מחובר לרשת של המכשיר: המכשיר שומר את הארגון, הקוד והמיקום, ומופעל מחדש. בלי להקליד כלום.",
+        "fieldsHint": "שניהם מופיעים גם בהגדרות הארגון. שמרו את הקוד אצל מי שמתקין מכשירים.",
+        "withLocation": "נשלח גם מיקום הפח:",
+        "withoutLocation": "לא נלקח מיקום: המכשיר יחכה לקליטת GPS. כדי לחסוך את זה, חזרו לשלב 1 וקחו אותו לפני ההתחברות לרשת של המכשיר (הטלפון צריך אינטרנט בשביל זה)."
       },
-      "connectedTable":{
-        "name":"פח",
-        "signal":"עוצמת אות (RSSI)"
+      "stepFour": {
+        "title": "המתנה לדיווח הראשון",
+        "description": "מכאן המכשיר עובד לבד, ברשת הסלולרית.",
+        "whatHappens": "מה המכשיר עושה עכשיו",
+        "steps": {
+          "cellular": "מתחבר לרשת הסלולרית.",
+          "gps": "משתמש במיקום שנשלח אליו; בלעדיו, קולט מיקום GPS ראשון (בחוץ, כמה דקות).",
+          "measure": "מודד את הפח הריק במשך 20 שניות (השאירו אותו ריק, סגור ובלי תזוזה).",
+          "register": "נרשם בארגון ושולח את הדיווח הראשון."
+        },
+        "timeTitle": "כמה זמן",
+        "timeNote": "בדרך כלל 5 עד 10 דקות. אז הוא מופיע ברשימת הפחים, בשם Bin-… (אפשר לשנות את השם בדף שלו).",
+        "calibrationTitle": "מדידת הפח הריק",
+        "calibration": {
+          "how": "המכשיר שומר את המרחק העמוק ביותר שמדד ב־20 השניות כעומק הפח הריק; אם לא התקבלה קריאה, הוא מנסה פעם נוספת.",
+          "notEmpty": "מה שהיה בפח באותו רגע נחשב אז כ\"ריק\": כל רמות המילוי אחר כך יוצגו נמוכות מדי.",
+          "redo": "נמדד כשהיה משהו בפנים? רוקנו את הפח ושלחו \"כיול מחדש של פח ריק\" מפקודות מרחוק בדף הפח; הפקודה תתבצע בדיווח הבא של המכשיר.",
+          "scale": "פח עם משקל: המדידה הזו גם מאפסת את המשקל. כדי לשקול בגרמים, שימו בפח חפץ שמשקלו ידוע ושלחו \"כיול משקל עם משקל ידוע\" מאותן פקודות מרחוק."
+        },
+        "troubleshootTitle": "לא ברשימה אחרי 15 דקות?",
+        "troubleshoot": {
+          "notListed": "בדקו את כרטיס ה־SIM ואת הקליטה הסלולרית במקום.",
+          "noFix": "לא נשלח מיקום ואין קליטת GPS בפנים: הוציאו אותו החוצה (הוא ממשיך לנסות), או הגדירו אותו שוב עם כפתור השליחה.",
+          "wrongDetails": "מזהה או קוד שגויים: המכשיר פותח שוב את רשת ההגדרה; חזרו על שלבים 2 ו־3."
+        }
       },
-      "tiles":{
-        "battery":"סוללה",
-        "fullness":"מלאות",
-        "levelPart":"רמת מילוי: {{percent}}%",
-        "weight":"משקל: {{kg}} ק״ג",
-        "lastReport":"דיווח אחרון",
-        "never":"עוד אין דיווחים",
-        "connection":"חיבור",
-        "cellular":"סלולרי",
-        "mesh":"רשת Mesh",
-        "via":"דרך",
-        "relaysFor_one":"מעביר דיווחים של פח אחד",
-        "relaysFor_two":"מעביר דיווחים של שני פחים",
-        "relaysFor_other":"מעביר דיווחים של {{count}} פחים",
-        "fillRate":"מתמלא בכ־{{rate}}% ביום · ידרוש איסוף {{when}}",
-        "collectNow":"דורש איסוף עכשיו",
-        "fillRateUnknown":"קצב מילוי: נדרשים עוד כמה דיווחים",
-        "notFilling":"לא מתמלא מאז שרוקן לאחרונה"
+      "noOrganization": {
+        "code": "אינך משויך לארגון",
+        "description": "אין לך ארגון משויך לחשבון. אנא הצטרפ/י לארגון או פנה לתמיכה הטכנית ליצירת ארגון.",
+        "buttonText": "חזרה ללוח הבקרה"
       },
-      "logsTable":{
-        "title":"סקירת התיעודים של הפח",
-        "description":"תיעודים אחרונים שנוצרו על ידי הפח, כולל רמות מילוי, מצב בריאות ומידע חשוב אחר.",
-        "columns":{
-          "createdAt":"נוצר בתאריך",
-          "type":"סוג",
-          "severity":"חומרה",
-          "fillLevel":"מלאי",
+      "location": {
+        "title": "מיקום הפח (לא חובה)",
+        "none": "לא נלקח: המכשיר ישתמש ב־GPS",
+        "useMine": "המיקום שלי",
+        "again": "דגימת מיקום",
+        "locating": "מאתר…",
+        "accuracy": "דיוק של כ־{{meters}} מ׳.",
+        "coarse": "דיוק של כ־{{meters}} מ׳ בלבד: צאו החוצה ליד הפח וקחו שוב.",
+        "hint": "עמדו ליד הפח וקחו את מיקום הטלפון; כפתור השליחה בשלב 3 מעביר אותו למכשיר, כך שהוא נרשם מיד. בלעדיו המכשיר מחכה קודם לקליטת GPS בחוץ.",
+        "unsupported": "הדפדפן הזה לא נותן מיקום; המכשיר ישתמש ב־GPS.",
+        "failed": "לא הצלחנו לקבל את המיקום (האם הגישה למיקום מאושרת?); המכשיר ישתמש ב־GPS."
+      }
+    },
+    "binDetails": {
+      "tabs": {
+        "label": "חלקי דף הפח",
+        "logs": "תיעודים",
+        "insights": "תובנות",
+        "details": "פרטים",
+        "diagnostics": "אבחון",
+        "connected": "פחים מחוברים",
+        "instructions": "פקודות מרחוק",
+        "actions": "ניהול"
+      },
+      "diagnostics": {
+        "description": "מה שהמכשיר דיווח לאחרונה על עצמו ({{when}}).",
+        "emptyTitle": "אין עדיין אבחון",
+        "emptyDescription": "המכשיר מדווח עליו מקושחה 1.0.0 ואילך; הוא יוצג אחרי הדיווח הבא שלו.",
+        "seconds": "שנ׳",
+        "none": "אין",
+        "samplesOf_one": "{{count}} מתוך 5",
+        "samplesOf_two": "{{count}} מתוך 5",
+        "samplesOf_other": "{{count}} מתוך 5",
+        "sections": {
+          "device": "מכשיר",
+          "power": "חשמל",
+          "network": "רשת סלולרית",
+          "cycle": "זמני המחזור האחרון",
+          "sensors": "חיישנים",
+          "mesh": "קשר לשער התקשורת"
+        },
+        "issuesTitle": "בעיות פתוחות",
+        "issueSince": "כבר {{when}}",
+        "issues": {
+          "unexpected_restart": "הופעל מחדש באופן לא צפוי ({{value}})",
+          "weak_signal": "קליטה סלולרית חלשה ({{value}} dBm)",
+          "overheating": "התחמם ({{value}}°C)",
+          "noisy_sensor": "חיישן המילוי לא יציב",
+          "slow_cycle": "איטי בהתחברות ({{value}} שנ׳)",
+          "weak_mesh_link": "קשר חלש לשער התקשורת"
+        },
+        "hints": {
+          "resetReason": "למה השבב הפעיל את הקוד מההתחלה בפעם האחרונה; בדרך כלל התעוררות מתוזמנת.",
+          "wakeCause": "מה העיר אותו מהשינה במחזור הזה; בדרך כלל הטיימר.",
+          "pmuOffSource": "למה שבב החשמל ניתק לאחרונה את חשמל הלוח; נשמר עד הניתוק הבא, ולכן עשוי להיות ישן."
+        },
+        "fields": {
+          "firmwareVersion": "קושחה",
+          "resetReason": "הפעלה מחדש אחרונה",
+          "wakeCause": "הוער על ידי",
+          "pmuOffSource": "ניתוק חשמל אחרון",
+          "batteryMv": "סוללה",
+          "vbusMv": "כניסת USB / סולארי",
+          "systemMv": "מערכת",
+          "charger": "מטען",
+          "chipTempC": "טמפרטורת השבב",
+          "pmuTempC": "טמפרטורת שבב החשמל",
+          "signal": "קליטה",
+          "rsrp": "RSRP",
+          "rsrq": "RSRQ",
+          "sinr": "SINR",
+          "system": "מערכת",
+          "operator": "מפעיל (MCC-MNC)",
+          "band": "תדר",
+          "cell": "תא",
+          "bytesSentLastCycle": "בתים שנשלחו במחזור הקודם",
+          "modemMs": "הפעלת המודם",
+          "networkMs": "רשת ושעון",
+          "slotWaitMs": "המתנה למועד",
+          "mqttMs": "התחברות לשרת",
+          "gpsMs": "קליטת GPS",
+          "distanceSamples": "קריאות החיישן",
+          "distanceSpreadMm": "פיזור הקריאות",
+          "scaleRawCounts": "קריאה גולמית של המשקל",
+          "scaleZeroCounts": "נקודת האפס של המשקל",
+          "scaleSpreadCounts": "פיזור קריאות המשקל",
+          "beaconRssi": "קליטת שער התקשורת",
+          "guardSeconds": "מתעורר לפני המועד ב־",
+          "missedCycles": "משואות שהוחמצו לפני כן",
+          "residualPpm": "אי־ודאות השעון"
+        },
+        "signal": {
+          "good": "טובה",
+          "fair": "בינונית",
+          "weak": "חלשה"
+        },
+        "resetReasons": {
+          "poweron": "חיבור לחשמל",
+          "external": "כפתור איפוס",
+          "software": "הפעלה מחדש בתוכנה",
+          "panic": "קריסה",
+          "interrupt_wdt": "שומר (פסיקה)",
+          "task_wdt": "שומר (משימה)",
+          "other_wdt": "שומר",
+          "deepsleep": "התעוררות מתוזמנת",
+          "brownout": "מתח נמוך",
+          "sdio": "SDIO",
+          "usb": "USB",
+          "jtag": "JTAG",
+          "efuse": "שגיאת eFuse",
+          "power_glitch": "תקלת חשמל",
+          "cpu_lockup": "נעילת מעבד",
+          "unknown": "לא ידוע"
+        },
+        "wakeCauses": {
+          "timer": "טיימר",
+          "ext0": "פין חיצוני",
+          "ext1": "פינים חיצוניים",
+          "touchpad": "מגע",
+          "ulp": "מעבד עזר",
+          "gpio": "GPIO",
+          "uart": "תקשורת טורית",
+          "undefined": "הדלקה או איפוס",
+          "other": "אחר"
+        },
+        "chargers": {
+          "none": "אין סוללה",
+          "trickle": "טעינה איטית",
+          "precharge": "טעינה מקדימה",
+          "constant_current": "נטען (זרם קבוע)",
+          "constant_voltage": "נטען (השלמה)",
+          "done": "טעון",
+          "stopped": "לא נטען"
+        },
+        "pmuOff": {
+          "pwronLow": "לחיצה על מקש ההפעלה",
+          "software": "תוכנה",
+          "pwronAlwaysLow": "מקש ההפעלה תקוע",
+          "vsysUnder": "מתח מערכת נמוך",
+          "vbusOver": "מתח כניסה גבוה",
+          "dcdcUnder": "מתח פס נמוך",
+          "dcdcOver": "מתח פס גבוה",
+          "dieOverTemp": "התחממות יתר"
+        }
+      },
+      "deviceTitle": "מכשיר",
+      "actions": {
+        "renameTitle": "שינוי שם",
+        "renameDescription": "עד {{count}} תווים.",
+        "deleteTitle": "מחיקת המכשיר",
+        "deleteDescription": "מוחק את המכשיר, את כל התיעודים שלו ואת הרישום שלו. אי אפשר לבטל את הפעולה."
+      },
+      "connectedTable": {
+        "name": "פח",
+        "signal": "עוצמת אות (RSSI)"
+      },
+      "tiles": {
+        "battery": "סוללה",
+        "fullness": "מלאות",
+        "levelPart": "רמת מילוי: {{percent}}%",
+        "weight": "משקל: {{kg}} ק״ג",
+        "lastReport": "דיווח אחרון",
+        "never": "עוד אין דיווחים",
+        "connection": "חיבור",
+        "cellular": "סלולרי",
+        "mesh": "רשת Mesh",
+        "via": "דרך",
+        "relaysFor_one": "מעביר דיווחים של פח אחד",
+        "relaysFor_two": "מעביר דיווחים של שני פחים",
+        "relaysFor_other": "מעביר דיווחים של {{count}} פחים",
+        "fillRate": "מתמלא בכ־{{rate}}% ביום · ידרוש איסוף {{when}}",
+        "collectNow": "דורש איסוף עכשיו",
+        "fillRateUnknown": "קצב מילוי: נדרשים עוד כמה דיווחים",
+        "notFilling": "לא מתמלא מאז שרוקן לאחרונה"
+      },
+      "logsTable": {
+        "title": "סקירת התיעודים של הפח",
+        "description": "תיעודים אחרונים שנוצרו על ידי הפח, כולל רמות מילוי, מצב בריאות ומידע חשוב אחר.",
+        "columns": {
+          "createdAt": "נוצר בתאריך",
+          "type": "סוג",
+          "severity": "חומרה",
+          "fillLevel": "מלאי",
           "batteryLevel": "סוללה",
-          "healthStatus":"בריאות",
-          "source":"מקור",
-          "viewLog":"הצג תיעוד"
+          "healthStatus": "בריאות",
+          "source": "מקור",
+          "viewLog": "הצג תיעוד"
         }
       },
-      "areaChart":{
-        "title":"מגמות רמת סוללה ומילוי",
-        "description":"רמת מילוי, משקל וסוללה מכל דיווח; קו מקווקו מסמן ריקון.",
-        "battery":"רמת סוללה",
-        "level":"רמת מילוי",
-        "weight":"משקל (ק״ג)",
-        "range":"טווח זמן",
-        "lastDays":"{{count}} ימים אחרונים",
-        "collectionsNote_one":"רוקן פעם אחת בתקופה הזו.",
-        "collectionsNote_two":"רוקן פעמיים בתקופה הזו.",
-        "collectionsNote_other":"רוקן {{count}} פעמים בתקופה הזו."
+      "areaChart": {
+        "title": "מגמות רמת סוללה ומילוי",
+        "description": "רמת מילוי, משקל וסוללה מכל דיווח; קו מקווקו מסמן ריקון.",
+        "battery": "רמת סוללה",
+        "level": "רמת מילוי",
+        "weight": "משקל (ק״ג)",
+        "range": "טווח זמן",
+        "lastDays": "{{count}} ימים אחרונים",
+        "collectionsNote_one": "רוקן פעם אחת בתקופה הזו.",
+        "collectionsNote_two": "רוקן פעמיים בתקופה הזו.",
+        "collectionsNote_other": "רוקן {{count}} פעמים בתקופה הזו."
       },
-      "analytics":{
-        "noReports":"אין דיווחים בתקופה הזו.",
-        "collections":{
-          "title":"ריקונים",
-          "description":"מזוהים לפי ירידה של 30 נקודות ברמת המילוי או של חצי מהמשקל בין שני דיווחים.",
-          "none":"אין ריקונים בתקופה הזו.",
-          "fullnessBefore":"מלא ב־{{percent}}%",
-          "kgRemoved":"{{kg}} ק״ג פונו"
+      "analytics": {
+        "noReports": "אין דיווחים בתקופה הזו.",
+        "collections": {
+          "title": "ריקונים",
+          "description": "מזוהים לפי ירידה של 30 נקודות ברמת המילוי או של חצי מהמשקל בין שני דיווחים.",
+          "none": "אין ריקונים בתקופה הזו.",
+          "fullnessBefore": "מלא ב־{{percent}}%",
+          "kgRemoved": "{{kg}} ק״ג פונו"
         },
-        "battery":{
-          "title":"סוללה",
-          "awake":"זמן ערות (שניות)",
-          "daysLeft_one":"עוד כיום אחד עד 20%.",
-          "daysLeft_two":"עוד כיומיים עד 20%.",
-          "daysLeft_other":"עוד כ־{{count}} ימים עד 20%.",
-          "notDraining":"הסוללה לא מתרוקנת בקצב הנוכחי.",
-          "notEnoughData":"לתחזית נדרשים עוד כמה דיווחים."
+        "battery": {
+          "title": "סוללה",
+          "awake": "זמן ערות (שניות)",
+          "daysLeft_one": "עוד כיום אחד עד 20%.",
+          "daysLeft_two": "עוד כיומיים עד 20%.",
+          "daysLeft_other": "עוד כ־{{count}} ימים עד 20%.",
+          "notDraining": "הסוללה לא מתרוקנת בקצב הנוכחי.",
+          "notEnoughData": "לתחזית נדרשים עוד כמה דיווחים."
         },
-        "reliability":{
-          "title":"דיווחים בזמן",
-          "description":"דיווחים שהתקבלו לעומת הדיווחים שלוח הזמנים מצפה להם.",
-          "counts":"{{received}} מתוך {{expected}} דיווחים",
-          "notEnoughData":"עוד אין מספיק דיווחים"
+        "reliability": {
+          "title": "דיווחים בזמן",
+          "description": "דיווחים שהתקבלו לעומת הדיווחים שלוח הזמנים מצפה להם.",
+          "counts": "{{received}} מתוך {{expected}} דיווחים",
+          "notEnoughData": "עוד אין מספיק דיווחים"
         },
-        "connection":{
-          "title":"אות הרשת",
-          "description":"עוצמת האות (RSSI) ומספר הקפיצות עד לשער, לפי דיווח."
+        "connection": {
+          "title": "אות הרשת",
+          "description": "עוצמת האות (RSSI) ומספר הקפיצות עד לשער, לפי דיווח."
         }
       }
     },
-  "userProfile":{
-      "isNotAdmin":"אין לך הרשאות מנהל לצפייה בדף זה.",
-      "failedToLoad":"לא ניתן למצוא את המשתמש שאתה מחפש.",
-      "errorButton":"חזרה לרשימת המשתמשים"
+    "userProfile": {
+      "isNotAdmin": "אין לך הרשאות מנהל לצפייה בדף זה.",
+      "failedToLoad": "לא ניתן למצוא את המשתמש שאתה מחפש.",
+      "errorButton": "חזרה לרשימת המשתמשים"
     },
-       "loginPage":{
-      "title":"התחבר לחשבונך",
-      "description":"הזן את האימייל שלך למטה כדי להתחבר לחשבונך",
-      "password":"סיסמה",
-      "passwordRequired":"סיסמה היא שדה חובה",
-      "minLength":"הסיסמה חייבת להכיל לפחות 8 תווים",
-      "forgotPassword":"שכחת סיסמה?",
-      "loginButton":"התחבר",
-      "noAccount":"אין לך חשבון?",
-      "signUp":"הרשם עכשיו"
-    }
-    ,
-    "forgotPasswordPage":{
-      "stepOne":{
-      "title":"שחזור סיסמה",
-      "description":"הזן את כתובת האימייל המשויכת לחשבונך כדי לקבל קוד אימות לאיפוס הסיסמה.",
-      "sendRecovery":"שלח קוד לאיפוס",
-      "emailLabel":"כתובת אימייל"
+    "loginPage": {
+      "title": "התחבר לחשבונך",
+      "description": "הזן את האימייל שלך למטה כדי להתחבר לחשבונך",
+      "password": "סיסמה",
+      "passwordRequired": "סיסמה היא שדה חובה",
+      "minLength": "הסיסמה חייבת להכיל לפחות 8 תווים",
+      "forgotPassword": "שכחת סיסמה?",
+      "loginButton": "התחבר",
+      "noAccount": "אין לך חשבון?",
+      "signUp": "הרשם עכשיו"
     },
-    "stepTwo":{
-      "title":"הזן קוד אימות",
-      "otpTitle":"הזן את קוד האימות שנשלח לאימייל שלך.",
-      "otpRequired":"קוד אימות הוא שדה חובה",
-      "otpLength":"קוד האימות חייב להיות בן 6 ספרות",
-      "submit":"אמת קוד"
+    "forgotPasswordPage": {
+      "stepOne": {
+        "title": "שחזור סיסמה",
+        "description": "הזן את כתובת האימייל המשויכת לחשבונך כדי לקבל קוד אימות לאיפוס הסיסמה.",
+        "sendRecovery": "שלח קוד לאיפוס",
+        "emailLabel": "כתובת אימייל"
+      },
+      "stepTwo": {
+        "title": "הזן קוד אימות",
+        "otpTitle": "הזן את קוד האימות שנשלח לאימייל שלך.",
+        "otpRequired": "קוד אימות הוא שדה חובה",
+        "otpLength": "קוד האימות חייב להיות בן 6 ספרות",
+        "submit": "אמת קוד"
+      },
+      "stepThree": {
+        "title": "אפס את הסיסמה שלך",
+        "description": "הזן את הסיסמה החדשה שלך למטה כדי לאפס את סיסמת החשבון שלך.",
+        "newPassword": "סיסמה חדשה",
+        "confirmPassword": "אשר סיסמה חדשה",
+        "passwordRequired": "סיסמה היא שדה חובה",
+        "minLength": "הסיסמה חייבת להכיל לפחות 8 תווים",
+        "maxLength": "הסיסמה לא יכולה לעלות על 30 תווים",
+        "lowercase": "הסיסמה חייבת לכלול לפחות אות קטנה אחת (a-z)",
+        "uppercase": "הסיסמה חייבת לכלול לפחות אות גדולה אחת (A-Z)",
+        "number": "הסיסמה חייבת לכלול לפחות מספר אחד (0-9)",
+        "special": "הסיסמה חייבת לכלול לפחות תו מיוחד אחד (!@#$%^&*)",
+        "notMatch": "הסיסמאות אינן תואמות",
+        "resetPassword": "אפס סיסמה"
+      },
+      "login": "התחבר",
+      "signUp": "הרשם",
+      "back": "חזור",
+      "remembered": "זכרת את הסיסמה שלך?",
+      "noAccount": "אין לך חשבון?"
     },
-    "stepThree":{
-      "title":"אפס את הסיסמה שלך",
-      "description":"הזן את הסיסמה החדשה שלך למטה כדי לאפס את סיסמת החשבון שלך.",
-      "newPassword":"סיסמה חדשה",
-      "confirmPassword":"אשר סיסמה חדשה",
-      "passwordRequired":"סיסמה היא שדה חובה",
-      "minLength":"הסיסמה חייבת להכיל לפחות 8 תווים",
-      "maxLength":"הסיסמה לא יכולה לעלות על 30 תווים",
-      "lowercase":"הסיסמה חייבת לכלול לפחות אות קטנה אחת (a-z)",
-      "uppercase":"הסיסמה חייבת לכלול לפחות אות גדולה אחת (A-Z)",
-      "number":"הסיסמה חייבת לכלול לפחות מספר אחד (0-9)",
-      "special":"הסיסמה חייבת לכלול לפחות תו מיוחד אחד (!@#$%^&*)",
-      "notMatch":"הסיסמאות אינן תואמות",
-      "resetPassword":"אפס סיסמה"
-    },
-    "login":"התחבר",
-    "signUp":"הרשם",
-    "back":"חזור",
-      "remembered":"זכרת את הסיסמה שלך?",
-      "noAccount":"אין לך חשבון?"
-    },
-       "verifyAccountPage":{
-      "verify":"החשבון אומת, מעביר לדף ההתחברות...",
-      "verificationFailed":"אימות החשבון נכשל. אנא נסה שוב."
+    "verifyAccountPage": {
+      "verify": "החשבון אומת, מעביר לדף ההתחברות...",
+      "verificationFailed": "אימות החשבון נכשל. אנא נסה שוב."
     },
     "signupPage": {
-    "titles": {
-      "createAccount": "יצירת חשבון",
-      "accountCreated": "החשבון נוצר בהצלחה",
-      "createSubtitle": "בוא נתחיל. מלא את הפרטים למטה כדי ליצור את החשבון שלך.",
-      "activateSubtitle": "אנא בדוק את האימייל שלך כדי להפעיל את החשבון",
-      "verifyBody": "אנא אמת את החשבון שלך דרך האימייל"
+      "titles": {
+        "createAccount": "יצירת חשבון",
+        "accountCreated": "החשבון נוצר בהצלחה",
+        "createSubtitle": "בוא נתחיל. מלא את הפרטים למטה כדי ליצור את החשבון שלך.",
+        "activateSubtitle": "אנא בדוק את האימייל שלך כדי להפעיל את החשבון",
+        "verifyBody": "אנא אמת את החשבון שלך דרך האימייל"
+      },
+      "form": {
+        "fullName": "שם מלא",
+        "email": "כתובת אימייל",
+        "password": "סיסמה",
+        "confirmPassword": "אימות סיסמה",
+        "acceptTerms": "אשר את התנאים וההגבלות",
+        "submitButton": "הרשמה"
+      },
+      "validation": {
+        "nameRequired": "שם הוא שדה חובה",
+        "nameNotEmpty": "השם לא יכול להיות ריק או להכיל רווחים בלבד",
+        "fullNameCheck": "אנא הזן שם פרטי ושם משפחה",
+        "emailRequired": "אימייל הוא שדה חובה",
+        "emailInvalid": "כתובת אימייל לא תקינה",
+        "emailNotEmpty": "האימייל לא יכול להיות ריק או להכיל רווחים בלבד",
+        "passwordRequired": "סיסמה היא שדה חובה",
+        "passwordMin": "הסיסמה חייבת להכיל לפחות 8 תווים",
+        "passwordMax": "הסיסמה לא יכולה להכיל יותר מ-30 תווים",
+        "passwordLower": "הסיסמה חייבת להכיל לפחות אות קטנה אחת",
+        "passwordUpper": "הסיסמה חייבת להכיל לפחות אות גדולה אחת",
+        "passwordNumber": "הסיסמה חייבת להכיל לפחות מספר אחד",
+        "passwordSpecial": "הסיסמה חייבת להכיל לפחות תו מיוחד אחד (!@#$%^&*)",
+        "confirmPasswordRequired": "אנא אמת את הסיסמה שלך",
+        "passwordsNoMatch": "הסיסמאות אינן תואמות",
+        "termsRequired": "חובה לאשר את התנאים"
+      },
+      "footer": {
+        "alreadyHaveAccount": "כבר יש לך חשבון?",
+        "login": "התחבר"
+      },
+      "toasts": {
+        "success": "החשבון נוצר בהצלחה, אנא בדוק את האימייל שלך.",
+        "errorDuplicate": "החשבון כבר קיים",
+        "errorGeneric": "יצירת החשבון נכשלה, אנא נסה שוב בעוד מספר רגעים"
+      }
     },
-    "form": {
-      "fullName": "שם מלא",
-      "email": "כתובת אימייל",
-      "password": "סיסמה",
-      "confirmPassword": "אימות סיסמה",
-      "acceptTerms": "אשר את התנאים וההגבלות",
-      "submitButton": "הרשמה"
-    },
-    "validation": {
-      "nameRequired": "שם הוא שדה חובה",
-      "nameNotEmpty": "השם לא יכול להיות ריק או להכיל רווחים בלבד",
-      "fullNameCheck": "אנא הזן שם פרטי ושם משפחה",
-      "emailRequired": "אימייל הוא שדה חובה",
-      "emailInvalid": "כתובת אימייל לא תקינה",
-      "emailNotEmpty": "האימייל לא יכול להיות ריק או להכיל רווחים בלבד",
-      "passwordRequired": "סיסמה היא שדה חובה",
-      "passwordMin": "הסיסמה חייבת להכיל לפחות 8 תווים",
-      "passwordMax": "הסיסמה לא יכולה להכיל יותר מ-30 תווים",
-      "passwordLower": "הסיסמה חייבת להכיל לפחות אות קטנה אחת",
-      "passwordUpper": "הסיסמה חייבת להכיל לפחות אות גדולה אחת",
-      "passwordNumber": "הסיסמה חייבת להכיל לפחות מספר אחד",
-      "passwordSpecial": "הסיסמה חייבת להכיל לפחות תו מיוחד אחד (!@#$%^&*)",
-      "confirmPasswordRequired": "אנא אמת את הסיסמה שלך",
-      "passwordsNoMatch": "הסיסמאות אינן תואמות",
-      "termsRequired": "חובה לאשר את התנאים"
-    },
-    "footer": {
-      "alreadyHaveAccount": "כבר יש לך חשבון?",
-      "login": "התחבר"
-    },
-    "toasts": {
-      "success": "החשבון נוצר בהצלחה, אנא בדוק את האימייל שלך.",
-      "errorDuplicate": "החשבון כבר קיים",
-      "errorGeneric": "יצירת החשבון נכשלה, אנא נסה שוב בעוד מספר רגעים"
-    }
-    },"organizationsList": {
+    "organizationsList": {
       "title": "ארגונים",
       "columns": {
         "orgName": "שם הארגון",
@@ -1082,97 +1168,96 @@
       }
     }
   },
-   "confirmations":{
-    "confirmationTitle":"אשר מחיקה לצמיתות",
-    "confirmationDescription":"פעולה זו תמחק לצמיתות את הפח, לאשר על ידי הקלדת 'מחק' בשדה למטה, פעולה זו אינה ניתנת לביטול.",
-    "typeDelete":"הקלד: 'מחק' כדי לבצע את המחיקה",
-    "confirmationDescriptionUser":"פעולה זו תמחק לצמיתות את כל הפחים של המשתמש.",
-    "confirmationDescriptionYour":"פעולה זו תמחק לצמיתות את כל הפחים שלך.",
-    "confirmationUserName":"כדי לאשר, הקלד {{userName}} בשדה למטה, פעולה זו אינה ניתנת לביטול.",
-    "typeUserName":"הקלד: '{{userName}}' כדי לבצע את המחיקה",
-     "deleteViaMac":"פעולה זו תמחק לצמיתות את הפח באמצעות כתובת ה-MAC שלו.",
-        "typeMacAddress":"הקלד את כתובת ה-MAC של הפח כדי לאשר את המחיקה"
+  "confirmations": {
+    "confirmationTitle": "אשר מחיקה לצמיתות",
+    "confirmationDescription": "פעולה זו תמחק לצמיתות את הפח, לאשר על ידי הקלדת 'מחק' בשדה למטה, פעולה זו אינה ניתנת לביטול.",
+    "typeDelete": "כדי לאשר את המחיקה, הקלד „מחק”.",
+    "confirmationDescriptionUser": "פעולה זו תמחק לצמיתות את כל הפחים של המשתמש.",
+    "confirmationDescriptionYour": "פעולה זו תמחק לצמיתות את כל הפחים שלך.",
+    "confirmationUserName": "כדי לאשר, הקלד {{userName}} בשדה למטה, פעולה זו אינה ניתנת לביטול.",
+    "typeUserName": "הקלד: '{{userName}}' כדי לבצע את המחיקה",
+    "deleteViaMac": "פעולה זו תמחק לצמיתות את הפח באמצעות כתובת ה-MAC שלו.",
+    "typeMacAddress": "הקלד את כתובת ה-MAC של הפח כדי לאשר את המחיקה"
   },
-    "deleteViaMacButton":"מחק באמצעות MAC",
-
-   "components":{
-    "deviceInstructions":{
-      "title":"פקודות מרחוק",
-      "deliveryNote":"הפקודה תגיע למכשיר בדיווח הבא שלו.",
-      "schedule":"דיווחים: {{schedule}}.",
-      "lastReport":"דיווח אחרון:",
-      "meshDeliveryNote":"הפח הזה מקבל פקודות דרך השער שלו, ולכן פקודה עשויה להגיע אליו רק עד שני דיווחים מעכשיו.",
-      "instruction":"פקודה",
-      "send":"שליחה",
-      "duration":"זמן ערות נוסף (בדקות)",
-      "durationLimit":"בין דקה אחת ל־60 דקות. זמן ערות נוסף צורך יותר סוללה.",
-      "durationValue":"זמן ערות נוסף: {{count}} דקות",
-      "recentTitle":"פקודות אחרונות",
-      "emptyQueue":"עוד לא נשלחו פקודות למכשיר הזה.",
-      "cancel":"ביטול",
-      "requestQueued":"הפקודה ממתינה לדיווח הבא.",
-      "requestCancelled":"הפקודה הממתינה בוטלה.",
-      "calibrationConfirmationTitle":"אישור כיול כשהפח ריק",
-      "calibrationConfirmationDescription":"יש לוודא שהפח ריק ונתיב החיישן פנוי למשך כ־20 שניות. המכשיר יכייל מחדש את נקודת הייחוס של פח ריק, יאפס את המשקל וישלח מדידה עדכנית.",
-      "scaleGrams":"משקל ידוע בתוך הפח (גרם)",
-      "scaleGramsLimit":"קודם יש לאפס את המשקל (כיול מחדש של פח ריק), ואז להניח בפח חפץ שמשקלו ידוע: 100 גרם עד 200 ק״ג. כדי לבדוק את המשקל אחר כך, אפשר להניח משקל ידוע אחר ולבקש דיווח.",
-      "gramsValue":"הונחו {{grams}} גרם",
-      "confirmCalibration":"הוסף כיול לתור",
-      "results":{
-        "additional_report_published":"הדיווח נשלח",
-        "location_refresh_scheduled":"מיקום GPS ייקלט בדיווח הבא",
-        "additional_report_publish_failed":"שליחת הדיווח נכשלה",
-        "awake_window_extended":"המכשיר נשאר ער כמבוקש",
-        "invalid_awake_extension_duration":"זמן ערות לא תקין",
-        "emptyDepth":"כויל: עומק פח ריק {{cm}} ס״מ",
-        "empty_bin_calibration_failed":"הכיול נכשל",
-        "scaleZeroed":"המשקל אופס",
-        "scaleCalibrated":"המשקל כויל: הונחו {{placed}} גרם, נמדדו {{reads}} גרם",
-        "scale_not_responding":"המשקל לא הגיב",
-        "scale_unstable":"קריאות המשקל לא היו יציבות (הפח זז או חוט רופף)",
-        "scale_not_zeroed":"קודם יש לאפס את המשקל: כיול מחדש של פח ריק",
-        "scale_no_load_change":"המשקל כמעט לא שינה את הקריאה: לא הונח דבר, או שתא עומס לא מחובר",
-        "scale_invalid_weight":"המשקל הידוע צריך להיות בין 100 גרם ל־200 ק״ג",
-        "unsupported_instruction_type":"המכשיר לא תומך בפקודה הזו",
-        "expired":"פג תוקף לפני שהמכשיר דיווח"
+  "deleteViaMacButton": "מחק באמצעות MAC",
+  "components": {
+    "deviceInstructions": {
+      "title": "פקודות מרחוק",
+      "deliveryNote": "הפקודה תגיע למכשיר בדיווח הבא שלו.",
+      "schedule": "דיווחים: {{schedule}}.",
+      "lastReport": "דיווח אחרון:",
+      "meshDeliveryNote": "הפח הזה מקבל פקודות דרך השער שלו, ולכן פקודה עשויה להגיע אליו רק עד שני דיווחים מעכשיו.",
+      "instruction": "פקודה",
+      "send": "שליחה",
+      "duration": "זמן ערות נוסף (בדקות)",
+      "durationLimit": "בין דקה אחת ל־60 דקות. זמן ערות נוסף צורך יותר סוללה.",
+      "durationValue": "זמן ערות נוסף: {{count}} דקות",
+      "recentTitle": "פקודות אחרונות",
+      "emptyQueue": "עוד לא נשלחו פקודות למכשיר הזה.",
+      "cancel": "ביטול",
+      "requestQueued": "הפקודה ממתינה לדיווח הבא.",
+      "requestCancelled": "הפקודה הממתינה בוטלה.",
+      "calibrationConfirmationTitle": "אישור כיול כשהפח ריק",
+      "calibrationConfirmationDescription": "יש לוודא שהפח ריק ונתיב החיישן פנוי למשך כ־20 שניות. המכשיר יכייל מחדש את נקודת הייחוס של פח ריק, יאפס את המשקל וישלח מדידה עדכנית.",
+      "scaleGrams": "משקל ידוע בתוך הפח (גרם)",
+      "scaleGramsLimit": "קודם יש לאפס את המשקל (כיול מחדש של פח ריק), ואז להניח בפח חפץ שמשקלו ידוע: 100 גרם עד 200 ק״ג. כדי לבדוק את המשקל אחר כך, אפשר להניח משקל ידוע אחר ולבקש דיווח.",
+      "gramsValue": "הונחו {{grams}} גרם",
+      "confirmCalibration": "הוסף כיול לתור",
+      "results": {
+        "additional_report_published": "הדיווח נשלח",
+        "location_refresh_scheduled": "מיקום GPS ייקלט בדיווח הבא",
+        "additional_report_publish_failed": "שליחת הדיווח נכשלה",
+        "awake_window_extended": "המכשיר נשאר ער כמבוקש",
+        "invalid_awake_extension_duration": "זמן ערות לא תקין",
+        "emptyDepth": "כויל: עומק פח ריק {{cm}} ס״מ",
+        "empty_bin_calibration_failed": "הכיול נכשל",
+        "scaleZeroed": "המשקל אופס",
+        "scaleCalibrated": "המשקל כויל: הונחו {{placed}} גרם, נמדדו {{reads}} גרם",
+        "scale_not_responding": "המשקל לא הגיב",
+        "scale_unstable": "קריאות המשקל לא היו יציבות (הפח זז או חוט רופף)",
+        "scale_not_zeroed": "קודם יש לאפס את המשקל: כיול מחדש של פח ריק",
+        "scale_no_load_change": "המשקל כמעט לא שינה את הקריאה: לא הונח דבר, או שתא עומס לא מחובר",
+        "scale_invalid_weight": "המשקל הידוע צריך להיות בין 100 גרם ל־200 ק״ג",
+        "unsupported_instruction_type": "המכשיר לא תומך בפקודה הזו",
+        "expired": "פג תוקף לפני שהמכשיר דיווח"
       },
-      "types":{
-        "report_now":"בקשת דיווח מיידי",
-        "stay_awake":"הארכת זמן הערות",
-        "calibrate_empty_bin":"כיול מחדש של פח ריק",
-        "calibrate_scale":"כיול משקל עם משקל ידוע",
-        "refresh_location":"רענון מיקום ה־GPS בדיווח הבא"
+      "types": {
+        "report_now": "בקשת דיווח מיידי",
+        "stay_awake": "הארכת זמן הערות",
+        "calibrate_empty_bin": "כיול מחדש של פח ריק",
+        "calibrate_scale": "כיול משקל עם משקל ידוע",
+        "refresh_location": "רענון מיקום ה־GPS בדיווח הבא"
       },
-      "statuses":{
-        "pending":"ממתינה",
-        "completed":"הושלמה",
-        "failed":"נכשלה",
-        "cancelled":"בוטלה"
+      "statuses": {
+        "pending": "ממתינה",
+        "completed": "הושלמה",
+        "failed": "נכשלה",
+        "cancelled": "בוטלה"
       }
     },
-    "orgSettings":{
-      "title":"הגדרות הארגון",
-      "description":"כל כמה זמן ובאילו שעות הפחים של הארגון מדווחים, וכמה זמן הם נשארים ערים אחרי כל התעוררות כדי להעביר הודעות ברשת. הפחים מחילים ערכים חדשים אחרי הדיווח הבא שלהם.",
-      "dialogTitle":"הגדרות: {{name}}",
-      "open":"הגדרות",
-      "summary":"{{seconds}} שנ׳ · {{schedule}}",
-      "awakeTime":"זמן ערות לרשת (בשניות)",
-      "awakeTimeNote":"כמה זמן הפחים נשארים ערים אחרי כל התעוררות כדי להעביר הודעות ברשת (1–60 שניות). זמן ארוך יותר צורך יותר סוללה.",
-      "reportInterval":"מרווח דיווח",
-      "startHour":"הדיווח הראשון ביום",
-      "reportsAt":"דיווחים: {{schedule}}",
-      "everyMinutes":"כל {{count}} דקות",
-      "everyHour":"כל שעה",
-      "everyHours":"כל {{count}} שעות",
-      "everyDay":"פעם ביום",
-      "everyFrom":"{{interval}} החל מ־{{time}}",
-      "intervalNote":"מרווח קצר יותר נותן נתונים עדכניים יותר, אבל צורך יותר סוללה.",
-      "changeNote":"שינוי המרווח או השעה: פחים שמדווחים דרך פח אחר עלולים לפספס כמה דיווחים עד שיסתנכרנו מחדש, ובינתיים יישארו ערים יותר זמן ויצרכו יותר סוללה.",
-      "save":"שמירה",
-      "saved":"ההגדרות נשמרו.",
-      "empty":"לא נמצא ארגון."
+    "orgSettings": {
+      "title": "הגדרות הארגון",
+      "description": "כל כמה זמן ובאילו שעות הפחים של הארגון מדווחים, וכמה זמן הם נשארים ערים אחרי כל התעוררות כדי להעביר הודעות ברשת. הפחים מחילים ערכים חדשים אחרי הדיווח הבא שלהם.",
+      "dialogTitle": "הגדרות: {{name}}",
+      "open": "הגדרות",
+      "summary": "{{seconds}} שנ׳ · {{schedule}}",
+      "awakeTime": "זמן ערות לרשת (בשניות)",
+      "awakeTimeNote": "כמה זמן הפחים נשארים ערים אחרי כל התעוררות כדי להעביר הודעות ברשת (1–60 שניות). זמן ארוך יותר צורך יותר סוללה.",
+      "reportInterval": "מרווח דיווח",
+      "startHour": "הדיווח הראשון ביום",
+      "reportsAt": "דיווחים: {{schedule}}",
+      "everyMinutes": "כל {{count}} דקות",
+      "everyHour": "כל שעה",
+      "everyHours": "כל {{count}} שעות",
+      "everyDay": "פעם ביום",
+      "everyFrom": "{{interval}} החל מ־{{time}}",
+      "intervalNote": "מרווח קצר יותר נותן נתונים עדכניים יותר, אבל צורך יותר סוללה.",
+      "changeNote": "שינוי המרווח או השעה: פחים שמדווחים דרך פח אחר עלולים לפספס כמה דיווחים עד שיסתנכרנו מחדש, ובינתיים יישארו ערים יותר זמן ויצרכו יותר סוללה.",
+      "save": "שמירה",
+      "saved": "ההגדרות נשמרו.",
+      "empty": "לא נמצא ארגון."
     },
-    "orgSettingsPage":{
+    "orgSettingsPage": {
       "header": "הגדרות הארגון",
       "nav": {
         "label": "חלקי ההגדרות",
@@ -1195,178 +1280,202 @@
         "orgId": "מזהה הארגון",
         "orgIdHint": "מוזן בהגדרת מכשיר כדי שיצטרף לארגון הזה.",
         "copyId": "העתקת מזהה הארגון",
-          "registrationCode": "קוד רישום",
-          "registrationCodeHint": "מוזן בהגדרה הראשונית של מכשיר חדש יחד עם המזהה; בלעדיו מכשיר לא יכול להצטרף. שמרו אותו אצל מי שמתקין מכשירים.",
-          "copyCode": "העתקת קוד הרישום",
-          "regenerateCode": "יצירת קוד רישום חדש",
-          "regenerateTitle": "ליצור קוד רישום חדש?",
-          "regenerateDescription": "הקוד הנוכחי יפסיק לעבוד למכשירים חדשים. מכשירים שכבר רשומים ממשיכים לעבוד.",
-          "regenerateConfirm": "יצירת קוד חדש",
-          "codeRegenerated": "נוצר קוד רישום חדש."
+        "registrationCode": "קוד רישום",
+        "registrationCodeHint": "מוזן בהגדרה הראשונית של מכשיר חדש יחד עם המזהה; בלעדיו מכשיר לא יכול להצטרף. שמרו אותו אצל מי שמתקין מכשירים.",
+        "copyCode": "העתקת קוד הרישום",
+        "regenerateCode": "יצירת קוד רישום חדש",
+        "regenerateTitle": "ליצור קוד רישום חדש?",
+        "regenerateDescription": "הקוד הנוכחי יפסיק לעבוד למכשירים חדשים. מכשירים שכבר רשומים ממשיכים לעבוד.",
+        "regenerateConfirm": "יצירת קוד חדש",
+        "codeRegenerated": "נוצר קוד רישום חדש."
       },
       "danger": {
-          "delete": "מחיקת הארגון"
+        "delete": "מחיקת הארגון"
+      },
+      "fleet": {
+        "title": "צי משאיות",
+        "description": "המשאיות שלפיהן מתוכננים מסלולי האיסוף היומיים. הוסיפו את סוגי המשאיות של הארגון.",
+        "total": "{{trucks}} משאיות, עד {{tons}} טון בסבב.",
+        "add": "הוספת סוג משאית",
+        "name": "שם",
+        "count": "משאיות",
+        "capacity": "כושר העמסה (ק״ג)",
+        "consumption": "צריכת סולר (ליטר / 100 ק״מ)",
+        "remove": "הסרת סוג המשאית",
+        "custom": "משאית מותאמת",
+        "presetHint": "{{axles}} סרנים, עד {{tons}} טון משקל כולל",
+        "presetOption": "{{axles}} סרנים · עד {{tons}} טון · {{kg}} ק״ג פסולת",
+        "invalid": "נדרשים שם, 1 עד {{max}} משאיות, עומס של {{minKg}} עד {{maxKg}} ק״ג וצריכת סולר של {{minLiters}} עד {{maxLiters}} ליטר / 100 ק״מ.",
+        "presets": {
+          "small": "משאית קטנה / עירונית",
+          "medium": "משאית בינונית-כבדה",
+          "large": "משאית גדולה מאוד"
+        }
+      },
+      "thresholds": {
+        "title": "ספים",
+        "description": "מתי פחי הארגון נחשבים מתמלאים או מלאים, וסוללות נחשבות חלשות או קריטיות. הם צובעים את המכשירים וקובעים את חומרת הדיווחים, \"כמעט מלאים\", הפחים שצפויים לאיסוף, מסלולי הלילה וההתראות.",
+        "fullness": "מלאות",
+        "fullnessHint": "רמת המילוי או המשקל, הגבוה מביניהם. פח נדרש לאיסוף בסף הקריטי.",
+        "battery": "סוללה",
+        "batteryHint": "חלשה בסף האזהרה; דורשת החלפה בסף הקריטי.",
+        "warning": "אזהרה",
+        "critical": "קריטי",
+        "fields": {
+          "fullnessWarning": "סף האזהרה של המלאות",
+          "fullnessCritical": "הסף הקריטי של המלאות",
+          "batteryWarning": "סף האזהרה של הסוללה",
+          "batteryCritical": "הסף הקריטי של הסוללה"
         },
-        "fleet": {
-          "title": "צי משאיות",
-          "description": "המשאיות שלפיהן מתוכננים מסלולי האיסוף היומיים. הוסיפו את סוגי המשאיות של הארגון.",
-          "total": "{{trucks}} משאיות, עד {{tons}} טון בסבב.",
-          "add": "הוספת סוג משאית",
-          "name": "שם",
-          "count": "משאיות",
-          "capacity": "כושר העמסה (ק״ג)",
-          "consumption": "צריכת סולר (ליטר / 100 ק״מ)",
-          "remove": "הסרת סוג המשאית",
-          "custom": "משאית מותאמת",
-          "presetHint": "{{axles}} סרנים, עד {{tons}} טון משקל כולל",
-          "presetOption": "{{axles}} סרנים · עד {{tons}} טון · {{kg}} ק״ג פסולת",
-          "invalid": "נדרשים שם, 1 עד {{max}} משאיות, עומס של {{minKg}} עד {{maxKg}} ק״ג וצריכת סולר של {{minLiters}} עד {{maxLiters}} ליטר / 100 ק״מ.",
-          "presets": {
-            "small": "משאית קטנה / עירונית",
-            "medium": "משאית בינונית-כבדה",
-            "large": "משאית גדולה מאוד"
-          }
-        },
-        "thresholds": {
-          "title": "ספים",
-          "description": "מתי פחי הארגון נחשבים מתמלאים או מלאים, וסוללות נחשבות חלשות או קריטיות. הם צובעים את המכשירים וקובעים את חומרת הדיווחים, \"כמעט מלאים\", הפחים שצפויים לאיסוף, מסלולי הלילה וההתראות.",
-          "fullness": "מלאות",
-          "fullnessHint": "רמת המילוי או המשקל, הגבוה מביניהם. פח נדרש לאיסוף בסף הקריטי.",
-          "battery": "סוללה",
-          "batteryHint": "חלשה בסף האזהרה; דורשת החלפה בסף הקריטי.",
-          "warning": "אזהרה",
-          "critical": "קריטי",
-          "fields": {
-            "fullnessWarning": "סף האזהרה של המלאות",
-            "fullnessCritical": "הסף הקריטי של המלאות",
-            "batteryWarning": "סף האזהרה של הסוללה",
-            "batteryCritical": "הסף הקריטי של הסוללה"
+        "invalidRange": "{{field}} צריך להיות מספר שלם בין {{min}} ל־{{max}}.",
+        "fullnessGap": "סף האזהרה של המלאות צריך להיות לפחות {{gap}} מתחת לקריטי.",
+        "batteryGap": "סף האזהרה של הסוללה צריך להיות לפחות {{gap}} מעל לקריטי.",
+        "reset": "איפוס לברירות המחדל"
+      },
+      "costs": {
+        "title": "עלויות",
+        "description": "כמה עולה לארגון האיסוף, בש״ח. מהן מחושב הכסף שהמסלולים מוציאים והמערכת חוסכת; כל אחת מתחילה מערך מקובל, לשינוי לנתוני הארגון.",
+        "invalid": "נדרש מספר בין {{min}} ל־{{max}}.",
+        "reset": "איפוס לברירות המחדל",
+        "fields": {
+          "dieselPerLiter": {
+            "label": "סולר",
+            "hint": "המחיר לליטר.",
+            "unit": "₪ / ליטר"
           },
-          "invalidRange": "{{field}} צריך להיות מספר שלם בין {{min}} ל־{{max}}.",
-          "fullnessGap": "סף האזהרה של המלאות צריך להיות לפחות {{gap}} מתחת לקריטי.",
-          "batteryGap": "סף האזהרה של הסוללה צריך להיות לפחות {{gap}} מעל לקריטי.",
-          "reset": "איפוס לברירות המחדל"
-        },
-        "costs": {
-          "title": "עלויות",
-          "description": "כמה עולה לארגון האיסוף, בש״ח. מהן מחושב הכסף שהמסלולים מוציאים והמערכת חוסכת; כל אחת מתחילה מערך מקובל, לשינוי לנתוני הארגון.",
-          "invalid": "נדרש מספר בין {{min}} ל־{{max}}.",
-          "reset": "איפוס לברירות המחדל",
-          "fields": {
-            "dieselPerLiter": { "label": "סולר", "hint": "המחיר לליטר.", "unit": "₪ / ליטר" },
-            "crewPerHour": { "label": "צוות", "hint": "צוות המשאית (הנהג והעובדים) לשעה במסלול.", "unit": "₪ / שעה" },
-            "landfillLevyPerTonne": { "label": "היטל הטמנה", "hint": "לטון פסולת מעורבת: 117.22 ₪ מ־2025, צמוד למדד.", "unit": "₪ / טון" },
-            "disposalFeePerTonne": { "label": "דמי כניסה לאתר ההטמנה", "hint": "דמי הכניסה של האתר עצמו לטון.", "unit": "₪ / טון" },
-            "systemPerDevicePerMonth": { "label": "S-Bin", "hint": "לכל מכשיר (פחים ושערי תקשורת) לחודש: הנתונים והמנוי, עם החומרה מחולקת על אורך חייה (מכשיר של 360 ₪ ל־3 שנים הוא 10 ₪). נספר לפי המכשירים שיש לארגון בכל יום.", "unit": "₪ / מכשיר / חודש" },
-            "baselineCollectionsPerWeek": { "label": "איסופים לפני S-Bin", "hint": "כמה פעמים בשבוע פח רוקן בלוח הזמנים הקבוע הקודם; החיסכון נספר מולו.", "unit": "בשבוע" }
+          "crewPerHour": {
+            "label": "צוות",
+            "hint": "צוות המשאית (הנהג והעובדים) לשעה במסלול.",
+            "unit": "₪ / שעה"
+          },
+          "landfillLevyPerTonne": {
+            "label": "היטל הטמנה",
+            "hint": "לטון פסולת מעורבת: 117.22 ₪ מ־2025, צמוד למדד.",
+            "unit": "₪ / טון"
+          },
+          "disposalFeePerTonne": {
+            "label": "דמי כניסה לאתר ההטמנה",
+            "hint": "דמי הכניסה של האתר עצמו לטון.",
+            "unit": "₪ / טון"
+          },
+          "systemPerDevicePerMonth": {
+            "label": "S-Bin",
+            "hint": "לכל מכשיר (פחים ושערי תקשורת) לחודש: הנתונים והמנוי, עם החומרה מחולקת על אורך חייה (מכשיר של 360 ₪ ל־3 שנים הוא 10 ₪). נספר לפי המכשירים שיש לארגון בכל יום.",
+            "unit": "₪ / מכשיר / חודש"
+          },
+          "baselineCollectionsPerWeek": {
+            "label": "איסופים לפני S-Bin",
+            "hint": "כמה פעמים בשבוע פח רוקן בלוח הזמנים הקבוע הקודם; החיסכון נספר מולו.",
+            "unit": "בשבוע"
           }
-        },
-        "map": {
-          "title": "מפה",
-          "description": "איך המפה של הארגון מציגה את המכשירים שלו.",
-          "clusterZoom": "הצגת כל מכשיר בנפרד מ־",
-          "clusterZoomHint": "בזום רחוק יותר, מכשירים קרובים מתקבצים לסמן אחד עם הכמות שלהם.",
+        }
+      },
+      "map": {
+        "title": "מפה",
+        "description": "איך המפה של הארגון מציגה את המכשירים שלו.",
+        "clusterZoom": "הצגת כל מכשיר בנפרד מ־",
+        "clusterZoomHint": "בזום רחוק יותר, מכשירים קרובים מתקבצים לסמן אחד עם הכמות שלהם.",
         "example": "בזום הזה, מפה ברוחב הזה מציגה בערך {{km}} ק״מ ({{place}}).",
         "aroundDepot": "סביב החניון",
         "aroundDevices": "סביב המכשירים של הארגון",
-          "zooms": {
-            "12": "זום 12 · עיר",
-            "13": "זום 13 · שכונות",
-            "14": "זום 14 · שכונה",
-            "15": "זום 15 · רחובות",
-            "16": "זום 16 · רחוב",
-            "17": "זום 17 · בניינים (ברירת מחדל)",
-            "18": "זום 18 · בניין"
-          }
-        },
-        "routePlanning": {
-          "title": "מסלולי לילה",
-          "description": "בכל לילה כל משאית פנויה מקבלת מסלול מהחניון, דרך הפחים שצריך לאסוף או שיצטרכו תוך יום, הדחופים קודם.",
-          "nightly": "תכנון מסלולים בכל לילה",
-          "nightlyHint": "בשעה מקומית זו; כבוי: מסלולים מתוכננים ידנית בלבד.",
-          "hour": "שעת התכנון",
-          "lastLabel": "התכנון האחרון",
-          "never": "עדיין לא תוכנן.",
-          "last": "{{at}}: {{routes}} מסלולים, {{stops}} פחים; עוד {{leftOut}} פחים לאיסוף נשארו להמשך.",
-          "lastNote": "{{at}}: לא נוצרו מסלולים ({{reason}}).",
-          "planNow": "תכנון מסלולי היום עכשיו",
-          "notes": {
-            "noDepot": "החניון לא הוגדר",
-            "noTrucks": "אין משאית פנויה",
-            "noBins": "אין פח שצריך לאסוף",
-            "noneFit": "אף פח לא נכנס למשאית"
-          }
-        },
-        "depot": {
-          "title": "חניון",
-          "description": "מאיפה המשאיות יוצאות ולאן חוזרות. עוד לא נקבע.",
-          "at": "המשאיות יוצאות וחוזרות אל {{lat}}, {{lng}}.",
-          "hint": "לחצו על המפה במקום שבו המשאיות חונות.",
-          "address": "כתובת",
-          "addressHint": "לא חובה, כדי לזהות את המקום.",
-          "remove": "הסרת החניון"
-        },
-        "reporting": {
+        "zooms": {
+          "12": "זום 12 · עיר",
+          "13": "זום 13 · שכונות",
+          "14": "זום 14 · שכונה",
+          "15": "זום 15 · רחובות",
+          "16": "זום 16 · רחוב",
+          "17": "זום 17 · בניינים (ברירת מחדל)",
+          "18": "זום 18 · בניין"
+        }
+      },
+      "routePlanning": {
+        "title": "מסלולי לילה",
+        "description": "בכל לילה כל משאית פנויה מקבלת מסלול מהחניון, דרך הפחים שצריך לאסוף או שיצטרכו תוך יום, הדחופים קודם.",
+        "nightly": "תכנון מסלולים בכל לילה",
+        "nightlyHint": "בשעה מקומית זו; כבוי: מסלולים מתוכננים ידנית בלבד.",
+        "hour": "שעת התכנון",
+        "lastLabel": "התכנון האחרון",
+        "never": "עדיין לא תוכנן.",
+        "last": "{{at}}: {{routes}} מסלולים, {{stops}} פחים; עוד {{leftOut}} פחים לאיסוף נשארו להמשך.",
+        "lastNote": "{{at}}: לא נוצרו מסלולים ({{reason}}).",
+        "planNow": "תכנון מסלולי היום עכשיו",
+        "notes": {
+          "noDepot": "החניון לא הוגדר",
+          "noTrucks": "אין משאית פנויה",
+          "noBins": "אין פח שצריך לאסוף",
+          "noneFit": "אף פח לא נכנס למשאית"
+        }
+      },
+      "depot": {
+        "title": "חניון",
+        "description": "מאיפה המשאיות יוצאות ולאן חוזרות. עוד לא נקבע.",
+        "at": "המשאיות יוצאות וחוזרות אל {{lat}}, {{lng}}.",
+        "hint": "לחצו על המפה במקום שבו המשאיות חונות.",
+        "address": "כתובת",
+        "addressHint": "לא חובה, כדי לזהות את המקום.",
+        "remove": "הסרת החניון"
+      },
+      "reporting": {
         "title": "דיווח",
         "startHourHint": "לפי השעה המקומית של כל מכשיר; שאר הדיווחים באים לפי המרווח."
       }
     },
-    "binCard":{
-       "deviceKey":"מפתח הגישה של המכשיר",
-       "ownerId":"מזהה בעלים",
-       "location":"מיקום",
-       "scaleUncalibrated":"המשקל לא מכויל",
-       "scaleFailed":"המשקל לא זמין",
-       "locationTooltip":"לחץ כדי לאתר את הפח על המפה",
-       "clickToEditName":"לחץ כדי לערוך את שם הפח",
-       "deviceType":"סוג מכשיר",
-       "connectedLeaves":"פחים מחוברים",
-       "noConnectedLeaves":"אף פח עוד לא דיווח דרך שער התקשורת הזה.",
-       "hops":"קפיצות",
-       "maintenance":{
-        "title":"תחזוקה",
-        "lastService":"שירות אחרון",
-        "nextService":"שירות הבא מתוכנן",
-        "notServedYet":"פח זה טרם טופל.",
-        "technician":"טכנאי",
-        "seeProfile":"הצג פרופיל",
-        "techNote":"הערת טכנאי"
-        },
-        "emptyCard":"לא ניתן לטעון את נתוני הפח.",
-        "emptyDescription":"מידע על הפח אינו זמין כרגע. אנא נסה שוב מאוחר יותר."
+    "binCard": {
+      "deviceKey": "מפתח הגישה של המכשיר",
+      "ownerId": "מזהה בעלים",
+      "location": "מיקום",
+      "scaleUncalibrated": "המשקל לא מכויל",
+      "scaleFailed": "המשקל לא זמין",
+      "locationTooltip": "לחץ כדי לאתר את הפח על המפה",
+      "clickToEditName": "לחץ כדי לערוך את שם הפח",
+      "deviceType": "סוג מכשיר",
+      "connectedLeaves": "פחים מחוברים",
+      "noConnectedLeaves": "אף פח עוד לא דיווח דרך שער התקשורת הזה.",
+      "hops": "קפיצות",
+      "maintenance": {
+        "title": "תחזוקה",
+        "lastService": "שירות אחרון",
+        "nextService": "שירות הבא מתוכנן",
+        "notServedYet": "פח זה טרם טופל.",
+        "technician": "טכנאי",
+        "seeProfile": "הצג פרופיל",
+        "techNote": "הערת טכנאי"
+      },
+      "emptyCard": "לא ניתן לטעון את נתוני הפח.",
+      "emptyDescription": "מידע על הפח אינו זמין כרגע. אנא נסה שוב מאוחר יותר."
     },
-    "logCard":{
-      "log":"תיעוד",
-      "details":"פרטים",
-      "binId":"מזהה פח",
-      "weight":"משקל",
-      "message":"פרטים",
-      "timestamp":"חותמת זמן",
-      "logSource":"מקור התיעוד",
-      "errorCard":"לא ניתן לטעון את נתוני התיעוד.",
-      "errorDescription":"המידע אודות התיעוד אינו זמין כרגע. אנא נסה שוב מאוחר יותר."
+    "logCard": {
+      "log": "תיעוד",
+      "details": "פרטים",
+      "binId": "מזהה פח",
+      "weight": "משקל",
+      "message": "פרטים",
+      "timestamp": "חותמת זמן",
+      "logSource": "מקור התיעוד",
+      "errorCard": "לא ניתן לטעון את נתוני התיעוד.",
+      "errorDescription": "המידע אודות התיעוד אינו זמין כרגע. אנא נסה שוב מאוחר יותר."
     },
-    "errorPage":{
-      "description":"אופס, נראה שהדף שאתה מחפש לא קיים.",
-      "buttonText":"עבור לדף הבית"
+    "errorPage": {
+      "description": "אופס, נראה שהדף שאתה מחפש לא קיים.",
+      "buttonText": "עבור לדף הבית"
     },
-    "profileFormCard":{
-      "userProfile":"פרופיל משתמש",
-      "myProfile":"הפרופיל שלי",
-      "updateAsAdmin":"עדכן מידע אישי של משתמש",
-      "updateAsUser":"עדכן את המידע האישי שלך",
-      "tooltip":"תג זה מציג את מצב המשתמש — האם הוא פעיל, מושעה, חסום או ממתין לאישור.",
-      "requiredName":"שם נדרש",
-      "emptyNameError":"השם לא יכול להיות ריק או להכיל רק רווחים",
-      "fullNameError":"אנא הזן שם פרטי ושם משפחה",
-      "fullNameTitle":"שם מלא",
-      "requiredEmail":"אימייל נדרש",
-      "emptyEmailError":"האימייל לא יכול להיות ריק או להכיל רק רווחים",
-      "invalidEmailError":"כתובת אימייל לא חוקית",
-      "emailTitle":"כתובת אימייל",
-      "updateButton":"עדכן"
+    "profileFormCard": {
+      "userProfile": "פרופיל משתמש",
+      "myProfile": "הפרופיל שלי",
+      "updateAsAdmin": "עדכן מידע אישי של משתמש",
+      "updateAsUser": "עדכן את המידע האישי שלך",
+      "tooltip": "תג זה מציג את מצב המשתמש — האם הוא פעיל, מושעה, חסום או ממתין לאישור.",
+      "requiredName": "שם נדרש",
+      "emptyNameError": "השם לא יכול להיות ריק או להכיל רק רווחים",
+      "fullNameError": "אנא הזן שם פרטי ושם משפחה",
+      "fullNameTitle": "שם מלא",
+      "requiredEmail": "אימייל נדרש",
+      "emptyEmailError": "האימייל לא יכול להיות ריק או להכיל רק רווחים",
+      "invalidEmailError": "כתובת אימייל לא חוקית",
+      "emailTitle": "כתובת אימייל",
+      "updateButton": "עדכן"
     },
-      "passwordFormCard": {
+    "passwordFormCard": {
       "updateUserPassword": "עדכן סיסמת משתמש",
       "updateYourPassword": "עדכן את הסיסמה שלך",
       "description": "שמור על חשבונך בטוח על ידי עדכון סיסמת {{entity}}",
@@ -1390,32 +1499,32 @@
       "button": "עדכן סיסמה",
       "requirementsTitle": "דרישות סיסמה"
     },
-  "userManagementCard":{
-      "updateErrorSameUser":"לא ניתן לעדכן את התפקיד או הסטטוס של המשתמש הנוכחי.",
+    "userManagementCard": {
+      "updateErrorSameUser": "לא ניתן לעדכן את התפקיד או הסטטוס של המשתמש הנוכחי.",
       "updateErrorSelfManager": "לא ניתן להקצות את עצמך כמנהל לעצמך.",
-      "title":"ניהול משתמש",
-      "description":"ניהול תפקיד המשתמש, סטטוס החשבון והקצאת הארגון",
-      "roleField":{
-        "label":"תפקיד משתמש",
-        "description":"שדה זה מעניק למשתמש הרשאות נוספות"
+      "title": "ניהול משתמש",
+      "description": "ניהול תפקיד המשתמש, סטטוס החשבון והקצאת הארגון",
+      "roleField": {
+        "label": "תפקיד משתמש",
+        "description": "שדה זה מעניק למשתמש הרשאות נוספות"
       },
-      "statusField":{
-        "label":"סטטוס משתמש",
-        "description":"שינוי סטטוס זה עלול לגרום לחסימת המשתמש"
+      "statusField": {
+        "label": "סטטוס משתמש",
+        "description": "שינוי סטטוס זה עלול לגרום לחסימת המשתמש"
       },
-      "organizationField":{
-        "label":"ארגון",
-        "placeholder":"בחר ארגון",
-        "error":"טעינת הארגונים נכשלה"
+      "organizationField": {
+        "label": "ארגון",
+        "placeholder": "בחר ארגון",
+        "error": "טעינת הארגונים נכשלה"
       },
-      "managerField":{
-        "label":"מנהל המשתמש",
-        "placeholder":"בחר מנהל",
-        "error":"טעינת המנהלים נכשלה"
+      "managerField": {
+        "label": "מנהל המשתמש",
+        "placeholder": "בחר מנהל",
+        "error": "טעינת המנהלים נכשלה"
       },
-      "updateButton":"עדכן"
+      "updateButton": "עדכן"
     },
-    "accountPage":{
+    "accountPage": {
       "nav": {
         "label": "חלקי החשבון",
         "profile": "פרופיל",
@@ -1501,78 +1610,78 @@
         "deleteOtherHint": "החשבון של המשתמש יימחק לצמיתות."
       }
     },
-    "binMap":{
-      "loading":"טוען את המכשירים בתצוגה…"
+    "binMap": {
+      "loading": "טוען את המכשירים בתצוגה…"
     },
-          "organizationSelect":{
-      "label":"ארגון",
-      "all":"כל הארגונים"
+    "organizationSelect": {
+      "label": "ארגון",
+      "all": "כל הארגונים"
     },
     "terms": {
-    "open_button": "פתח תנאי שימוש",
-    "title": "תנאי שימוש",
-    "description": "הסכם השימוש שלך בפלטפורמת S-Bin לניהול פסולת חכם",
-    "close": "סגור",
-    "sections": {
+      "open_button": "פתח תנאי שימוש",
+      "title": "תנאי שימוש",
+      "description": "הסכם השימוש שלך בפלטפורמת S-Bin לניהול פסולת חכם",
+      "close": "סגור",
+      "sections": {
         "a": {
-            "title": "1. הקדמה",
-            "content": "ברוכים הבאים ל-S-Bin, הפתרון החכם לניהול פסולת. תנאי שימוש אלה (\"התנאים\") מסדירים את הגישה והשימוש שלך באתר, בפלטפורמה ובכל השירותים הנלווים של S-Bin (יחד, \"השירותים\"). בעצם הגישה או השימוש בשירותים שלנו, הנך מסכים/ה להיות כפוף/ה לתנאים אלה."
+          "title": "1. הקדמה",
+          "content": "ברוכים הבאים ל-S-Bin, הפתרון החכם לניהול פסולת. תנאי שימוש אלה (\"התנאים\") מסדירים את הגישה והשימוש שלך באתר, בפלטפורמה ובכל השירותים הנלווים של S-Bin (יחד, \"השירותים\"). בעצם הגישה או השימוש בשירותים שלנו, הנך מסכים/ה להיות כפוף/ה לתנאים אלה."
         },
         "b": {
-            "title": "2. השירותים",
-            "content": "S-Bin מספקת טכנולוגיה לניטור וניהול פחי אשפה, כולל חיישנים, מודולי תקשורת, פלטפורמת ניהול ו(במידת הצורך) אפליקציה למובייל. השירותים עשויים לכלול ניטור מפלס בזמן אמת, התראות, דוחות ואינטגרציה עם פלטפורמות צד שלישי."
+          "title": "2. השירותים",
+          "content": "S-Bin מספקת טכנולוגיה לניטור וניהול פחי אשפה, כולל חיישנים, מודולי תקשורת, פלטפורמת ניהול ו(במידת הצורך) אפליקציה למובייל. השירותים עשויים לכלול ניטור מפלס בזמן אמת, התראות, דוחות ואינטגרציה עם פלטפורמות צד שלישי."
         },
         "c": {
-            "title": "3. זכאות",
-            "content": "עליך להיות לפחות בן/בת 18 או בעל/ת סמכות משפטית מטעם הארגון שלך כדי להשתמש בשירותים. בשימוש בשירותים בשם ישות משפטית, הנך מצהיר/ה כי את/ה מוסמך/ת לחייב ישות זו בתנאים אלה."
+          "title": "3. זכאות",
+          "content": "עליך להיות לפחות בן/בת 18 או בעל/ת סמכות משפטית מטעם הארגון שלך כדי להשתמש בשירותים. בשימוש בשירותים בשם ישות משפטית, הנך מצהיר/ה כי את/ה מוסמך/ת לחייב ישות זו בתנאים אלה."
         },
         "d": {
-            "title": "4. חשבונות וגישה",
-            "list": {
-                "1": "חלקים מסוימים בשירותים עשויים לדרוש יצירת חשבון.",
-                "2": "הנך מתחייב/ת לספק מידע מדויק ומלא ולשמור על אבטחת פרטי הכניסה שלך.",
-                "3": "האחריות על כל הפעילות המבוצעת תחת החשבון שלך חלה עליך."
-            }
+          "title": "4. חשבונות וגישה",
+          "list": {
+            "1": "חלקים מסוימים בשירותים עשויים לדרוש יצירת חשבון.",
+            "2": "הנך מתחייב/ת לספק מידע מדויק ומלא ולשמור על אבטחת פרטי הכניסה שלך.",
+            "3": "האחריות על כל הפעילות המבוצעת תחת החשבון שלך חלה עליך."
+          }
         },
         "e": {
-            "title": "5. שימוש הולם",
-            "intro": "הנך מתחייב/ת שלא:",
-            "list": {
-                "1": "להשתמש בשירותים בכל דרך המפרה חוקים או תקנות רלוונטיים.",
-                "2": "להפריע או לשבש את השירותים או את הרשתות המחוברות אליהם.",
-                "3": "לנסות להשיג גישה לא מורשית לכל חלק בשירותים או לנתונים של משתמשים אחרים."
-            }
+          "title": "5. שימוש הולם",
+          "intro": "הנך מתחייב/ת שלא:",
+          "list": {
+            "1": "להשתמש בשירותים בכל דרך המפרה חוקים או תקנות רלוונטיים.",
+            "2": "להפריע או לשבש את השירותים או את הרשתות המחוברות אליהם.",
+            "3": "לנסות להשיג גישה לא מורשית לכל חלק בשירותים או לנתונים של משתמשים אחרים."
+          }
         },
         "f": {
-            "title": "6. נתונים ופרטיות",
-            "content": "S-Bin אוספת ומעבדת נתונים אודות מפלסי מילוי הפחים, מיקום ושימוש כדי לספק את השירותים. אנו מתייחסים לפרטיות ואבטחת מידע ברצינות ומיישמים אמצעים סבירים להגנה על המידע שאנו אוספים. בשימוש בשירותים, הנך מסכים/ה לאיסוף והשימוש שלנו בנתונים כפי שמתואר במדיניות הפרטיות שלנו."
+          "title": "6. נתונים ופרטיות",
+          "content": "S-Bin אוספת ומעבדת נתונים אודות מפלסי מילוי הפחים, מיקום ושימוש כדי לספק את השירותים. אנו מתייחסים לפרטיות ואבטחת מידע ברצינות ומיישמים אמצעים סבירים להגנה על המידע שאנו אוספים. בשימוש בשירותים, הנך מסכים/ה לאיסוף והשימוש שלנו בנתונים כפי שמתואר במדיניות הפרטיות שלנו."
         },
         "g": {
-            "title": "7. קניין רוחני",
-            "content": "כל התוכן, התוכנה והטכנולוגיה בשירותים (כולל השם S-Bin, הלוגו וסימנים מסחריים קשורים) הינם בבעלותנו או ברישיון לנו ומוגנים על ידי חוקי קניין רוחני. מוענק לך רישיון מוגבל, לא בלעדי ובלתי ניתן להעברה להשתמש בשירותים למטרתם המיועדת."
+          "title": "7. קניין רוחני",
+          "content": "כל התוכן, התוכנה והטכנולוגיה בשירותים (כולל השם S-Bin, הלוגו וסימנים מסחריים קשורים) הינם בבעלותנו או ברישיון לנו ומוגנים על ידי חוקי קניין רוחני. מוענק לך רישיון מוגבל, לא בלעדי ובלתי ניתן להעברה להשתמש בשירותים למטרתם המיועדת."
         },
         "h": {
-            "title": "8. שירותי צד שלישי ואינטגרציות",
-            "content": "השירותים שלנו עשויים להשתלב עם פלטפורמות או רשתות צד שלישי (למשל, מערכות עירוניות, פלטפורמות IoT). איננו אחראים לפעולות או למדיניות של אותם צדדים שלישיים."
+          "title": "8. שירותי צד שלישי ואינטגרציות",
+          "content": "השירותים שלנו עשויים להשתלב עם פלטפורמות או רשתות צד שלישי (למשל, מערכות עירוניות, פלטפורמות IoT). איננו אחראים לפעולות או למדיניות של אותם צדדים שלישיים."
         },
         "i": {
-            "title": "9. הצהרות והסרת אחריות",
-            "content": "השירותים ניתנים \"כמות שהם\" (As Is) ו\"כפי שהם זמינים\". איננו מתחייבים שהשירותים יפעלו ללא הפרעה, ללא שגיאות או שיהיו מדויקים לחלוטין. השימוש בשירותים הוא על אחריותך בלבד."
+          "title": "9. הצהרות והסרת אחריות",
+          "content": "השירותים ניתנים \"כמות שהם\" (As Is) ו\"כפי שהם זמינים\". איננו מתחייבים שהשירותים יפעלו ללא הפרעה, ללא שגיאות או שיהיו מדויקים לחלוטין. השימוש בשירותים הוא על אחריותך בלבד."
         },
         "j": {
-            "title": "10. הגבלת אחריות",
-            "content": "במידה המרבית המותרת על פי חוק, S-Bin ושותפיה לא יהיו אחראים לכל נזק עקיף, מקרי, תוצאתי או עונשי הנובע מהשימוש שלך בשירותים."
+          "title": "10. הגבלת אחריות",
+          "content": "במידה המרבית המותרת על פי חוק, S-Bin ושותפיה לא יהיו אחראים לכל נזק עקיף, מקרי, תוצאתי או עונשי הנובע מהשימוש שלך בשירותים."
         },
         "k": {
-            "title": "11. שינויים בשירותים ובתנאים",
-            "content": "אנו עשויים לעדכן או לשנות את השירותים בכל עת. אנו עשויים גם לעדכן תנאים אלה מעת לעת. הגרסה העדכנית ביותר תפורסם באתר שלנו. המשך שימוש בשירותים לאחר ביצוע שינויים מהווה הסכמה לתנאים המעודכנים."
+          "title": "11. שינויים בשירותים ובתנאים",
+          "content": "אנו עשויים לעדכן או לשנות את השירותים בכל עת. אנו עשויים גם לעדכן תנאים אלה מעת לעת. הגרסה העדכנית ביותר תפורסם באתר שלנו. המשך שימוש בשירותים לאחר ביצוע שינויים מהווה הסכמה לתנאים המעודכנים."
         },
         "l": {
-            "title": "12. סיום התקשרות",
-            "content": "אנו רשאים להשעות או לסיים את גישתך לשירותים אם תפר/י תנאים אלה או אם נידרש לכך על פי חוק. עם סיום ההתקשרות, זכותך להשתמש בשירותים תפקע לאלתר."
+          "title": "12. סיום התקשרות",
+          "content": "אנו רשאים להשעות או לסיים את גישתך לשירותים אם תפר/י תנאים אלה או אם נידרש לכך על פי חוק. עם סיום ההתקשרות, זכותך להשתמש בשירותים תפקע לאלתר."
         }
+      }
     }
-}
   },
   "toasts": {
     "failedLoadBins": "טעינת הפחים נכשלה.",
@@ -1615,16 +1724,11 @@
     "failedToDeleteOrg": "מחיקת הארגון נכשלה",
     "updatedOrgNameSuccessfully": "שם הארגון עודכן בהצלחה",
     "failedToUpdateOrgName": "עדכון שם הארגון נכשל",
-        "maintenanceUpdatedSuccessfully": "עדכון הערת תחזוקה לפח בוצע בהצלחה",
+    "maintenanceUpdatedSuccessfully": "עדכון הערת תחזוקה לפח בוצע בהצלחה",
     "binNameUpdatedSuccessfully": "שם הפח עודכן בהצלחה",
     "failedToUpdateBinName": "עדכון שם הפח נכשל"
   },
-  "dashboard": "לוח בקרה",
-  "users": "משתמשים",
-  "bins": "פחים",
   "organizations": "ארגונים",
-  "analytics": "אנליטיקות",
-  "logs": "תיעודים",
   "account": "חשבון",
   "support": "תמיכה",
   "notes": {
