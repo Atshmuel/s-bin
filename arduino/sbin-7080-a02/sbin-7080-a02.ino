@@ -52,6 +52,7 @@ void setup() {
         powerOffModem();
         recordReportOutcome(false);
         reportThroughAnotherGateway(reason);
+        becomeLeafIfAsked();
         enterDeepSleepUntilNextReport();
     }
     // Two cycles in a row without a report: through another gateway first, at
@@ -60,6 +61,7 @@ void setup() {
     const bool reportingThroughMesh = reportsFailedTooOften();
     if (reportingThroughMesh) {
         reportThroughAnotherGateway(sbinmesh::DATA_NO_CELLULAR);
+        becomeLeafIfAsked();
     }
 
     // Long enough for a cold cellular attach; the modem is powered off between retries.
@@ -231,5 +233,6 @@ void loop() {
     }
     restartIfMeshKeyIsNew(meshWindowStartedThisCycle());
     endMeshWindow();
+    becomeLeafIfAsked();
     enterDeepSleepUntilNextReport();
 }

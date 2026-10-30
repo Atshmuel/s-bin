@@ -13,6 +13,29 @@ void saveDeviceRole(DeviceRole role) {
 }
 }
 
+// Set by the become_leaf command; acted on at the end of the cycle that ran it.
+bool becomeLeafAfterThisCycle = false;
+
+// The become_leaf command, once its result is on its way: the device forgets
+// its device key (the server gives its bin a new one) and wakes a second
+// later as a leaf. Everything else stays: the organization, the location, the
+// calibration and the organization key its leaf keys come from. A deep sleep,
+// not a restart, so a result still queued in RTC memory goes out as a leaf.
+void becomeLeafIfAsked() {
+    if (!becomeLeafAfterThisCycle) {
+        return;
+    }
+    preferences.begin("credentials", false);
+    preferences.remove("deviceKey");
+    preferences.putUChar("role", ROLE_LEAF);
+    preferences.end();
+    Serial.println("🌿 This device is now a mesh leaf; it wakes as one in a second.");
+    Serial.flush();
+    cutModemPower();
+    esp_sleep_enable_timer_wakeup(1000000ULL);
+    esp_deep_sleep_start();
+}
+
 // Gateway or leaf, once the setup page has given the organization. A device
 // with a device key registered as a gateway and stays one: a SIM that fails
 // later is a fault to report, not a reason to turn into a leaf the server does

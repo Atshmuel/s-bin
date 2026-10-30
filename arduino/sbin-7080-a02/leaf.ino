@@ -128,6 +128,13 @@ void runLeafInstruction(const sbinmesh::AckPacket& ack, sbinmesh::DataPacket& da
             }
             break;
         }
+        case sbinmesh::INSTRUCTION_BECOME_LEAF:
+            // A gateway reporting through another one switches once this
+            // exchange is over; a leaf already is one, and says so.
+            becomeLeafAfterThisCycle = deviceRole == ROLE_GATEWAY;
+            data.resultStatus = sbinmesh::RESULT_COMPLETED;
+            data.resultCode = sbinmesh::RESULT_BECAME_LEAF;
+            break;
         default:
             data.resultStatus = sbinmesh::RESULT_FAILED;
             data.resultCode = sbinmesh::RESULT_UNSUPPORTED;
@@ -198,16 +205,20 @@ void runAsLeaf() {
         zeroScale();
     }
 
+    // A leaf that was a gateway keeps the organization key and derives its own
+    // keys from it; one that never was uses the bench's mesh_keys.h.
     sbinmesh::LeafKeys keys = {};
+    if (!ownLeafKeys(keys)) {
 #if SBIN_LEAF_HAS_KEYS
-    memcpy(keys.mac, MESH_KEY_MAC, sbinmesh::MAC_LENGTH);
-    memcpy(keys.leafKey, MESH_LEAF_KEY, sbinmesh::KEY_LENGTH);
-    memcpy(keys.beaconKey, MESH_BEACON_KEY, sbinmesh::KEY_LENGTH);
-    keys.keyId = MESH_KEY_ID;
+        memcpy(keys.mac, MESH_KEY_MAC, sbinmesh::MAC_LENGTH);
+        memcpy(keys.leafKey, MESH_LEAF_KEY, sbinmesh::KEY_LENGTH);
+        memcpy(keys.beaconKey, MESH_BEACON_KEY, sbinmesh::KEY_LENGTH);
+        keys.keyId = MESH_KEY_ID;
 #else
-    enterDeepSleepForSetupRetry(NO_KEYS_RETRY_SLEEP_SECONDS,
-                                "This leaf has no mesh keys (build it with mesh_keys.h)");
+        enterDeepSleepForSetupRetry(NO_KEYS_RETRY_SLEEP_SECONDS,
+                                    "This leaf has no mesh keys (build it with mesh_keys.h)");
 #endif
+    }
     sbinmesh::LeafConfig config = makeLeafConfig(keys);
     config.hooks.afterDelivery = refreshLeafLocation;
     config.hooks.beforeSleep = prepareLeafSleep;

@@ -46,6 +46,7 @@ enum InstructionType : uint8_t {
     INSTRUCTION_REPORT_NOW = 1,
     INSTRUCTION_CALIBRATE_EMPTY_BIN = 2,
     INSTRUCTION_CALIBRATE_SCALE = 3,   // value: the known weight in grams
+    INSTRUCTION_BECOME_LEAF = 4,       // a gateway reporting through another stops being one
 };
 
 enum ResultStatus : uint8_t {
@@ -64,6 +65,7 @@ enum ResultCode : uint8_t {
     RESULT_SCALE_NOT_RESPONDING = 5,   // scale_not_responding
     RESULT_UNSUPPORTED = 6,            // unsupported_instruction_type
     RESULT_SCALE_ERROR = 7,            // the scale's code for value (ScaleError)
+    RESULT_BECAME_LEAF = 8,            // became_leaf
 };
 
 // Why a leaf's scale command failed, as RESULT_SCALE_ERROR's value.

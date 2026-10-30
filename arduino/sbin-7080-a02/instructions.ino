@@ -52,6 +52,13 @@ uint32_t processInstruction(const DeviceInstruction& instruction) {
                 status = "failed";
                 result = "additional_report_publish_failed";
             }
+        } else if (instruction.type == "become_leaf") {
+            // Done once this cycle's report and results are out (role.ino).
+            Serial.printf("🌿 Instruction %s: this gateway becomes a mesh leaf after this cycle.\n",
+                          instruction.id.c_str());
+            becomeLeafAfterThisCycle = true;
+            status = "completed";
+            result = "became_leaf";
         } else if (instruction.type == "stay_awake") {
             if (instruction.durationSeconds == 0 ||
                 instruction.durationSeconds > MAX_AWAKE_EXTENSION_SECONDS) {

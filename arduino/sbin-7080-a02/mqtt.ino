@@ -189,6 +189,7 @@ sbinmesh::InstructionType leafInstructionType(const char* type) {
     if (strcmp(type, "report_now") == 0) return sbinmesh::INSTRUCTION_REPORT_NOW;
     if (strcmp(type, "calibrate_empty_bin") == 0) return sbinmesh::INSTRUCTION_CALIBRATE_EMPTY_BIN;
     if (strcmp(type, "calibrate_scale") == 0) return sbinmesh::INSTRUCTION_CALIBRATE_SCALE;
+    if (strcmp(type, "become_leaf") == 0) return sbinmesh::INSTRUCTION_BECOME_LEAF;
     return sbinmesh::INSTRUCTION_NONE;
 }
 
@@ -231,6 +232,8 @@ String leafResultText(const sbinmesh::DataPacket& data) {
             return "scale_calibrated_" + String(data.resultExtra) + "_reads_" + String(data.resultValue);
         case sbinmesh::RESULT_SCALE_NOT_RESPONDING:
             return "scale_not_responding";
+        case sbinmesh::RESULT_BECAME_LEAF:
+            return "became_leaf";
         case sbinmesh::RESULT_SCALE_ERROR:
             switch (data.resultValue) {
                 case sbinmesh::SCALE_ERROR_UNSTABLE: return "scale_unstable";
