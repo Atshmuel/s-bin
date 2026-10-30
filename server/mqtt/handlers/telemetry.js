@@ -12,6 +12,7 @@ import { organizationThresholds } from "../../db/service/thresholdService.js";
 import { batteryLevel, fullnessLevel } from "../../utils/thresholds.js";
 import { cleanDiagnostics } from "../../utils/diagnostics.js";
 import { cleanFaults } from "../../utils/faults.js";
+import { meshKeyUpdateFor } from "../../db/service/meshKeyService.js";
 import { detectIssues, nextIssues } from "../../utils/deviceIssues.js";
 import {
     MAX_ABS_CLOCK_ERROR_SECONDS, MAX_ABS_DRIFT_PPM,
@@ -223,6 +224,14 @@ export async function handleDeviceLog(mac, { deviceKey, ...record }) {
     } = await applyDeviceLog(bin, { ...record, location: fromDeviceLocation(record.location) },
         { via: "cellular", reportIntervalMinutes, reportStartHour });
 
+    // The organization's mesh key when the device does not hold the current one
+    // (it reports the generation it has); a failure here must not cost the ack.
+    const meshKey = await meshKeyUpdateFor(bin.ownerId, Number.isInteger(record.meshKeyId) ? record.meshKeyId : 0)
+        .catch(error => {
+            console.error(`Could not look up the mesh key for ${mac}:`, error?.message ?? error);
+            return {};
+        });
+
     console.log("Updated log for", mac);
     mqttClient.publish(
         `${BIN_ACK_TOPIC}/${mac}`,
@@ -234,6 +243,7 @@ export async function handleDeviceLog(mac, { deviceKey, ...record }) {
             followingWakeEpoch,
             sleepDurationSeconds: scheduledSleepDurationSeconds,
             meshAwakeWindowSeconds: orgMeshAwakeWindowSeconds,
+            ...meshKey,
         })
     );
 }

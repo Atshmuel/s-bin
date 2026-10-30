@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
 import {
-    CLUSTER_ZOOM_RANGE, COST_SETTINGS, THRESHOLD_SETTINGS, DEFAULT_CLUSTER_UNTIL_ZOOM, DEFAULT_TRUCK_LITERS_PER_100KM, DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_ROUTE_PLANNING_HOUR, DEFAULT_REPORT_START_HOUR,
+    CLUSTER_ZOOM_RANGE, COST_SETTINGS, MESH_KEY_ID_COUNT, THRESHOLD_SETTINGS, DEFAULT_CLUSTER_UNTIL_ZOOM, DEFAULT_TRUCK_LITERS_PER_100KM, DEFAULT_MESH_AWAKE_WINDOW_SECONDS, DEFAULT_REPORT_INTERVAL_MINUTES, DEFAULT_ROUTE_PLANNING_HOUR, DEFAULT_REPORT_START_HOUR,
     DEPOT_ADDRESS_MAX_LENGTH, MAX_MESH_AWAKE_WINDOW_SECONDS, MAX_TRUCK_CAPACITY_KG, MAX_TRUCK_TYPES,
     MAX_TRUCKS_PER_TYPE, MIN_TRUCK_CAPACITY_KG, REPORT_INTERVAL_OPTIONS_MINUTES, TRUCK_LITERS_PER_100KM_RANGE, TRUCK_NAME_MAX_LENGTH, TRUCK_PRESETS,
 } from "../../utils/constants.js";
 import { isLngLat } from "../../utils/geo.js";
 import { thresholdsProblem } from "../../utils/thresholds.js";
+import { isMeshKey } from "../../utils/meshKeys.js";
 
 // A type of truck the organization runs: how many, how much waste one carries
 // (kg) and how much diesel it burns (L per 100 km); `preset` is the class it
@@ -130,5 +131,14 @@ export const organizationSchema = new mongoose.Schema({
     registrationCode: { type: String, default: null },
     // What the last nightly plan did, for its settings ("why no routes today?").
     lastAutoPlan: { type: lastAutoPlanSchema, default: null },
+    // The secret the organization's mesh devices sign their packets with (2m;
+    // see utils/meshKeys.js) and which generation of it this is (the one-byte
+    // ID in the packets). Made when first needed, by db/service/meshKeyService.js,
+    // which alone reads them: they are left out of every query and of the JSON.
+    meshKey: { type: String, select: false, default: undefined, validate: { validator: isMeshKey, message: "meshKey must be 64 hex characters" } },
+    meshKeyId: { type: Number, select: false, default: undefined, min: 1, max: MESH_KEY_ID_COUNT, validate: { validator: Number.isInteger, message: "meshKeyId must be a whole number" } },
+}, {
+    toJSON: { transform: (doc, ret) => { delete ret.meshKey; delete ret.meshKeyId; return ret; } },
+    toObject: { transform: (doc, ret) => { delete ret.meshKey; delete ret.meshKeyId; return ret; } },
 });
 

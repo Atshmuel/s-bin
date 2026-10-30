@@ -370,6 +370,12 @@ export const DEVICE_REGISTRATION_FAILURE_LIMIT = 20;
 export const REGISTRATION_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 export const REGISTRATION_CODE_LENGTH = 8;
 
+// An organization's mesh key (2m; see utils/meshKeys.js): its size in bytes,
+// and how many generations the one-byte key ID in a packet can name (1 to 255;
+// 0 means no key).
+export const MESH_KEY_BYTES = 32;
+export const MESH_KEY_ID_COUNT = 255;
+
 // A developer's machine leaves the devices, the scheduled jobs and real emails
 // to the deployed server (running them too would store every device report
 // twice and send every email twice), and accepts the local client's origin.
